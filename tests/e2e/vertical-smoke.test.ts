@@ -12,6 +12,7 @@ import {
 import { HttpTextCapabilityClient } from '../../packages/provider-client/src/index.js';
 import { CopywritingService } from '../../apps/desktop/src/main/copywriting-service.js';
 import { callMockSidecar } from '../../apps/desktop/src/main/sidecar-client.js';
+import { resolveMockSidecarScript, resolvePythonExecutable } from '../helpers/python-runtime.js';
 
 let gateway: MockGatewayHandle;
 
@@ -51,14 +52,9 @@ describe('Desktop vertical smoke', () => {
       industry_metadata: { synthetic: true },
     });
 
-    const pythonPath =
-      process.env.PYTHON_BIN ??
-      (process.platform === 'win32'
-        ? 'python'
-        : '/Users/sungaoang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3');
     const sidecarEvents = await callMockSidecar({
-      pythonPath,
-      scriptPath: resolve(import.meta.dirname, '../fixtures/mock-sidecar/mock_sidecar.py'),
+      pythonPath: resolvePythonExecutable(),
+      scriptPath: resolveMockSidecarScript(),
       request: {
         type: 'request',
         protocol_version: '1.0',
