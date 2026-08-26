@@ -8,8 +8,9 @@
 
 - `LOCAL_IMPLEMENTATION: PASS`
 - `LOCAL_CI_EQUIVALENT: PASS`
-- `REMOTE_PR_CI: BLOCKED`
-- `WINDOWS_VM: BLOCKED`
+- `LINUX_CI: PENDING_REVALIDATION`
+- `WINDOWS_NATIVE_SMOKE: PENDING_REVALIDATION`（上一 PR head 为 `PASS`）
+- `WINDOWS_CLEAN_VM: BLOCKED`
 - `REAL_TEXT_PROVIDER_SMOKE: BLOCKED_BY_CODE_B`
 - `ALL_V0_1_ACCEPTANCE: BLOCKED`
 
@@ -21,7 +22,7 @@
 
 `PASS`
 
-- Code A 实现基线：`47221679c5f9f12e33bc6d879c77a3841c239fe6`
+- Code A portability 修复基线：`d81c3b0bf98a60122bbb6c8f66556bae0c39e9c4`
 - Completion Report 所在最终提交：以 PR head 和最终交付消息中的 SHA 为准。Git 提交内容无法可靠地自引用其自身 SHA。
 
 ### 2. Electron 精确版本
@@ -118,9 +119,9 @@ Mock Sidecar fixture 位于 `tests/fixtures/mock-sidecar/`，使用 stdio NDJSON
 
 ### 12. 已运行测试数
 
-`PASS` — `141 / 141`
+`PASS` — `147 / 147`
 
-共 13 个 test files，覆盖 unit、contract、SQLite repository、migration、IPC security、renderer isolation、mock gateway、fact lock、copywriting、job recovery、vertical smoke、native addon packaging。
+共 14 个 test files，覆盖 unit、contract、SQLite repository、migration、IPC security、renderer isolation、mock gateway、fact lock、copywriting、job recovery、vertical smoke、native addon packaging 和 portability regression。
 
 ### 13. 100 条 Fact Regression 结果
 
@@ -132,7 +133,7 @@ Mock Sidecar fixture 位于 `tests/fixtures/mock-sidecar/`，使用 stdio NDJSON
 
 `BLOCKED`
 
-- Windows GitHub runner workflow：已建立，等待 PR 触发后确认结果。
+- Windows native smoke 在本轮修复前的 Draft PR head 已通过；portability 修复提交已触发复验，报告提交时仍为 `PENDING_REVALIDATION`。
 - Windows 10 / 11 clean VM 的签名安装、启动、更新、卸载：当前没有可用 VM 与签名证书，未执行。
 - 卸载保留用户数据：已通过数据目录设计保证应用数据位于 `%LOCALAPPDATA%\\Company\\AiVideoDesktop`，但 clean VM 卸载行为仍需实测。
 
@@ -140,7 +141,8 @@ Mock Sidecar fixture 位于 `tests/fixtures/mock-sidecar/`，使用 stdio NDJSON
 
 - `PASS` — macOS arm64 packaged Electron：实际启动最终 executable 并完成 SQLite 读写。
 - `PASS` — macOS arm64 development Electron runtime：SQLite 读写通过。
-- `BLOCKED` — Windows packaged Electron：workflow 已建立，但 PR 尚未成功创建，远端结果不可用。
+- `PASS` — Windows packaged Electron / better-sqlite3 native smoke：本轮修复前的 Draft PR check 已通过。
+- `PENDING_REVALIDATION` — 当前 portability 修复 head 的 Windows workflow 已重新触发，并新增 Python 3.12 sidecar contract 与 developer-path scan。
 
 ### 16. Mock Gateway 测试结果
 
@@ -182,8 +184,8 @@ Code A 已完成 `TextCapabilityClient`、Desktop → Gateway contract 和 Mock 
 
 ### 21. 剩余已知问题
 
-1. `BLOCKED` — GitHub 连接器对私有仓库无访问权限，无法由当前自动化会话创建 PR；SSH push 正常。需从 compare 链接创建 PR 后触发远端 CI。
-2. `BLOCKED` — Windows 10 / 11 clean VM 的安装、更新、卸载、签名与 packaged native addon 商业验收未执行。
+1. `BLOCKED` — GitHub 连接器对私有仓库无读取权限，无法从当前自动化会话核验 Draft PR #1 的实时 checks；SSH push 与 PR head 同步正常。
+2. `BLOCKED` — Windows 10 / 11 clean VM 的安装、更新、卸载、签名商业验收未执行。
 3. `BLOCKED_BY_CODE_B` — 真实 Text Provider smoke 等待正式 Gateway / Provider ownership。
 4. `BLOCKED` — macOS 本地打包未签名并使用默认图标；这不影响本轮 Windows 产品骨架代码验证，但发布资产需单独提供。
 5. `PASS_WITH_WARNING` — renderer production bundle 当前约 1.15 MB，Vite 给出 chunk-size warning；v0.1 功能与启动不受影响，后续可按页面拆包优化。
@@ -192,11 +194,23 @@ Code A 已完成 `TextCapabilityClient`、Desktop → Gateway contract 和 Mock 
 
 `BLOCKED`
 
-Code A 本地实现、边界、安全、migration、产品 CRUD、文案、Fact Lock、Job、Mock Gateway、Mock Sidecar、141 项测试以及 macOS packaged native smoke 均为 `PASS`。尚不能声明“全部验收通过”，原因是 Windows clean environment 商业安装链路与远端 PR CI 未完成；真实 Provider 则按任务书允许明确记录为 `BLOCKED_BY_CODE_B`。
+Code A 本地实现、边界、安全、migration、产品 CRUD、文案、Fact Lock、Job、Mock Gateway、Mock Sidecar、147 项测试以及 macOS packaged native smoke 均为 `PASS`。尚不能声明“全部验收通过”，原因是 Windows clean environment 商业安装链路未完成；真实 Provider 则按任务书允许明确记录为 `BLOCKED_BY_CODE_B`。
+
+## CI Portability Fix 验收
+
+- `Linux CI: PENDING_REVALIDATION`
+- `Windows native smoke: PENDING_REVALIDATION`（上一 PR head 为 `PASS`）
+- `Windows clean VM: BLOCKED`
+- `Cross-platform mock-sidecar contract: PASS`（本地；Linux / Windows workflow 已覆盖并等待远端结果）
+- `Python 3.12 runtime resolution: PASS`
+- `Developer-specific absolute path scan: PASS`
+- `Path-with-spaces child-process test: PASS`
+
+Python executable 按 `PYTHON_EXECUTABLE`、当前 PATH 中由 CI `setup-python` 提供的解释器、平台候选顺序解析，并实际执行 `--version`；只有 `Python 3.12.x` 可通过。Mock sidecar script 通过 `import.meta.url` 从仓库定位，子进程保持 `spawn(executable, args, { shell: false })` 和 stdio NDJSON 架构不变。
 
 ## Git 交付状态
 
 - 远端：`git@github.com:hed88798-dot/ai-video-platform.git`
 - 基线分支：`main`，保持在可构建提交 `81856dfe78db671d798461853e5fa4830e7d79d4`
 - 开发分支：`code-a/v0.1`
-- PR compare：<https://github.com/hed88798-dot/ai-video-platform/compare/main...code-a/v0.1?expand=1>
+- Draft PR #1：<https://github.com/hed88798-dot/ai-video-platform/pull/1>
