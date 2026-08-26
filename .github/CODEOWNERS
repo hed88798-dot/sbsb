@@ -1,0 +1,23 @@
+# Default review ownership
+* @hed88798-dot
+
+# Code 0 architecture is immutable except through architecture review.
+/docs/architecture/code-0/ @hed88798-dot
+
+# Code A ownership
+/apps/desktop/ @hed88798-dot
+/packages/local-db/ @hed88798-dot
+/packages/domain-product/ @hed88798-dot
+/packages/domain-copywriting/ @hed88798-dot
+/schemas/ipc/ @hed88798-dot
+/migrations/desktop-sqlite/ @hed88798-dot
+
+# Cross-team contract and ownership boundaries require explicit review.
+/packages/contracts/ @hed88798-dot
+/schemas/ @hed88798-dot
+/apps/gateway/ @hed88798-dot
+/packages/provider-adapters/ @hed88798-dot
+/sidecars/media-worker/ @hed88798-dot
+/packages/domain-auto-edit/ @hed88798-dot
+/packages/domain-digital-human/ @hed88798-dot
+
