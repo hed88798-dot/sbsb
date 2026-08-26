@@ -19,6 +19,7 @@
     "@app/domain-product": "workspace:*",
     "@app/local-db": "workspace:*",
     "@app/provider-client": "workspace:*",
+    "@ant-design/icons": "6.3.2",
     "@tanstack/react-query": "5.90.20",
     "antd": "6.1.4",
     "better-sqlite3": "13.0.3",

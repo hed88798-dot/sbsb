@@ -24,6 +24,17 @@ export class GatewayClientError extends Error {
   }
 }
 
+export function isGatewayClientError(error: unknown): error is GatewayClientError {
+  if (error instanceof GatewayClientError) return true;
+  if (!error || typeof error !== 'object') return false;
+  const candidate = error as Record<string, unknown>;
+  return (
+    typeof candidate.code === 'string' &&
+    typeof candidate.message === 'string' &&
+    typeof candidate.retryable === 'boolean'
+  );
+}
+
 export interface HttpTextCapabilityClientOptions {
   backendUrl: string;
   accessToken?: string;

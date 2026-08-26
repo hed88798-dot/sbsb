@@ -28,4 +28,4 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm native:rebuild
       - run: pnpm package:dir
-      - run: pnpm test -- tests/integration/native-addon-packaging.test.ts
+      - run: $env:REQUIRE_PACKAGED_SMOKE='1'; pnpm test -- tests/integration/native-addon-packaging.test.ts

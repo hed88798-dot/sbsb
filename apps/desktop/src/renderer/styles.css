@@ -1,0 +1,85 @@
+:root {
+  font-family:
+    Inter,
+    'Noto Sans CJK SC',
+    'Microsoft YaHei UI',
+    system-ui,
+    -apple-system,
+    sans-serif;
+  color: #17221f;
+  background: #f4f6f5;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 1024px;
+  min-height: 100%;
+  margin: 0;
+}
+body {
+  min-height: 100vh;
+  overflow-x: auto;
+}
+.app-layout {
+  min-height: 100vh;
+}
+.app-sider {
+  position: sticky !important;
+  top: 0;
+  height: 100vh;
+  overflow: auto;
+  border-right: 1px solid #e5e9e7;
+}
+.brand {
+  height: 74px;
+  padding: 18px 20px;
+  color: #f4fffb;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.brand small {
+  display: block;
+  margin-top: 3px;
+  color: #9fc7ba;
+  font-size: 11px;
+  font-weight: 500;
+}
+.app-content {
+  padding: 28px 32px 48px;
+  background: #f4f6f5;
+}
+.page-wrap {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+.page-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.page-heading h2 {
+  margin-bottom: 4px !important;
+}
+.fact-result {
+  white-space: pre-wrap;
+  line-height: 1.8;
+}
+.metric-card .ant-statistic-content {
+  font-size: 30px;
+}
+.product-row {
+  cursor: pointer;
+}
+.product-row:hover td {
+  background: #f2f9f6 !important;
+}

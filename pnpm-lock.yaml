@@ -74,6 +74,9 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@ant-design/icons':
+        specifier: 6.3.2
+        version: 6.3.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@app/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -156,6 +159,15 @@ importers:
       '@app/contracts':
         specifier: workspace:*
         version: link:../contracts
+
+  packages/test-fixtures:
+    dependencies:
+      '@app/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@app/domain-product':
+        specifier: workspace:*
+        version: link:../domain-product
 
 packages:
 

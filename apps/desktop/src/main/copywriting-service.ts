@@ -8,7 +8,7 @@ import {
 import { buildCopywritingPrompt, checkProductFacts } from '@app/domain-copywriting';
 import { createProductFactSnapshot } from '@app/domain-product';
 import type { CopywritingRepository, JobRepository, ProductRepository } from '@app/local-db';
-import { GatewayClientError } from '@app/provider-client';
+import { isGatewayClientError } from '@app/provider-client';
 import type { TextCapabilityClient } from '@app/provider-client';
 
 export class CopywritingService {
@@ -17,6 +17,7 @@ export class CopywritingService {
   readonly #copywriting: CopywritingRepository;
   readonly #client: TextCapabilityClient;
   readonly #controllers = new Map<string, AbortController>();
+  readonly #active = new Set<Promise<void>>();
 
   constructor(options: {
     products: ProductRepository;
@@ -41,7 +42,9 @@ export class CopywritingService {
     const controller = new AbortController();
     this.#controllers.set(job.job_id, controller);
     queueMicrotask(() => {
-      void this.#run({ jobId: job.job_id, request, factSnapshot, built, controller });
+      const work = this.#run({ jobId: job.job_id, request, factSnapshot, built, controller });
+      this.#active.add(work);
+      void work.finally(() => this.#active.delete(work));
     });
     return job;
   }
@@ -53,6 +56,11 @@ export class CopywritingService {
 
   getResult(jobId: string): CopywritingResultV1 | null {
     return this.#copywriting.getResult(jobId);
+  }
+
+  async shutdown(): Promise<void> {
+    for (const controller of this.#controllers.values()) controller.abort();
+    await Promise.allSettled([...this.#active]);
   }
 
   async #run(input: {
@@ -92,12 +100,13 @@ export class CopywritingService {
       });
     } catch (error) {
       if (this.#jobs.require(input.jobId).state === 'CANCELLED') return;
-      if (error instanceof GatewayClientError && error.code === 'CANCELLED') {
+      if (isGatewayClientError(error) && error.code === 'CANCELLED') {
         this.#jobs.cancel(input.jobId);
       } else {
-        const code = error instanceof GatewayClientError ? error.code : 'COPYWRITING_FAILED';
-        const message =
-          error instanceof GatewayClientError ? error.message : '文案任务执行失败，请检查后重试';
+        const code = isGatewayClientError(error) ? error.code : 'COPYWRITING_FAILED';
+        const message = isGatewayClientError(error)
+          ? error.message
+          : '文案任务执行失败，请检查后重试';
         this.#jobs.fail(input.jobId, code, message);
       }
     } finally {
