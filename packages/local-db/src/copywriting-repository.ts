@@ -50,6 +50,31 @@ export class CopywritingRepository {
       );
   }
 
+  recordFailure(input: {
+    jobId: string;
+    requestId: string;
+    errorCode: string;
+    requestSnapshotHash: string;
+    durationMs: number;
+  }): void {
+    this.#db
+      .prepare(
+        `INSERT INTO provider_call_summaries(
+          call_id, job_id, request_id, provider_alias, provider_model, duration_ms,
+          billed_units, state, error_code, request_snapshot_hash, created_at
+        ) VALUES (?, ?, ?, 'gateway', 'text.standard', ?, 0, 'FAILED', ?, ?, ?)`,
+      )
+      .run(
+        `provider_call_${randomUUID()}`,
+        input.jobId,
+        input.requestId,
+        input.durationMs,
+        input.errorCode,
+        input.requestSnapshotHash,
+        new Date().toISOString(),
+      );
+  }
+
   complete(input: {
     jobId: string;
     productId: string | null;

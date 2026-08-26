@@ -17,6 +17,10 @@ import { registerIpc } from './ipc.js';
 const currentDirectory = fileURLToPath(new URL('.', import.meta.url));
 let mainWindow: BrowserWindow | null = null;
 
+if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
+  app.setPath('userData', join(process.env.LOCALAPPDATA, 'Company', 'AiVideoDesktop'));
+}
+
 async function runNativeSqliteSmoke(): Promise<void> {
   const migrationsDirectory = app.isPackaged
     ? join(process.resourcesPath, 'migrations', 'desktop-sqlite')

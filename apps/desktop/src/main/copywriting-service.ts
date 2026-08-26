@@ -10,6 +10,7 @@ import { createProductFactSnapshot } from '@app/domain-product';
 import type { CopywritingRepository, JobRepository, ProductRepository } from '@app/local-db';
 import { isGatewayClientError } from '@app/provider-client';
 import type { TextCapabilityClient } from '@app/provider-client';
+import { logEvent } from './logger.js';
 
 export class CopywritingService {
   readonly #products: ProductRepository;
@@ -39,6 +40,7 @@ export class CopywritingService {
     const built = buildCopywritingPrompt(request, factSnapshot);
     const job = this.#jobs.create('COPYWRITING', built.requestHash);
     this.#copywriting.attachRequest(job.job_id, request, factSnapshot);
+    logEvent('copywriting.job.queued', { job_id: job.job_id, request_id: request.request_id });
     const controller = new AbortController();
     this.#controllers.set(job.job_id, controller);
     queueMicrotask(() => {
@@ -70,6 +72,7 @@ export class CopywritingService {
     built: ReturnType<typeof buildCopywritingPrompt>;
     controller: AbortController;
   }): Promise<void> {
+    const startedAt = Date.now();
     try {
       if (this.#jobs.require(input.jobId).state !== 'QUEUED') return;
       this.#jobs.start(input.jobId);
@@ -98,6 +101,13 @@ export class CopywritingService {
         promptTemplateVersion: input.built.template.version,
         requestSnapshotHash: input.built.requestHash,
       });
+      logEvent('copywriting.job.succeeded', {
+        job_id: input.jobId,
+        request_id: input.request.request_id,
+        provider_alias: textResult.provider_alias,
+        duration_ms: Date.now() - startedAt,
+        result_status: conflicts.length > 0 ? 'REVIEW_REQUIRED' : 'SUCCEEDED',
+      });
     } catch (error) {
       if (this.#jobs.require(input.jobId).state === 'CANCELLED') return;
       if (isGatewayClientError(error) && error.code === 'CANCELLED') {
@@ -107,7 +117,20 @@ export class CopywritingService {
         const message = isGatewayClientError(error)
           ? error.message
           : '文案任务执行失败，请检查后重试';
+        this.#copywriting.recordFailure({
+          jobId: input.jobId,
+          requestId: input.request.request_id,
+          errorCode: code,
+          requestSnapshotHash: input.built.requestHash,
+          durationMs: Date.now() - startedAt,
+        });
         this.#jobs.fail(input.jobId, code, message);
+        logEvent('copywriting.job.failed', {
+          job_id: input.jobId,
+          request_id: input.request.request_id,
+          duration_ms: Date.now() - startedAt,
+          error_code: code,
+        });
       }
     } finally {
       this.#controllers.delete(input.jobId);

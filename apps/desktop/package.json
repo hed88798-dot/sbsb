@@ -2,6 +2,8 @@
   "name": "@app/desktop",
   "version": "0.1.0",
   "private": true,
+  "description": "本地优先的企业产品库与 AI 文案桌面工具",
+  "author": "hed88798-dot",
   "type": "module",
   "main": "dist-electron/main/index.js",
   "scripts": {
