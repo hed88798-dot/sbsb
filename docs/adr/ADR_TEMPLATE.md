@@ -28,4 +28,3 @@
 ## 重审触发
 
 列出必须新建 superseding ADR 的条件。
-

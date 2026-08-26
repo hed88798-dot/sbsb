@@ -1,0 +1,9 @@
+docs/architecture/code-0/
+node_modules/
+dist/
+dist-electron/
+dist-renderer/
+release/
+coverage/
+pnpm-lock.yaml
+

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/copywriting/v1/product-fact-snapshot.schema.json",
+  "title": "ProductFactSnapshotV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "product_id",
+    "name",
+    "aliases",
+    "ingredients",
+    "specification",
+    "target_object",
+    "approved_scope",
+    "usage",
+    "contraindications",
+    "forbidden_claims",
+    "snapshot_hash"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "product_id": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "aliases": { "type": "array", "items": { "type": "string" } },
+    "ingredients": { "type": "string" },
+    "specification": { "type": "string" },
+    "target_object": { "type": "string" },
+    "approved_scope": { "type": "string" },
+    "usage": { "type": "string" },
+    "contraindications": { "type": "array", "items": { "type": "string" } },
+    "forbidden_claims": { "type": "array", "items": { "type": "string" } },
+    "snapshot_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

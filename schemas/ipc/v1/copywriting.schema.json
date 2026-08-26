@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/ipc/v1/copywriting.schema.json",
+  "title": "CopywritingContractsV1",
+  "$defs": {
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "request_id",
+        "mode",
+        "direction",
+        "target_duration_seconds",
+        "style",
+        "colloquial_level",
+        "requirements"
+      ],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "request_id": { "type": "string", "minLength": 1 },
+        "mode": { "enum": ["CREATE", "PRODUCT", "OPTIMIZE", "DEDUPE"] },
+        "product_id": { "type": "string", "minLength": 1 },
+        "direction": { "type": "string", "maxLength": 1000 },
+        "target_duration_seconds": { "type": "integer", "minimum": 5, "maximum": 600 },
+        "style": { "type": "string", "maxLength": 200 },
+        "colloquial_level": { "type": "integer", "minimum": 0, "maximum": 3 },
+        "requirements": { "type": "string", "maxLength": 4000 },
+        "source_text": { "type": "string", "maxLength": 20000 },
+        "optimize_operation": {
+          "enum": ["STRUCTURE", "OPENING", "COMPRESS", "EXPAND", "COLLOQUIAL"]
+        },
+        "dedupe_level": { "enum": ["LIGHT", "MEDIUM", "DEEP"] }
+      }
+    },
+    "conflict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "expected", "evidence", "message"],
+      "properties": {
+        "field": {
+          "enum": [
+            "name",
+            "ingredients",
+            "specification",
+            "target_object",
+            "approved_scope",
+            "usage",
+            "contraindications",
+            "forbidden_claims"
+          ]
+        },
+        "expected": { "type": "string" },
+        "evidence": { "type": "string" },
+        "message": { "type": "string" }
+      }
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/$defs/request" },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "job_id",
+        "script_id",
+        "result_status",
+        "text",
+        "raw_model_output",
+        "fact_snapshot",
+        "fact_conflicts",
+        "prompt_template_id",
+        "prompt_template_version",
+        "provider_alias",
+        "provider_model",
+        "request_snapshot_hash",
+        "created_at"
+      ],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "job_id": { "type": "string", "minLength": 1 },
+        "script_id": { "type": "string", "minLength": 1 },
+        "result_status": { "enum": ["SUCCEEDED", "REVIEW_REQUIRED"] },
+        "text": { "type": "string" },
+        "raw_model_output": { "type": "string" },
+        "fact_snapshot": { "type": ["object", "null"] },
+        "fact_conflicts": { "type": "array", "items": { "$ref": "#/$defs/conflict" } },
+        "prompt_template_id": { "type": "string", "minLength": 1 },
+        "prompt_template_version": { "type": "string", "minLength": 1 },
+        "provider_alias": { "type": "string", "minLength": 1 },
+        "provider_model": { "type": "string", "minLength": 1 },
+        "request_snapshot_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  ]
+}

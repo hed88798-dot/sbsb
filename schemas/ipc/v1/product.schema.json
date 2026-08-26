@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/ipc/v1/product.schema.json",
+  "title": "ProductContractsV1",
+  "$defs": {
+    "productData": {
+      "type": "object",
+      "required": [
+        "name",
+        "aliases",
+        "category",
+        "target_object",
+        "ingredients",
+        "specification",
+        "approved_scope",
+        "usage",
+        "contraindications",
+        "selling_points",
+        "description",
+        "marketing_focus",
+        "forbidden_claims",
+        "notes",
+        "industry_metadata"
+      ],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "aliases": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "category": { "type": "string", "maxLength": 200 },
+        "target_object": { "type": "string", "maxLength": 500 },
+        "ingredients": { "type": "string", "maxLength": 4000 },
+        "specification": { "type": "string", "maxLength": 1000 },
+        "approved_scope": { "type": "string", "maxLength": 4000 },
+        "usage": { "type": "string", "maxLength": 4000 },
+        "contraindications": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "selling_points": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "description": { "type": "string", "maxLength": 8000 },
+        "marketing_focus": { "type": "string", "maxLength": 4000 },
+        "forbidden_claims": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "notes": { "type": "string", "maxLength": 4000 },
+        "industry_metadata": { "type": "object" }
+      }
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "asset_id",
+        "product_id",
+        "path",
+        "sha256",
+        "media_type",
+        "size_bytes",
+        "width",
+        "height",
+        "role",
+        "created_at"
+      ],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "asset_id": { "type": "string", "minLength": 1 },
+        "product_id": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "media_type": { "type": "string", "minLength": 1 },
+        "size_bytes": { "type": "integer", "minimum": 0 },
+        "width": { "type": ["integer", "null"], "minimum": 1 },
+        "height": { "type": ["integer", "null"], "minimum": 1 },
+        "role": { "enum": ["MAIN", "PACKAGING", "DETAIL", "OTHER"] },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "product": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "allOf": [
+        { "$ref": "#/$defs/productData" },
+        {
+          "type": "object",
+          "required": ["schema_version", "product_id", "assets", "created_at", "updated_at"],
+          "properties": {
+            "schema_version": { "const": "1.0" },
+            "product_id": { "type": "string", "minLength": 1 },
+            "assets": { "type": "array", "items": { "$ref": "#/$defs/asset" } },
+            "created_at": { "type": "string", "format": "date-time" },
+            "updated_at": { "type": "string", "format": "date-time" }
+          }
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/$defs/product" },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "data"],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "data": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/$defs/productData" }],
+          "unevaluatedProperties": false
+        }
+      }
+    }
+  ]
+}

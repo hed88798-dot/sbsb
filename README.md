@@ -27,4 +27,3 @@ Windows、native addon 与打包说明见 `docs/development/WINDOWS_SETUP.md`。
 - Mock Gateway、Text capability contract 与 mock sidecar smoke
 
 图片/视频生成、素材索引、Auto Edit、Timeline、FFmpeg 成片和数字人不在 v0.1 范围。
-

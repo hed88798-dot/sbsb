@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/sidecar/v1/event.schema.json",
+  "title": "SidecarEventV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "protocol_version", "request_id"],
+  "properties": {
+    "type": { "enum": ["hello", "accepted", "progress", "result", "error", "cancelled"] },
+    "protocol_version": { "const": "1.0" },
+    "request_id": { "type": "string", "minLength": 1 },
+    "payload": { "type": "object" },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message", "retryable"],
+      "properties": {
+        "code": { "type": "string" },
+        "message": { "type": "string" },
+        "retryable": { "type": "boolean" }
+      }
+    }
+  }
+}

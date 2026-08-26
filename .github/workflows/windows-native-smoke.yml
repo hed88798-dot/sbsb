@@ -1,0 +1,31 @@
+name: Windows native smoke
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/desktop/**'
+      - 'packages/local-db/**'
+      - 'migrations/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+
+permissions:
+  contents: read
+
+jobs:
+  packaged-native-addon:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm native:rebuild
+      - run: pnpm package:dir
+      - run: pnpm test -- tests/integration/native-addon-packaging.test.ts

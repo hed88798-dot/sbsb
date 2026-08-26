@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/ipc/v1/app-error.schema.json",
+  "title": "AppErrorV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "code", "message", "retryable"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "code": { "type": "string", "minLength": 1 },
+    "message": { "type": "string", "minLength": 1 },
+    "retryable": { "type": "boolean" },
+    "request_id": { "type": "string", "minLength": 1 }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/provider/v1/text-capability.schema.json",
+  "title": "TextCapabilityV1",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "request_id",
+        "capability",
+        "model_alias",
+        "prompt",
+        "request_snapshot_hash"
+      ],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "request_id": { "type": "string", "minLength": 1 },
+        "capability": { "const": "text.generate.v1" },
+        "model_alias": { "type": "string", "minLength": 1 },
+        "prompt": { "type": "string", "minLength": 1 },
+        "request_snapshot_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "request_id",
+        "text",
+        "provider_alias",
+        "provider_model",
+        "latency_ms",
+        "billed_units",
+        "request_snapshot_hash"
+      ],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "request_id": { "type": "string", "minLength": 1 },
+        "text": { "type": "string" },
+        "provider_alias": { "type": "string", "minLength": 1 },
+        "provider_model": { "type": "string", "minLength": 1 },
+        "latency_ms": { "type": "integer", "minimum": 0 },
+        "billed_units": { "type": "number", "minimum": 0 },
+        "request_snapshot_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    }
+  ]
+}

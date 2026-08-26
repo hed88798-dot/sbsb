@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/sidecar/v1/request.schema.json",
+  "title": "SidecarRequestV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "protocol_version", "request_id", "method", "payload"],
+  "properties": {
+    "type": { "const": "request" },
+    "protocol_version": { "const": "1.0" },
+    "request_id": { "type": "string", "minLength": 1 },
+    "method": { "enum": ["hello", "ping", "echo", "progress", "cancel", "error"] },
+    "payload": { "type": "object" }
+  }
+}
