@@ -1,6 +1,21 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { textGatewayRequestV1Schema } from '@app/contracts';
 
+export { buildGatewayApp, signingMessage, type GatewayAppOptions } from './app.js';
+export {
+  GATEWAY_MIGRATION_VERSION,
+  openGatewayDatabase,
+  seedLicense,
+  type GatewayDatabase,
+} from './database.js';
+export {
+  FakeObjectStoreSigner,
+  S3ObjectStoreSigner,
+  type ObjectStoreSigner,
+} from './object-store.js';
+export { approveProvider, type ProviderRouteConfig } from './routing.js';
+export { canonicalSignedRequest, hashCredential, sha256 } from './security.js';
+
 export const MOCK_GATEWAY_MARKER = 'NON_PRODUCTION_DEV_ONLY_REFERENCE_IMPLEMENTATION';
 
 function send(response: ServerResponse, status: number, body: unknown): void {

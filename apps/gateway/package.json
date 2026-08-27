@@ -1,6 +1,6 @@
 {
-  "name": "@app/mock-gateway",
-  "version": "0.1.0",
+  "name": "@app/gateway",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "main": "dist/index.js",
@@ -11,9 +11,17 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "start": "node dist/cli.js"
+    "start": "node dist/cli.js",
+    "backup": "node dist/backup-cli.js",
+    "admin": "node dist/admin-cli.js"
   },
   "dependencies": {
-    "@app/contracts": "workspace:*"
+    "@app/contracts": "workspace:*",
+    "@app/provider-adapters": "workspace:*",
+    "better-sqlite3": "13.0.3",
+    "fastify": "5.8.5"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "7.6.13"
   }
 }

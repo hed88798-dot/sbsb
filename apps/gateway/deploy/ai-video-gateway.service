@@ -1,0 +1,23 @@
+[Unit]
+Description=AI Video Lightweight Gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ai-video-gateway
+Group=ai-video-gateway
+WorkingDirectory=/opt/ai-video-gateway/current
+EnvironmentFile=/etc/ai-video-gateway/gateway.env
+ExecStart=/usr/bin/node apps/gateway/dist/cli.js
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/ai-video-gateway
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

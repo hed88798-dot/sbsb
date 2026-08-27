@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.invalid/provider/v1/request.schema.json",
+  "title": "ProviderRequestV1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "request_id",
+    "capability",
+    "model_alias",
+    "quality_tier",
+    "inputs",
+    "parameters",
+    "request_snapshot_hash",
+    "max_cost"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "request_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+    "capability": {
+      "enum": [
+        "text.generate.v1",
+        "image.generate.v1",
+        "image.edit.v1",
+        "video.generate.v1",
+        "tts.synthesize.v1",
+        "voice.clone.v1",
+        "lipsync.generate.v1"
+      ]
+    },
+    "model_alias": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$" },
+    "quality_tier": { "enum": ["standard", "premium"] },
+    "inputs": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "required": ["role", "object_ref", "sha256"],
+        "additionalProperties": false,
+        "properties": {
+          "role": { "enum": ["image", "video", "audio", "voice_sample"] },
+          "object_ref": { "type": "string", "pattern": "^obj_[A-Za-z0-9_-]{24,128}$" },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    },
+    "parameters": { "type": "object" },
+    "request_snapshot_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "max_cost": {
+      "type": "object",
+      "required": ["amount", "currency"],
+      "additionalProperties": false,
+      "properties": {
+        "amount": { "type": "number", "minimum": 0, "maximum": 10000 },
+        "currency": { "enum": ["CNY", "USD"] }
+      }
+    }
+  }
+}

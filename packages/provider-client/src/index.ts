@@ -1,6 +1,10 @@
 import {
+  providerJobV1Schema,
+  providerRequestV1Schema,
   textGatewayRequestV1Schema,
   textGatewayResultV1Schema,
+  type ProviderJobV1,
+  type ProviderRequestV1,
   type TextGatewayRequestV1,
   type TextGatewayResultV1,
 } from '@app/contracts';
@@ -40,6 +44,31 @@ export interface HttpTextCapabilityClientOptions {
   accessToken?: string;
   timeoutMs?: number;
   mockScenario?: 'success' | 'timeout' | '429' | '500' | 'invalid';
+  requestSigner?: GatewayRequestSigner;
+}
+
+export interface GatewayRequestSigner {
+  sign(input: { method: string; path: string; body: string; requestId: string }): Promise<{
+    timestamp: string;
+    nonce: string;
+    bodySha256: string;
+    signature: string;
+  }>;
+}
+
+async function signedHeaders(
+  signer: GatewayRequestSigner | undefined,
+  input: { method: string; path: string; body: string; requestId: string },
+): Promise<Record<string, string>> {
+  if (!signer) return {};
+  const signed = await signer.sign(input);
+  return {
+    'x-timestamp': signed.timestamp,
+    'x-nonce': signed.nonce,
+    'x-body-sha256': signed.bodySha256,
+    'x-device-signature': signed.signature,
+    'x-request-id': input.requestId,
+  };
 }
 
 export class HttpTextCapabilityClient implements TextCapabilityClient {
@@ -63,13 +92,24 @@ export class HttpTextCapabilityClient implements TextCapabilityClient {
     options.signal?.addEventListener('abort', onAbort, { once: true });
     if (options.signal?.aborted) onAbort();
     try {
+      const path = '/v1/text/generate';
+      const requestBody = JSON.stringify(validatedRequest);
       const headers: Record<string, string> = { 'content-type': 'application/json' };
       if (this.#options.accessToken) headers.authorization = `Bearer ${this.#options.accessToken}`;
       if (this.#options.mockScenario) headers['x-mock-scenario'] = this.#options.mockScenario;
-      const response = await fetch(new URL('/v1/text/generate', this.#options.backendUrl), {
+      Object.assign(
+        headers,
+        await signedHeaders(this.#options.requestSigner, {
+          method: 'POST',
+          path,
+          body: requestBody,
+          requestId: validatedRequest.request_id,
+        }),
+      );
+      const response = await fetch(new URL(path, this.#options.backendUrl), {
         method: 'POST',
         headers,
-        body: JSON.stringify(validatedRequest),
+        body: requestBody,
         signal: controller.signal,
       });
       if (response.status === 429) {
@@ -102,6 +142,70 @@ export class HttpTextCapabilityClient implements TextCapabilityClient {
       clearTimeout(timeout);
       options.signal?.removeEventListener('abort', onAbort);
     }
+  }
+}
+
+export class HttpProviderGatewayClient {
+  constructor(
+    private readonly options: {
+      backendUrl: string;
+      accessToken: string;
+      requestSigner: GatewayRequestSigner;
+      timeoutMs?: number;
+    },
+  ) {}
+
+  async createJob(request: ProviderRequestV1): Promise<ProviderJobV1> {
+    const validated = providerRequestV1Schema.parse(request);
+    return this.request('/v1/jobs', 'POST', JSON.stringify(validated), validated.request_id);
+  }
+
+  async getJob(jobId: string): Promise<ProviderJobV1> {
+    if (!/^job_[A-Za-z0-9-]+$/u.test(jobId)) {
+      throw new GatewayClientError('INVALID_JOB_ID', '任务编号无效', false);
+    }
+    const requestId = `poll_${crypto.randomUUID()}`;
+    return this.request(`/v1/jobs/${encodeURIComponent(jobId)}`, 'GET', '', requestId);
+  }
+
+  private async request(
+    path: string,
+    method: 'GET' | 'POST',
+    body: string,
+    requestId: string,
+  ): Promise<ProviderJobV1> {
+    const headers: Record<string, string> = {
+      authorization: `Bearer ${this.options.accessToken}`,
+      ...(method === 'POST' ? { 'content-type': 'application/json' } : {}),
+      ...(await signedHeaders(this.options.requestSigner, { method, path, body, requestId })),
+    };
+    let response: Response;
+    try {
+      response = await fetch(new URL(path, this.options.backendUrl), {
+        method,
+        headers,
+        ...(method === 'POST' ? { body } : {}),
+        signal: AbortSignal.timeout(this.options.timeoutMs ?? 30_000),
+      });
+    } catch {
+      throw new GatewayClientError('GATEWAY_NETWORK_ERROR', '无法连接素材服务', true);
+    }
+    if (response.status === 429) {
+      throw new GatewayClientError('RATE_LIMITED', '请求过于频繁，请稍后重试', true);
+    }
+    if (!response.ok) {
+      const error = (await response.json().catch(() => null)) as { code?: unknown } | null;
+      throw new GatewayClientError(
+        typeof error?.code === 'string' ? error.code : 'GATEWAY_REQUEST_REJECTED',
+        '素材请求未被接受',
+        response.status >= 500,
+      );
+    }
+    const parsed = providerJobV1Schema.safeParse(await response.json());
+    if (!parsed.success) {
+      throw new GatewayClientError('INVALID_GATEWAY_RESPONSE', '素材服务返回了无效响应', false);
+    }
+    return parsed.data;
   }
 }
 
