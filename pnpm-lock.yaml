@@ -157,6 +157,15 @@ importers:
         specifier: workspace:*
         version: link:../domain-product
 
+  packages/domain-media-index:
+    dependencies:
+      '@app/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      zod:
+        specifier: 4.1.13
+        version: 4.1.13
+
   packages/domain-product:
     dependencies:
       '@app/contracts':

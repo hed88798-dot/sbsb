@@ -1,0 +1,22 @@
+[project]
+name = "ai-video-media-worker"
+version = "0.3.0"
+requires-python = "==3.12.*"
+dependencies = [
+  "numpy==2.3.5",
+  "onnxruntime==1.29.0",
+  "opencv-python-headless==4.14.0.94",
+  "Pillow==12.3.0",
+  "scenedetect==0.7.1",
+  "sentencepiece==0.2.1",
+]
+
+[project.scripts]
+media-worker = "media_worker.worker:main"
+
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/media_worker"]
