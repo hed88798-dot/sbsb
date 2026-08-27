@@ -2,64 +2,49 @@
 
 报告日期：2026-08-27（Asia/Shanghai）
 
-本报告只覆盖 Code C：Shot 索引、增量文件身份、恢复、质量、SigLIP 2 ONNX 边界、
-VisualDescriptor 证据、SQLite float16 真源、search cache 与 exact search。没有进入 Auto Edit、
-Matcher、Timeline、Provider、Digital Human 或最终 FFmpeg 成片。
-
 ## 结论
 
-`LOCAL_IMPLEMENTATION: PASS`  
-`LOCAL_CI_EQUIVALENT: PASS`  
-`V0_3_INDEX_ACCEPTANCE: BLOCKED`
+```text
+CODE_C_IMPLEMENTATION: PASS
+CODE_C_LOCAL_GATES: PASS
+CODE_C_MERGE_READINESS: PENDING_REMOTE_CI_AND_F_REVIEW
+V0_3_INDEX_ACCEPTANCE: BLOCKED
+```
 
-阻塞原因不是已知代码失败，而是当前 workspace 没有授权 ≥500 条真实兽药视频、官方导出的
-SigLIP 2 ONNX artifact、Windows 4 核 8 GB/16 GB 验收机和当前分支远端 CI 结果。任务书明确
-禁止猜性能或伪造模型/真实数据结果，因此这些项目保留为 `BLOCKED`。
+Code C 已同步 `main@8e3a98ab664d0737ddf2c9d02002242b88e0c71c`，ADR-017 已接受，
+Media Index v1 Contract 已批准。固定官方 revision 的 SigLIP 2 image/text encoder 已离线导出为
+真实 FP32 ONNX，完成 provenance、SHA-256、PyTorch/ORT correctness 与真实 Video → Index → SQLite
+→ Cache → Text Search E2E。模型二进制不进入 Git；Manifest 指向不可变 model-pack Release。
+
+## 工程状态
 
 ```text
 BRANCH:
 code-c/local-media-index-v0.3
 
-BASELINE_SHA:
+ORIGINAL_C_BASELINE:
 b04b8c152cd3e589b17246f53bab16262aefe313
 
-FINAL_SHA:
-见最终交付消息；Git commit 无法在自身内容中可靠自引用自身 SHA
+SYNCED_MAIN_SHA:
+8e3a98ab664d0737ddf2c9d02002242b88e0c71c
 
 SIDECAR_PROTOCOL_VERSION:
 1.0
 
-INDEX_SCHEMA_VERSION:
-1.0 (desktop SQLite migration 002)
-
-INDEX_SIGNATURE_VERSION:
-1.0
-
-SHOT_DETECTOR:
-PySceneDetect.AdaptiveDetector
-
-SHOT_DETECTOR_VERSION:
-0.7.1
-
-SHOT_DETECTOR_PARAMS_HASH:
-4b8dcee936e5937cf0040c83bb0883837a38d174fb1f1ee632d5ebfaa8247e10
+DESKTOP_MIGRATION:
+002_media_index_v1.sql (forward-only)
 
 KEYFRAME_POLICY_VERSION:
-safe-mid-best-v1
+safe-mid-best-v1 (ADR-017 Accepted; Real Golden performance PENDING)
 
-KEYFRAME_POLICY_DECISION:
-Proposed / versioned implementation. 25/50/75 对照实现与 Golden benchmark harness 已交付；
-合成 fixture 选择 safe/mid/best，授权真实素材比较等待 Code C review。
+SIGLIP_MODEL:
+google/siglip2-base-patch32-256
 
 SIGLIP_MODEL_REVISION:
 9e7ee68506177b546b2d5dc578f54afdc5e425f1
 
-SIGLIP_SOURCE_HASH:
+SIGLIP_SOURCE_LOCK_HASH:
 3f628585475283c2b50bd8040acb2f47767b3cebc4b07cdf9ae08bde47e4b82d
-(固定 source-lock 全文件清单的 canonical SHA-256)
-
-SIGLIP_ONNX_HASH:
-BLOCKED — 未生成/未提交伪 artifact；export 后由 MODEL_MANIFEST.json 记录 image/text encoder 各自 SHA-256
 
 ONNX_OPSET:
 18
@@ -68,64 +53,68 @@ ONNXRUNTIME_VERSION:
 1.29.0
 
 PREPROCESS_VERSION:
-siglip2-processor-256-bicubic-mean0.5-v1
+siglip2-processor-256-bicubic-mean0.5-official-text-v2
 
-OFFICIAL_MODEL_REVISION:
+IMAGE_ENCODER_ONNX:
+logical_id: google-siglip2-base-patch32-256/image-encoder-onnx-fp32/sha256:ef5f7b69830c352e57f15668092d7323521836c16fff2d71d14549b75eca6059
+sha256: ef5f7b69830c352e57f15668092d7323521836c16fff2d71d14549b75eca6059
+size: 378435041 bytes
+
+TEXT_ENCODER_ONNX:
+logical_id: google-siglip2-base-patch32-256/text-encoder-onnx-fp32/sha256:12bccdb491a98d224df1e6b6b249378118c6cfb54c18f6eb12286ffce8b26f30
+sha256: 12bccdb491a98d224df1e6b6b249378118c6cfb54c18f6eb12286ffce8b26f30
+size: 1129415247 bytes
+
+MODEL_MANIFEST_STRUCTURE:
 PASS
 
-ONNX_ARTIFACT_HASH:
-BLOCKED
+MODEL_ARTIFACT_PROVENANCE:
+PASS
 
-ONNX_OUTPUT_VALIDATION:
-BLOCKED — export tool 已实现 PyTorch/ORT allclose gate，缺正式 artifact 执行结果
+MODEL_ARTIFACT_HASH:
+PASS
 
-FP32 / ONNX TOP-K REGRESSION:
-BLOCKED — evaluator 已交付，缺只读授权 Golden Set 与正式 ONNX 输出
+MODEL_RUNTIME_CORRECTNESS:
+PASS
 
-SIGLIP_FP32_TOP5:
-BLOCKED
+MODEL_DISTRIBUTION_SIGNING:
+BLOCKED (Code F / Desktop Model Pack release boundary)
 
-SIGLIP_ONNX_TOP5:
-BLOCKED
+PYTORCH_ORT_CORRECTNESS:
+PASS — image/text [4,768], allclose, finite, ranking-consistent; production tokenizer IDs match official
 
-INT8_ENABLED:
+REAL_SIGLIP_ONNX_E2E:
+PASS — 2 real ONNX Shot embeddings committed through Main, exact text search returned hydrated Shot evidence
+
+PRODUCTION_WORKER_CONTAINS_TORCH:
 NO
 
-SIGLIP_INT8_TOP5:
-NOT RUN
+PRODUCTION_WORKER_CONTAINS_TRANSFORMERS:
+NO
 
-QUANTIZATION_RECALL_DELTA:
-NOT RUN — 没有在缺 Golden Set 时启用 INT8；未来启用必须满足下降 <= 2 percentage points
+LOCAL_PACKAGED_WORKER_RUNTIME:
+PASS — PyInstaller artifact hash 56d77301511838162515d311d2997102be51694263ecd0223242932dde8894ae
 
-500_ASSET_TEST:
-BLOCKED — 真实企业素材不在 Git/workspace
+WINDOWS_WORKER_PACKAGING:
+PENDING_REMOTE_CI
 
-TOTAL_VIDEO_DURATION:
-BLOCKED
+WINDOWS_WORKER_RUNTIME_SMOKE:
+PENDING_REMOTE_CI
 
-SHOT_COUNT:
-BLOCKED
-
-AVERAGE_SHOTS_PER_ASSET:
-BLOCKED
-
-FIRST_INDEX_WALL_TIME:
-BLOCKED
-
-REALTIME_FACTOR:
-BLOCKED
+MACOS_50K_SEARCH_BENCHMARK:
+PASS — P95 18.41 ms; 50,000 x 768 float16; Apple M3 / 8 GB
 
 SECOND_SCAN_ZERO_REPROCESS:
-PASS (automated synthetic inventory fixture)
+PASS
 
 SINGLE_FILE_REBUILD:
-PASS (automated synthetic inventory fixture)
+PASS
 
 MOVED_SAME_HASH_ZERO_REPROCESS:
-PASS (inventory + SQLite integration fixture)
+PASS
 
 INTERRUPT_RECOVERY:
-PASS (hash-verified per-Shot checkpoint + old active revision integration test)
+PASS
 
 INDEX_GENERATION_ATOMIC_SWITCH:
 PASS
@@ -139,84 +128,56 @@ PASS
 CACHE_SIGNATURE_VALIDATION:
 PASS
 
-50K_SEARCH_P95:
-23.30 ms (30 queries, 50,000 x 768 float16, NumPy mmap, float32 accumulation)
-Host: Apple M3 / 8 physical cores / 8 GB RAM / macOS 15.5 arm64
-Formal Windows profile: BLOCKED
-
-8GB_CPU_PROFILE:
-BLOCKED — search-only macOS 8 GB baseline PASS; Windows 4-core full-index profile not run
-WALL_TIME:
-BLOCKED
-PEAK_RAM:
-BLOCKED for full index
-CPU:
-BLOCKED for formal profile
-
-16GB_CPU_PROFILE:
-BLOCKED — Windows 4-core full-index profile not run
-WALL_TIME:
-BLOCKED
-PEAK_RAM:
-BLOCKED
-CPU:
-BLOCKED
-
-VLM_OFF_RESULT:
-BLOCKED for official-model end-to-end; base Shot/Quality/Embedding/Search path is implemented and VLM-independent
-
-VLM_ON_RESULT:
-NOT_ENABLED
-
-MOTION_SENSITIVE_FALSE_CLAIM_TEST:
-PASS (static evidence guard fixtures; real motion Golden cases remain part of 500-asset milestone)
-
 CORRUPTED_MEDIA_RESULT:
-PASS (stable per-file probe failure; no folder-wide crash)
+PASS
 
 MALICIOUS_PATH_INPUT_RESULT:
-PASS (Chinese/space path, symlink escape, manifest/artifact containment, argv shell=false)
+PASS
 
-MODEL_MANIFEST:
-BLOCKED overall — schema/source-lock/export provenance PASS; final ONNX artifact manifest awaits export
+MOTION_SENSITIVE_FALSE_CLAIM_TEST:
+PASS
+
+LOCAL_TYPESCRIPT_TESTS:
+PASS — 221 passed, 2 expected skips
+
+LOCAL_PYTHON_TESTS:
+PASS — 18 passed
+
+SIDECAR_BACKWARD_REGRESSION:
+PASS — 10 passed; protocol remains 1.0
+
+SECRET_SCAN:
+PASS
 
 LICENSE_SCAN:
-PASS (first-pass Node + exact-pinned Python/model allowlist); release wheel/model SBOM remains release gate
+PASS — first-pass source/build inventory; distribution notices/signing remain release gates
+
+VULNERABILITY_SCAN:
+PASS at moderate threshold — no moderate/high/critical advisory; one low dev-server esbuild advisory remains
 
 LINUX_CI:
-BLOCKED remote / LOCAL EQUIVALENT PASS
+PENDING_REMOTE
 
 WINDOWS_NATIVE_REGRESSION:
-BLOCKED remote; existing workflow preserved and extended with worker tests
-
-KNOWN_FAILURES:
-1. No authorized >=500-video veterinary Golden Set mounted.
-2. No official SigLIP 2 FP32 ONNX artifact generated in this workspace.
-3. No FP32/ONNX/INT8 retrieval-quality result without the artifact and Golden Set.
-4. No Windows 4-core 8 GB/16 GB full-index, UI responsiveness, pause latency or thermal run.
-5. Florence-2 remains intentionally NOT_ENABLED.
-
-ARCHITECTURE_QUESTIONS:
-ADR-017: 25/50/75 vs safe/mid/best-quality. Implementation recommends safe-mid-best-v1,
-but final acceptance waits for the authorized Golden comparison.
-
-CONTRACT_CHANGE_PROPOSALS:
-docs/architecture/CONTRACT_CHANGE_PROPOSAL_MEDIA_INDEX_V1.md
-Non-breaking Sidecar protocol 1.0 method additions + forward-only SQLite migration 002 + Main-owned narrow commit.
-
-V0_3_INDEX_ACCEPTANCE:
-BLOCKED
+PENDING_REMOTE
 ```
 
-## 已完成的工程不变量
+## 正式验收阻塞项
 
-- Python worker 不打开业务 SQLite、不监听 HTTP、不持有 Provider secret。
-- Main 在 schema、job path、artifact hash、embedding dimension 和 signature 校验后短事务提交；失败时旧 revision 继续 active。
-- Asset signature 绑定单文件 hash；generation key 绑定共同模型/预处理/检测器/关键帧策略；全局 generation signature 再绑定全部 Asset revision，避免多文件漏搜或跨模型混用。
-- SQLite `vector_f16 BLOB` 是真源；cache 可删、可重建，matrix/hash/row mapping/signature 任一不一致即拒绝。
-- Search 返回 `asset_id + shot_id + start_ms + end_ms + revision`；计算使用同一 SigLIP 2 text encoder、NumPy mmap、float32 accumulation。
-- 未变化文件走 stat 快路径；mtime/路径变化后计算真实 SHA-256；同 hash 移动/重复位置复用 Asset；缺失位置不删除 revision。
-- Probe/Shot Detection 与每个已完成 Shot 都有 checkpoint；恢复只复用 hash 验证通过且 generation 输入相同的 artifact。
-- `health_state` 没有批准证据保持 unknown；静态关键帧不能高置信输出咳嗽、喘气、跛行、抽搐等 motion-sensitive claim。
+```text
+500_ASSET_TEST: BLOCKED
+WINDOWS_4_CORE_8GB_PROFILE: BLOCKED
+WINDOWS_4_CORE_16GB_PROFILE: BLOCKED
+GOLDEN_RETRIEVAL_QUALITY: BLOCKED
+MODEL_DISTRIBUTION_SIGNING: BLOCKED
+V0_3_INDEX_ACCEPTANCE: BLOCKED
+```
 
-完成 Code C 实现后停止；没有进入 Code D。
+这些状态没有用合成 fixture、Apple M3 搜索基准或本地打包结果冒充。Code D 未启动。
+
+## Architecture Question
+
+`ARCHITECTURE_QUESTION_SIGLIP_TEXT_INPUT_V2.md` 已提交 Code F：固定 official revision 的 tokenizer
+只声明 `input_ids`，官方 text transformer 默认推理不产生 `attention_mask`。当前 artifact 与生产 Worker
+使用官方固定长度输入语义，preprocess version 已升级并进入 Index Signature；Sidecar、DTO、SQLite 和
+embedding dimension 均未改变。等待 F 对该正式模型语义确认。

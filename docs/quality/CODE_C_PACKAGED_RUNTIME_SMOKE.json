@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "status": "PASS",
+  "platform": "macOS-15.5-arm64",
+  "artifact": {
+    "path": "dist/media-worker",
+    "sha256": "56d77301511838162515d311d2997102be51694263ecd0223242932dde8894ae",
+    "repository_committed": false
+  },
+  "runtime": {
+    "python": "3.12.13",
+    "numpy": "2.3.5",
+    "onnxruntime": "1.29.0",
+    "opencv": "4.14.0",
+    "pillow": "12.3.0",
+    "scenedetect": "0.7.1",
+    "sentencepiece": "0.2.1",
+    "providers": ["CoreMLExecutionProvider", "AzureExecutionProvider", "CPUExecutionProvider"],
+    "contains_torch": false,
+    "contains_transformers": false
+  },
+  "stdio_hello": {
+    "status": "PASS",
+    "protocol_version": "1.0",
+    "worker_version": "0.3.0",
+    "capabilities": ["media.index.asset.v1", "media.search.exact.v1"]
+  },
+  "windows_equivalent": "PENDING_REMOTE_CI"
+}

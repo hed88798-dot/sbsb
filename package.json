@@ -71,7 +71,7 @@
     "ajv": "8.18.0",
     "ajv-formats": "3.0.1",
     "better-sqlite3": "13.0.3",
-    "concurrently": "9.2.1",
+    "concurrently": "10.0.5",
     "electron": "43.4.1",
     "electron-builder": "26.15.3",
     "esbuild": "0.25.12",

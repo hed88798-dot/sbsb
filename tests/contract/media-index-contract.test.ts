@@ -72,6 +72,16 @@ describe('media index v1 public contract', () => {
     ) as object;
     const ajv = new Ajv2020({ allErrors: true, strict: true });
     addFormats(ajv);
-    expect(() => ajv.compile(modelManifestSchema)).not.toThrow();
+    const validateManifest = ajv.compile(modelManifestSchema);
+    const checkedManifest = JSON.parse(
+      readFileSync(
+        resolve(
+          root,
+          'sidecars/media-worker/model-manifests/siglip2-base-patch32-256.onnx-fp32.manifest.json',
+        ),
+        'utf8',
+      ),
+    ) as object;
+    expect(validateManifest(checkedManifest), JSON.stringify(validateManifest.errors)).toBe(true);
   });
 });
