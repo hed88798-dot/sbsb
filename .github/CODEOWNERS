@@ -21,3 +21,17 @@
 /packages/domain-auto-edit/ @hed88798-dot
 /packages/domain-digital-human/ @hed88798-dot
 
+# Code F quality, release and compliance ownership
+/.github/workflows/ @hed88798-dot
+/tests/ @hed88798-dot
+/tools/ @hed88798-dot
+/config/ @hed88798-dot
+/compliance/ @hed88798-dot
+/docs/quality/ @hed88798-dot
+/schemas/golden/ @hed88798-dot
+/schemas/release/ @hed88798-dot
+/CI_GATE_MATRIX.md @hed88798-dot
+/DEPENDENCY_ACCEPTANCE_POLICY.md @hed88798-dot
+/RELEASE_GATE.md @hed88798-dot
+/WINDOWS_CLEAN_VM_REPORT.md @hed88798-dot
+/CODE_F_STATUS_REPORT.md @hed88798-dot

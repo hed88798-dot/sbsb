@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "product-fact-synthetic",
+  "dataset_version": "1.0.0",
+  "description": "Code A Product Fact Lock 的 100 条纯合成固定回归集。",
+  "authorization": {
+    "status": "SYNTHETIC",
+    "recorded_by": "Code F",
+    "recorded_at": "2026-08-27T00:00:00+08:00",
+    "evidence_ref": "Repository-authored synthetic fixtures; no customer media or customer content."
+  },
+  "provenance": {
+    "source_type": "SYNTHETIC",
+    "source_ref": "packages/test-fixtures/src/index.ts",
+    "contains_customer_data": false
+  },
+  "label_schema_version": "product-fact-regression.v1",
+  "annotation_guideline_version": "synthetic-rules.v1",
+  "splits": [
+    {
+      "name": "test",
+      "locked": true,
+      "anonymous_ids": ["fact-synthetic-000-through-099"]
+    }
+  ],
+  "integrity": {
+    "algorithm": "SHA-256",
+    "files": [
+      {
+        "path": "packages/test-fixtures/src/index.ts",
+        "canonicalization": "UTF8_LF",
+        "sha256": "ea653842fa0f3224bd9181ed339f4edf6a5b07c9ae263d4e58c0f6657738eae4"
+      },
+      {
+        "path": "tests/golden/product-fact-regression.test.ts",
+        "canonicalization": "UTF8_LF",
+        "sha256": "25e227de968659f9c53b5bc5a0603f9837446e3174cfb329ac9866258fb99a2d"
+      }
+    ]
+  }
+}

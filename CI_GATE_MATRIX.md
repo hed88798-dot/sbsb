@@ -1,0 +1,43 @@
+# CI Gate Matrix
+
+状态日期：2026-08-27。`Required` 表示应配置为 main branch protection/ruleset 的 required check；仓库设置的实际启用状态需要有 GitHub 管理权限后核验。
+
+| Gate                                   | Owner               | Layer           | Trigger                | Required         | Failure severity | Blocking                    | Artifact tested                                                                 |
+| -------------------------------------- | ------------------- | --------------- | ---------------------- | ---------------- | ---------------- | --------------------------- | ------------------------------------------------------------------------------- |
+| Format                                 | F                   | PR              | every PR / main push   | Yes              | P2               | Merge                       | tracked source                                                                  |
+| ESLint                                 | F                   | PR              | every PR / main push   | Yes              | P2               | Merge                       | tracked source                                                                  |
+| Typecheck                              | F + module owner    | PR              | every PR / main push   | Yes              | P1/P2            | Merge                       | built workspace types                                                           |
+| Unit / contract / integration          | F + module owner    | PR              | every PR / main push   | Yes              | P0–P2            | Merge                       | source + synthetic fixtures                                                     |
+| Migration regression                   | A, gate by F        | PR              | every PR / main push   | Yes              | P0               | Merge/release               | empty + legacy + failure fixtures                                               |
+| Dependency direction                   | F                   | PR              | every PR / main push   | Yes              | P1               | Merge                       | source/import graph                                                             |
+| Developer-path portability             | F                   | PR              | every PR / main push   | Yes              | P1               | Merge                       | tracked source/workflows                                                        |
+| Workspace package resolution           | F                   | PR              | every PR / main push   | Yes              | P1               | Merge                       | built `@app/contracts` consumer entry                                           |
+| Workflow supply-chain security         | F                   | PR              | every PR / main push   | Yes              | P0               | Merge/release               | Action SHAs, permissions, checkout credentials, secret boundary                 |
+| Source secret scan                     | F                   | PR              | every PR / main push   | Yes              | P0               | Merge/release               | all Git-tracked files                                                           |
+| License first pass                     | F                   | PR              | every PR / main push   | Yes              | Compliance       | Merge                       | installed pnpm source/build inventory                                           |
+| Golden manifest integrity              | F                   | PR              | every PR / main push   | Yes              | P0/P1            | Merge/release               | manifest paths, hashes, locked test split                                       |
+| Clean build                            | F                   | PR              | every PR / main push   | Yes              | P1               | Merge                       | fresh checkout build output                                                     |
+| Isolated clean checkout                | F                   | PR              | every PR / main push   | Yes              | P1               | Merge                       | detached worktree + isolated pnpm store                                         |
+| Source/build SBOM scaffold             | F                   | PR              | every PR / main push   | Yes              | Compliance       | Merge when generation fails | CycloneDX source/build inventory; explicitly incomplete                         |
+| Windows native addon smoke             | F + A               | PR / Nightly    | every PR + manual      | Yes              | P1               | Merge                       | unpacked Electron + packaged better-sqlite3                                     |
+| Windows 10/11 installed UI E2E         | F                   | Release         | manual, main only      | Release required | P0/P1            | Release                     | signed immutable NSIS candidate                                                 |
+| Install/update/relaunch/data retention | F                   | Release         | manual, main only      | Release required | P0/P1            | Release                     | same candidate + approved predecessor                                           |
+| Rollback/uninstall/data retention      | F                   | Release         | manual, main only      | Release required | P0/P1            | Release                     | same candidate + approved predecessor                                           |
+| Authenticode                           | F                   | Release         | main candidate build   | Release required | P0               | Release                     | final installer                                                                 |
+| Artifact metadata/hash                 | F                   | Release         | main candidate build   | Release required | P0               | Release                     | final installer + metadata JSON                                                 |
+| Artifact secret scan                   | F                   | Release         | main candidate build   | Release required | P0               | Release                     | compiled JS, renderer, release directory; installer extraction must be archived |
+| Final artifact license / NOTICE        | F                   | Release         | candidate assembled    | Release required | Compliance       | Release                     | unpacked installer/native/model/font contents                                   |
+| Installer-complete SBOM                | F                   | Release         | candidate assembled    | Release required | Compliance       | Release                     | unpacked final installer; scaffold is not enough                                |
+| Model / binary provenance              | F + C/D/E           | Release         | when present           | Release required | Compliance       | Release                     | model packs, sidecars, FFmpeg, whisper, fonts                                   |
+| Real Text Provider canary              | B, gate by F        | Release         | after B merged to main | v0.1 required    | P0/P1            | v0.1 acceptance             | Desktop → Gateway → approved Provider                                           |
+| Provider Key artifact absence          | F + B               | Release         | after B merged to main | v0.1 required    | P0               | Release                     | Desktop installer/log/diagnostic samples                                        |
+| Update interruption / partial download | F + A               | Nightly/Release | updater available      | Release required | P1               | Release                     | installed predecessor/candidate                                                 |
+| Golden algorithm regression            | F + algorithm owner | Nightly/Release | relevant C/D/A change  | Release required | P0/P1            | Release                     | versioned authorized golden set                                                 |
+
+## Expected main required checks
+
+- `CI / quality`
+- `CI / isolated-clean-checkout`
+- `Windows native smoke / packaged-native-addon`
+
+Release workflow jobs are not ordinary PR checks; promotion records must link the successful main run and both Windows VM reports. A check must not be removed because it is temporarily inconvenient. Any temporary non-P0/P1 exception requires owner, risk, expiry and follow-up in an ADR/exception record.

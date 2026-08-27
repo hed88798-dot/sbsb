@@ -1,41 +1,93 @@
-import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { collectArtifactNodeInventory, collectPnpmInventory } from './lib/package-inventory.mjs';
 
-const blocked = /\b(?:AGPL|GPL)(?:-|\b)/i;
-const allowed =
-  /^(?:MIT|ISC|Apache-2\.0|BSD-2-Clause|BSD-3-Clause|0BSD|BlueOak-1\.0\.0|CC0-1\.0|CC-BY-4\.0|Python-2\.0|Unlicense|WTFPL|MPL-2\.0|Public Domain|OFL-1\.1|\(MIT OR Apache-2\.0\)|\(MIT OR CC0-1\.0\)|WTFPL OR ISC|WTFPL OR MIT|\(WTFPL OR MIT\)|MIT AND BSD-3-Clause)$/i;
-const modules = join(process.cwd(), 'node_modules', '.pnpm');
-let entries = [];
+const repositoryRoot = process.cwd();
+const policy = JSON.parse(
+  readFileSync(resolve(repositoryRoot, 'config/dependency-license-policy.json'), 'utf8'),
+);
+const releaseMode = process.argv.includes('--release');
+const reportIndex = process.argv.indexOf('--report');
+const reportPath = reportIndex >= 0 ? process.argv[reportIndex + 1] : null;
+const artifactRootIndex = process.argv.indexOf('--artifact-root');
+const artifactRoot =
+  artifactRootIndex >= 0 && process.argv[artifactRootIndex + 1]
+    ? resolve(repositoryRoot, process.argv[artifactRootIndex + 1])
+    : null;
+
+function matchesPattern(value, patterns) {
+  return patterns.some((pattern) => new RegExp(pattern, 'i').test(value));
+}
+
+function classify(license, internal) {
+  if (internal) return 'INTERNAL';
+  const normalized = /^\([^()]+\)$/.test(license) ? license.slice(1, -1).trim() : license;
+  if (normalized === 'UNKNOWN') return 'REJECT';
+  if (matchesPattern(normalized, policy.blocked_patterns)) return 'REJECT';
+  if (policy.allowed.includes(normalized)) return 'ALLOW';
+  if (policy.manual_review.includes(normalized)) return 'REVIEW';
+  return 'REJECT';
+}
+
+let packages;
 try {
-  entries = readdirSync(modules);
-} catch {
-  console.log('license-scan: SKIP (install dependencies first)');
-  process.exit(0);
-}
-const failures = [];
-for (const entry of entries) {
-  const nested = join(modules, entry, 'node_modules');
-  let names;
-  try {
-    names = readdirSync(nested);
-  } catch {
-    continue;
+  if (releaseMode && !artifactRoot) {
+    throw new Error('--release requires --artifact-root pointing at extracted installer contents');
   }
-  for (const name of names) {
-    if (name.startsWith('@')) continue;
-    try {
-      const manifest = JSON.parse(readFileSync(join(nested, name, 'package.json'), 'utf8'));
-      const license = typeof manifest.license === 'string' ? manifest.license : '';
-      if (blocked.test(license) || (license && !allowed.test(license))) {
-        failures.push(`${manifest.name}@${manifest.version}: ${license || 'UNKNOWN'}`);
-      }
-    } catch {
-      // Scoped packages are covered by pnpm's flattened license metadata in release audit.
-    }
-  }
-}
-if (failures.length > 0) {
-  console.error(`license-scan: FAIL\n${[...new Set(failures)].sort().join('\n')}`);
+  packages = artifactRoot
+    ? collectArtifactNodeInventory(artifactRoot)
+    : collectPnpmInventory(repositoryRoot);
+  if (packages.length === 0) throw new Error('no npm package manifests found in inventory scope');
+} catch (error) {
+  console.error(`license-scan: FAIL\n${error.message}`);
   process.exit(1);
 }
-console.log('license-scan: PASS (first-pass)');
+
+const results = packages.map((entry) => ({
+  name: entry.name,
+  version: entry.version,
+  license: entry.internal ? 'PROPRIETARY_INTERNAL' : entry.license,
+  decision: classify(entry.license, entry.internal),
+}));
+const rejected = results.filter((entry) => entry.decision === 'REJECT');
+const review = results.filter((entry) => entry.decision === 'REVIEW');
+
+const report = {
+  schema_version: '1.0',
+  generated_at: new Date().toISOString(),
+  inventory_scope: artifactRoot
+    ? `extracted installer npm inventory: ${artifactRoot}`
+    : 'installed pnpm source/build dependency inventory; not final installer contents',
+  mode: releaseMode ? 'RELEASE' : 'PR_FIRST_PASS',
+  summary: {
+    packages: results.length,
+    allowed: results.filter((entry) => entry.decision === 'ALLOW').length,
+    internal: results.filter((entry) => entry.decision === 'INTERNAL').length,
+    manual_review: review.length,
+    rejected: rejected.length,
+  },
+  packages: results,
+};
+
+if (reportPath) {
+  const resolvedReportPath = resolve(repositoryRoot, reportPath);
+  mkdirSync(dirname(resolvedReportPath), { recursive: true });
+  writeFileSync(resolvedReportPath, `${JSON.stringify(report, null, 2)}\n`);
+}
+
+if (rejected.length > 0 || (releaseMode && review.length > 0)) {
+  const failures = [
+    ...rejected.map((entry) => `${entry.name}@${entry.version}: ${entry.license} (REJECT/UNKNOWN)`),
+    ...(releaseMode
+      ? review.map((entry) => `${entry.name}@${entry.version}: ${entry.license} (REVIEW REQUIRED)`)
+      : []),
+  ];
+  console.error(
+    `license-scan: FAIL (${releaseMode ? 'release' : 'first-pass'})\n${failures.join('\n')}`,
+  );
+  process.exit(1);
+}
+
+console.log(
+  `license-scan: PASS (${releaseMode ? 'release' : 'first-pass'}; ${results.length} packages; ${review.length} manual-review licenses)`,
+);
