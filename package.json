@@ -10,7 +10,7 @@
   "scripts": {
     "build": "pnpm -r --if-present build",
     "check": "pnpm ci:prepare && pnpm format:check && pnpm lint && pnpm ci:typecheck && pnpm ci:test && pnpm dependency:check && pnpm portability:check",
-    "ci:prepare": "pnpm --filter @app/desktop... build",
+    "ci:prepare": "pnpm --filter @app/desktop... --filter @app/gateway... build",
     "ci:test": "vitest run",
     "ci:typecheck": "pnpm -r --if-present typecheck",
     "dev": "pnpm --filter @app/desktop dev",
@@ -29,6 +29,7 @@
     "package:dir": "pnpm ci:prepare && pnpm --filter @app/desktop package:dir"
   },
   "devDependencies": {
+    "@app/provider-adapters": "workspace:*",
     "@eslint/js": "10.0.1",
     "@types/node": "24.10.1",
     "@types/react": "19.2.7",

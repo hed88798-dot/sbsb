@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.invalid/provider/v1/job.schema.json",
+  "title": "ProviderJobV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "protocol_version",
+    "job_id",
+    "request_id",
+    "capability",
+    "model_alias",
+    "state",
+    "estimated_cost",
+    "final_cost",
+    "currency",
+    "artifacts",
+    "error",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "protocol_version": { "const": "1.0" },
+    "job_id": { "type": "string", "minLength": 1 },
+    "request_id": { "type": "string", "minLength": 1 },
+    "capability": {
+      "enum": [
+        "text.generate.v1",
+        "image.generate.v1",
+        "image.edit.v1",
+        "video.generate.v1",
+        "tts.synthesize.v1",
+        "voice.clone.v1",
+        "lipsync.generate.v1"
+      ]
+    },
+    "model_alias": { "type": "string", "minLength": 1 },
+    "state": { "enum": ["QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "CANCELLED", "UNKNOWN"] },
+    "estimated_cost": { "type": "number", "minimum": 0 },
+    "final_cost": { "type": ["number", "null"], "minimum": 0 },
+    "currency": { "enum": ["CNY", "USD"] },
+    "artifacts": { "type": "array" },
+    "error": { "type": ["object", "null"] },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}

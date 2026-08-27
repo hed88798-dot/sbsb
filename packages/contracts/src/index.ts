@@ -292,3 +292,227 @@ export const textGatewayResultV1Schema = z.object({
   request_snapshot_hash: z.string().regex(/^[a-f0-9]{64}$/),
 });
 export type TextGatewayResultV1 = z.infer<typeof textGatewayResultV1Schema>;
+
+export const PROVIDER_PROTOCOL_VERSION_V1 = '1.0' as const;
+
+export const providerCapabilityV1Schema = z.enum([
+  'text.generate.v1',
+  'image.generate.v1',
+  'image.edit.v1',
+  'video.generate.v1',
+  'tts.synthesize.v1',
+  'voice.clone.v1',
+  'lipsync.generate.v1',
+]);
+export type ProviderCapabilityV1 = z.infer<typeof providerCapabilityV1Schema>;
+
+export const providerJobStateV1Schema = z.enum([
+  'QUEUED',
+  'RUNNING',
+  'SUCCEEDED',
+  'FAILED',
+  'CANCELLED',
+  'UNKNOWN',
+]);
+export type ProviderJobStateV1 = z.infer<typeof providerJobStateV1Schema>;
+
+export const qualityTierV1Schema = z.enum(['standard', 'premium']);
+export const currencyV1Schema = z.enum(['CNY', 'USD']);
+export const sha256V1Schema = z.string().regex(/^[a-f0-9]{64}$/);
+export const requestIdV1Schema = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/);
+export const objectRefV1Schema = z.string().regex(/^obj_[A-Za-z0-9_-]{24,128}$/);
+
+export const providerInputRefV1Schema = z
+  .object({
+    role: z.enum(['image', 'video', 'audio', 'voice_sample']),
+    object_ref: objectRefV1Schema,
+    sha256: sha256V1Schema,
+  })
+  .strict();
+export type ProviderInputRefV1 = z.infer<typeof providerInputRefV1Schema>;
+
+const providerRequestBase = {
+  schema_version: schemaVersionV1,
+  request_id: requestIdV1Schema,
+  model_alias: z.string().regex(/^[a-z0-9][a-z0-9._-]{0,63}$/),
+  quality_tier: qualityTierV1Schema,
+  request_snapshot_hash: sha256V1Schema,
+  max_cost: z
+    .object({ amount: z.number().nonnegative().max(10_000), currency: currencyV1Schema })
+    .strict(),
+};
+
+export const textProviderRequestV1Schema = z
+  .object({
+    ...providerRequestBase,
+    capability: z.literal('text.generate.v1'),
+    inputs: z.tuple([]),
+    parameters: z
+      .object({
+        prompt: z.string().min(1).max(40_000),
+        max_tokens: z.number().int().min(1).max(8_192).default(2_048),
+        temperature: z.number().min(0).max(2).default(0.7),
+      })
+      .strict(),
+  })
+  .strict();
+
+export const imageProviderRequestV1Schema = z
+  .object({
+    ...providerRequestBase,
+    capability: z.literal('image.generate.v1'),
+    inputs: z.tuple([]),
+    parameters: z
+      .object({
+        prompt: z.string().min(1).max(8_000),
+        width: z.number().int().min(256).max(2_048),
+        height: z.number().int().min(256).max(2_048),
+        count: z.number().int().min(1).max(4).default(1),
+        seed: z.number().int().nonnegative().max(2_147_483_647).optional(),
+      })
+      .strict(),
+  })
+  .strict();
+
+export const imageEditProviderRequestV1Schema = z
+  .object({
+    ...providerRequestBase,
+    capability: z.literal('image.edit.v1'),
+    inputs: z.array(providerInputRefV1Schema).min(1).max(4),
+    parameters: z
+      .object({
+        prompt: z.string().min(1).max(8_000),
+        width: z.number().int().min(256).max(2_048),
+        height: z.number().int().min(256).max(2_048),
+        strength: z.number().min(0).max(1).default(0.75),
+      })
+      .strict(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (value.inputs.some((input) => input.role !== 'image')) {
+      context.addIssue({ code: 'custom', message: 'image.edit.v1 only accepts image inputs' });
+    }
+  });
+
+export const videoProviderRequestV1Schema = z
+  .object({
+    ...providerRequestBase,
+    capability: z.literal('video.generate.v1'),
+    inputs: z.array(providerInputRefV1Schema).max(1),
+    parameters: z
+      .object({
+        prompt: z.string().min(1).max(8_000),
+        duration_seconds: z.number().int().min(1).max(20),
+        aspect_ratio: z.enum(['9:16', '16:9', '1:1']),
+        seed: z.number().int().nonnegative().max(2_147_483_647).optional(),
+      })
+      .strict(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (value.inputs.some((input) => input.role !== 'image')) {
+      context.addIssue({
+        code: 'custom',
+        message: 'video.generate.v1 only accepts an image input',
+      });
+    }
+  });
+
+export const ttsProviderRequestV1Schema = z
+  .object({
+    ...providerRequestBase,
+    capability: z.literal('tts.synthesize.v1'),
+    inputs: z.tuple([]),
+    parameters: z
+      .object({
+        text: z.string().min(1).max(20_000),
+        voice_alias: z.string().regex(/^[a-z0-9][a-z0-9._-]{0,63}$/),
+        format: z.enum(['mp3', 'wav']),
+      })
+      .strict(),
+  })
+  .strict();
+
+export const voiceCloneProviderRequestV1Schema = z
+  .object({
+    ...providerRequestBase,
+    capability: z.literal('voice.clone.v1'),
+    inputs: z.array(providerInputRefV1Schema).length(1),
+    parameters: z
+      .object({
+        display_name: z.string().trim().min(1).max(100),
+        consent_id: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/),
+      })
+      .strict(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (value.inputs[0]?.role !== 'voice_sample') {
+      context.addIssue({ code: 'custom', message: 'voice.clone.v1 requires one voice sample' });
+    }
+  });
+
+export const lipSyncProviderRequestV1Schema = z
+  .object({
+    ...providerRequestBase,
+    capability: z.literal('lipsync.generate.v1'),
+    inputs: z.array(providerInputRefV1Schema).length(2),
+    parameters: z
+      .object({
+        consent_id: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/),
+      })
+      .strict(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const roles = new Set(value.inputs.map((input) => input.role));
+    if (!roles.has('video') || !roles.has('audio')) {
+      context.addIssue({ code: 'custom', message: 'lipsync.generate.v1 requires video and audio' });
+    }
+  });
+
+export const providerRequestV1Schema = z.union([
+  textProviderRequestV1Schema,
+  imageProviderRequestV1Schema,
+  imageEditProviderRequestV1Schema,
+  videoProviderRequestV1Schema,
+  ttsProviderRequestV1Schema,
+  voiceCloneProviderRequestV1Schema,
+  lipSyncProviderRequestV1Schema,
+]);
+export type ProviderRequestV1 = z.infer<typeof providerRequestV1Schema>;
+
+export const providerArtifactV1Schema = z
+  .object({
+    object_ref: objectRefV1Schema,
+    mime_type: z.enum(['image/png', 'image/jpeg', 'video/mp4', 'audio/mpeg', 'audio/wav']),
+    sha256: sha256V1Schema,
+    size_bytes: z.number().int().nonnegative(),
+    expires_at: z.string().datetime(),
+  })
+  .strict();
+export type ProviderArtifactV1 = z.infer<typeof providerArtifactV1Schema>;
+
+export const providerJobV1Schema = z
+  .object({
+    schema_version: schemaVersionV1,
+    protocol_version: z.literal(PROVIDER_PROTOCOL_VERSION_V1),
+    job_id: z.string().min(1),
+    request_id: requestIdV1Schema,
+    capability: providerCapabilityV1Schema,
+    model_alias: z.string().min(1),
+    state: providerJobStateV1Schema,
+    estimated_cost: z.number().nonnegative(),
+    final_cost: z.number().nonnegative().nullable(),
+    currency: currencyV1Schema,
+    artifacts: z.array(providerArtifactV1Schema),
+    error: z
+      .object({ code: z.string().min(1), message: z.string().min(1), retryable: z.boolean() })
+      .strict()
+      .nullable(),
+    created_at: z.string().datetime(),
+    updated_at: z.string().datetime(),
+  })
+  .strict();
+export type ProviderJobV1 = z.infer<typeof providerJobV1Schema>;

@@ -1,0 +1,72 @@
+{
+  "adapters": [
+    {
+      "kind": "openai-text",
+      "alias": "text-cn-candidate",
+      "provider_model": "LEGAL_REVIEW_REQUIRED",
+      "endpoint": "https://text-provider.example.invalid/v1/chat/completions",
+      "api_key_env": "TEXT_PRIMARY_KEY",
+      "webhook_secret_env": "TEXT_PRIMARY_WEBHOOK_SECRET",
+      "capabilities": ["text.generate.v1"],
+      "input_unit_cost": 0,
+      "output_unit_cost": 0,
+      "currency": "CNY"
+    },
+    {
+      "kind": "async-json",
+      "alias": "media-cn-candidate",
+      "provider_model": "LEGAL_REVIEW_REQUIRED",
+      "endpoint": "https://media-provider.example.invalid/v1/jobs",
+      "api_key_env": "IMAGE_PRIMARY_KEY",
+      "webhook_secret_env": "IMAGE_PRIMARY_WEBHOOK_SECRET",
+      "capabilities": ["image.generate.v1", "image.edit.v1", "video.generate.v1"],
+      "unit_cost": 0,
+      "currency": "CNY"
+    },
+    {
+      "kind": "async-json",
+      "alias": "media-global-candidate",
+      "provider_model": "LEGAL_REVIEW_REQUIRED",
+      "endpoint": "https://media-fallback.example.invalid/v1/jobs",
+      "api_key_env": "IMAGE_FALLBACK_KEY",
+      "webhook_secret_env": "IMAGE_FALLBACK_WEBHOOK_SECRET",
+      "capabilities": ["image.generate.v1", "image.edit.v1", "video.generate.v1"],
+      "unit_cost": 0,
+      "currency": "CNY"
+    }
+  ],
+  "routes": [
+    {
+      "capability": "text.generate.v1",
+      "modelAlias": "text-standard-v1",
+      "qualityTier": "standard",
+      "primary": "text-cn-candidate"
+    },
+    {
+      "capability": "image.generate.v1",
+      "modelAlias": "image-standard-v1",
+      "qualityTier": "standard",
+      "primary": "media-cn-candidate",
+      "fallback": "media-global-candidate"
+    },
+    {
+      "capability": "image.edit.v1",
+      "modelAlias": "image-edit-standard-v1",
+      "qualityTier": "standard",
+      "primary": "media-cn-candidate",
+      "fallback": "media-global-candidate"
+    },
+    {
+      "capability": "video.generate.v1",
+      "modelAlias": "video-standard-v1",
+      "qualityTier": "standard",
+      "primary": "media-cn-candidate",
+      "fallback": "media-global-candidate"
+    }
+  ],
+  "releases": {
+    "dev": { "schema_version": "1.0", "available": false },
+    "beta": { "schema_version": "1.0", "available": false },
+    "stable": { "schema_version": "1.0", "available": false }
+  }
+}
