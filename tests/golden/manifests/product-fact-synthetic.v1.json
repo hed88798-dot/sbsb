@@ -28,10 +28,12 @@
     "files": [
       {
         "path": "packages/test-fixtures/src/index.ts",
+        "canonicalization": "UTF8_LF",
         "sha256": "ea653842fa0f3224bd9181ed339f4edf6a5b07c9ae263d4e58c0f6657738eae4"
       },
       {
         "path": "tests/golden/product-fact-regression.test.ts",
+        "canonicalization": "UTF8_LF",
         "sha256": "25e227de968659f9c53b5bc5a0603f9837446e3174cfb329ac9866258fb99a2d"
       }
     ]

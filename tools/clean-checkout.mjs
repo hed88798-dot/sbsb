@@ -80,7 +80,7 @@ try {
     ['workflow:security'],
     ['secret:scan'],
     ['license:scan'],
-    ['golden:validate'],
+    ['golden:verify'],
     ['build'],
   ]) {
     run(pnpmCommand, args, worktree, cleanEnvironment);

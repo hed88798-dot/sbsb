@@ -75,9 +75,10 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["path", "sha256"],
+            "required": ["path", "canonicalization", "sha256"],
             "properties": {
               "path": { "type": "string", "minLength": 1 },
+              "canonicalization": { "enum": ["UTF8_LF", "EXACT_BYTES"] },
               "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
             }
           }

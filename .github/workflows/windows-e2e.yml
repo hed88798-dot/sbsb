@@ -48,7 +48,7 @@ jobs:
       - run: pnpm check
       - run: pnpm secret:scan
       - run: pnpm license:scan -- --report artifacts/compliance/LICENSE_FIRST_PASS.json
-      - run: pnpm golden:validate
+      - run: pnpm golden:verify
       - run: pnpm package:win
       - name: Verify signature and bind metadata to main
         shell: pwsh

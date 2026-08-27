@@ -42,7 +42,7 @@ jobs:
       - run: pnpm workflow:security
       - run: pnpm secret:scan
       - run: pnpm license:scan -- --report artifacts/compliance/LICENSE_FIRST_PASS.json
-      - run: pnpm golden:validate
+      - run: pnpm golden:verify
       - run: pnpm build
       - run: pnpm sbom:generate
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

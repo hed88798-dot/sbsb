@@ -36,7 +36,7 @@ jobs:
       - run: pnpm workflow:security
       - run: pnpm secret:scan
       - run: pnpm license:scan
-      - run: pnpm golden:validate
+      - run: pnpm golden:verify
       - run: pnpm exec vitest run tests/contract/mock-sidecar.test.ts --maxWorkers=1
       - run: pnpm native:rebuild
       - run: pnpm package:dir

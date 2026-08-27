@@ -1,0 +1,7 @@
+# Golden integrity hashes exact checkout bytes. Keep canonical text identical on every OS.
+.gitattributes text eol=lf
+packages/test-fixtures/src/index.ts text eol=lf
+tests/golden/** text eol=lf
+tools/golden/** text eol=lf
+schemas/golden/** text eol=lf
+
