@@ -80,6 +80,7 @@ try {
     ['workflow:security'],
     ['secret:scan'],
     ['license:scan'],
+    ['vulnerability:scan'],
     ['golden:verify'],
     ['build'],
   ]) {

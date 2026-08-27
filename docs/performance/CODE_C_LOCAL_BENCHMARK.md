@@ -16,14 +16,15 @@ python tests/performance/benchmark_50k_exact_search.py --rows 50000 --dimension 
 Result:
 
 ```text
-P50: 16.32 ms
-P95: 23.30 ms
-Max: 24.27 ms
+P50: 15.02 ms
+P95: 18.41 ms
+Max: 22.11 ms
 Threshold: P95 < 200 ms
 Result: PASS
 ```
 
-The matrix is continuous little-endian float16 and read through NumPy mmap; every query is normalized and
+This post-sync run was executed from the exact production Python 3.12 lock. The matrix is continuous
+little-endian float16 and read through NumPy mmap; every query is normalized and
 uses float32 chunked dot products. The benchmark fixture is deterministic synthetic data and the measured
 process generated its matrix in bounded chunks. It verifies the performance shape, not veterinary retrieval
 quality.

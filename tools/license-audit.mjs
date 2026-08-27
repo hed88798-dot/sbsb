@@ -44,12 +44,18 @@ try {
 }
 
 const auditedPythonRuntime = new Map([
+  ['click==8.5.0', 'BSD-3-Clause'],
+  ['flatbuffers==25.12.19', 'Apache-2.0'],
   ['numpy==2.3.5', 'BSD-3-Clause'],
   ['onnxruntime==1.29.0', 'MIT'],
   ['opencv-python-headless==4.14.0.94', 'Apache-2.0'],
-  ['Pillow==12.3.0', 'HPND'],
-  ['scenedetect==0.7.1', 'BSD-3-Clause'],
+  ['packaging==26.3', 'Apache-2.0 OR BSD-2-Clause'],
+  ['Pillow==12.3.0', 'MIT-CMU'],
+  ['platformdirs==4.11.4', 'MIT'],
+  ['protobuf==7.36.0', 'BSD-3-Clause'],
+  ['scenedetect-headless==0.7.1', 'BSD-3-Clause'],
   ['sentencepiece==0.2.1', 'Apache-2.0'],
+  ['tqdm==4.70.0', 'MPL-2.0 AND MIT'],
 ]);
 const pythonRuntimeLock = resolve(repositoryRoot, 'sidecars/media-worker/requirements.lock');
 const pythonRuntimeEntries = readFileSync(pythonRuntimeLock, 'utf8')
@@ -69,9 +75,7 @@ const modelSourceLock = JSON.parse(
   ),
 );
 if (modelSourceLock.license !== 'Apache-2.0') {
-  pythonAuditFailures.push(
-    `SigLIP 2 source lock license: ${modelSourceLock.license ?? 'UNKNOWN'}`,
-  );
+  pythonAuditFailures.push(`SigLIP 2 source lock license: ${modelSourceLock.license ?? 'UNKNOWN'}`);
 }
 if (pythonAuditFailures.length > 0) {
   console.error(`license-scan: FAIL\n${pythonAuditFailures.join('\n')}`);
