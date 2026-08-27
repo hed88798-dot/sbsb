@@ -32,6 +32,8 @@ jobs:
         with:
           python-version: '3.12'
       - run: pnpm install --frozen-lockfile
+      - run: pnpm ci:prepare
+      - run: pnpm package:resolution
       - run: pnpm portability:check
       - run: pnpm exec vitest run tests/contract/mock-sidecar.test.ts --maxWorkers=1
       - run: pnpm native:rebuild

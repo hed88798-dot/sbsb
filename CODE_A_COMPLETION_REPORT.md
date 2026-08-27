@@ -8,8 +8,8 @@
 
 - `LOCAL_IMPLEMENTATION: PASS`
 - `LOCAL_CI_EQUIVALENT: PASS`
-- `LINUX_CI: PENDING_REVALIDATION`
-- `WINDOWS_NATIVE_SMOKE: PENDING_REVALIDATION`（上一 PR head 为 `PASS`）
+- `LINUX_CI: PENDING_REVALIDATION`（修复前 PR head 为 `PASS`）
+- `WINDOWS_NATIVE_SMOKE: PENDING_REVALIDATION`（修复前 PR head 因 workspace package 未构建而 `FAIL`）
 - `WINDOWS_CLEAN_VM: BLOCKED`
 - `REAL_TEXT_PROVIDER_SMOKE: BLOCKED_BY_CODE_B`
 - `ALL_V0_1_ACCEPTANCE: BLOCKED`
@@ -22,7 +22,7 @@
 
 `PASS`
 
-- Code A portability 修复基线：`d81c3b0bf98a60122bbb6c8f66556bae0c39e9c4`
+- Code A package determinism 修复：以本报告所在 PR head 和最终交付消息中的 SHA 为准。
 - Completion Report 所在最终提交：以 PR head 和最终交付消息中的 SHA 为准。Git 提交内容无法可靠地自引用其自身 SHA。
 
 ### 2. Electron 精确版本
@@ -35,6 +35,7 @@
 
 - Node.js：`24.19.0`
 - pnpm：`11.19.0`
+- Python：本地验证 `3.12.13`；Linux / Windows workflow 固定 `3.12.x`
 
 ### 4. SQLite / better-sqlite3 版本
 
@@ -119,9 +120,9 @@ Mock Sidecar fixture 位于 `tests/fixtures/mock-sidecar/`，使用 stdio NDJSON
 
 ### 12. 已运行测试数
 
-`PASS` — `147 / 147`
+`PASS` — `149 / 149`
 
-共 14 个 test files，覆盖 unit、contract、SQLite repository、migration、IPC security、renderer isolation、mock gateway、fact lock、copywriting、job recovery、vertical smoke、native addon packaging 和 portability regression。
+共 15 个 test files，覆盖 unit、contract、SQLite repository、migration、IPC security、renderer isolation、mock gateway、fact lock、copywriting、job recovery、vertical smoke、native addon packaging、portability regression 和 workspace package consumer resolution。
 
 ### 13. 100 条 Fact Regression 结果
 
@@ -133,7 +134,7 @@ Mock Sidecar fixture 位于 `tests/fixtures/mock-sidecar/`，使用 stdio NDJSON
 
 `BLOCKED`
 
-- Windows native smoke 在本轮修复前的 Draft PR head 已通过；portability 修复提交已触发复验，报告提交时仍为 `PENDING_REVALIDATION`。
+- Windows native smoke 在 package determinism 修复前因测试开始前未构建 `@app/contracts` 而失败；统一 `ci:prepare` 修复提交将触发复验，报告提交时为 `PENDING_REVALIDATION`。
 - Windows 10 / 11 clean VM 的签名安装、启动、更新、卸载：当前没有可用 VM 与签名证书，未执行。
 - 卸载保留用户数据：已通过数据目录设计保证应用数据位于 `%LOCALAPPDATA%\\Company\\AiVideoDesktop`，但 clean VM 卸载行为仍需实测。
 
@@ -142,7 +143,7 @@ Mock Sidecar fixture 位于 `tests/fixtures/mock-sidecar/`，使用 stdio NDJSON
 - `PASS` — macOS arm64 packaged Electron：实际启动最终 executable 并完成 SQLite 读写。
 - `PASS` — macOS arm64 development Electron runtime：SQLite 读写通过。
 - `PASS` — Windows packaged Electron / better-sqlite3 native smoke：本轮修复前的 Draft PR check 已通过。
-- `PENDING_REVALIDATION` — 当前 portability 修复 head 的 Windows workflow 已重新触发，并新增 Python 3.12 sidecar contract 与 developer-path scan。
+- `PENDING_REVALIDATION` — 当前 package determinism 修复将重新运行 Windows workspace preparation、package resolution、Python 3.12 sidecar contract、native rebuild、package 和 packaged SQLite smoke。
 
 ### 16. Mock Gateway 测试结果
 
@@ -194,12 +195,12 @@ Code A 已完成 `TextCapabilityClient`、Desktop → Gateway contract 和 Mock 
 
 `BLOCKED`
 
-Code A 本地实现、边界、安全、migration、产品 CRUD、文案、Fact Lock、Job、Mock Gateway、Mock Sidecar、147 项测试以及 macOS packaged native smoke 均为 `PASS`。尚不能声明“全部验收通过”，原因是 Windows clean environment 商业安装链路未完成；真实 Provider 则按任务书允许明确记录为 `BLOCKED_BY_CODE_B`。
+Code A 本地实现、边界、安全、migration、产品 CRUD、文案、Fact Lock、Job、Mock Gateway、Mock Sidecar、149 项测试以及 macOS packaged native smoke 均为 `PASS`。尚不能声明“全部验收通过”，原因是 Windows clean environment 商业安装链路未完成；真实 Provider 则按任务书允许明确记录为 `BLOCKED_BY_CODE_B`。
 
 ## CI Portability Fix 验收
 
-- `Linux CI: PENDING_REVALIDATION`
-- `Windows native smoke: PENDING_REVALIDATION`（上一 PR head 为 `PASS`）
+- `Linux CI: PENDING_REVALIDATION`（修复前 PR head 为 `PASS`）
+- `Windows native smoke: PENDING_REVALIDATION`（修复前 PR head 为 `FAIL`）
 - `Windows clean VM: BLOCKED`
 - `Cross-platform mock-sidecar contract: PASS`（本地；Linux / Windows workflow 已覆盖并等待远端结果）
 - `Python 3.12 runtime resolution: PASS`
@@ -207,6 +208,19 @@ Code A 本地实现、边界、安全、migration、产品 CRUD、文案、Fact 
 - `Path-with-spaces child-process test: PASS`
 
 Python executable 按 `PYTHON_EXECUTABLE`、当前 PATH 中由 CI `setup-python` 提供的解释器、平台候选顺序解析，并实际执行 `--version`；只有 `Python 3.12.x` 可通过。Mock sidecar script 通过 `import.meta.url` 从仓库定位，子进程保持 `spawn(executable, args, { shell: false })` 和 stdio NDJSON 架构不变。
+
+## Workspace Package Build Determinism 验收
+
+- `@app/contracts package resolution: PASS`
+- `Fresh-checkout workspace reconstruction: PASS`
+- `Workspace dependency build: PASS`
+- `Generated dist dependency: PASS`（Git 未跟踪 dist/build；fresh worktree 初始无生成产物）
+- `Package consumer runtime entry: PASS`（`apps/desktop` 通过包名解析到 `packages/contracts/dist/index.js`）
+- `Package consumer types entry: PASS`（`./dist/index.d.ts` 存在且 Desktop typecheck 通过）
+- `Linux CI / quality: PENDING_REVALIDATION`
+- `Windows native smoke: PENDING_REVALIDATION`
+
+根目录 `ci:prepare` 使用 pnpm selector `@app/desktop...`，按 workspace dependency graph 拓扑构建 Desktop 及其真实依赖，不手工维护包列表，也不构建无关 placeholder 模块。Linux 与 Windows workflow 在测试前调用同一个 preparation script。验证使用临时 detached worktree：从无 dist/build/cache 的仓库状态开始，完成 frozen-lockfile install、dependency build、package-name resolution、全 workspace typecheck 与 mock-sidecar contract；没有在当前开发工作区执行 `git clean`。
 
 ## Git 交付状态
 

@@ -9,20 +9,24 @@
   },
   "scripts": {
     "build": "pnpm -r --if-present build",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm dependency:check && pnpm portability:check",
+    "check": "pnpm ci:prepare && pnpm format:check && pnpm lint && pnpm ci:typecheck && pnpm ci:test && pnpm dependency:check && pnpm portability:check",
+    "ci:prepare": "pnpm --filter @app/desktop... build",
+    "ci:test": "vitest run",
+    "ci:typecheck": "pnpm -r --if-present typecheck",
     "dev": "pnpm --filter @app/desktop dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "typecheck": "pnpm -r --if-present build && pnpm -r --if-present typecheck",
-    "test": "vitest run",
+    "typecheck": "pnpm ci:prepare && pnpm ci:typecheck",
+    "test": "pnpm ci:prepare && pnpm ci:test",
     "test:watch": "vitest",
     "dependency:check": "node tools/dependency-check.mjs",
     "secret:scan": "node tools/secret-scan.mjs",
     "license:scan": "node tools/license-audit.mjs",
+    "package:resolution": "vitest run tests/contract/package-resolution.test.ts --maxWorkers=1",
     "portability:check": "node tools/portability-check.mjs",
     "native:rebuild": "electron-builder install-app-deps",
-    "package:dir": "pnpm build && pnpm --filter @app/desktop package:dir"
+    "package:dir": "pnpm ci:prepare && pnpm --filter @app/desktop package:dir"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
