@@ -3,3 +3,8 @@ export { ProductRepository } from './product-repository.js';
 export { JobRepository } from './job-repository.js';
 export { CopywritingRepository } from './copywriting-repository.js';
 export { SettingsRepository } from './settings-repository.js';
+export {
+  MediaIndexRepository,
+  type ActiveEmbeddingTruthRow,
+  type SearchableShotRow,
+} from './media-index-repository.js';

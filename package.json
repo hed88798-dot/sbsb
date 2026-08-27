@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "pnpm -r --if-present build",
-    "check": "pnpm compliance:license-policy:verify && pnpm compliance:python:tooling:install && pnpm ci:prepare && pnpm format:check && pnpm lint && pnpm ci:typecheck && pnpm ci:test && pnpm dependency:check && pnpm portability:check && pnpm workflow:security && pnpm secret:scan && pnpm license:scan && pnpm vulnerability:scan && pnpm compliance:python:verify && pnpm compliance:python:target:verify && pnpm golden:verify",
+    "check": "pnpm compliance:license-policy:verify && pnpm compliance:python:tooling:install && pnpm ci:prepare && pnpm format:check && pnpm lint && pnpm ci:typecheck && pnpm ci:test && pnpm media-worker:test && pnpm dependency:check && pnpm portability:check && pnpm workflow:security && pnpm secret:scan && pnpm license:scan && pnpm vulnerability:scan && pnpm compliance:python:verify && pnpm compliance:python:target:verify && pnpm golden:verify",
     "ci:prepare": "pnpm --filter @app/desktop... --filter @app/gateway... build",
     "ci:test": "vitest run",
     "ci:typecheck": "pnpm -r --if-present typecheck",
@@ -53,6 +53,7 @@
     "sbom:generate": "node tools/compliance/generate-sbom.mjs --output artifacts/compliance/SBOM.cdx.json",
     "clean-checkout": "node tools/clean-checkout.mjs",
     "artifact:metadata": "node tools/release/artifact-metadata.mjs",
+    "media-worker:test": "node tools/run-media-worker-tests.mjs",
     "package:resolution": "vitest run tests/contract/package-resolution.test.ts --maxWorkers=1",
     "portability:check": "node tools/portability-check.mjs",
     "native:rebuild": "electron-builder install-app-deps",

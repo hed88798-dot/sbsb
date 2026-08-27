@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/media-index/v1/shot-search.schema.json",
+  "title": "ShotSearchV1",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "query_text", "filters", "top_k", "index_signature_hash"],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "query_text": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "top_k": { "type": "integer", "minimum": 1, "maximum": 200 },
+        "index_signature_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "filters": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "species": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "scene": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "people_present": { "type": "boolean" },
+            "product_present": { "type": "boolean" },
+            "minimum_quality": { "type": "number", "minimum": 0, "maximum": 1 },
+            "minimum_duration_ms": { "type": "integer", "minimum": 1 },
+            "maximum_duration_ms": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "asset_id",
+        "shot_id",
+        "start_ms",
+        "end_ms",
+        "revision",
+        "semantic_score",
+        "descriptor"
+      ],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "asset_id": { "type": "string", "minLength": 1 },
+        "shot_id": { "type": "string", "minLength": 1 },
+        "start_ms": { "type": "integer", "minimum": 0 },
+        "end_ms": { "type": "integer", "minimum": 1 },
+        "revision": { "type": "integer", "minimum": 1 },
+        "semantic_score": { "type": "number" },
+        "descriptor": { "type": "object" }
+      }
+    }
+  ]
+}

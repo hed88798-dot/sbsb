@@ -33,6 +33,7 @@ jobs:
       - run: pnpm compliance:python:tooling:install
       - run: pnpm compliance:python:target -- describe-current --output artifacts/compliance/CURRENT_TARGET.json
       - run: pnpm compliance:python:target -- verify-current --target artifacts/compliance/CURRENT_TARGET.json
+      - run: python -m pip install --requirement sidecars/media-worker/requirements-ci.lock
       - run: pnpm ci:prepare
       - run: pnpm package:resolution
       - run: pnpm portability:check
@@ -45,6 +46,7 @@ jobs:
       - run: pnpm golden:verify
       - run: pnpm exec vitest run tests/contract/packaged-native-toolchain-provenance.test.ts --maxWorkers=1
       - run: pnpm exec vitest run tests/contract/mock-sidecar.test.ts --maxWorkers=1
+      - run: pnpm media-worker:test
       - run: pnpm native:rebuild
       - run: pnpm package:dir
       - run: $env:REQUIRE_PACKAGED_SMOKE='1'; pnpm exec vitest run tests/integration/native-addon-packaging.test.ts --maxWorkers=1

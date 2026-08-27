@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/models/MODEL_MANIFEST.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "model_id",
+    "model_version",
+    "source",
+    "source_revision",
+    "source_file_hash",
+    "processor_revision",
+    "tokenizer_revision",
+    "license",
+    "format",
+    "onnx_opset",
+    "onnxruntime_version",
+    "runtime",
+    "preprocess_version",
+    "input_shapes",
+    "dimension",
+    "dtype",
+    "worker_min_version",
+    "index_schema_version",
+    "export_script_version",
+    "export_commit",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "model_id": { "const": "google/siglip2-base-patch32-256" },
+    "model_version": { "type": "string", "minLength": 1 },
+    "source": { "type": "string", "format": "uri" },
+    "source_revision": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "source_file_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "processor_revision": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "tokenizer_revision": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "license": { "const": "Apache-2.0" },
+    "format": { "const": "ONNX" },
+    "onnx_opset": { "type": "integer", "minimum": 18 },
+    "onnxruntime_version": { "type": "string", "minLength": 1 },
+    "runtime": { "const": "onnxruntime-cpu" },
+    "preprocess_version": { "type": "string", "minLength": 1 },
+    "input_shapes": { "type": "object" },
+    "dimension": { "type": "integer", "minimum": 1 },
+    "dtype": { "const": "float32" },
+    "worker_min_version": { "type": "string", "minLength": 1 },
+    "index_schema_version": { "const": "1.0" },
+    "export_script_version": { "type": "string", "minLength": 1 },
+    "export_commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["image_encoder", "text_encoder", "tokenizer_model", "tokenizer_config"],
+      "properties": {
+        "image_encoder": { "$ref": "#/$defs/artifact" },
+        "text_encoder": { "$ref": "#/$defs/artifact" },
+        "tokenizer_model": { "$ref": "#/$defs/artifact" },
+        "tokenizer_config": { "$ref": "#/$defs/artifact" }
+      }
+    },
+    "default_intra_op_threads": { "type": "integer", "minimum": 1 }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "size"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "size": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

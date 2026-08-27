@@ -19,11 +19,11 @@ afterEach(() => {
 });
 
 describe('desktop SQLite migrations', () => {
-  it('migrates an empty database to version 1 with WAL and foreign keys', async () => {
+  it('migrates an empty database to version 2 with WAL and foreign keys', async () => {
     const dbPath = join(temporaryDirectory('desktop-empty-'), 'app.db');
     const { db, migration } = await openDatabase({ dbPath, migrationsDirectory });
-    expect(migration.currentVersion).toBe(1);
-    expect(migration.appliedVersions).toEqual([1]);
+    expect(migration.currentVersion).toBe(2);
+    expect(migration.appliedVersions).toEqual([1, 2]);
     expect(migration.backupPath).toBeNull();
     expect(db.pragma('journal_mode', { simple: true })).toBe('wal');
     expect(db.pragma('foreign_keys', { simple: true })).toBe(1);
@@ -42,6 +42,11 @@ describe('desktop SQLite migrations', () => {
         'copywriting_jobs',
         'provider_call_summaries',
         'app_settings',
+        'media_assets',
+        'asset_revisions',
+        'shots',
+        'embeddings',
+        'index_generations',
       ]),
     );
     db.close();
@@ -91,7 +96,7 @@ describe('desktop SQLite migrations', () => {
     ).toBeUndefined();
     original.close();
     const recovered = await openDatabase({ dbPath, migrationsDirectory });
-    expect(recovered.migration.currentVersion).toBe(1);
+    expect(recovered.migration.currentVersion).toBe(2);
     recovered.db.close();
   });
 });
