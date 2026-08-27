@@ -20,12 +20,18 @@ jobs:
         with:
           node-version: 24.19.0
           cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - run: pnpm install --frozen-lockfile
+      - run: pnpm ci:prepare
+      - run: pnpm package:resolution
       - run: pnpm format:check
       - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm test
+      - run: pnpm ci:typecheck
+      - run: pnpm ci:test
       - run: pnpm dependency:check
+      - run: pnpm portability:check
       - run: pnpm secret:scan
       - run: pnpm license:scan
       - run: pnpm build

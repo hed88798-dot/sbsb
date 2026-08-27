@@ -9,6 +9,9 @@ on:
       - 'migrations/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
+      - 'tests/**'
+      - 'tools/**'
+      - '.github/workflows/windows-native-smoke.yml'
 
 permissions:
   contents: read
@@ -25,7 +28,14 @@ jobs:
         with:
           node-version: 24.19.0
           cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - run: pnpm install --frozen-lockfile
+      - run: pnpm ci:prepare
+      - run: pnpm package:resolution
+      - run: pnpm portability:check
+      - run: pnpm exec vitest run tests/contract/mock-sidecar.test.ts --maxWorkers=1
       - run: pnpm native:rebuild
       - run: pnpm package:dir
-      - run: pnpm test -- tests/integration/native-addon-packaging.test.ts
+      - run: $env:REQUIRE_PACKAGED_SMOKE='1'; pnpm exec vitest run tests/integration/native-addon-packaging.test.ts --maxWorkers=1

@@ -18,6 +18,7 @@ pnpm build
 ```
 
 Windows、native addon 与打包说明见 `docs/development/WINDOWS_SETUP.md`。
+架构所有权和冻结边界见 `docs/development/ARCHITECTURE_BOUNDARIES.md`。
 
 ## 当前范围
 
