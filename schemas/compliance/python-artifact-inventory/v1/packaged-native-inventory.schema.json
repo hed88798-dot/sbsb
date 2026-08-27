@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/python-artifact-inventory/v1/packaged-native-inventory.schema.json",
+  "title": "Packaged Native Inventory v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "inventory_id",
+    "generated_at",
+    "source_inventory_ids",
+    "native_artifacts"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "inventory_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "source_inventory_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string" }
+    },
+    "native_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "filename",
+          "relative_path",
+          "sha256",
+          "type",
+          "source_package",
+          "source_artifact_sha256",
+          "owner_resolution"
+        ],
+        "properties": {
+          "filename": { "type": "string", "minLength": 1 },
+          "relative_path": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "type": { "enum": ["pyd", "dll", "so", "dylib", "other"] },
+          "source_package": { "type": "string", "minLength": 1 },
+          "source_artifact_sha256": {
+            "type": "string",
+            "pattern": "^(?:[a-f0-9]{64}|UNKNOWN)$"
+          },
+          "owner_resolution": { "enum": ["MATCHED", "UNKNOWN"] }
+        }
+      }
+    }
+  }
+}

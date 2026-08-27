@@ -2,7 +2,10 @@
 
 本目录只保存发布合规制品的 schema/template 说明，不把模板冒充完整发布清单。
 
-当前 `pnpm sbom:generate` 生成 CycloneDX 1.6 的源码/构建依赖清单，并明确标记为 `SOURCE_AND_BUILD_DEPENDENCIES_ONLY_NOT_INSTALLER_COMPLETE`。它用于建立工具链和 PR 级审计，不足以解除 stable release 的 SBOM Gate。
+当前 `pnpm sbom:generate` 生成 CycloneDX 1.6 的 npm 与已批准 Python wheel/native
+源码/构建依赖清单，并明确标记为
+`SOURCE_AND_BUILD_DEPENDENCIES_ONLY_NOT_INSTALLER_COMPLETE`。Python component 绑定 scope、wheel filename、
+SHA-256、platform/Python ABI、license 和 provenance；它仍不足以解除 stable release 的 SBOM Gate。
 
 stable 候选必须从解包后的真实 installer 重新盘点 Electron app、asar、Python wheels、native DLL、模型、字体、FFmpeg/whisper 和其他二进制，并将完整结果与 artifact SHA-256 一起归档。
 

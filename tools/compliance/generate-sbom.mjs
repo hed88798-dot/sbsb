@@ -3,6 +3,12 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { collectPnpmInventory, npmPackageUrl } from '../lib/package-inventory.mjs';
+import {
+  discoverInventoryPaths,
+  loadInventories,
+  validatePackagedInventory,
+} from '../python-supply-chain/inventory.mjs';
+import { buildPythonSbomRecords, validatePythonSbomBinding } from '../python-supply-chain/sbom.mjs';
 
 const repositoryRoot = process.cwd();
 const outputIndex = process.argv.indexOf('--output');
@@ -13,20 +19,38 @@ const outputPath = resolve(
     : 'artifacts/compliance/SBOM.cdx.json',
 );
 const rootManifest = JSON.parse(readFileSync(resolve(repositoryRoot, 'package.json'), 'utf8'));
+const pythonInventoryPaths = process.argv
+  .flatMap((value, index) => (value === '--python-inventory' ? [process.argv[index + 1]] : []))
+  .filter(Boolean)
+  .map((path) => resolve(repositoryRoot, path));
+const packagedInventoryPaths = process.argv
+  .flatMap((value, index) =>
+    value === '--packaged-native-inventory' ? [process.argv[index + 1]] : [],
+  )
+  .filter(Boolean)
+  .map((path) => resolve(repositoryRoot, path));
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], {
   cwd: repositoryRoot,
   encoding: 'utf8',
 }).trim();
 
 let inventory;
+let pythonInventories;
+let packagedInventories;
 try {
   inventory = collectPnpmInventory(repositoryRoot);
+  pythonInventories = loadInventories(
+    pythonInventoryPaths.length > 0 ? pythonInventoryPaths : discoverInventoryPaths(repositoryRoot),
+  );
+  packagedInventories = packagedInventoryPaths.map((path) =>
+    validatePackagedInventory(JSON.parse(readFileSync(path, 'utf8'))),
+  );
 } catch (error) {
   console.error(`sbom: FAIL\n${error.message}`);
   process.exit(1);
 }
 
-const components = inventory.map((entry) => ({
+const npmComponents = inventory.map((entry) => ({
   type: 'library',
   'bom-ref': npmPackageUrl(entry.name, entry.version),
   name: entry.name,
@@ -35,6 +59,9 @@ const components = inventory.map((entry) => ({
   licenses: [{ expression: entry.license }],
   properties: [{ name: 'com.company.inventory.source', value: 'installed-pnpm-virtual-store' }],
 }));
+const pythonRecords = buildPythonSbomRecords(pythonInventories, packagedInventories);
+const components = [...npmComponents, ...pythonRecords.components];
+validatePythonSbomBinding(pythonInventories, components);
 const bom = {
   bomFormat: 'CycloneDX',
   specVersion: '1.6',
@@ -67,8 +94,11 @@ const bom = {
     },
   },
   components,
+  dependencies: pythonRecords.dependencies,
 };
 
 mkdirSync(dirname(outputPath), { recursive: true });
 writeFileSync(outputPath, `${JSON.stringify(bom, null, 2)}\n`);
-console.log(`sbom: PASS (scaffold; ${components.length} components; ${outputPath})`);
+console.log(
+  `sbom: PASS (scaffold; ${npmComponents.length} npm + ${pythonRecords.components.length} Python/native components; ${outputPath})`,
+);
