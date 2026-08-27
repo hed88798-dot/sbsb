@@ -1,0 +1,126 @@
+name: Windows main artifact E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      previous_run_id:
+        description: Run ID containing the previously approved main installer artifact
+        required: true
+        type: string
+      previous_artifact_name:
+        description: Exact immutable artifact name from the previous run
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: windows-main-artifact-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  build-once:
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-2022
+    timeout-minutes: 60
+    environment: release-signing
+    env:
+      CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm secret:scan
+      - run: pnpm license:scan -- --report artifacts/compliance/LICENSE_FIRST_PASS.json
+      - run: pnpm golden:verify
+      - run: pnpm package:win
+      - name: Verify signature and bind metadata to main
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem apps/desktop/release/*.exe | Select-Object -First 1
+          if (-not $installer) { throw 'NSIS installer not found' }
+          $signature = Get-AuthenticodeSignature $installer.FullName
+          if ($signature.Status -ne 'Valid') { throw "Invalid Authenticode status: $($signature.Status)" }
+          New-Item -ItemType Directory -Force artifacts/windows | Out-Null
+          node tools/release/artifact-metadata.mjs --artifact $installer.FullName --output artifacts/windows/ARTIFACT_METADATA.json --require-main
+          node tools/secret-scan.mjs --require apps/desktop/dist-electron --require apps/desktop/dist-renderer --require apps/desktop/release
+          New-Item -ItemType Directory -Force artifacts/installer-extracted | Out-Null
+          7z x $installer.FullName "-oartifacts/installer-extracted/nsis" -y | Out-Null
+          Get-ChildItem artifacts/installer-extracted/nsis -Recurse -File -Filter 'app-*.7z' | ForEach-Object {
+            7z x $_.FullName "-oartifacts/installer-extracted/app" -y | Out-Null
+          }
+          Get-ChildItem artifacts/installer-extracted -Recurse -File -Filter 'app.asar' | ForEach-Object {
+            pnpm exec asar extract $_.FullName artifacts/installer-extracted/asar
+          }
+          node tools/secret-scan.mjs --require artifacts/installer-extracted
+          pnpm license:release -- --artifact-root artifacts/installer-extracted --report artifacts/compliance/LICENSE_RELEASE.json
+          Copy-Item $installer.FullName artifacts/windows/
+      - run: pnpm sbom:generate
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-main-${{ github.sha }}
+          path: |
+            artifacts/windows
+            artifacts/compliance
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
+
+  clean-vm:
+    needs: build-once
+    strategy:
+      fail-fast: false
+      matrix:
+        os_label: [windows-10-clean-vm, windows-11-clean-vm]
+    runs-on: [self-hosted, Windows, X64, '${{ matrix.os_label }}']
+    timeout-minutes: 45
+    environment: windows-clean-vm
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: windows-main-${{ github.sha }}
+          path: candidate
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ inputs.previous_artifact_name }}
+          path: previous
+          run-id: ${{ inputs.previous_run_id }}
+          github-token: ${{ github.token }}
+      - name: Install, smoke, update, rollback and uninstall the same candidate
+        shell: pwsh
+        run: |
+          ./tools/windows/clean-vm-e2e.ps1 -CandidateDirectory candidate -PreviousDirectory previous -ReportDirectory artifacts/windows-e2e -VmLabel '${{ matrix.os_label }}'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: windows-e2e-${{ matrix.os_label }}-${{ github.sha }}
+          path: artifacts/windows-e2e
+          if-no-files-found: error
+          retention-days: 90

@@ -2,14 +2,15 @@ import { readFile, readdir } from 'node:fs/promises';
 import { extname, join } from 'node:path';
 
 const configuredRoots = process.argv.slice(2);
-const roots =
-  configuredRoots.length > 0 ? configuredRoots : ['apps', 'packages', 'tests', 'tools', '.github'];
+const roots = configuredRoots.length > 0 ? configuredRoots : ['.'];
 const ignoredDirectories = new Set([
+  '.git',
   'node_modules',
   'dist',
   'dist-electron',
   'dist-renderer',
-  'release',
+  'artifacts',
+  'coverage',
 ]);
 const textExtensions = new Set([
   '',
@@ -18,8 +19,12 @@ const textExtensions = new Set([
   '.html',
   '.js',
   '.json',
+  '.lock',
+  '.md',
   '.mjs',
+  '.ps1',
   '.py',
+  '.toml',
   '.ts',
   '.tsx',
   '.yaml',
@@ -57,6 +62,7 @@ async function collectFiles(directory) {
   for (const entry of entries) {
     if (ignoredDirectories.has(entry.name)) continue;
     const path = join(directory, entry.name);
+    if (path.endsWith(join('apps', 'desktop', 'release'))) continue;
     if (entry.isDirectory()) files.push(...(await collectFiles(path)));
     else if (entry.isFile() && textExtensions.has(extname(entry.name))) files.push(path);
   }

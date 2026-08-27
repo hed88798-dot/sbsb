@@ -17,8 +17,11 @@ pnpm test
 pnpm build
 ```
 
+`pnpm check` 同时执行 source secret、license first-pass 与 Golden manifest integrity。`pnpm clean-checkout` 会在带空格路径的 detached worktree 和隔离 pnpm store 中从锁文件重建；它不允许依赖历史 `dist`、开发机 store 或手工 symlink。
+
 Windows、native addon 与打包说明见 `docs/development/WINDOWS_SETUP.md`。
 架构所有权和冻结边界见 `docs/development/ARCHITECTURE_BOUNDARIES.md`。
+Quality/Release/Compliance 门禁见根目录的 `CI_GATE_MATRIX.md`、`DEPENDENCY_ACCEPTANCE_POLICY.md` 和 `RELEASE_GATE.md`。
 
 ## 当前范围
 

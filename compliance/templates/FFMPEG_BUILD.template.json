@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "completeness": "SCAFFOLD",
+  "status": "NOT_PRESENT_V0.1",
+  "source_commit": null,
+  "source_sha256": null,
+  "configure": [],
+  "compiler": null,
+  "buildconf_output_sha256": null,
+  "binaries": []
+}

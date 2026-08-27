@@ -13,6 +13,7 @@ files:
   - dist-electron/**/*
   - dist-renderer/**/*
   - package.json
+  - '!**/node_modules/**/{test,tests,__tests__,example,examples}/**/*'
 extraResources:
   - from: ../../migrations/desktop-sqlite
     to: migrations/desktop-sqlite
