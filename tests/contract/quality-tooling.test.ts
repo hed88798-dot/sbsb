@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -9,6 +9,16 @@ const secretScanner = join(repositoryRoot, 'tools/secret-scan.mjs');
 const goldenValidator = join(repositoryRoot, 'tools/golden/validate-manifest.mjs');
 
 describe('Code F quality tooling', () => {
+  it('keeps release metadata tools and schema in the clean checkout', () => {
+    expect(existsSync(join(repositoryRoot, 'tools/release/artifact-metadata.mjs'))).toBe(true);
+    expect(existsSync(join(repositoryRoot, 'tools/release/verify-artifact-metadata.mjs'))).toBe(
+      true,
+    );
+    expect(
+      existsSync(join(repositoryRoot, 'schemas/release/v1/artifact-metadata.schema.json')),
+    ).toBe(true);
+  });
+
   it('validates the committed golden manifest and its hashes', () => {
     const result = spawnSync(process.execPath, [goldenValidator], {
       cwd: repositoryRoot,

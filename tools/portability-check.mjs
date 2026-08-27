@@ -9,7 +9,6 @@ const ignoredDirectories = new Set([
   'dist',
   'dist-electron',
   'dist-renderer',
-  'release',
   'artifacts',
   'coverage',
 ]);
@@ -63,6 +62,7 @@ async function collectFiles(directory) {
   for (const entry of entries) {
     if (ignoredDirectories.has(entry.name)) continue;
     const path = join(directory, entry.name);
+    if (path.endsWith(join('apps', 'desktop', 'release'))) continue;
     if (entry.isDirectory()) files.push(...(await collectFiles(path)));
     else if (entry.isFile() && textExtensions.has(extname(entry.name))) files.push(path);
   }

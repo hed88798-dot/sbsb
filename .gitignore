@@ -3,7 +3,7 @@ dist/
 dist-electron/
 dist-renderer/
 out/
-release/
+/apps/desktop/release/
 coverage/
 artifacts/
 *.log

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.company.invalid/release/v1/artifact-metadata.schema.json",
+  "title": "Immutable Desktop Artifact Metadata v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source", "build", "application", "artifact"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "source": {
+      "type": "object",
+      "required": ["git_commit", "git_ref", "commit_timestamp", "source_tree_clean"],
+      "properties": {
+        "git_commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "git_ref": { "type": "string", "minLength": 1 },
+        "commit_timestamp": { "type": "string", "format": "date-time" },
+        "source_tree_clean": { "const": true }
+      }
+    },
+    "build": {
+      "type": "object",
+      "required": ["workflow", "run_id", "run_attempt", "built_at", "node", "pnpm", "electron"],
+      "properties": {
+        "workflow": { "type": "string" },
+        "run_id": { "type": "string" },
+        "run_attempt": { "type": "string" },
+        "built_at": { "type": "string", "format": "date-time" },
+        "node": { "type": "string" },
+        "pnpm": { "type": "string" },
+        "electron": { "type": "string" }
+      }
+    },
+    "application": { "type": "object" },
+    "artifact": {
+      "type": "object",
+      "required": ["file_name", "size_bytes", "sha256"],
+      "properties": {
+        "file_name": { "type": "string", "minLength": 1 },
+        "size_bytes": { "type": "integer", "minimum": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    }
+  }
+}
