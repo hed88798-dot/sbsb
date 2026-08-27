@@ -128,7 +128,7 @@ def export(
         source,
         local_files_only=True,
         trust_remote_code=False,
-        torch_dtype=torch.float32,
+        dtype=torch.float32,
         use_safetensors=True,
     ).eval()
     image_processor = AutoImageProcessor.from_pretrained(
