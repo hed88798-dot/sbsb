@@ -40,9 +40,29 @@
 ## Automated gates
 
 - `tools/license-audit.mjs` 盘点 pnpm virtual store，包含 scoped packages；未知或 blocked license 永远失败。
+- Python/native intake 使用 `Python Artifact Inventory v1`。一个 inventory 只表示一个 scope 和一个
+  Python/platform/ABI target；Windows 与 Linux、production 与 export/evaluation 必须分文件。
+- Inventory 必须列出完整 direct/transitive graph、wheel filename、下载 URL、SHA-256、purl、license
+  files、wheel 内 native files 和预期 packaged path。`package==version` 本身不是 artifact identity。
+- `pnpm compliance:python:verify` 只验证已批准 inventory 和实际 wheel，不生成或接受新 hash。缺失/错误
+  hash、未登记 wheel、sdist/VCS/floating URL、不完整 graph 和 production scope 的 `torch`/`transformers`
+  直接失败。
+- `pnpm compliance:python:candidate -- ...` 是显式候选生成入口；输出固定为 `PENDING` 且不能通过 CI，
+  owner 必须在 PR diff 中逐项审查、补齐 dependency/native packaged path 并改为 `APPROVED`。
+- Python license Gate 解包 hash-verified wheel，核对 `METADATA`、`License-Expression`/`License`、
+  `License-File` 和实际 license file hash。冲突/未知 fail closed；manual review 不得进入 release。
+- Python vulnerability Gate 使用 OSV 官方 API/OSV schema，把 advisory/severity 关联到 scope、purl、wheel
+  SHA-256 和 dependency path。离线 advisory 文件仅用于确定性测试，正式 inventory 使用在线 Gate。
+- Windows worker Gate 扫描最终 PyInstaller tree 内 `.pyd`/DLL/SO/dylib，并与 locked wheel inventory
+  reconciliation；unexpected/missing/hash mismatch/unknown owner 全部失败。
 - PR first-pass 可以报告 `MANUAL_REVIEW`；`--release` 对任何未处置 review 项失败。
 - `tools/secret-scan.mjs` 支持 Git-tracked source 和 `--require <artifact path>`；缺少声明的 artifact 路径也失败。
 - CycloneDX scaffold 明确标为“不完整、release blocking”；stable 必须由解包后的实际 installer 生成完整清单。
 - 新 model/native/font/binary 在 manifest 未登记前不能进入 installer。
+
+Inventory schema：
+`schemas/compliance/python-artifact-inventory/v1/inventory.schema.json`。Packaged native evidence 使用同版本
+`packaged-native-inventory.schema.json`。任何 schema、artifact version/hash、platform/ABI、scope 或
+provenance 变化都必须产生可审查 Git diff；CI 禁止运行 candidate/update 命令。
 
 批准一次不代表永久批准。版本、hash、build config、发行来源、条款或传递依赖变化均触发重新审查。

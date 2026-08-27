@@ -42,6 +42,8 @@ jobs:
       - run: pnpm workflow:security
       - run: pnpm secret:scan
       - run: pnpm license:scan -- --report artifacts/compliance/LICENSE_FIRST_PASS.json
+      - run: pnpm vulnerability:scan
+      - run: pnpm compliance:python:verify
       - run: pnpm golden:verify
       - run: pnpm build
       - run: pnpm sbom:generate

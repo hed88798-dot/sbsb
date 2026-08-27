@@ -104,3 +104,58 @@ NONE
 - Local compiled/release scan and extracted asar scan: `PASS`; dependency test directories are excluded from the installer to avoid shipping irrelevant test fixtures.
 - Artifact license inventory against extracted local asar: `PASS` — 81 packages, 0 unknown/manual-review entries（不替代 Windows installer + Electron/Chromium/native NOTICE 复核）。
 - `ALL_V0_1_ACCEPTANCE = BLOCKED`; no stable tag is authorized.
+
+## Python/native supply-chain foundation — 2026-08-28
+
+```text
+BRANCH:
+code-f/python-native-supply-chain
+
+BASELINE_SHA:
+8e3a98ab664d0737ddf2c9d02002242b88e0c71c
+
+FINAL_SHA:
+SEE_FINAL_DELIVERY_MESSAGE — the exact pushed head is recorded after this report commit.
+
+PYTHON_ARTIFACT_INVENTORY_SCHEMA_VERSION:
+1
+
+SCOPE_SEPARATION:
+PASS — production worker, worker build, model export and model evaluation are distinct scopes.
+
+PYTHON_HASH_LOCK_POLICY:
+PASS — wheel filename/platform/ABI/SHA-256 required; missing/wrong hash fails closed.
+
+PYTHON_SBOM_GATE:
+PASS — CycloneDX includes approved wheel and native file hashes with scope/provenance properties.
+
+PYTHON_LICENSE_GATE:
+PASS — actual wheel METADATA/license files are inspected; unknown/conflict fails closed.
+
+PYTHON_VULNERABILITY_GATE:
+PASS — OSV advisory output binds purl, wheel hash, scope, severity and dependency path.
+
+NATIVE_ARTIFACT_INVENTORY:
+PASS — packaged pyd/DLL/SO/dylib paths, hashes and source wheel ownership are recorded.
+
+PACKAGED_WORKER_RECONCILIATION:
+PASS — missing/unexpected/hash mismatch/unknown owner are blocking.
+
+LINUX_WINDOWS_PLATFORM_ARTIFACT_SUPPORT:
+PASS — every inventory has one explicit Python/platform/ABI target.
+
+SDIST_VCS_FAIL_CLOSED:
+PASS — v1 accepts approved wheels only; sdist/VCS/floating URLs are rejected.
+
+CI_INTEGRATION:
+PASS — PR and clean checkout run Python supply-chain verification; Windows runs packaged reconciliation when applicable.
+
+MAIN_QUALITY_BASELINE_SHA:
+RECORDED_IN_FINAL_DELIVERY — a branch cannot predeclare its future merge SHA.
+
+KNOWN_ISSUES:
+Code C must still provide its real Windows/Linux complete transitive wheel inventories, hashes, provenance and hash-enforced install. This foundation does not fabricate or approve those inputs.
+
+ARCHITECTURE_QUESTIONS:
+NONE
+```

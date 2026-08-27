@@ -2,6 +2,9 @@ packages:
   - apps/*
   - packages/*
 
+overrides:
+  shell-quote: 1.10.0
+
 allowBuilds:
   '@electron/rebuild': true
   better-sqlite3: true

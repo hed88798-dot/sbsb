@@ -36,8 +36,11 @@ jobs:
       - run: pnpm workflow:security
       - run: pnpm secret:scan
       - run: pnpm license:scan
+      - run: pnpm vulnerability:scan
+      - run: pnpm compliance:python:verify
       - run: pnpm golden:verify
       - run: pnpm exec vitest run tests/contract/mock-sidecar.test.ts --maxWorkers=1
       - run: pnpm native:rebuild
       - run: pnpm package:dir
       - run: $env:REQUIRE_PACKAGED_SMOKE='1'; pnpm exec vitest run tests/integration/native-addon-packaging.test.ts --maxWorkers=1
+      - run: pnpm compliance:python:packaged:verify

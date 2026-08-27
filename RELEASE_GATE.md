@@ -10,7 +10,7 @@
 
 ## PR merge gate
 
-必须通过：format、lint、typecheck、unit/contract/integration、migration、dependency direction、developer-path portability、workspace package resolution、source secret scan、license first-pass、golden manifest integrity、clean build、isolated clean checkout、Windows packaged native smoke。
+必须通过：format、lint、typecheck、unit/contract/integration、migration、dependency direction、developer-path portability、workspace package resolution、source secret scan、npm license/vulnerability、Python artifact inventory/hash/license/vulnerability、golden manifest integrity、clean build、isolated clean checkout、Windows packaged native smoke。存在 production worker inventory 时，Windows Gate 还必须完成 packaged native reconciliation。
 
 跨 IPC/DB/provider/sidecar/public domain contract 的破坏性变化需要 Architecture Question/ADR。依赖变化同时提交 provenance/license/NOTICE 影响说明。
 
@@ -23,6 +23,10 @@
 - Windows 10/11 clean VM 的 install/launch/product/copywriting/update/relaunch/data retention/uninstall 通过；
 - migration 使用当前 stable DB fixture，升级前备份，失败可恢复；
 - artifact secret scan、release license gate、installer-complete SBOM、NOTICE 和适用的 model/FFmpeg/provider manifests 完整；
+- Python/native SBOM 来自实际 release wheel 和解包后的 packaged worker；locked input 与 packaged native
+  inventory reconciliation 无 unexpected/missing/hash mismatch/unknown owner；
+- production worker 与 export/evaluation scope 分离，production artifact 中不存在未批准的
+  `torch`/`transformers`；
 - 相关 golden regression 无未批准退化；
 - 无 P0/P1；P2 例外有 owner/risk/expiry/follow-up。
 
@@ -45,7 +49,7 @@ stable 只能 promote 已通过 beta 的同一 artifact：
 
 P0 包括 Provider Key 泄漏、产品错绑、DB/用户文件破坏、任意代码执行、重复大额计费、不可恢复升级。P1 包括已知物种硬错配、成片核心路径不可用、更新失败不可恢复、授权绕过、Digital Human 耦合 Auto Edit。存在任何未解决 P0/P1：`RELEASE_BLOCKED`，业务 owner 无权口头放行。
 
-以下合规项同样硬阻塞：未知/未批准 GPL/AGPL、未知 model weight rights、未登记 native binary/font/codec、错误 FFmpeg build、缺失必需 NOTICE、无法确认来源/hash、Provider legal status 未批准。
+以下合规项同样硬阻塞：未知/未批准 GPL/AGPL、未知 model weight rights、未登记 native binary/font/codec、Python wheel 无 hash/来源/platform/ABI、Python transitive graph 不完整、packaged worker 出现未知或 hash 不匹配 native binary、错误 FFmpeg build、缺失必需 NOTICE、无法确认来源/hash、Provider legal status 未批准。
 
 ## v0.1 gate
 

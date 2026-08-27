@@ -8,6 +8,8 @@ const packageManifest = JSON.parse(readFileSync(join(repositoryRoot, 'package.js
 const expectedNode = packageManifest.engines.node;
 const expectedPnpm = packageManifest.engines.pnpm;
 const pnpmCommand = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+const pythonCommand =
+  process.env.PYTHON_EXECUTABLE || (process.platform === 'win32' ? 'python.exe' : 'python3');
 const temporaryRoot = mkdtempSync(join(tmpdir(), 'ai-video-clean-checkout-'));
 const worktree = join(temporaryRoot, 'source with spaces');
 const store = join(temporaryRoot, 'isolated-pnpm-store');
@@ -37,11 +39,15 @@ function output(command, args, cwd = repositoryRoot) {
 try {
   const actualNode = process.versions.node;
   const actualPnpm = output(pnpmCommand, ['--version']);
+  const actualPython = output(pythonCommand, ['--version']);
   if (actualNode !== expectedNode) {
     throw new Error(`Node version mismatch: expected ${expectedNode}, got ${actualNode}`);
   }
   if (actualPnpm !== expectedPnpm) {
     throw new Error(`pnpm version mismatch: expected ${expectedPnpm}, got ${actualPnpm}`);
+  }
+  if (!/^Python 3\.12(?:\.|$)/.test(actualPython)) {
+    throw new Error(`Python version mismatch: expected 3.12.x, got ${actualPython}`);
   }
 
   run('git', ['worktree', 'add', '--detach', worktree, 'HEAD']);
@@ -60,7 +66,13 @@ try {
   const cleanEnvironment = {
     ...process.env,
     CI: 'true',
+    ELECTRON_BUILDER_CACHE: join(temporaryRoot, 'electron-builder-cache'),
+    ELECTRON_CACHE: join(temporaryRoot, 'electron-cache'),
+    npm_config_devdir: join(temporaryRoot, 'node-gyp-cache'),
     PNPM_HOME: join(temporaryRoot, 'pnpm-home'),
+    PYTHON: pythonCommand,
+    PYTHON_EXECUTABLE: pythonCommand,
+    XDG_CACHE_HOME: join(temporaryRoot, 'xdg-cache'),
   };
   run(
     pnpmCommand,
@@ -80,8 +92,11 @@ try {
     ['workflow:security'],
     ['secret:scan'],
     ['license:scan'],
+    ['vulnerability:scan'],
+    ['compliance:python:verify'],
     ['golden:verify'],
     ['build'],
+    ['sbom:generate'],
   ]) {
     run(pnpmCommand, args, worktree, cleanEnvironment);
   }

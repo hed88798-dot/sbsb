@@ -116,6 +116,7 @@ describe('Code F quality tooling', () => {
       .join('\n');
     expect(workflowText).toContain('golden:verify');
     expect(workflowText).not.toContain('golden:update');
+    expect(workflowText).not.toContain('compliance:python:candidate');
   });
 
   it('fails closed when a required artifact scan target is absent', () => {
