@@ -132,19 +132,31 @@ def export(
         use_safetensors=True,
     ).eval()
     image_processor = AutoImageProcessor.from_pretrained(
-        source, local_files_only=True, trust_remote_code=False
+        source, local_files_only=True, trust_remote_code=False, use_fast=False
     )
     tokenizer = AutoTokenizer.from_pretrained(
         source, local_files_only=True, trust_remote_code=False, use_fast=False
     )
 
     class ImageEncoder(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.encoder = model.vision_model
+
         def forward(self, pixel_values: torch.Tensor) -> torch.Tensor:
-            return model.get_image_features(pixel_values=pixel_values)
+            return self.encoder(
+                pixel_values=pixel_values, interpolate_pos_encoding=False
+            ).pooler_output
 
     class TextEncoder(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.encoder = model.text_model
+
         def forward(self, input_ids: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
-            return model.get_text_features(input_ids=input_ids, attention_mask=attention_mask)
+            return self.encoder(
+                input_ids=input_ids, attention_mask=attention_mask, position_ids=None
+            ).pooler_output
 
     image_encoder = ImageEncoder().eval()
     text_encoder = TextEncoder().eval()
