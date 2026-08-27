@@ -1,0 +1,7 @@
+"""CPU-first Shot indexing worker."""
+
+WORKER_VERSION = "0.3.0"
+PROTOCOL_VERSION = "1.0"
+INDEX_SCHEMA_VERSION = "1.0"
+INDEX_SIGNATURE_VERSION = "1.0"
+KEYFRAME_POLICY_VERSION = "safe-mid-best-v1"

@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/models/MODEL_MANIFEST.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "model_id",
+    "model_version",
+    "official_model_revision",
+    "source",
+    "source_revision",
+    "source_files",
+    "source_file_hash",
+    "processor_revision",
+    "tokenizer_revision",
+    "license",
+    "format",
+    "onnx_opset",
+    "onnxruntime_version",
+    "runtime",
+    "preprocess_version",
+    "input_schema",
+    "output_schema",
+    "input_shapes",
+    "dimension",
+    "dtype",
+    "worker_min_version",
+    "index_schema_version",
+    "export_script_version",
+    "export_commit",
+    "export_environment",
+    "export_configuration",
+    "export_config_hash",
+    "created_at",
+    "artifact_storage_base_reference",
+    "artifacts",
+    "runtime_compatibility",
+    "correctness",
+    "golden_retrieval_metrics"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.1" },
+    "model_id": { "const": "google/siglip2-base-patch32-256" },
+    "model_version": { "type": "string", "minLength": 1 },
+    "official_model_revision": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "source": { "type": "string", "format": "uri" },
+    "source_revision": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "source_files": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/sourceFile" }
+    },
+    "source_file_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "processor_revision": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "tokenizer_revision": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "license": { "const": "Apache-2.0" },
+    "format": { "const": "ONNX" },
+    "onnx_opset": { "type": "integer", "minimum": 18 },
+    "onnxruntime_version": { "type": "string", "minLength": 1 },
+    "runtime": { "const": "onnxruntime-cpu" },
+    "preprocess_version": { "type": "string", "minLength": 1 },
+    "input_schema": { "type": "object" },
+    "output_schema": { "type": "object" },
+    "input_shapes": { "type": "object" },
+    "dimension": { "type": "integer", "minimum": 1 },
+    "dtype": { "const": "float32" },
+    "worker_min_version": { "type": "string", "minLength": 1 },
+    "index_schema_version": { "const": "1.0" },
+    "export_script_version": { "type": "string", "minLength": 1 },
+    "export_commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "export_environment": { "type": "object" },
+    "export_configuration": { "type": "object" },
+    "export_config_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "artifact_storage_base_reference": { "type": "string", "format": "uri" },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "image_encoder",
+        "text_encoder",
+        "tokenizer_model",
+        "tokenizer_config",
+        "correctness_report"
+      ],
+      "properties": {
+        "image_encoder": { "$ref": "#/$defs/artifact" },
+        "text_encoder": { "$ref": "#/$defs/artifact" },
+        "tokenizer_model": { "$ref": "#/$defs/artifact" },
+        "tokenizer_config": { "$ref": "#/$defs/artifact" },
+        "correctness_report": { "$ref": "#/$defs/artifact" }
+      }
+    },
+    "runtime_compatibility": { "type": "object" },
+    "correctness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "report_sha256"],
+      "properties": {
+        "status": { "const": "PASS" },
+        "report_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "golden_retrieval_metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": { "status": { "const": "PENDING" } }
+    },
+    "default_intra_op_threads": { "type": "integer", "minimum": 1 }
+  },
+  "$defs": {
+    "sourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "size"],
+      "properties": {
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "size": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["logical_id", "path", "sha256", "size", "storage_reference"],
+      "properties": {
+        "logical_id": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "size": { "type": "integer", "minimum": 1 },
+        "storage_reference": { "type": "string", "format": "uri" }
+      }
+    }
+  }
+}

@@ -31,17 +31,20 @@ jobs:
         with:
           python-version: '3.12'
       - run: pnpm install --frozen-lockfile
+      - run: python -m pip install --no-deps --requirement sidecars/media-worker/requirements-ci.lock
       - run: pnpm ci:prepare
       - run: pnpm package:resolution
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm ci:typecheck
       - run: pnpm ci:test
+      - run: pnpm media-worker:test
       - run: pnpm dependency:check
       - run: pnpm portability:check
       - run: pnpm workflow:security
       - run: pnpm secret:scan
       - run: pnpm license:scan -- --report artifacts/compliance/LICENSE_FIRST_PASS.json
+      - run: pnpm vulnerability:scan
       - run: pnpm golden:verify
       - run: pnpm build
       - run: pnpm sbom:generate

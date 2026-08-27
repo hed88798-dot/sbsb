@@ -1,0 +1,11 @@
+{
+  "detector": "PySceneDetect.AdaptiveDetector",
+  "detector_version": "0.7.1",
+  "parameters_hash": "4b8dcee936e5937cf0040c83bb0883837a38d174fb1f1ee632d5ebfaa8247e10",
+  "parameters": {
+    "adaptive_threshold": 3.0,
+    "luma_only": false,
+    "min_scene_len_frames": 15,
+    "window_width": 2
+  }
+}

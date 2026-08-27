@@ -7,6 +7,8 @@ out/
 coverage/
 artifacts/
 *.log
+__pycache__/
+*.py[cod]
 *.db
 *.db-wal
 *.db-shm
