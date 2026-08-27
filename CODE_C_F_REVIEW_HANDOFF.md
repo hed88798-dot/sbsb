@@ -85,7 +85,7 @@ Image Encoder:
 Logical ID: google-siglip2-base-patch32-256/image-encoder-onnx-fp32/sha256:ef5f7b69830c352e57f15668092d7323521836c16fff2d71d14549b75eca6059
 SHA-256: ef5f7b69830c352e57f15668092d7323521836c16fff2d71d14549b75eca6059
 Size: 378435041 bytes
-Reference: https://github.com/hed88798-dot/ai-video-platform/releases/download/model-pack-siglip2-9e7ee685-opset18-fp32/image-encoder.onnx
+Reference: https://github.com/hed88798-dot/ai-video-platform/raw/refs/tags/model-pack-siglip2-9e7ee685-opset18-fp32/image-encoder.onnx
 ```
 
 Text Encoder:
@@ -94,7 +94,7 @@ Text Encoder:
 Logical ID: google-siglip2-base-patch32-256/text-encoder-onnx-fp32/sha256:12bccdb491a98d224df1e6b6b249378118c6cfb54c18f6eb12286ffce8b26f30
 SHA-256: 12bccdb491a98d224df1e6b6b249378118c6cfb54c18f6eb12286ffce8b26f30
 Size: 1129415247 bytes
-Reference: https://github.com/hed88798-dot/ai-video-platform/releases/download/model-pack-siglip2-9e7ee685-opset18-fp32/text-encoder.onnx
+Reference: https://github.com/hed88798-dot/ai-video-platform/raw/refs/tags/model-pack-siglip2-9e7ee685-opset18-fp32/text-encoder.onnx
 ```
 
 Model Manifest status:
@@ -107,6 +107,12 @@ RUNTIME_CORRECTNESS: PASS
 GOLDEN_RETRIEVAL_METRICS: PENDING
 DISTRIBUTION_SIGNING: BLOCKED
 ```
+
+Controlled storage: PASS. Git LFS content objects are referenced by immutable tag
+`model-pack-siglip2-9e7ee685-opset18-fp32`, whose model-pack commit is
+`96fc88b3a0139ea5d927fa183b381b314ac7057c`. The tag contains only LFS pointer text plus
+`MODEL_MANIFEST.json`; ONNX bytes are not Git blobs. A download batch check returned every Manifest OID/size
+as available. Generation and verification remain separate; ordinary CI does not export or accept new hashes.
 
 ## Correctness and E2E evidence
 
@@ -123,10 +129,13 @@ motion-sensitive guard.
 Local packaged Worker: PASS. PyInstaller artifact loads ORT CPU/OpenCV/Pillow/PySceneDetect/SentencePiece,
 reports no torch/transformers and completes stdio NDJSON `hello` with protocol `1.0`.
 
-Windows Worker Packaging / Runtime Smoke: pending the Draft PR `windows-native-smoke` job. That job installs
-exact production/build locks with `--no-deps`, runs 18 Worker tests, builds PyInstaller, checks ORT 1.29.0 and
-CPU provider, rejects torch/transformers, and exercises packaged stdio hello. Formal 4-core performance is not
-inferred from this job.
+Windows Worker Packaging / Runtime Smoke: PASS in `windows-native-smoke` run
+`https://github.com/hed88798-dot/ai-video-platform/actions/runs/33089679168`. The job installed exact
+production/build locks with `--no-deps`, ran 18 Worker tests, built PyInstaller, checked ORT 1.29.0 and CPU
+provider, rejected torch/transformers, exercised packaged stdio hello, rebuilt/package-tested the native addon,
+and passed license/vulnerability/portability gates. Linux CI and isolated clean checkout also PASS in run
+`https://github.com/hed88798-dot/ai-video-platform/actions/runs/33089679957`. Formal 4-core performance is not
+inferred from either job.
 
 ## Persistence, backup and recovery
 
