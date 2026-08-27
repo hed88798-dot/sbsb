@@ -1,0 +1,132 @@
+{
+  "artifact_storage_base_reference": "https://github.com/hed88798-dot/ai-video-platform/raw/refs/tags/model-pack-siglip2-9e7ee685-opset18-fp32",
+  "artifacts": {
+    "correctness_report": {
+      "logical_id": "google-siglip2-base-patch32-256/pytorch-ort-correctness/sha256:45188724a9d526975c87acc9af07b15598afffc81b92d85847f631df5edd0793",
+      "path": "PYTORCH_ORT_CORRECTNESS.json",
+      "sha256": "45188724a9d526975c87acc9af07b15598afffc81b92d85847f631df5edd0793",
+      "size": 1342,
+      "storage_reference": "https://github.com/hed88798-dot/ai-video-platform/raw/refs/tags/model-pack-siglip2-9e7ee685-opset18-fp32/PYTORCH_ORT_CORRECTNESS.json"
+    },
+    "image_encoder": {
+      "logical_id": "google-siglip2-base-patch32-256/image-encoder-onnx-fp32/sha256:ef5f7b69830c352e57f15668092d7323521836c16fff2d71d14549b75eca6059",
+      "path": "image-encoder.onnx",
+      "sha256": "ef5f7b69830c352e57f15668092d7323521836c16fff2d71d14549b75eca6059",
+      "size": 378435041,
+      "storage_reference": "https://github.com/hed88798-dot/ai-video-platform/raw/refs/tags/model-pack-siglip2-9e7ee685-opset18-fp32/image-encoder.onnx"
+    },
+    "text_encoder": {
+      "logical_id": "google-siglip2-base-patch32-256/text-encoder-onnx-fp32/sha256:12bccdb491a98d224df1e6b6b249378118c6cfb54c18f6eb12286ffce8b26f30",
+      "path": "text-encoder.onnx",
+      "sha256": "12bccdb491a98d224df1e6b6b249378118c6cfb54c18f6eb12286ffce8b26f30",
+      "size": 1129415247,
+      "storage_reference": "https://github.com/hed88798-dot/ai-video-platform/raw/refs/tags/model-pack-siglip2-9e7ee685-opset18-fp32/text-encoder.onnx"
+    },
+    "tokenizer_config": {
+      "logical_id": "google-siglip2-base-patch32-256/tokenizer-config/sha256:14afe629fe4959b9e0d51e1852b8d9f7ad074f90a1a7125a4fcdd17f06e78fc8",
+      "path": "tokenizer_config.json",
+      "sha256": "14afe629fe4959b9e0d51e1852b8d9f7ad074f90a1a7125a4fcdd17f06e78fc8",
+      "size": 47164,
+      "storage_reference": "https://github.com/hed88798-dot/ai-video-platform/raw/refs/tags/model-pack-siglip2-9e7ee685-opset18-fp32/tokenizer_config.json"
+    },
+    "tokenizer_model": {
+      "logical_id": "google-siglip2-base-patch32-256/tokenizer-model/sha256:61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2",
+      "path": "tokenizer.model",
+      "sha256": "61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2",
+      "size": 4241003,
+      "storage_reference": "https://github.com/hed88798-dot/ai-video-platform/raw/refs/tags/model-pack-siglip2-9e7ee685-opset18-fp32/tokenizer.model"
+    }
+  },
+  "correctness": {
+    "report_sha256": "45188724a9d526975c87acc9af07b15598afffc81b92d85847f631df5edd0793",
+    "status": "PASS"
+  },
+  "created_at": "2026-08-27T14:58:33.415256Z",
+  "default_intra_op_threads": 4,
+  "dimension": 768,
+  "dtype": "float32",
+  "export_commit": "16746a08e6223820908ec98909d65c3b6238df53",
+  "export_config_hash": "5a7884c59ed08109110ab05f541aadc61ff49a682457438ce40da17bd774fd13",
+  "export_configuration": {
+    "constant_folding": true,
+    "dtype": "float32",
+    "dynamic_batch": true,
+    "external_data": false,
+    "image_input": { "name": "pixel_values", "shape": ["batch", 3, 256, 256] },
+    "opset": 18,
+    "outputs": { "image": ["batch", 768], "text": ["batch", 768] },
+    "preprocess_version": "siglip2-processor-256-bicubic-mean0.5-official-text-v2",
+    "text_inputs": { "input_ids": ["batch", 64] }
+  },
+  "export_environment": {
+    "machine": "arm64",
+    "numpy": "2.3.5",
+    "onnx": "1.22.0",
+    "onnxruntime": "1.29.0",
+    "platform": "macOS-15.5-arm64-arm-64bit",
+    "python": "3.12.13",
+    "sentencepiece": "0.2.1",
+    "torch": "2.13.0",
+    "transformers": "4.57.6"
+  },
+  "export_script_version": "siglip2-onnx-export-v2",
+  "format": "ONNX",
+  "golden_retrieval_metrics": { "status": "PENDING" },
+  "index_schema_version": "1.0",
+  "input_schema": {
+    "image": { "name": "pixel_values", "shape": ["batch", 3, 256, 256] },
+    "text": { "input_ids": ["batch", 64] }
+  },
+  "input_shapes": { "image": ["batch", 3, 256, 256], "text": ["batch", 64] },
+  "license": "Apache-2.0",
+  "model_id": "google/siglip2-base-patch32-256",
+  "model_version": "onnx-fp32-9e7ee6850617",
+  "official_model_revision": "9e7ee68506177b546b2d5dc578f54afdc5e425f1",
+  "onnx_opset": 18,
+  "onnxruntime_version": "1.29.0",
+  "output_schema": { "image": ["batch", 768], "text": ["batch", 768] },
+  "preprocess_version": "siglip2-processor-256-bicubic-mean0.5-official-text-v2",
+  "processor_revision": "9e7ee68506177b546b2d5dc578f54afdc5e425f1",
+  "runtime": "onnxruntime-cpu",
+  "runtime_compatibility": {
+    "platforms": ["darwin-arm64", "linux-x64", "windows-x64"],
+    "providers": ["CPUExecutionProvider"],
+    "python": "3.12.*"
+  },
+  "schema_version": "1.1",
+  "source": "https://huggingface.co/google/siglip2-base-patch32-256",
+  "source_file_hash": "3f628585475283c2b50bd8040acb2f47767b3cebc4b07cdf9ae08bde47e4b82d",
+  "source_files": {
+    "config.json": {
+      "sha256": "52deee7a2d6fb2e73c45720d9c4056f0e4dc582ef84524aac229c6d5aa348dee",
+      "size": 298
+    },
+    "model.safetensors": {
+      "sha256": "7d241bb3becad218f211f480487f491df4f8c0a472ecf7afdec5615815a301f1",
+      "size": 1507473288
+    },
+    "preprocessor_config.json": {
+      "sha256": "d14ba2ee3fd816f3de8abaddc31953565128eaf37c73ad4bed32101a98465aff",
+      "size": 394
+    },
+    "special_tokens_map.json": {
+      "sha256": "baec30ea10906f16adb8c18af7a34023002c1746542612b8b41c9f09e1351351",
+      "size": 636
+    },
+    "tokenizer.json": {
+      "sha256": "cb9140fae3ac5122c972d37adf83e1248471a38147ad76f8215c8872c6fd8322",
+      "size": 34363039
+    },
+    "tokenizer.model": {
+      "sha256": "61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2",
+      "size": 4241003
+    },
+    "tokenizer_config.json": {
+      "sha256": "14afe629fe4959b9e0d51e1852b8d9f7ad074f90a1a7125a4fcdd17f06e78fc8",
+      "size": 47164
+    }
+  },
+  "source_revision": "9e7ee68506177b546b2d5dc578f54afdc5e425f1",
+  "tokenizer_revision": "9e7ee68506177b546b2d5dc578f54afdc5e425f1",
+  "worker_min_version": "0.3.0"
+}
