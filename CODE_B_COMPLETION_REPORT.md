@@ -4,6 +4,18 @@
 
 任务：Provider + Lightweight Backend v0.2 Foundation
 
+```makefile
+CODE_B_IMPLEMENTATION: PASS
+CODE_B_MERGE_READINESS: PENDING_CI_AND_F_REVIEW
+LEGAL_ALLOWLIST_MECHANISM: PASS
+PRODUCTION_PROVIDER_APPROVAL: BLOCKED
+OBJECT_STORAGE_PRESIGN_IMPLEMENTATION: PASS
+REAL_BUCKET_CANARY: BLOCKED
+REAL_TEXT_PROVIDER_SMOKE: BLOCKED_BY_CREDENTIALS_AND_PROVIDER_LEGAL_REVIEW
+CODE_B_FOUNDATION_ACCEPTANCE: BLOCKED
+V0_2_ACCEPTANCE: BLOCKED
+```
+
 > 说明：Git commit 无法在其自身内容中保存自己的最终 SHA。实现 commit 已准确记录；包含本报告的
 > handoff commit SHA 以最终回复中的 `git rev-parse HEAD` 为准。
 
@@ -20,22 +32,22 @@
 11. Budget reservation + job atomic transaction：PASS
 12. Usage/cost ledger：PASS
 13. Webhook signature + duplicate/out-of-order：PASS
-14. Object storage presign：PASS（SigV4/checksum/随机 key/策略/TTL；真实 bucket canary 未运行）
+14. Object storage presign mechanism：PASS（SigV4/checksum/随机 key/策略/TTL metadata）
 15. SSRF / arbitrary URL protection：PASS
 16. Text real provider smoke：BLOCKED_BY_CREDENTIALS_AND_PROVIDER_LEGAL_REVIEW
 17. Image provider：BLOCKED_BY_PROVIDER_LEGAL_REVIEW（Protocol/Mock/primary+fallback candidate PASS）
 18. ImageEdit provider：BLOCKED_BY_PROVIDER_LEGAL_REVIEW（Protocol/Mock/primary+fallback candidate PASS）
 19. Video provider：BLOCKED_BY_PROVIDER_LEGAL_REVIEW（Protocol/Mock/primary+fallback candidate PASS）
-20. Provider legal allowlist：PASS（fail-closed 机制与审计已完成；生产条目尚未批准）
+20. Legal allowlist mechanism：PASS；Production Provider approval：BLOCKED
 21. Provider Key secret scan：PASS
 22. Contract tests：PASS
 23. Security tests：PASS
-24. Linux CI：NOT_RUN（需要 push/PR；本地完整 quality gate PASS）
-25. Existing Windows native smoke regression：NOT_RUN_ON_WINDOWS（本地 native packaging smoke PASS；需 Code F/PR 验证）
+24. Linux CI：PENDING_DRAFT_PR_CI（本地完整 quality gate PASS）
+25. Existing Windows native smoke regression：PENDING_DRAFT_PR_CI（本地 native packaging smoke PASS）
 26. License scan：PASS（first-pass）
 27. Known issues：见下节
 28. Architecture Question / Contract Change Proposal：NONE
-29. Does Code B satisfy Provider/Gateway v0.2 foundation：BLOCKED_BY_CREDENTIALS_AND_PROVIDER_LEGAL_REVIEW
+29. Code B implementation：PASS；Merge readiness：PENDING_CI_AND_F_REVIEW；Foundation acceptance：BLOCKED
 
 ## 已完成范围
 
@@ -73,3 +85,11 @@
 3. S3 SigV4 已做确定性测试，但尚未对实际对象存储 bucket 做 upload/head/lifecycle deletion canary。
 4. Linux GitHub CI 与 Windows native workflow 需要 branch push/PR 后由 Code F 验证；本轮未伪造云端 PASS。
 5. V1 单实例 rate/circuit 状态在进程内，重启后清零；账本、预算、幂等、auth 与撤销状态均在 SQLite 持久化。
+
+## 状态解释
+
+- `CODE_B_IMPLEMENTATION: PASS` 仅表示工程实现达到 Code B 任务书边界。
+- `CODE_B_MERGE_READINESS` 只有 Linux CI、Windows regression 与既有 Code F review 全部通过后才可改为 PASS。
+- `CODE_B_FOUNDATION_ACCEPTANCE` 在真实 Provider 与真实 bucket 外部门禁解除前保持 BLOCKED。
+- 示例 Provider 配置没有有效生产 model、非零价格或法律批准；法律记录不存在时 Gateway fail closed。
+- 真实付费 canary 不进入普通 PR CI，不向不可信 PR 暴露生产 Provider Key。
