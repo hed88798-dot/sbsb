@@ -1,7 +1,9 @@
 # ADR-017：Shot 关键帧策略 v1
 
-状态：Proposed for Code C review  
+状态：Accepted
 决定版本：`safe-mid-best-v1`
+
+Real Golden performance validation：`PENDING`
 
 ## Architecture Question
 
@@ -22,5 +24,7 @@ v0.3 实现并版本化 `safe-mid-best-v1`：长 Shot 选择距开头 120–500 
 
 合成 fixture 已覆盖淡入黑帧、模糊中段、快速运动与短 Shot，选择逻辑和 CPU 上界有自动测试。
 本地工作区没有任务书要求的授权 ≥500 条兽药素材，因此真实检索 Top-K、额外解码成本和两策略
-逐 Shot 对照不能被本提交虚报为通过。Code C review 应在受控 Golden Set 上运行 benchmark；若
-`25/50/75` 在批准指标上更优，用新 policy version supersede 本 ADR，不静默改变 v1 语义。
+逐 Shot 对照不能被本提交虚报为通过。本 ADR 批准 `safe-mid-best-v1` 作为 v0.3 的版本化工程
+基线，不代表真实 Golden Set 已证明它优于 `25/50/75`。后续应在受控 Golden Set 上运行
+benchmark；若 `25/50/75` 在批准指标上显著更优，必须新增 policy version 与 superseding ADR，
+不得静默改变 `safe-mid-best-v1` 的既有语义。
