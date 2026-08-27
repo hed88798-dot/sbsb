@@ -7,14 +7,15 @@
 ```text
 CODE_C_IMPLEMENTATION: PASS
 CODE_C_LOCAL_GATES: PASS
-CODE_C_MERGE_READINESS: PENDING_REMOTE_CI_AND_F_REVIEW
+CODE_C_MERGE_READINESS: BLOCKED_PENDING_F_REVIEW
 V0_3_INDEX_ACCEPTANCE: BLOCKED
 ```
 
 Code C 已同步 `main@8e3a98ab664d0737ddf2c9d02002242b88e0c71c`，ADR-017 已接受，
 Media Index v1 Contract 已批准。固定官方 revision 的 SigLIP 2 image/text encoder 已离线导出为
 真实 FP32 ONNX，完成 provenance、SHA-256、PyTorch/ORT correctness 与真实 Video → Index → SQLite
-→ Cache → Text Search E2E。模型二进制不进入 Git；Manifest 指向不可变 model-pack Release。
+→ Cache → Text Search E2E。模型二进制不进入 Git；Manifest 指向不可变、内容寻址的 Git LFS
+model-pack tag。
 
 ## 工程状态
 
@@ -74,6 +75,10 @@ PASS
 MODEL_ARTIFACT_HASH:
 PASS
 
+MODEL_ARTIFACT_STORAGE:
+PASS — Git LFS model-pack tag model-pack-siglip2-9e7ee685-opset18-fp32
+tag commit: 96fc88b3a0139ea5d927fa183b381b314ac7057c
+
 MODEL_RUNTIME_CORRECTNESS:
 PASS
 
@@ -96,10 +101,10 @@ LOCAL_PACKAGED_WORKER_RUNTIME:
 PASS — PyInstaller artifact hash 56d77301511838162515d311d2997102be51694263ecd0223242932dde8894ae
 
 WINDOWS_WORKER_PACKAGING:
-PENDING_REMOTE_CI
+PASS — Windows native smoke run 33089679168
 
 WINDOWS_WORKER_RUNTIME_SMOKE:
-PENDING_REMOTE_CI
+PASS — packaged ORT CPU load, torch/transformers absence and stdio hello
 
 MACOS_50K_SEARCH_BENCHMARK:
 PASS — P95 18.41 ms; 50,000 x 768 float16; Apple M3 / 8 GB
@@ -156,10 +161,10 @@ VULNERABILITY_SCAN:
 PASS at moderate threshold — no moderate/high/critical advisory; one low dev-server esbuild advisory remains
 
 LINUX_CI:
-PENDING_REMOTE
+PASS — CI run 33089679957
 
 WINDOWS_NATIVE_REGRESSION:
-PENDING_REMOTE
+PASS — Windows native smoke run 33089679168
 ```
 
 ## 正式验收阻塞项

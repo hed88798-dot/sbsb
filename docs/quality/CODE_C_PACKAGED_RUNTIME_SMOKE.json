@@ -25,5 +25,17 @@
     "worker_version": "0.3.0",
     "capabilities": ["media.index.asset.v1", "media.search.exact.v1"]
   },
-  "windows_equivalent": "PENDING_REMOTE_CI"
+  "windows_equivalent": {
+    "status": "PASS",
+    "workflow_run": "https://github.com/hed88798-dot/ai-video-platform/actions/runs/33089679168",
+    "checks": [
+      "exact Python production/build locks",
+      "18 media worker tests",
+      "PyInstaller build",
+      "ONNX Runtime 1.29.0 CPU provider",
+      "torch and transformers absent",
+      "stdio NDJSON hello protocol 1.0",
+      "native addon packaged regression"
+    ]
+  }
 }

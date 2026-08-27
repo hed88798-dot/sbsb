@@ -1,40 +1,40 @@
 {
-  "artifact_storage_base_reference": "https://github.com/hed88798-dot/ai-video-platform/releases/download/model-pack-siglip2-9e7ee685-opset18-fp32",
+  "artifact_storage_base_reference": "https://github.com/hed88798-dot/ai-video-platform/raw/refs/tags/model-pack-siglip2-9e7ee685-opset18-fp32",
   "artifacts": {
     "correctness_report": {
       "logical_id": "google-siglip2-base-patch32-256/pytorch-ort-correctness/sha256:45188724a9d526975c87acc9af07b15598afffc81b92d85847f631df5edd0793",
       "path": "PYTORCH_ORT_CORRECTNESS.json",
       "sha256": "45188724a9d526975c87acc9af07b15598afffc81b92d85847f631df5edd0793",
       "size": 1342,
-      "storage_reference": "https://github.com/hed88798-dot/ai-video-platform/releases/download/model-pack-siglip2-9e7ee685-opset18-fp32/PYTORCH_ORT_CORRECTNESS.json"
+      "storage_reference": "https://github.com/hed88798-dot/ai-video-platform/raw/refs/tags/model-pack-siglip2-9e7ee685-opset18-fp32/PYTORCH_ORT_CORRECTNESS.json"
     },
     "image_encoder": {
       "logical_id": "google-siglip2-base-patch32-256/image-encoder-onnx-fp32/sha256:ef5f7b69830c352e57f15668092d7323521836c16fff2d71d14549b75eca6059",
       "path": "image-encoder.onnx",
       "sha256": "ef5f7b69830c352e57f15668092d7323521836c16fff2d71d14549b75eca6059",
       "size": 378435041,
-      "storage_reference": "https://github.com/hed88798-dot/ai-video-platform/releases/download/model-pack-siglip2-9e7ee685-opset18-fp32/image-encoder.onnx"
+      "storage_reference": "https://github.com/hed88798-dot/ai-video-platform/raw/refs/tags/model-pack-siglip2-9e7ee685-opset18-fp32/image-encoder.onnx"
     },
     "text_encoder": {
       "logical_id": "google-siglip2-base-patch32-256/text-encoder-onnx-fp32/sha256:12bccdb491a98d224df1e6b6b249378118c6cfb54c18f6eb12286ffce8b26f30",
       "path": "text-encoder.onnx",
       "sha256": "12bccdb491a98d224df1e6b6b249378118c6cfb54c18f6eb12286ffce8b26f30",
       "size": 1129415247,
-      "storage_reference": "https://github.com/hed88798-dot/ai-video-platform/releases/download/model-pack-siglip2-9e7ee685-opset18-fp32/text-encoder.onnx"
+      "storage_reference": "https://github.com/hed88798-dot/ai-video-platform/raw/refs/tags/model-pack-siglip2-9e7ee685-opset18-fp32/text-encoder.onnx"
     },
     "tokenizer_config": {
       "logical_id": "google-siglip2-base-patch32-256/tokenizer-config/sha256:14afe629fe4959b9e0d51e1852b8d9f7ad074f90a1a7125a4fcdd17f06e78fc8",
       "path": "tokenizer_config.json",
       "sha256": "14afe629fe4959b9e0d51e1852b8d9f7ad074f90a1a7125a4fcdd17f06e78fc8",
       "size": 47164,
-      "storage_reference": "https://github.com/hed88798-dot/ai-video-platform/releases/download/model-pack-siglip2-9e7ee685-opset18-fp32/tokenizer_config.json"
+      "storage_reference": "https://github.com/hed88798-dot/ai-video-platform/raw/refs/tags/model-pack-siglip2-9e7ee685-opset18-fp32/tokenizer_config.json"
     },
     "tokenizer_model": {
       "logical_id": "google-siglip2-base-patch32-256/tokenizer-model/sha256:61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2",
       "path": "tokenizer.model",
       "sha256": "61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2",
       "size": 4241003,
-      "storage_reference": "https://github.com/hed88798-dot/ai-video-platform/releases/download/model-pack-siglip2-9e7ee685-opset18-fp32/tokenizer.model"
+      "storage_reference": "https://github.com/hed88798-dot/ai-video-platform/raw/refs/tags/model-pack-siglip2-9e7ee685-opset18-fp32/tokenizer.model"
     }
   },
   "correctness": {
