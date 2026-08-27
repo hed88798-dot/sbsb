@@ -5,6 +5,7 @@ dist-renderer/
 out/
 release/
 coverage/
+artifacts/
 *.log
 *.db
 *.db-wal

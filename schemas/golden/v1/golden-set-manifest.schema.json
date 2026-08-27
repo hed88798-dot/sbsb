@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.company.invalid/golden/v1/golden-set-manifest.schema.json",
+  "title": "Golden Set Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "dataset_id",
+    "dataset_version",
+    "description",
+    "authorization",
+    "provenance",
+    "label_schema_version",
+    "annotation_guideline_version",
+    "splits",
+    "integrity"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "dataset_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,63}$" },
+    "dataset_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "description": { "type": "string", "minLength": 1 },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "recorded_by", "recorded_at", "evidence_ref"],
+      "properties": {
+        "status": { "enum": ["SYNTHETIC", "AUTHORIZED", "RESTRICTED"] },
+        "recorded_by": { "type": "string", "minLength": 1 },
+        "recorded_at": { "type": "string", "format": "date-time" },
+        "evidence_ref": { "type": "string", "minLength": 1 }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_type", "source_ref", "contains_customer_data"],
+      "properties": {
+        "source_type": { "enum": ["SYNTHETIC", "CUSTOMER_AUTHORIZED", "PUBLIC_APPROVED"] },
+        "source_ref": { "type": "string", "minLength": 1 },
+        "contains_customer_data": { "type": "boolean" }
+      }
+    },
+    "label_schema_version": { "type": "string", "minLength": 1 },
+    "annotation_guideline_version": { "type": "string", "minLength": 1 },
+    "splits": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "locked", "anonymous_ids"],
+        "properties": {
+          "name": { "enum": ["train", "calibration", "test"] },
+          "locked": { "type": "boolean" },
+          "anonymous_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$" }
+          }
+        }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "files"],
+      "properties": {
+        "algorithm": { "const": "SHA-256" },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "sha256"],
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
