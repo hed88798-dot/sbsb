@@ -32,13 +32,8 @@ def tokenize_siglip_text(tokenizer: Any, text: str, max_length: int = 64) -> dic
     eos_id = int(tokenizer.piece_to_id("<eos>"))
     pad_id = int(tokenizer.piece_to_id("<pad>"))
     tokens = tokens[: max_length - 1] + [eos_id]
-    attention = [1] * len(tokens)
     tokens.extend([pad_id] * (max_length - len(tokens)))
-    attention.extend([0] * (max_length - len(attention)))
-    return {
-        "input_ids": np.asarray([tokens], dtype=np.int64),
-        "attention_mask": np.asarray([attention], dtype=np.int64),
-    }
+    return {"input_ids": np.asarray([tokens], dtype=np.int64)}
 
 
 class SiglipOnnx:

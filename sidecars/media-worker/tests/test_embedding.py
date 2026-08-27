@@ -33,7 +33,7 @@ class EmbeddingTests(unittest.TestCase):
 
         inputs = tokenize_siglip_text(Tokenizer(), " 猪群采食 ", max_length=5)
         self.assertEqual(inputs["input_ids"].tolist(), [[5, 6, 1, 0, 0]])
-        self.assertEqual(inputs["attention_mask"].tolist(), [[1, 1, 1, 0, 0]])
+        self.assertEqual(set(inputs), {"input_ids"})
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 EXPORT_SCRIPT_VERSION = "siglip2-onnx-export-v2"
-PREPROCESS_VERSION = "siglip2-processor-256-bicubic-mean0.5-v1"
+PREPROCESS_VERSION = "siglip2-processor-256-bicubic-mean0.5-official-text-v2"
 OPSET = 18
 MAX_TEXT_LENGTH = 64
 RTOL = 1e-4
@@ -153,9 +153,9 @@ def export(
             super().__init__()
             self.encoder = model.text_model
 
-        def forward(self, input_ids: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
+        def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
             return self.encoder(
-                input_ids=input_ids, attention_mask=attention_mask, position_ids=None
+                input_ids=input_ids, attention_mask=None, position_ids=None
             ).pooler_output
 
     image_encoder = ImageEncoder().eval()
@@ -197,13 +197,12 @@ def export(
     )
     torch.onnx.export(
         text_encoder,
-        (text_inputs["input_ids"][:1], text_inputs["attention_mask"][:1]),
+        (text_inputs["input_ids"][:1],),
         text_path,
-        input_names=["input_ids", "attention_mask"],
+        input_names=["input_ids"],
         output_names=["text_embeds"],
         dynamic_axes={
             "input_ids": {0: "batch"},
-            "attention_mask": {0: "batch"},
             "text_embeds": {0: "batch"},
         },
         opset_version=OPSET,
@@ -216,18 +215,13 @@ def export(
 
     with torch.inference_mode():
         torch_image = image_encoder(image_input).cpu().numpy()
-        torch_text = text_encoder(
-            text_inputs["input_ids"], text_inputs["attention_mask"]
-        ).cpu().numpy()
+        torch_text = text_encoder(text_inputs["input_ids"]).cpu().numpy()
     image_session = ort.InferenceSession(str(image_path), providers=["CPUExecutionProvider"])
     text_session = ort.InferenceSession(str(text_path), providers=["CPUExecutionProvider"])
     ort_image = image_session.run(None, {"pixel_values": image_input.cpu().numpy()})[0]
     ort_text = text_session.run(
         None,
-        {
-            "input_ids": text_inputs["input_ids"].cpu().numpy(),
-            "attention_mask": text_inputs["attention_mask"].cpu().numpy(),
-        },
+        {"input_ids": text_inputs["input_ids"].cpu().numpy()},
     )[0]
     image_comparison = comparison(torch_image, ort_image)
     text_comparison = comparison(torch_text, ort_text)
@@ -243,21 +237,15 @@ def export(
         model_file=str(tokenizer_model_path)
     )
     worker_ids: list[list[int]] = []
-    worker_masks: list[list[int]] = []
     eos_id = int(sentencepiece_tokenizer.piece_to_id("<eos>"))
     pad_id = int(sentencepiece_tokenizer.piece_to_id("<pad>"))
     for query in queries:
         ids = list(sentencepiece_tokenizer.encode(query, out_type=int))[: MAX_TEXT_LENGTH - 1]
         ids.append(eos_id)
-        mask = [1] * len(ids)
         ids.extend([pad_id] * (MAX_TEXT_LENGTH - len(ids)))
-        mask.extend([0] * (MAX_TEXT_LENGTH - len(mask)))
         worker_ids.append(ids)
-        worker_masks.append(mask)
     if not np.array_equal(np.asarray(worker_ids), text_inputs["input_ids"].cpu().numpy()):
         raise SystemExit("production worker tokenizer IDs differ from official tokenizer")
-    if not np.array_equal(np.asarray(worker_masks), text_inputs["attention_mask"].cpu().numpy()):
-        raise SystemExit("production worker attention masks differ from official tokenizer")
 
     dimension = int(ort_image.shape[-1])
     if dimension != int(ort_text.shape[-1]):
@@ -268,7 +256,6 @@ def export(
         "image_input": {"name": "pixel_values", "shape": ["batch", 3, 256, 256]},
         "text_inputs": {
             "input_ids": ["batch", MAX_TEXT_LENGTH],
-            "attention_mask": ["batch", MAX_TEXT_LENGTH],
         },
         "outputs": {"image": ["batch", dimension], "text": ["batch", dimension]},
         "dynamic_batch": True,
