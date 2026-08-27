@@ -60,9 +60,8 @@ class ExactSearchCache:
             if not shot_id or shot_id in shot_ids or not valid_range or not valid_revision:
                 raise WorkerError("CACHE_ROW_MAPPING_MISMATCH", "Search row is invalid", True)
             shot_ids.add(shot_id)
-        self.matrix = np.memmap(
-            matrix_path, dtype="<f2", mode="r", shape=(row_count, self.dimension)
-        )
+        self.matrix_path = matrix_path
+        self.row_count = row_count
 
     def search(
         self,
@@ -76,26 +75,39 @@ class ExactSearchCache:
             raise WorkerError("QUERY_DIMENSION_MISMATCH", "Text embedding dimension mismatch")
         if not 1 <= top_k <= 1000:
             raise WorkerError("QUERY_TOP_K_INVALID", "top_k is outside the supported range")
-        best_indices = np.empty(0, dtype=np.int64)
-        best_scores = np.empty(0, dtype=np.float32)
-        for start in range(0, len(self.rows), chunk_rows):
-            stop = min(start + chunk_rows, len(self.rows))
-            chunk = np.asarray(self.matrix[start:stop], dtype=np.float32)
-            scores = chunk @ normalized_query.astype(np.float32, copy=False)
-            if allowed_shot_ids is not None:
-                allowed = np.fromiter(
-                    (self.rows[index]["shot_id"] in allowed_shot_ids for index in range(start, stop)),
-                    dtype=bool,
-                    count=stop - start,
-                )
-                scores = np.where(allowed, scores, -np.inf)
-            indices = np.arange(start, stop, dtype=np.int64)
-            merged_scores = np.concatenate((best_scores, scores))
-            merged_indices = np.concatenate((best_indices, indices))
-            keep = min(top_k, merged_scores.size)
-            selected = np.argpartition(merged_scores, -keep)[-keep:]
-            best_scores = merged_scores[selected]
-            best_indices = merged_indices[selected]
+        matrix = np.memmap(
+            self.matrix_path,
+            dtype="<f2",
+            mode="r",
+            shape=(self.row_count, self.dimension),
+        )
+        try:
+            best_indices = np.empty(0, dtype=np.int64)
+            best_scores = np.empty(0, dtype=np.float32)
+            for start in range(0, len(self.rows), chunk_rows):
+                stop = min(start + chunk_rows, len(self.rows))
+                chunk = np.asarray(matrix[start:stop], dtype=np.float32)
+                scores = chunk @ normalized_query.astype(np.float32, copy=False)
+                if allowed_shot_ids is not None:
+                    allowed = np.fromiter(
+                        (
+                            self.rows[index]["shot_id"] in allowed_shot_ids
+                            for index in range(start, stop)
+                        ),
+                        dtype=bool,
+                        count=stop - start,
+                    )
+                    scores = np.where(allowed, scores, -np.inf)
+                indices = np.arange(start, stop, dtype=np.int64)
+                merged_scores = np.concatenate((best_scores, scores))
+                merged_indices = np.concatenate((best_indices, indices))
+                keep = min(top_k, merged_scores.size)
+                selected = np.argpartition(merged_scores, -keep)[-keep:]
+                best_scores = merged_scores[selected]
+                best_indices = merged_indices[selected]
+        finally:
+            if matrix._mmap is not None:
+                matrix._mmap.close()
         order = np.argsort(-best_scores, kind="stable")
         return [
             {**self.rows[int(best_indices[index])], "semantic_score": float(best_scores[index])}
