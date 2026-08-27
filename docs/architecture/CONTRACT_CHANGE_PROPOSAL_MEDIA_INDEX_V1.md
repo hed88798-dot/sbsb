@@ -1,8 +1,12 @@
 # Contract Change Proposal: Media Index Commit v1
 
-状态：Code C review requested  
+状态：Approved
 类型：向后兼容、non-breaking  
 Sidecar protocol major：保持 `1.0`
+
+批准范围仅限本文列出的 Media Index v1 DTO、窄化持久化接口和 migration 002；不授予 Code C
+重构 `@app/local-db` 整体 repository architecture、migration 001、既有产品/文案表、Desktop Job
+semantics 或其他 A-owned DB contract 的权限。
 
 ## 为什么需要
 
