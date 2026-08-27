@@ -65,6 +65,9 @@ class SearchTests(unittest.TestCase):
             self.assertEqual(results[0]["start_ms"], 0)
             self.assertEqual(results[0]["end_ms"], 1000)
             self.assertAlmostEqual(results[0]["semantic_score"], 1.0, places=6)
+            matrix_path = root / "generation_test" / "matrix.f16"
+            matrix_path.unlink()
+            self.assertFalse(matrix_path.exists())
 
     def test_signature_and_row_mapping_mismatch_fail_closed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
