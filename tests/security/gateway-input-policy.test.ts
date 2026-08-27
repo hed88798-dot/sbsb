@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import { S3ObjectStoreSigner } from '../../apps/gateway/src/object-store.js';
 import {
   createGatewayFixture,
   requestFor,
@@ -10,6 +11,27 @@ let fixture: GatewayFixture | undefined;
 afterEach(async () => fixture?.close());
 
 describe('Gateway input and object policy', () => {
+  it('creates a checksum-bound, short S3 SigV4 upload without exposing storage secret', () => {
+    const signer = new S3ObjectStoreSigner({
+      endpoint: 'https://objects.example.invalid',
+      bucket: 'temporary-media',
+      region: 'test-region-1',
+      accessKeyId: 'TESTACCESSKEY',
+      secretAccessKey: 'test-secret-that-must-not-appear',
+    });
+    const result = signer.presignPut({
+      objectKey: 'transient/fixture.jpg',
+      mimeType: 'image/jpeg',
+      sha256Hex: 'a'.repeat(64),
+      expiresInSeconds: 300,
+      now: new Date('2026-08-27T00:00:00.000Z'),
+    });
+    expect(result.uploadUrl).toContain('X-Amz-Signature=');
+    expect(result.uploadUrl).not.toContain('test-secret-that-must-not-appear');
+    expect(result.requiredHeaders).toHaveProperty('x-amz-checksum-sha256');
+    expect(result.expiresAt).toBe('2026-08-27T00:05:00.000Z');
+  });
+
   it('fails closed when provider legal approval is missing or expired', async () => {
     fixture = await createGatewayFixture();
     fixture.database.db
