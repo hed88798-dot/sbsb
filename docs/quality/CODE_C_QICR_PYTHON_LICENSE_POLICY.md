@@ -18,10 +18,10 @@ Blocked work: Code C C-1 Python/Wheel/Native/PyInstaller supply-chain closure fo
 Code C evaluated the exact Windows and Linux dependency closures from real wheel `METADATA` for CPython
 3.13.15. The shared `auditPythonLicenses` assertion was then executed against two exact downloaded wheels:
 
-| Component | Exact artifact SHA-256 | Required/metadata expression | Shared result |
-| --- | --- | --- | --- |
+| Component                  | Exact artifact SHA-256                                             | Required/metadata expression                 | Shared result              |
+| -------------------------- | ------------------------------------------------------------------ | -------------------------------------------- | -------------------------- |
 | PyInstaller 6.22.2 Windows | `9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7` | `GPL-2.0-or-later WITH Bootloader-exception` | `rejected/unknown license` |
-| packaging 26.3 universal | `d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c` | `Apache-2.0 OR BSD-2-Clause` | `rejected/unknown license` |
+| packaging 26.3 universal   | `d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c` | `Apache-2.0 OR BSD-2-Clause`                 | `rejected/unknown license` |
 
 The Linux PyInstaller wheel has SHA-256
 `9622686ecc5d5fa492fe6cde29d47df9dd41138cff8177be9f901ca3260f2096` and the same required license
