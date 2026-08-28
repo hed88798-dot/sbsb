@@ -1,20 +1,21 @@
 # Code C → Code F QICR Handoff
 
-## Mandatory stop — Python license policy contract
+## Mandatory stop — remaining Python runtime license policy contract
 
 ```text
 STATUS: BLOCKED_MANDATORY_STOP_QICR
-QICR: docs/quality/CODE_C_QICR_PYTHON_LICENSE_POLICY.md
+QICR: docs/quality/CODE_C_QICR_PYTHON_RUNTIME_LICENSE_POLICY.md
 PUSH_TO_PR_8: NOT_PERFORMED
 FORMAL_F_REVIEW: NOT_STARTED
 ```
 
-The exact PyInstaller 6.22.2 wheel required by the complete `WORKER_BUILD` graph must preserve
-`GPL-2.0-or-later WITH Bootloader-exception`, as required by Toolchain Inventory v1. The shared wheel license
-gate currently rejects every expression containing `GPL` before an exact exception can be reviewed. The
-actual shared assertion was executed and failed for both PyInstaller and packaging 26.3. Code C stopped before
-formal inventory approval, remote candidate dispatch, CI integration, or push; no owner, tag, allowlist, or
-verifier workaround was added.
+Main `84e7befb53cbcbc28fb39924ad36cce408d0760b` resolves the historical PyInstaller/packaging SPDX blocker.
+The new shared quality-tooling assertion passes those two expressions. The same License Policy Evaluation v2
+was then executed against evidence bound to the exact Windows and Linux Pillow 12.3.0 `cp313` artifact hashes
+and their hash-verified PEP 658 metadata. Both normalized
+`MIT-CMU` correctly but returned `FAIL` because policy `2026.08.28.1` has no rule for that valid SPDX id.
+Code C stopped before ADR-018 creation, formal inventory approval, target builds, CI integration, or push; no
+package-name override, private policy, license rewrite, or verifier bypass was added.
 
 All later historical `PASS` evidence in this handoff belongs to the previously reviewed frozen media/index
 implementation. It is retained for context and is not claimed as a rerun on the current unpushed HEAD.
@@ -25,7 +26,7 @@ implementation. It is retained for context and is not claimed as a rerun on the 
 Branch: code-c/local-media-index-v0.3
 PR HEAD SHA: use the immutable head shown by the Draft PR (a Git-tracked file cannot self-embed its own commit SHA)
 Original C baseline: b04b8c152cd3e589b17246f53bab16262aefe313
-Synced MAIN_BASELINE_SHA: c7f1b1db4d60eb75127b7b2c7f8462794d7a42b1
+Synced MAIN_BASELINE_SHA: 84e7befb53cbcbc28fb39924ad36cce408d0760b
 ADR-017: Accepted — safe-mid-best-v1; Real Golden performance PENDING
 Media Index Contract Change: Approved, non-breaking, narrowly scoped
 Sidecar Protocol: 1.0

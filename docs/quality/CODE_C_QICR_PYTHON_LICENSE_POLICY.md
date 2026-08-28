@@ -2,7 +2,12 @@
 
 Date: 2026-08-28 (Asia/Shanghai)
 
-Status: `MANDATORY_STOP`
+Status: `RESOLVED_BY_MAIN_84E7BEF` (historical)
+
+Resolution: License Policy Evaluation v2 and Artifact License Evidence v1 on
+`main@84e7befb53cbcbc28fb39924ad36cce408d0760b` now pass the PyInstaller bootloader exception and packaging
+compound expression. The current, separate runtime-wheel blocker is recorded in
+`CODE_C_QICR_PYTHON_RUNTIME_LICENSE_POLICY.md`.
 
 Owner requested: Code F
 

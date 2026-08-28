@@ -36,7 +36,8 @@ Inventory v1. It also writes exact `--require-hashes` locks. Any unknown license
 candidate drift, missing CArchive native, or artifact hash mismatch stops approval.
 
 The current shared license policy cannot approve every legal exact expression in this graph. Approval therefore
-stops at `CODE_C_QICR_PYTHON_LICENSE_POLICY.md`; Code C has no private license-decision schema or allowlist.
+stops at `CODE_C_QICR_PYTHON_RUNTIME_LICENSE_POLICY.md`; Code C has no private license-decision schema or
+allowlist.
 
 ## Ordinary CI
 

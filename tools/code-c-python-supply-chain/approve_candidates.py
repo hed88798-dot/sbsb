@@ -61,7 +61,7 @@ def approved_license(
         return legacy, "Legacy wheel License field matches the approved policy expression."
     raise SystemExit(
         f"{package['package_name']}: shared license policy cannot approve the exact wheel metadata; "
-        "mandatory stop (docs/quality/CODE_C_QICR_PYTHON_LICENSE_POLICY.md)"
+        "mandatory stop (docs/quality/CODE_C_QICR_PYTHON_RUNTIME_LICENSE_POLICY.md)"
     )
 
 
