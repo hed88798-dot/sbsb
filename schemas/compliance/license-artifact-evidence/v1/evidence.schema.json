@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/license-artifact-evidence/v1/evidence.schema.json",
+  "title": "Artifact License Evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_sha256",
+    "package",
+    "version",
+    "artifact_type",
+    "artifact_role",
+    "distribution_role",
+    "detected_license_expression",
+    "evidence_status",
+    "source_provenance",
+    "evidence_sources",
+    "exception_evidence"
+  ],
+  "properties": {
+    "artifact_sha256": { "$ref": "#/$defs/sha256" },
+    "package": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "minLength": 1 },
+    "artifact_type": { "type": "string", "minLength": 1 },
+    "artifact_role": {
+      "enum": [
+        "RUNTIME_WHEEL",
+        "PYTHON_BUILD_DEPENDENCY",
+        "CPYTHON_RUNTIME",
+        "PIP_BUILD_TOOL",
+        "PYINSTALLER_BUILD_TOOL",
+        "PYINSTALLER_PACKAGE",
+        "PYINSTALLER_BOOTLOADER",
+        "GENERATED_FINAL_WORKER"
+      ]
+    },
+    "distribution_role": {
+      "enum": [
+        "BUILD_ONLY_USE",
+        "RUNTIME_DISTRIBUTION",
+        "TOOL_REDISTRIBUTION",
+        "BOOTLOADER_INCLUSION",
+        "GENERATED_APPLICATION_DISTRIBUTION",
+        "SOURCE_REDISTRIBUTION",
+        "MODIFIED_TOOLCHAIN_DISTRIBUTION"
+      ]
+    },
+    "detected_license_expression": { "type": "string", "minLength": 1 },
+    "evidence_status": { "enum": ["PASS", "MANUAL_REVIEW", "CONFLICT", "FAIL"] },
+    "source_provenance": { "type": "object", "minProperties": 1 },
+    "evidence_sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/evidenceSource" }
+    },
+    "exception_evidence": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/evidenceSource" }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "evidenceSource": {
+      "type": "object",
+      "required": ["evidence_type"],
+      "properties": {
+        "evidence_type": { "type": "string", "minLength": 1 },
+        "relative_path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "value": { "type": "string" },
+        "source": { "type": "string", "format": "uri" },
+        "component_id": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

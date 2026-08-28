@@ -1,0 +1,156 @@
+{
+  "schema_version": "1",
+  "license_policy_version": "2026.08.28.1",
+  "policy_name": "Python artifact and toolchain commercial distribution policy",
+  "or_branch_selection_required": false,
+  "artifact_roles": [
+    "RUNTIME_WHEEL",
+    "PYTHON_BUILD_DEPENDENCY",
+    "CPYTHON_RUNTIME",
+    "PIP_BUILD_TOOL",
+    "PYINSTALLER_BUILD_TOOL",
+    "PYINSTALLER_PACKAGE",
+    "PYINSTALLER_BOOTLOADER",
+    "GENERATED_FINAL_WORKER"
+  ],
+  "distribution_roles": [
+    "BUILD_ONLY_USE",
+    "RUNTIME_DISTRIBUTION",
+    "TOOL_REDISTRIBUTION",
+    "BOOTLOADER_INCLUSION",
+    "GENERATED_APPLICATION_DISTRIBUTION",
+    "SOURCE_REDISTRIBUTION",
+    "MODIFIED_TOOLCHAIN_DISTRIBUTION"
+  ],
+  "license_rules": {
+    "0BSD": {
+      "policy_result": "PASS",
+      "obligations": []
+    },
+    "Apache-2.0": {
+      "policy_result": "PASS",
+      "obligations": [
+        "PRESERVE_LICENSE_TEXT",
+        "PRESERVE_REQUIRED_NOTICES",
+        "STATE_MODIFICATIONS_WHEN_REQUIRED"
+      ]
+    },
+    "BSD-2-Clause": {
+      "policy_result": "PASS",
+      "obligations": ["PRESERVE_LICENSE_TEXT", "PRESERVE_COPYRIGHT_NOTICE"]
+    },
+    "BSD-3-Clause": {
+      "policy_result": "PASS",
+      "obligations": ["PRESERVE_LICENSE_TEXT", "PRESERVE_COPYRIGHT_NOTICE", "NO_ENDORSEMENT"]
+    },
+    "CC-BY-3.0": {
+      "policy_result": "PASS",
+      "obligations": ["PRESERVE_LICENSE_TEXT", "PROVIDE_ATTRIBUTION"]
+    },
+    "CC0-1.0": {
+      "policy_result": "PASS",
+      "obligations": []
+    },
+    "ISC": {
+      "policy_result": "PASS",
+      "obligations": ["PRESERVE_LICENSE_TEXT", "PRESERVE_COPYRIGHT_NOTICE"]
+    },
+    "MIT": {
+      "policy_result": "PASS",
+      "obligations": ["PRESERVE_LICENSE_TEXT", "PRESERVE_COPYRIGHT_NOTICE"]
+    },
+    "PSF-2.0": {
+      "policy_result": "PASS",
+      "obligations": ["PRESERVE_LICENSE_TEXT", "PRESERVE_REQUIRED_NOTICES"]
+    },
+    "Python-2.0": {
+      "policy_result": "PASS",
+      "obligations": ["PRESERVE_LICENSE_TEXT", "PRESERVE_REQUIRED_NOTICES"]
+    },
+    "GPL-2.0-only": {
+      "policy_result": "FAIL",
+      "obligations": ["COPYLEFT_SOURCE_DISTRIBUTION_REVIEW_REQUIRED"]
+    },
+    "GPL-2.0-or-later": {
+      "policy_result": "FAIL",
+      "obligations": ["COPYLEFT_SOURCE_DISTRIBUTION_REVIEW_REQUIRED"]
+    },
+    "GPL-3.0-only": {
+      "policy_result": "FAIL",
+      "obligations": ["COPYLEFT_SOURCE_DISTRIBUTION_REVIEW_REQUIRED"]
+    },
+    "GPL-3.0-or-later": {
+      "policy_result": "FAIL",
+      "obligations": ["COPYLEFT_SOURCE_DISTRIBUTION_REVIEW_REQUIRED"]
+    },
+    "LGPL-2.1-only": {
+      "policy_result": "MANUAL_REVIEW",
+      "obligations": ["COPYLEFT_LINKING_REVIEW_REQUIRED"]
+    },
+    "LGPL-2.1-or-later": {
+      "policy_result": "MANUAL_REVIEW",
+      "obligations": ["COPYLEFT_LINKING_REVIEW_REQUIRED"]
+    },
+    "LGPL-3.0-only": {
+      "policy_result": "MANUAL_REVIEW",
+      "obligations": ["COPYLEFT_LINKING_REVIEW_REQUIRED"]
+    },
+    "LGPL-3.0-or-later": {
+      "policy_result": "MANUAL_REVIEW",
+      "obligations": ["COPYLEFT_LINKING_REVIEW_REQUIRED"]
+    },
+    "MPL-2.0": {
+      "policy_result": "MANUAL_REVIEW",
+      "obligations": ["FILE_LEVEL_SOURCE_DISTRIBUTION_REVIEW_REQUIRED"]
+    }
+  },
+  "exception_rules": [
+    {
+      "base_license": "GPL-2.0-or-later",
+      "exception": "Bootloader-exception",
+      "exception_source": "https://pyinstaller.org/en/v6.22.0/license.html",
+      "required_evidence_types": ["LICENSE_FILE", "EXCEPTION_SOURCE"],
+      "covered_obligations": [
+        "GENERATED_APPLICATION_MAY_USE_A_NON_GPL_LICENSE",
+        "BOOTLOADER_MAY_BE_INCLUDED_IN_GENERATED_APPLICATION"
+      ],
+      "retained_obligations": [
+        "PRESERVE_PYINSTALLER_LICENSE_AND_EXCEPTION_TEXT",
+        "PRESERVE_THIRD_PARTY_LICENSES",
+        "SEPARATELY_REVIEW_MODIFIED_BOOTLOADER_OR_TOOLCHAIN"
+      ],
+      "applicability": [
+        {
+          "artifact_role": "PYINSTALLER_BUILD_TOOL",
+          "distribution_role": "BUILD_ONLY_USE",
+          "policy_result": "PASS"
+        },
+        {
+          "artifact_role": "PYINSTALLER_PACKAGE",
+          "distribution_role": "TOOL_REDISTRIBUTION",
+          "policy_result": "MANUAL_REVIEW"
+        },
+        {
+          "artifact_role": "PYINSTALLER_BOOTLOADER",
+          "distribution_role": "BOOTLOADER_INCLUSION",
+          "policy_result": "PASS"
+        },
+        {
+          "artifact_role": "GENERATED_FINAL_WORKER",
+          "distribution_role": "GENERATED_APPLICATION_DISTRIBUTION",
+          "policy_result": "PASS"
+        },
+        {
+          "artifact_role": "PYINSTALLER_PACKAGE",
+          "distribution_role": "SOURCE_REDISTRIBUTION",
+          "policy_result": "MANUAL_REVIEW"
+        },
+        {
+          "artifact_role": "PYINSTALLER_BOOTLOADER",
+          "distribution_role": "MODIFIED_TOOLCHAIN_DISTRIBUTION",
+          "policy_result": "MANUAL_REVIEW"
+        }
+      ]
+    }
+  ]
+}

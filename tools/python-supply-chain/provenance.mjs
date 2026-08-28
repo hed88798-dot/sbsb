@@ -2,6 +2,10 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { basename, isAbsolute, relative, resolve, sep } from 'node:path';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
+import {
+  evaluateLicenseCollection,
+  evaluateLicenseEvidence,
+} from '../license-policy/evaluator.mjs';
 import { repositoryRoot, sha256File } from './inventory.mjs';
 
 export const toolchainSchemaPath = resolve(
@@ -85,14 +89,6 @@ export function validateToolchainInventory(document, source = 'toolchain invento
           `${component.component_id}: CPython runtime provenance has no packaged native bytes`,
         );
       }
-    }
-    if (
-      ['PYINSTALLER', 'PYINSTALLER_BOOTLOADER'].includes(component.component_kind) &&
-      !component.license.expression.includes('Bootloader-exception')
-    ) {
-      failures.push(
-        `${component.component_id}: PyInstaller license must preserve the bootloader exception`,
-      );
     }
     if (
       component.usage_scopes.includes('BUILD_TOOLCHAIN_COMPONENT') &&
@@ -263,19 +259,153 @@ export async function verifyBuildProvenance(
   return { build, finalPath };
 }
 
+function toolchainRoles(component) {
+  if (component.component_kind === 'CPYTHON_DISTRIBUTION') {
+    return { artifactRole: 'CPYTHON_RUNTIME', distributionRole: 'RUNTIME_DISTRIBUTION' };
+  }
+  if (component.component_kind === 'PIP') {
+    return { artifactRole: 'PIP_BUILD_TOOL', distributionRole: 'BUILD_ONLY_USE' };
+  }
+  if (component.component_kind === 'PYINSTALLER_BOOTLOADER') {
+    return {
+      artifactRole: 'PYINSTALLER_BOOTLOADER',
+      distributionRole: 'BOOTLOADER_INCLUSION',
+    };
+  }
+  const redistributed = component.usage_scopes.includes('PACKAGED_RUNTIME_COMPONENT');
+  return redistributed
+    ? { artifactRole: 'PYINSTALLER_PACKAGE', distributionRole: 'TOOL_REDISTRIBUTION' }
+    : { artifactRole: 'PYINSTALLER_BUILD_TOOL', distributionRole: 'BUILD_ONLY_USE' };
+}
+
+export function buildToolchainLicenseEvidence(toolchain) {
+  return toolchain.components.map((component) => {
+    const { artifactRole, distributionRole } = toolchainRoles(component);
+    return {
+      artifact_sha256: component.artifact.sha256,
+      package: component.name,
+      version: component.version,
+      artifact_type: component.artifact.artifact_type,
+      artifact_role: artifactRole,
+      distribution_role: distributionRole,
+      detected_license_expression: component.license.expression,
+      evidence_status:
+        component.license.review_status === 'APPROVED' && component.license.files.length > 0
+          ? 'PASS'
+          : 'MANUAL_REVIEW',
+      source_provenance: {
+        component_id: component.component_id,
+        component_kind: component.component_kind,
+        owner_kind: 'TOOLCHAIN_OWNED_NATIVE',
+        canonical_reference: component.artifact.canonical_reference,
+        canonical_source: component.artifact.canonical_source,
+        supplier: component.provenance.supplier,
+        review_status: component.provenance.review_status,
+      },
+      evidence_sources: component.license.files.map((entry) => ({
+        evidence_type: 'LICENSE_FILE',
+        relative_path: entry.relative_path,
+        sha256: entry.sha256,
+      })),
+      exception_evidence: [
+        ...component.license.files.map((entry) => ({
+          evidence_type: 'LICENSE_FILE',
+          relative_path: entry.relative_path,
+          sha256: entry.sha256,
+        })),
+        {
+          evidence_type: 'EXCEPTION_SOURCE',
+          source: component.license.redistribution_evidence,
+        },
+      ],
+    };
+  });
+}
+
+export function buildGeneratedWorkerLicenseEvidence(toolchain, build) {
+  const byId = new Map(
+    toolchain.components.map((component) => [component.component_id, component]),
+  );
+  const pyinstaller = byId.get(build.inputs.pyinstaller_component_id);
+  const bootloader = byId.get(build.inputs.bootloader_component_id);
+  if (!pyinstaller || !bootloader) {
+    throw new Error('generated worker license lineage is missing PyInstaller/bootloader evidence');
+  }
+  return {
+    artifact_sha256: build.final_artifact.sha256,
+    package: build.final_artifact.filename,
+    version: build.build_id,
+    artifact_type: 'FINAL_BUILD_ARTIFACT',
+    artifact_role: 'GENERATED_FINAL_WORKER',
+    distribution_role: 'GENERATED_APPLICATION_DISTRIBUTION',
+    detected_license_expression: pyinstaller.license.expression,
+    evidence_status:
+      pyinstaller.license.review_status === 'APPROVED' &&
+      bootloader.license.review_status === 'APPROVED'
+        ? 'PASS'
+        : 'MANUAL_REVIEW',
+    source_provenance: {
+      build_id: build.build_id,
+      build_commit_sha: build.build_commit_sha,
+      pyinstaller_component_id: pyinstaller.component_id,
+      pyinstaller_artifact_sha256: pyinstaller.artifact.sha256,
+      bootloader_component_id: bootloader.component_id,
+      bootloader_artifact_sha256: bootloader.artifact.sha256,
+      owner_kind: 'FINAL_BUILD_ARTIFACT',
+    },
+    evidence_sources: [
+      ...pyinstaller.license.files.map((entry) => ({
+        evidence_type: 'LICENSE_FILE',
+        component_id: pyinstaller.component_id,
+        relative_path: entry.relative_path,
+        sha256: entry.sha256,
+      })),
+      ...bootloader.license.files.map((entry) => ({
+        evidence_type: 'LICENSE_FILE',
+        component_id: bootloader.component_id,
+        relative_path: entry.relative_path,
+        sha256: entry.sha256,
+      })),
+    ],
+    exception_evidence: [
+      ...bootloader.license.files.map((entry) => ({
+        evidence_type: 'LICENSE_FILE',
+        component_id: bootloader.component_id,
+        relative_path: entry.relative_path,
+        sha256: entry.sha256,
+      })),
+      {
+        evidence_type: 'EXCEPTION_SOURCE',
+        source: pyinstaller.license.redistribution_evidence,
+      },
+    ],
+  };
+}
+
+export function auditGeneratedWorkerLicense(toolchain, build) {
+  return evaluateLicenseEvidence(buildGeneratedWorkerLicenseEvidence(toolchain, build));
+}
+
 export function auditToolchainLicenses(toolchain) {
-  const components = toolchain.components.map((component) => ({
+  const evidence = buildToolchainLicenseEvidence(toolchain);
+  const evaluated = evaluateLicenseCollection(evidence);
+  const blocking = evaluated.decisions.filter((entry) => entry.policy_result !== 'PASS');
+  if (blocking.length > 0) {
+    throw new Error(
+      blocking
+        .map(
+          (entry) => `${entry.package}@${entry.version}: ${entry.policy_result}: ${entry.reason}`,
+        )
+        .join('\n'),
+    );
+  }
+  return {
+    ...evaluated,
+    status: 'PASS',
     owner_kind: 'TOOLCHAIN_OWNED_NATIVE',
-    component_id: component.component_id,
-    component_kind: component.component_kind,
-    version: component.version,
-    usage_scopes: component.usage_scopes,
-    artifact_sha256: component.artifact.sha256,
-    license_expression: component.license.expression,
-    redistribution_evidence: component.license.redistribution_evidence,
-    status: component.license.review_status,
-  }));
-  return { schema_version: '1', status: 'PASS', owner_kind: 'TOOLCHAIN_OWNED_NATIVE', components };
+    evidence,
+    components: evaluated.decisions,
+  };
 }
 
 export function auditToolchainVulnerabilities(toolchain, now = new Date()) {

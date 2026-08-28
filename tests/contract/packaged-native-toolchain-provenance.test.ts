@@ -115,7 +115,7 @@ function component(
           : 'PSF-2.0',
       files: [{ relative_path: 'LICENSE.txt', sha256: '1'.repeat(64) }],
       review_status: 'APPROVED',
-      redistribution_evidence: 'https://example.invalid/license-review',
+      redistribution_evidence: 'https://pyinstaller.org/en/v6.22.0/license.html',
     },
     vulnerability: {
       source_type: kind === 'CPYTHON_DISTRIBUTION' ? 'NVD' : 'OSV',

@@ -231,7 +231,9 @@ describe('Python/native supply-chain gates', () => {
       artifactRoot,
     ]);
     expect(unknownLicense.status).toBe(1);
-    expect(unknownLicense.stderr).toMatch(/conflicts with inventory|rejected\/unknown license/u);
+    expect(unknownLicense.stderr).toMatch(
+      /conflicts with inventory|rejected\/unknown license|SPDX parser rejected expression/u,
+    );
   });
 
   it('binds OSV findings to scope, wheel hash and dependency path', () => {

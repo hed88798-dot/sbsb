@@ -12,6 +12,8 @@
   "source_index": "https://pypi.org/project/packaging/25.0/",
   "supplier": "Python Packaging Authority (PyPA)",
   "license_expression": "Apache-2.0 OR BSD-2-Clause",
+  "license_artifact_role": "PYTHON_BUILD_DEPENDENCY",
+  "license_distribution_role": "BUILD_ONLY_USE",
   "license_review_status": "APPROVED",
   "reviewed_at": "2026-08-28T00:00:00Z",
   "license_files": [
