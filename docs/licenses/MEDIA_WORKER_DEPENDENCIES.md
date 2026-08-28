@@ -1,7 +1,7 @@
 # Media Worker dependency provenance
 
 Code C v0.3 runtime dependencies are exact-pinned in `sidecars/media-worker/requirements.lock`.
-Release packaging must resolve them from the audited wheel mirror for Python 3.12 x64 and include wheel hashes
+Release packaging must resolve them from the audited wheel source for Python 3.13.15 x64 and include wheel hashes
 in the final SBOM; CI does not download floating versions.
 
 | Component        |   Version | License                    | Source / purpose                                         |

@@ -1,0 +1,119 @@
+name: Python supply-chain candidate generation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: python-supply-chain-candidate-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  generate-target-candidate:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux
+            runner: ubuntu-24.04
+            venv_python: artifacts/candidate-venv/bin/python
+            worker: dist/media-worker
+            distribution: python-3.13.15-linux-24.04-x64.tar.gz
+            pyinstaller_wheel: pyinstaller-6.22.2-py3-none-manylinux2014_x86_64.whl
+          - target: windows
+            runner: windows-2022
+            venv_python: artifacts/candidate-venv/Scripts/python.exe
+            worker: dist/media-worker.exe
+            distribution: python-3.13.15-win32-x64.zip
+            pyinstaller_wheel: pyinstaller-6.22.2-py3-none-win_amd64.whl
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.13.15'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm compliance:python:tooling:install
+      - run: >-
+          pnpm compliance:python:target -- describe-current
+          --output artifacts/python-supply-chain/target/${{ matrix.target }}.json
+      - run: >-
+          python tools/code-c-python-supply-chain/download_toolchain_sources.py
+          --target ${{ matrix.target }}
+          --output-root artifacts/python-supply-chain/toolchain
+      - name: Reject ambient pip configuration
+        shell: bash
+        run: >-
+          python tools/code-c-python-supply-chain/bootstrap_pinned_pip.py
+          --wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip-26.2.1-py3-none-any.whl
+          --venv artifacts/candidate-venv
+      - name: Generate target graph from wheel metadata
+        shell: bash
+        env:
+          PIP_CONFIG_FILE: ${{ github.workspace }}/sidecars/media-worker/supply-chain/pip-hermetic.conf
+          PYTHONNOUSERSITE: '1'
+          PYTHONPATH: ${{ github.workspace }}/artifacts/python-compliance-tools/site-packages
+        run: >-
+          ${{ matrix.venv_python }} tools/code-c-python-supply-chain/generate_candidates.py
+          --target ${{ matrix.target }}
+          --target-descriptor artifacts/python-supply-chain/target/${{ matrix.target }}.json
+          --output-root artifacts/python-supply-chain
+      - name: Verify fail-closed Python intake controls
+        shell: bash
+        env:
+          PIP_CONFIG_FILE: ${{ github.workspace }}/sidecars/media-worker/supply-chain/pip-hermetic.conf
+          PYTHONNOUSERSITE: '1'
+        run: >-
+          python tools/code-c-python-supply-chain/verify_negative_controls.py
+          --python ${{ matrix.venv_python }}
+          --wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip-26.2.1-py3-none-any.whl
+      - name: Install candidate runtime and build graph with hashes
+        shell: bash
+        env:
+          PIP_CONFIG_FILE: ${{ github.workspace }}/sidecars/media-worker/supply-chain/pip-hermetic.conf
+          PYTHONNOUSERSITE: '1'
+        run: >-
+          python tools/code-c-python-supply-chain/install_candidate.py
+          --python ${{ matrix.venv_python }}
+          --candidate artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v2.json
+          --wheel-root artifacts/python-supply-chain/wheels/runtime
+          --candidate artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v2.json
+          --wheel-root artifacts/python-supply-chain/wheels/worker-build
+      - name: Build candidate one-file worker
+        shell: bash
+        run: ${{ matrix.venv_python }} -I -m PyInstaller --clean --noconfirm sidecars/media-worker/media-worker.spec
+      - name: Capture actual toolchain and CArchive evidence
+        shell: bash
+        run: >-
+          ${{ matrix.venv_python }} -I tools/code-c-python-supply-chain/capture_target_evidence.py
+          --target ${{ matrix.target }}
+          --bundle artifacts/python-supply-chain
+          --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.distribution }}
+          --pip-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip-26.2.1-py3-none-any.whl
+          --pyinstaller-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.pyinstaller_wheel }}
+          --final-artifact ${{ matrix.worker }}
+      - name: Preserve candidate worker bytes
+        shell: bash
+        run: |
+          mkdir -p artifacts/python-supply-chain/build/${{ matrix.target }}
+          cp '${{ matrix.worker }}' artifacts/python-supply-chain/build/${{ matrix.target }}/
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: python-supply-chain-candidate-${{ matrix.target }}-${{ github.sha }}
+          path: artifacts/python-supply-chain
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30

@@ -14,7 +14,7 @@
 | Contract | JSON Schema 2020-12 + Zod | IPC、sidecar、backend | JSON Schema 为语言中立真源，生成 TS/Python 类型 |
 | 主进程 | TypeScript / Node（随 Electron） | 业务编排、文件、DB | 与 UI/后台共享语言；不引入 Rust |
 | 本地 DB | SQLite + better-sqlite3 | 全部结构化本地数据 | 单机单写者足够；同步事务易推理 |
-| AI/媒体 worker | Python 3.12 x64 + PyInstaller | scene、ONNX、向量 | Python AI 生态成熟；版本兼容面可控 |
+| AI/媒体 worker | Python 3.13.15 x64 + PyInstaller | scene、ONNX、向量 | Python AI 生态成熟；版本兼容面可控 |
 | Shot | PySceneDetect 0.7.1 AdaptiveDetector | 镜头边界 | BSD-3，成熟 API，支持内容/自适应检测 |
 | 图像 I/O | OpenCV 4.x + Pillow | 帧、质量、缩略图 | 不采用刚发布的 OpenCV 5 作为 V1 基线 |
 | 推理 | ONNX Runtime CPU | embedding/VLM | Windows CPU、INT8、线程控制与部署成熟 |

@@ -1,0 +1,68 @@
+{
+  "schema_version": "1",
+  "approved_index": "https://pypi.org/simple",
+  "python_version": "3.13.15",
+  "pip": {
+    "version": "26.2.1",
+    "filename": "pip-26.2.1-py3-none-any.whl",
+    "sha256": "71138adf1f4ca900cdb7d289c21b7494329f2332b6d85f0e1c42108c0384ed3e",
+    "size": 1816632,
+    "download_url": "https://files.pythonhosted.org/packages/f3/6e/1736e5b4ae2b778ef2f81c47d797de9f891d4d8acb047a24ca37a60294dd/pip-26.2.1-py3-none-any.whl",
+    "canonical_source": "https://pypi.org/project/pip/26.2.1/",
+    "license_expression": "MIT",
+    "license_reference": "https://github.com/pypa/pip/blob/26.2.1/LICENSE.txt",
+    "license_files": [
+      {
+        "relative_path": "pip-26.2.1.dist-info/licenses/LICENSE.txt",
+        "sha256": "634300a669d49aeae65b12c6c48c924c51a4cdf3d1ff086dc3456dc8bcaa2104"
+      }
+    ]
+  },
+  "targets": {
+    "linux": {
+      "os": "linux",
+      "architecture": "x86_64",
+      "runner": "ubuntu-24.04",
+      "cpython_distribution": {
+        "filename": "python-3.13.15-linux-24.04-x64.tar.gz",
+        "sha256": "4e544242f8a4ef647a6f511b67f9b00eefc9ef366644e3c40a27a6eff709ae2b",
+        "size": 102312718,
+        "download_url": "https://github.com/actions/python-versions/releases/download/3.13.15-31064747964/python-3.13.15-linux-24.04-x64.tar.gz",
+        "canonical_source": "https://github.com/actions/python-versions/releases/tag/3.13.15-31064747964"
+      },
+      "pyinstaller": {
+        "version": "6.22.2",
+        "filename": "pyinstaller-6.22.2-py3-none-manylinux2014_x86_64.whl",
+        "sha256": "9622686ecc5d5fa492fe6cde29d47df9dd41138cff8177be9f901ca3260f2096",
+        "size": 762173,
+        "download_url": "https://files.pythonhosted.org/packages/2b/07/b304ff3f5f8333778065e3658b604b0e108cd934b920f3fbab825a0dd5b7/pyinstaller-6.22.2-py3-none-manylinux2014_x86_64.whl",
+        "canonical_source": "https://pypi.org/project/pyinstaller/6.22.2/"
+      }
+    },
+    "windows": {
+      "os": "windows",
+      "architecture": "x86_64",
+      "runner": "windows-2022",
+      "cpython_distribution": {
+        "filename": "python-3.13.15-win32-x64.zip",
+        "sha256": "73c2a2935597f8181e9bc60bc3a35cd2be28698d8f64b965055a29b43425a2b7",
+        "size": 29163819,
+        "download_url": "https://github.com/actions/python-versions/releases/download/3.13.15-31064747964/python-3.13.15-win32-x64.zip",
+        "canonical_source": "https://github.com/actions/python-versions/releases/tag/3.13.15-31064747964"
+      },
+      "pyinstaller": {
+        "version": "6.22.2",
+        "filename": "pyinstaller-6.22.2-py3-none-win_amd64.whl",
+        "sha256": "9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7",
+        "size": 1405725,
+        "download_url": "https://files.pythonhosted.org/packages/3f/53/8ba1d0f6159b490f700eac6161a4be5f0d4672608a6dae9fd73679f183ee/pyinstaller-6.22.2-py3-none-win_amd64.whl",
+        "canonical_source": "https://pypi.org/project/pyinstaller/6.22.2/"
+      }
+    }
+  },
+  "cpython_upstream_release": "https://www.python.org/downloads/release/python-31315/",
+  "cpython_license_expression": "Python-2.0",
+  "cpython_license_reference": "https://docs.python.org/3.13/license.html",
+  "pyinstaller_license_expression": "GPL-2.0-or-later WITH Bootloader-exception",
+  "pyinstaller_license_reference": "https://pyinstaller.org/en/v6.22.0/license.html"
+}

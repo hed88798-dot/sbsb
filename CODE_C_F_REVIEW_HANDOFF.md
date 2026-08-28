@@ -1,4 +1,23 @@
-# Code C → Code F Review Handoff
+# Code C → Code F QICR Handoff
+
+## Mandatory stop — Python license policy contract
+
+```text
+STATUS: BLOCKED_MANDATORY_STOP_QICR
+QICR: docs/quality/CODE_C_QICR_PYTHON_LICENSE_POLICY.md
+PUSH_TO_PR_8: NOT_PERFORMED
+FORMAL_F_REVIEW: NOT_STARTED
+```
+
+The exact PyInstaller 6.22.2 wheel required by the complete `WORKER_BUILD` graph must preserve
+`GPL-2.0-or-later WITH Bootloader-exception`, as required by Toolchain Inventory v1. The shared wheel license
+gate currently rejects every expression containing `GPL` before an exact exception can be reviewed. The
+actual shared assertion was executed and failed for both PyInstaller and packaging 26.3. Code C stopped before
+formal inventory approval, remote candidate dispatch, CI integration, or push; no owner, tag, allowlist, or
+verifier workaround was added.
+
+All later historical `PASS` evidence in this handoff belongs to the previously reviewed frozen media/index
+implementation. It is retained for context and is not claimed as a rerun on the current unpushed HEAD.
 
 ## Identity and approved boundaries
 
@@ -6,13 +25,13 @@
 Branch: code-c/local-media-index-v0.3
 PR HEAD SHA: use the immutable head shown by the Draft PR (a Git-tracked file cannot self-embed its own commit SHA)
 Original C baseline: b04b8c152cd3e589b17246f53bab16262aefe313
-Synced MAIN_BASELINE_SHA: 8e3a98ab664d0737ddf2c9d02002242b88e0c71c
+Synced MAIN_BASELINE_SHA: c7f1b1db4d60eb75127b7b2c7f8462794d7a42b1
 ADR-017: Accepted — safe-mid-best-v1; Real Golden performance PENDING
 Media Index Contract Change: Approved, non-breaking, narrowly scoped
 Sidecar Protocol: 1.0
 Desktop Migration: 002_media_index_v1.sql, forward-only
 SQLite writer: Electron Main / @app/local-db only
-Python: 3.12.*
+Python: 3.13.15
 ```
 
 No Provider/Gateway business logic, Provider Contract, Code B migration, Fastify, Object Storage, Digital Human,

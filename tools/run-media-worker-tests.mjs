@@ -29,12 +29,12 @@ for (const candidate of candidates) {
   const path = executable(candidate);
   if (!path) continue;
   const version = spawnSync(path, ['--version'], { encoding: 'utf8', shell: false });
-  if (/^Python 3\.12\.\d+$/u.test(`${version.stdout}${version.stderr}`.trim())) {
+  if (/^Python 3\.13\.15$/u.test(`${version.stdout}${version.stderr}`.trim())) {
     python = path;
     break;
   }
 }
-if (!python) throw new Error('PYTHON_RUNTIME_NOT_FOUND: Python 3.12.x is required');
+if (!python) throw new Error('PYTHON_RUNTIME_NOT_FOUND: Python 3.13.15 is required');
 
 const workerRoot = join(process.cwd(), 'sidecars', 'media-worker');
 const environment = {
