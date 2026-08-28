@@ -48,11 +48,19 @@ function combineFlags(obligations) {
   const values = new Set(obligations);
   return {
     notice_required:
+      values.has('PRESERVE_LICENSE_TEXT') ||
+      values.has('PRESERVE_COPYRIGHT_NOTICE') ||
+      values.has('PRESERVE_PERMISSION_NOTICE') ||
       values.has('PRESERVE_REQUIRED_NOTICES') ||
-      values.has('PRESERVE_PYINSTALLER_LICENSE_AND_EXCEPTION_TEXT'),
+      values.has('PRESERVE_PYINSTALLER_LICENSE_AND_EXCEPTION_TEXT') ||
+      values.has('RETAIN_NOTICE_IN_SUPPORTING_DOCUMENTATION_OR_DISTRIBUTION_MATERIAL'),
     attribution_required:
       values.has('PROVIDE_ATTRIBUTION') || values.has('PRESERVE_COPYRIGHT_NOTICE'),
     source_offer_required: values.has('PROVIDE_CORRESPONDING_SOURCE'),
+    no_endorsement_required: values.has('NO_ENDORSEMENT'),
+    no_publicity_name_use_without_permission: values.has(
+      'NO_PUBLICITY_NAME_USE_WITHOUT_PERMISSION',
+    ),
   };
 }
 
@@ -178,6 +186,10 @@ function leafResult(node, context) {
     expression,
     policy_result: rule.policy_result,
     obligations: unique(rule.obligations),
+    policy_rule_id: rule.rule_id ?? null,
+    commercial_use: rule.commercial_use ?? null,
+    distribution: rule.distribution ?? null,
+    copyright_holders: rule.copyright_holders ?? [],
     acceptable_or_branches: rule.policy_result === 'PASS' ? [expression] : [],
     branch_evaluations: [],
     exceptions: [],
@@ -276,6 +288,8 @@ function failedEvaluation(evidence, policy, policyHash, policyInputHash, message
     notice_required: false,
     attribution_required: false,
     source_offer_required: false,
+    no_endorsement_required: false,
+    no_publicity_name_use_without_permission: false,
     manual_review_required: false,
     evidence_status: evidence.evidence_status,
     evidence_sources: evidence.evidence_sources ?? [],
@@ -363,6 +377,10 @@ export function evaluateLicenseEvidence(
     exceptions: nodeResult.exceptions,
     policy_result: policyResult,
     obligations: nodeResult.obligations,
+    policy_rule_id: nodeResult.policy_rule_id ?? null,
+    commercial_use: nodeResult.commercial_use ?? null,
+    distribution: nodeResult.distribution ?? null,
+    copyright_holders: nodeResult.copyright_holders ?? [],
     ...flags,
     manual_review_required: policyResult === 'MANUAL_REVIEW',
     evidence_status: evidence.evidence_status,

@@ -1,0 +1,242 @@
+{
+  "artifact": {
+    "archive_inventory_sha256": "5445598eb5f3632ebcd3114b35220a025d73aa584d14a79ad9cc7a11c5ea43d4",
+    "download_url": "https://files.pythonhosted.org/packages/a6/9b/7a58e61d62be561da3a356fe2384d4059a6345fc130e23ef1c36a5b81d24/pillow-12.3.0-cp313-cp313-win_amd64.whl",
+    "filename": "pillow-12.3.0-cp313-cp313-win_amd64.whl",
+    "license_expression": "MIT-CMU",
+    "name": "pillow",
+    "package": "pillow",
+    "review_status": "APPROVED",
+    "sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
+    "size": 7239691,
+    "source": "https://github.com/python-pillow/Pillow",
+    "source_index": "https://pypi.org/project/Pillow/12.3.0/",
+    "supplier": "Python Software Foundation / PyPI",
+    "version": "12.3.0"
+  },
+  "bundled_components": [
+    {
+      "component_id": "brotli",
+      "evidence_materialized_text_sha256": "8bf2fbe9891ab424ff96246cd7dc50d779b87f5b779ade971621c22de54cd7e5",
+      "evidence_normalized_lf_sha256": "51ed379cf673c9676b7fa7e1bedbfc5d4ad63caac4f6f99eeec5ccab50c3e0ef",
+      "evidence_relative_path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+      "evidence_sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857",
+      "inclusion_evidence": "LICENSE_SECTION_IN_DISTRIBUTED_WHEEL",
+      "license_expression": "MIT",
+      "license_file_basename": "LICENSE",
+      "name": "brotli",
+      "section_marker": "===== brotli-1.2.0 =====",
+      "version": "1.2.0"
+    },
+    {
+      "component_id": "freetype",
+      "evidence_materialized_text_sha256": "8bf2fbe9891ab424ff96246cd7dc50d779b87f5b779ade971621c22de54cd7e5",
+      "evidence_normalized_lf_sha256": "51ed379cf673c9676b7fa7e1bedbfc5d4ad63caac4f6f99eeec5ccab50c3e0ef",
+      "evidence_relative_path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+      "evidence_sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857",
+      "inclusion_evidence": "LICENSE_SECTION_IN_DISTRIBUTED_WHEEL",
+      "license_expression": "FTL OR GPL-2.0-or-later",
+      "license_file_basename": "LICENSE",
+      "name": "FreeType",
+      "section_marker": "===== freetype-2.14.3 =====",
+      "version": "2.14.3"
+    },
+    {
+      "component_id": "harfbuzz",
+      "evidence_materialized_text_sha256": "8bf2fbe9891ab424ff96246cd7dc50d779b87f5b779ade971621c22de54cd7e5",
+      "evidence_normalized_lf_sha256": "51ed379cf673c9676b7fa7e1bedbfc5d4ad63caac4f6f99eeec5ccab50c3e0ef",
+      "evidence_relative_path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+      "evidence_sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857",
+      "inclusion_evidence": "LICENSE_SECTION_IN_DISTRIBUTED_WHEEL",
+      "license_expression": "MIT",
+      "license_file_basename": "LICENSE",
+      "name": "HarfBuzz",
+      "section_marker": "===== harfbuzz-14.2.1 =====",
+      "version": "14.2.1"
+    },
+    {
+      "component_id": "lcms2",
+      "evidence_materialized_text_sha256": "8bf2fbe9891ab424ff96246cd7dc50d779b87f5b779ade971621c22de54cd7e5",
+      "evidence_normalized_lf_sha256": "51ed379cf673c9676b7fa7e1bedbfc5d4ad63caac4f6f99eeec5ccab50c3e0ef",
+      "evidence_relative_path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+      "evidence_sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857",
+      "inclusion_evidence": "LICENSE_SECTION_IN_DISTRIBUTED_WHEEL",
+      "license_expression": "MIT",
+      "license_file_basename": "LICENSE",
+      "name": "Little CMS",
+      "section_marker": "===== lcms2-2.19.1 =====",
+      "version": "2.19.1"
+    },
+    {
+      "component_id": "libavif-license-bundle",
+      "evidence_materialized_text_sha256": "8bf2fbe9891ab424ff96246cd7dc50d779b87f5b779ade971621c22de54cd7e5",
+      "evidence_normalized_lf_sha256": "51ed379cf673c9676b7fa7e1bedbfc5d4ad63caac4f6f99eeec5ccab50c3e0ef",
+      "evidence_relative_path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+      "evidence_sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857",
+      "inclusion_evidence": "LICENSE_SECTION_IN_DISTRIBUTED_WHEEL",
+      "license_expression": "LicenseRef-Pillow-libavif-license-bundle",
+      "license_file_basename": "LICENSE",
+      "name": "libavif and recorded dependencies",
+      "section_marker": "===== libavif-1.4.2 =====",
+      "version": "1.4.2"
+    },
+    {
+      "component_id": "libjpeg-turbo-license-bundle",
+      "evidence_materialized_text_sha256": "8bf2fbe9891ab424ff96246cd7dc50d779b87f5b779ade971621c22de54cd7e5",
+      "evidence_normalized_lf_sha256": "51ed379cf673c9676b7fa7e1bedbfc5d4ad63caac4f6f99eeec5ccab50c3e0ef",
+      "evidence_relative_path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+      "evidence_sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857",
+      "inclusion_evidence": "LICENSE_SECTION_IN_DISTRIBUTED_WHEEL",
+      "license_expression": "LicenseRef-Pillow-libjpeg-turbo-license-bundle",
+      "license_file_basename": "LICENSE",
+      "name": "libjpeg-turbo and recorded dependencies",
+      "section_marker": "===== libjpeg-turbo-3.1.4.1 =====",
+      "version": "3.1.4.1"
+    },
+    {
+      "component_id": "libpng",
+      "evidence_materialized_text_sha256": "8bf2fbe9891ab424ff96246cd7dc50d779b87f5b779ade971621c22de54cd7e5",
+      "evidence_normalized_lf_sha256": "51ed379cf673c9676b7fa7e1bedbfc5d4ad63caac4f6f99eeec5ccab50c3e0ef",
+      "evidence_relative_path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+      "evidence_sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857",
+      "inclusion_evidence": "LICENSE_SECTION_IN_DISTRIBUTED_WHEEL",
+      "license_expression": "Libpng-2.0",
+      "license_file_basename": "LICENSE",
+      "name": "libpng",
+      "section_marker": "===== libpng-1.6.58 =====",
+      "version": "1.6.58"
+    },
+    {
+      "component_id": "libwebp",
+      "evidence_materialized_text_sha256": "8bf2fbe9891ab424ff96246cd7dc50d779b87f5b779ade971621c22de54cd7e5",
+      "evidence_normalized_lf_sha256": "51ed379cf673c9676b7fa7e1bedbfc5d4ad63caac4f6f99eeec5ccab50c3e0ef",
+      "evidence_relative_path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+      "evidence_sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857",
+      "inclusion_evidence": "LICENSE_SECTION_IN_DISTRIBUTED_WHEEL",
+      "license_expression": "BSD-3-Clause",
+      "license_file_basename": "LICENSE",
+      "name": "libwebp",
+      "section_marker": "===== libwebp-1.6.0 =====",
+      "version": "1.6.0"
+    },
+    {
+      "component_id": "openjpeg",
+      "evidence_materialized_text_sha256": "8bf2fbe9891ab424ff96246cd7dc50d779b87f5b779ade971621c22de54cd7e5",
+      "evidence_normalized_lf_sha256": "51ed379cf673c9676b7fa7e1bedbfc5d4ad63caac4f6f99eeec5ccab50c3e0ef",
+      "evidence_relative_path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+      "evidence_sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857",
+      "inclusion_evidence": "LICENSE_SECTION_IN_DISTRIBUTED_WHEEL",
+      "license_expression": "BSD-2-Clause",
+      "license_file_basename": "LICENSE",
+      "name": "OpenJPEG",
+      "section_marker": "===== openjpeg-2.5.4 =====",
+      "version": "2.5.4"
+    },
+    {
+      "component_id": "libtiff-license-bundle",
+      "evidence_materialized_text_sha256": "8bf2fbe9891ab424ff96246cd7dc50d779b87f5b779ade971621c22de54cd7e5",
+      "evidence_normalized_lf_sha256": "51ed379cf673c9676b7fa7e1bedbfc5d4ad63caac4f6f99eeec5ccab50c3e0ef",
+      "evidence_relative_path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+      "evidence_sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857",
+      "inclusion_evidence": "LICENSE_SECTION_IN_DISTRIBUTED_WHEEL",
+      "license_expression": "LicenseRef-Pillow-libtiff-license-bundle",
+      "license_file_basename": "LICENSE",
+      "name": "libtiff and recorded dependencies",
+      "section_marker": "===== tiff-4.7.1 =====",
+      "version": "4.7.1"
+    },
+    {
+      "component_id": "xz",
+      "evidence_materialized_text_sha256": "8bf2fbe9891ab424ff96246cd7dc50d779b87f5b779ade971621c22de54cd7e5",
+      "evidence_normalized_lf_sha256": "51ed379cf673c9676b7fa7e1bedbfc5d4ad63caac4f6f99eeec5ccab50c3e0ef",
+      "evidence_relative_path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+      "evidence_sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857",
+      "inclusion_evidence": "LICENSE_SECTION_IN_DISTRIBUTED_WHEEL",
+      "license_expression": "0BSD",
+      "license_file_basename": "LICENSE",
+      "name": "XZ Utils",
+      "section_marker": "===== xz-5.8.3 =====",
+      "version": "5.8.3"
+    },
+    {
+      "component_id": "zlib-ng",
+      "evidence_materialized_text_sha256": "8bf2fbe9891ab424ff96246cd7dc50d779b87f5b779ade971621c22de54cd7e5",
+      "evidence_normalized_lf_sha256": "51ed379cf673c9676b7fa7e1bedbfc5d4ad63caac4f6f99eeec5ccab50c3e0ef",
+      "evidence_relative_path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+      "evidence_sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857",
+      "inclusion_evidence": "LICENSE_SECTION_IN_DISTRIBUTED_WHEEL",
+      "license_expression": "Zlib",
+      "license_file_basename": "LICENSE",
+      "name": "zlib-ng",
+      "section_marker": "===== zlib-ng-2.3.3 =====",
+      "version": "2.3.3"
+    }
+  ],
+  "bundled_third_party_license_evidence": "DETECTED_AND_SEPARATELY_RECORDED",
+  "evidence_identity_sha256": "ba005e6c433e964aa3a7559759886bc6480b425197e5232c1d64ca00ca8120e7",
+  "license_evidence_files": [
+    {
+      "materialized_text_sha256": "8bf2fbe9891ab424ff96246cd7dc50d779b87f5b779ade971621c22de54cd7e5",
+      "normalized_lf_sha256": "51ed379cf673c9676b7fa7e1bedbfc5d4ad63caac4f6f99eeec5ccab50c3e0ef",
+      "relative_path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+      "sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857",
+      "size": 78016
+    }
+  ],
+  "metadata": {
+    "license_expression": "MIT-CMU",
+    "license_files": ["LICENSE"],
+    "name": "pillow",
+    "relative_path": "pillow-12.3.0.dist-info/METADATA",
+    "sha256": "2c4378001803cfac65809a50722d46e0da4ce8061e717f103e5d52734bab30f5",
+    "version": "12.3.0"
+  },
+  "native_artifacts": [
+    {
+      "relative_path": "PIL/_avif.cp313-win_amd64.pyd",
+      "sha256": "2e3e5cce3aea38c603680ca3da5d161fad123ce23a803bb692a56aff608989be",
+      "size": 7890944
+    },
+    {
+      "relative_path": "PIL/_imaging.cp313-win_amd64.pyd",
+      "sha256": "88756e8e0e3f6180e518da25d379597c861e2d20d716ef001894789b515c1777",
+      "size": 2632704
+    },
+    {
+      "relative_path": "PIL/_imagingcms.cp313-win_amd64.pyd",
+      "sha256": "7ecb50b954d13d72b7a0ff565872332443cdbc83a36e58a56b2b949a56f32549",
+      "size": 272384
+    },
+    {
+      "relative_path": "PIL/_imagingft.cp313-win_amd64.pyd",
+      "sha256": "e94673a471a0b6fd5e92e8b6cdbdfe16e2e91bcf5689e9e4c9b391ab43788d85",
+      "size": 2174976
+    },
+    {
+      "relative_path": "PIL/_imagingmath.cp313-win_amd64.pyd",
+      "sha256": "9d5bbea6a877a48ed7995a0640ecb0a5567d9fad544a4a1fbf9f22d507029b57",
+      "size": 21504
+    },
+    {
+      "relative_path": "PIL/_imagingmorph.cp313-win_amd64.pyd",
+      "sha256": "9aa1903b1c4ecd1269a2f7575a62f764492b5510b43fe477970ecc606595cfc5",
+      "size": 12288
+    },
+    {
+      "relative_path": "PIL/_imagingtk.cp313-win_amd64.pyd",
+      "sha256": "8ccd6128481d5a3a15993c2f8a69585694ff972652a6b06dcaee276fc65633a7",
+      "size": 14848
+    },
+    {
+      "relative_path": "PIL/_webp.cp313-win_amd64.pyd",
+      "sha256": "9918faf8d90faa86e03e48479c6a62383be71da759254afded18591a406a92fe",
+      "size": 416256
+    }
+  ],
+  "scanner": {
+    "mode": "OFFLINE_EXACT_BYTES",
+    "name": "code-f-wheel-license-evidence-scan",
+    "version": "1.0.0"
+  },
+  "schema_version": "1"
+}

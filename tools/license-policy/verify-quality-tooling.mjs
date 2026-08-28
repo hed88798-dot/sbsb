@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spdxParserIdentity } from './spdx-parser.mjs';
+import { evaluateBundledLicenseEvidence, loadBundledLicenseEvidence } from './bundled-license.mjs';
 
 const require = createRequire(import.meta.url);
 const repositoryRoot = resolve(fileURLToPath(new URL('../../', import.meta.url)));
@@ -14,6 +15,12 @@ const lockPath = resolve(
 
 function hash(path) {
   return createHash('sha256').update(readFileSync(path)).digest('hex');
+}
+
+export function canonicalLicenseTextHash(path) {
+  return createHash('sha256')
+    .update(readFileSync(path, 'utf8').replaceAll('\r\n', '\n'))
+    .digest('hex');
 }
 
 function canonicalValue(value) {
@@ -120,6 +127,49 @@ export function verifySpdxQualityTooling() {
   }
   if (policy.license_policy_version !== lock.license_policy.version) {
     failures.push('license policy version differs from the supply-chain lock');
+  }
+  for (const historical of lock.historical_policies ?? []) {
+    const historicalPolicy = JSON.parse(
+      readFileSync(resolve(repositoryRoot, historical.relative_path), 'utf8'),
+    );
+    if (
+      historicalPolicy.license_policy_version !== historical.version ||
+      canonicalHash(historicalPolicy) !== historical.sha256
+    ) {
+      failures.push(`${historical.version}: immutable historical policy identity mismatch`);
+    }
+  }
+  for (const evidence of lock.rule_evidence ?? []) {
+    const rule = policy.license_rules[evidence.spdx_id];
+    if (
+      !rule ||
+      rule.rule_id !== evidence.rule_id ||
+      rule.spdx_license_list_version !== evidence.spdx_license_list_version ||
+      canonicalHash(rule.canonical_license_evidence) !==
+        canonicalHash({
+          source: evidence.source,
+          source_artifact_sha256: evidence.source_artifact_sha256,
+          canonical_license_text_sha256: evidence.canonical_license_text_sha256,
+        })
+    ) {
+      failures.push(`${evidence.rule_id}: policy rule evidence identity mismatch`);
+    }
+  }
+  for (const review of policy.artifact_bundled_license_reviews ?? []) {
+    try {
+      const scan = loadBundledLicenseEvidence(resolve(repositoryRoot, review.scan_relative_path));
+      evaluateBundledLicenseEvidence(scan, {
+        policy: { document: policy, sha256: lock.license_policy.sha256 },
+      });
+      if (
+        canonicalLicenseTextHash(resolve(repositoryRoot, review.notice_text_relative_path)) !==
+        review.license_evidence_materialized_text_sha256
+      ) {
+        failures.push(`${review.review_id}: materialized notice evidence hash mismatch`);
+      }
+    } catch (error) {
+      failures.push(`${review.review_id}: ${error.message}`);
+    }
   }
   if (failures.length > 0) throw new Error(failures.join('\n'));
   return {

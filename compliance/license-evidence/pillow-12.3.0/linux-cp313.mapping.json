@@ -1,0 +1,194 @@
+{
+  "schema_version": "1",
+  "artifact": {
+    "package": "pillow",
+    "version": "12.3.0",
+    "filename": "pillow-12.3.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3",
+    "source": "https://github.com/python-pillow/Pillow",
+    "source_index": "https://pypi.org/project/Pillow/12.3.0/",
+    "download_url": "https://files.pythonhosted.org/packages/f7/62/de5bdd77d935331f4f802edc11e4d82950f642caad6cb2f949837b8560e2/pillow-12.3.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "supplier": "Python Software Foundation / PyPI",
+    "review_status": "APPROVED",
+    "name": "pillow",
+    "license_expression": "MIT-CMU"
+  },
+  "bundled_components": [
+    {
+      "component_id": "aom",
+      "name": "Alliance for Open Media codec",
+      "version": null,
+      "license_expression": "BSD-3-Clause",
+      "section_marker": "\nAOM\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "brotli",
+      "name": "Brotli",
+      "version": "1.2.0",
+      "license_expression": "MIT",
+      "section_marker": "\nBROTLI\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "bzip2",
+      "name": "bzip2",
+      "version": null,
+      "license_expression": "bzip2-1.0.6",
+      "section_marker": "\nBZIP2\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "dav1d",
+      "name": "dav1d",
+      "version": null,
+      "license_expression": "BSD-2-Clause",
+      "section_marker": "\nDAV1D\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "freetype",
+      "name": "FreeType",
+      "version": null,
+      "license_expression": "FTL OR GPL-2.0-or-later",
+      "section_marker": "\nFREETYPE2\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "harfbuzz",
+      "name": "HarfBuzz",
+      "version": null,
+      "license_expression": "MIT",
+      "section_marker": "\nHARFBUZZ\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "lcms2",
+      "name": "Little CMS",
+      "version": null,
+      "license_expression": "MIT",
+      "section_marker": "\nLCMS2\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "libavif-license-bundle",
+      "name": "libavif and recorded dependencies",
+      "version": null,
+      "license_expression": "LicenseRef-Pillow-libavif-license-bundle",
+      "section_marker": "\nLIBAVIF\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "libjpeg",
+      "name": "Independent JPEG Group software",
+      "version": null,
+      "license_expression": "IJG",
+      "section_marker": "\nLIBJPEG\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "liblzma",
+      "name": "liblzma / XZ Utils",
+      "version": "5.8.3",
+      "license_expression": "0BSD",
+      "section_marker": "\nLIBLZMA\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "libpng",
+      "name": "libpng",
+      "version": "1.6.58",
+      "license_expression": "Libpng-2.0",
+      "section_marker": "\nLIBPNG\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "libtiff",
+      "name": "libtiff",
+      "version": "4.7.1",
+      "license_expression": "libtiff",
+      "section_marker": "\nLIBTIFF\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "libwebp",
+      "name": "libwebp",
+      "version": "1.6.0",
+      "license_expression": "BSD-3-Clause",
+      "section_marker": "\nLIBWEBP\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "libyuv",
+      "name": "libyuv",
+      "version": null,
+      "license_expression": "BSD-3-Clause",
+      "section_marker": "\nLIBYUV\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "openjpeg",
+      "name": "OpenJPEG",
+      "version": "2.5.4",
+      "license_expression": "BSD-2-Clause",
+      "section_marker": "\nOPENJPEG\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "raqm",
+      "name": "Raqm",
+      "version": null,
+      "license_expression": "MIT",
+      "section_marker": "\nRAQM\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "tcl-tk",
+      "name": "Tcl/Tk",
+      "version": null,
+      "license_expression": "TCL",
+      "section_marker": "\nTCL_TK\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "xau",
+      "name": "Xau",
+      "version": null,
+      "license_expression": "LicenseRef-Pillow-Xau",
+      "section_marker": "\nXAU\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "xcb",
+      "name": "XCB",
+      "version": null,
+      "license_expression": "MIT",
+      "section_marker": "\nXCB\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "xdmcp",
+      "name": "XDMCP",
+      "version": null,
+      "license_expression": "LicenseRef-Pillow-XDMCP",
+      "section_marker": "\nXDMCP\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "zlib",
+      "name": "zlib",
+      "version": null,
+      "license_expression": "Zlib",
+      "section_marker": "\nZLIB\n",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "zstd",
+      "name": "Zstandard",
+      "version": "1.5.7",
+      "license_expression": "BSD-3-Clause",
+      "section_marker": "\nZSTD\n",
+      "license_file_basename": "LICENSE"
+    }
+  ]
+}

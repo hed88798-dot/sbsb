@@ -28,6 +28,7 @@
     "vulnerability:scan": "pnpm audit --audit-level moderate",
     "compliance:python:tooling:install": "node tools/python-supply-chain/quality-tooling.mjs",
     "compliance:license-policy:verify": "node tools/license-policy/verify-quality-tooling.mjs",
+    "compliance:license-policy:notices": "node tools/license-policy/notices.mjs",
     "compliance:python:verify": "node tools/python-supply-chain/cli.mjs repo-verify",
     "compliance:python:target:verify": "node tools/python-supply-chain/cli.mjs repo-target-verify-current",
     "compliance:python:inventory": "node tools/python-supply-chain/cli.mjs verify",
