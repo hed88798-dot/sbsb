@@ -62,9 +62,11 @@ def inspect(path: Path) -> dict[str, object]:
                 name == declared_name or name == f"{dist_info}{declared_name}"
                 for declared_name in declared_license_files
             )
-            conventional = name.startswith(f"{dist_info}licenses/") or (
-                ".dist-info/" not in name
-                and re.search(r"(?:^|/)(?:license|licence|copying|notice)(?:[._-]|$)", lower)
+            conventional_name = re.search(
+                r"(?:^|/)(?:license|licence|copying|notice)(?:[._-]|$)", lower
+            )
+            conventional = conventional_name and (
+                name.startswith(dist_info) or ".dist-info/" not in name
             )
             if declared or conventional:
                 value = wheel.read(name)
