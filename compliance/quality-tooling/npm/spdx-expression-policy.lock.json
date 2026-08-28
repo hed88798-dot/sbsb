@@ -6,10 +6,27 @@
   "vulnerability_review_expires_at": "2026-11-28T00:00:00Z",
   "vulnerability_source": "OSV.DEV",
   "license_policy": {
-    "version": "2026.08.28.1",
+    "version": "2026.08.28.2",
     "relative_path": "compliance/license-policy/python-spdx-v1/policy.json",
-    "sha256": "93e0ad3c2c723492d5ea5e1d3dd634239c80822489678a35fc458782eb993f84"
+    "sha256": "0d708d719c70a219f80961c9bc1be6162ee0a34cb9ca0cbca5acd56e4f8264ac"
   },
+  "historical_policies": [
+    {
+      "version": "2026.08.28.1",
+      "relative_path": "compliance/license-policy/python-spdx-v1/versions/2026.08.28.1.json",
+      "sha256": "93e0ad3c2c723492d5ea5e1d3dd634239c80822489678a35fc458782eb993f84"
+    }
+  ],
+  "rule_evidence": [
+    {
+      "rule_id": "MIT-CMU-commercial-v1",
+      "spdx_id": "MIT-CMU",
+      "spdx_license_list_version": "3.28.0",
+      "source": "https://github.com/spdx/license-list-data/blob/v3.28/json/details/MIT-CMU.json",
+      "source_artifact_sha256": "bda725d3d7196cebadc5299b12e2d0461aed38cce65701edf47c4b050ecae317",
+      "canonical_license_text_sha256": "5be0429811d57cd12591f15c748ca3dcc3511b70da0b66f4ef63c90ee67bd516"
+    }
+  ],
   "components": [
     {
       "package_name": "spdx-expression-parse",

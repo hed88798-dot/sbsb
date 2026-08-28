@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
@@ -21,9 +22,21 @@ import {
   buildToolchainLicenseEvidence,
 } from '../../tools/python-supply-chain/provenance.mjs';
 import { buildPythonSbomRecords } from '../../tools/python-supply-chain/sbom.mjs';
+import { buildBundledLicenseSbomRecords } from '../../tools/python-supply-chain/sbom.mjs';
 import { buildWheelLicenseEvidence } from '../../tools/python-supply-chain/license.mjs';
+import {
+  evaluateBundledLicenseEvidence,
+  loadBundledLicenseEvidence,
+} from '../../tools/license-policy/bundled-license.mjs';
+import {
+  buildThirdPartyNoticeBundle,
+  materializeThirdPartyNotices,
+  renderThirdPartyNotices,
+  topLevelEvidenceFromScan,
+} from '../../tools/license-policy/notices.mjs';
 
 const repositoryRoot = resolve(import.meta.dirname, '../..');
+const pillowEvidenceRoot = join(repositoryRoot, 'compliance/license-evidence/pillow-12.3.0');
 
 function evidence(
   expression: string,
@@ -100,7 +113,7 @@ describe('Python SPDX expression parser and commercial policy', () => {
     expect(verifySpdxQualityTooling()).toMatchObject({
       status: 'PASS',
       scope: 'QUALITY_TOOLING',
-      license_policy_version: '2026.08.28.1',
+      license_policy_version: '2026.08.28.2',
     });
   });
 
@@ -200,6 +213,213 @@ describe('Python SPDX expression parser and commercial policy', () => {
       'FAIL',
     );
     expect(evaluateLicenseEvidence(evidence('MIT OR')).policy_result).toBe('FAIL');
+  });
+
+  it('adds an identifier-level MIT-CMU rule without normalizing it to MIT', () => {
+    const generic = {
+      ...evidence('MIT-CMU'),
+      package: 'generic-mit-cmu-fixture',
+      artifact_sha256: '9'.repeat(64),
+    };
+    const decision = evaluateLicenseEvidence(generic);
+    expect(decision).toMatchObject({
+      detected_license_expression: 'MIT-CMU',
+      normalized_expression: 'MIT-CMU',
+      policy_result: 'PASS',
+      policy_rule_id: 'MIT-CMU-commercial-v1',
+      commercial_use: 'ALLOWED',
+      distribution: 'ALLOWED_WITH_OBLIGATIONS',
+      notice_required: true,
+      no_endorsement_required: true,
+      no_publicity_name_use_without_permission: true,
+      copyright_holders: expect.arrayContaining(['Secret Labs AB']),
+      spdx_license_list_version: '3.28.0',
+      license_policy_version: '2026.08.28.2',
+    });
+    expect(decision.obligations).toEqual(
+      expect.arrayContaining([
+        'PRESERVE_COPYRIGHT_NOTICE',
+        'PRESERVE_PERMISSION_NOTICE',
+        'RETAIN_NOTICE_IN_SUPPORTING_DOCUMENTATION_OR_DISTRIBUTION_MATERIAL',
+        'NO_ENDORSEMENT',
+        'NO_PUBLICITY_NAME_USE_WITHOUT_PERMISSION',
+      ]),
+    );
+    expect(
+      evaluateLicenseEvidence({ ...generic, detected_license_expression: 'MIT' }),
+    ).toMatchObject({ normalized_expression: 'MIT', policy_rule_id: null });
+  });
+
+  it('re-evaluates identical Pillow evidence under immutable old and new policies', () => {
+    const scan = loadBundledLicenseEvidence(
+      join(pillowEvidenceRoot, 'windows-cp313.scan.json'),
+    ).document;
+    const unchangedEvidence = topLevelEvidenceFromScan(scan);
+    const oldPolicy = loadLicensePolicy(
+      join(repositoryRoot, 'compliance/license-policy/python-spdx-v1/versions/2026.08.28.1.json'),
+    );
+    const oldDecision = evaluateLicenseEvidence(unchangedEvidence, { policy: oldPolicy });
+    const newDecision = evaluateLicenseEvidence(unchangedEvidence);
+    expect(oldDecision).toMatchObject({
+      artifact_sha256: scan.artifact.sha256,
+      detected_license_expression: 'MIT-CMU',
+      policy_result: 'FAIL',
+      license_policy_version: '2026.08.28.1',
+      reason: 'SPDX identifier has no rule in the pinned commercial policy',
+    });
+    expect(newDecision).toMatchObject({
+      artifact_sha256: scan.artifact.sha256,
+      detected_license_expression: 'MIT-CMU',
+      policy_result: 'PASS',
+      license_policy_version: '2026.08.28.2',
+    });
+    expect(unchangedEvidence.artifact_sha256).toBe(scan.artifact.sha256);
+    expect(
+      compareLicenseDecisionReports(
+        evaluateLicenseCollection([unchangedEvidence], { policy: oldPolicy }),
+        evaluateLicenseCollection([unchangedEvidence]),
+      ),
+    ).toEqual([
+      expect.objectContaining({
+        artifact_sha256: scan.artifact.sha256,
+        previous_policy_result: 'FAIL',
+        current_policy_result: 'PASS',
+      }),
+    ]);
+  });
+
+  it.each([
+    ['windows-cp313', '1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8', 12],
+    ['linux-cp313', '0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3', 22],
+  ])(
+    'validates exact %s Pillow evidence, bundled review, SBOM and notice assembly',
+    (fixture, artifactHash, bundledCount) => {
+      const scanPath = join(pillowEvidenceRoot, `${fixture}.scan.json`);
+      const loaded = loadBundledLicenseEvidence(scanPath);
+      const scan = loaded.document;
+      const schema = JSON.parse(
+        readFileSync(
+          join(
+            repositoryRoot,
+            'schemas/compliance/bundled-license-evidence/v1/evidence.schema.json',
+          ),
+          'utf8',
+        ),
+      );
+      const ajv = new Ajv2020({ strict: false });
+      addFormats(ajv);
+      expect(ajv.compile(schema)(scan)).toBe(true);
+      expect(scan).toMatchObject({
+        artifact: { sha256: artifactHash, license_expression: 'MIT-CMU' },
+        metadata: { license_expression: 'MIT-CMU' },
+        bundled_third_party_license_evidence: 'DETECTED_AND_SEPARATELY_RECORDED',
+      });
+      expect(scan.bundled_components).toHaveLength(bundledCount);
+
+      const topLevel = evaluateLicenseEvidence(topLevelEvidenceFromScan(scan));
+      const bundled = evaluateBundledLicenseEvidence(loaded);
+      expect(topLevel).toMatchObject({
+        artifact_sha256: artifactHash,
+        policy_result: 'PASS',
+        normalized_expression: 'MIT-CMU',
+        notice_required: true,
+        no_endorsement_required: true,
+      });
+      expect(bundled).toMatchObject({
+        status: 'PASS',
+        artifact_sha256: artifactHash,
+        notice_materialization_required: true,
+      });
+      expect(bundled.decisions).toHaveLength(bundledCount);
+
+      const sbom = buildBundledLicenseSbomRecords([scan], [bundled]);
+      expect(sbom.components).toHaveLength(bundledCount);
+      expect(
+        sbom.components.every((component) => component.licenses[0].expression !== 'MIT-CMU'),
+      ).toBe(true);
+      expect(sbom.dependencies).toEqual([
+        expect.objectContaining({ ref: `urn:python-wheel:sha256:${artifactHash}` }),
+      ]);
+      const topLevelSbom = buildPythonSbomRecords(
+        [
+          {
+            path: scanPath,
+            document: {
+              schema_version: '1',
+              inventory_id: `${fixture}-license-regression`,
+              scope: 'PRODUCTION_WORKER_RUNTIME',
+              packages: [
+                {
+                  package_name: 'pillow',
+                  version: '12.3.0',
+                  purl: 'pkg:pypi/pillow@12.3.0',
+                  sha256: artifactHash,
+                  filename: scan.artifact.filename,
+                  source: scan.artifact.source,
+                  source_index: scan.artifact.source_index,
+                  provenance: {
+                    download_url: scan.artifact.download_url,
+                    supplier: scan.artifact.supplier,
+                    review_status: scan.artifact.review_status,
+                  },
+                  python_version: '3.13.15',
+                  python_tag: 'cp313',
+                  abi_tag: 'cp313',
+                  platform_tag: fixture.startsWith('windows') ? 'win_amd64' : 'manylinux_x86_64',
+                  license_expression: 'MIT-CMU',
+                  dependencies: [],
+                  native_artifacts: [],
+                },
+              ],
+            },
+          },
+        ],
+        [],
+        [topLevel],
+      );
+      expect(topLevelSbom.components[0]).toMatchObject({
+        name: 'pillow',
+        hashes: [{ alg: 'SHA-256', content: artifactHash }],
+        licenses: [{ expression: 'MIT-CMU' }],
+      });
+
+      const licenseText = readFileSync(join(pillowEvidenceRoot, `${fixture}.LICENSE.txt`), 'utf8');
+      const bundle = buildThirdPartyNoticeBundle(scan, topLevel, bundled, licenseText);
+      expect(bundle.entries).toHaveLength(bundledCount + 1);
+      expect(bundle.entries[0]).toMatchObject({
+        parent_artifact_sha256: artifactHash,
+        package: 'pillow',
+        version: '12.3.0',
+        license_expression: 'MIT-CMU',
+      });
+      expect(bundle.entries.every((entry) => entry.parent_artifact_sha256 === artifactHash)).toBe(
+        true,
+      );
+      const rendered = renderThirdPartyNotices(bundle);
+      expect(rendered).toContain(`Artifact SHA-256: ${artifactHash}`);
+      expect(rendered).toContain('NO_PUBLICITY_NAME_USE_WITHOUT_PERMISSION');
+      expect(rendered).toContain('By obtaining, using, and/or copying this software');
+
+      const temporary = mkdtempSync(join(tmpdir(), 'mit-cmu-notice-'));
+      try {
+        const materialized = materializeThirdPartyNotices(
+          join(temporary, 'THIRD_PARTY_NOTICES.md'),
+          bundle,
+        );
+        expect(materialized.bytes).toBeGreaterThan(licenseText.length);
+        expect(materialized.sha256).toMatch(/^[a-f0-9]{64}$/u);
+      } finally {
+        rmSync(temporary, { force: true, recursive: true });
+      }
+    },
+  );
+
+  it('fails closed when an exact bundled-license evidence identity changes', () => {
+    const scan = structuredClone(
+      loadBundledLicenseEvidence(join(pillowEvidenceRoot, 'windows-cp313.scan.json')).document,
+    );
+    scan.bundled_components[0].license_expression = 'Future-License-9.9';
+    expect(() => evaluateBundledLicenseEvidence(scan)).toThrow(/evidence identity|license fact/u);
   });
 
   it('recognizes LicenseRef as an explicit blocking manual-review path', () => {

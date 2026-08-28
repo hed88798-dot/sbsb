@@ -188,6 +188,47 @@ export function validatePythonSbomBinding(loaded, components) {
   if (failures.length > 0) throw new Error(failures.join('\n'));
 }
 
+export function buildBundledLicenseSbomRecords(scans = [], evaluations = []) {
+  const evaluationByArtifact = new Map(
+    evaluations.map((evaluation) => [evaluation.artifact_sha256, evaluation]),
+  );
+  const components = [];
+  const dependencies = [];
+  for (const scan of scans) {
+    const evaluation = evaluationByArtifact.get(scan.artifact.sha256);
+    if (!evaluation || evaluation.status !== 'PASS') {
+      throw new Error(`${scan.artifact.sha256}: approved bundled-license evaluation is missing`);
+    }
+    const parentRef = `urn:python-wheel:sha256:${scan.artifact.sha256}`;
+    const childRefs = [];
+    for (const decision of evaluation.decisions) {
+      const ref = `urn:python-wheel-bundled:${scan.artifact.sha256}:${decision.component_id}`;
+      childRefs.push(ref);
+      components.push({
+        type: 'library',
+        'bom-ref': ref,
+        name: decision.package,
+        ...(decision.version ? { version: decision.version } : {}),
+        licenses: [{ expression: decision.detected_license_expression }],
+        properties: [
+          { name: 'com.company.artifact.owner_kind', value: 'WHEEL_BUNDLED_COMPONENT' },
+          { name: 'com.company.bundled.component_id', value: decision.component_id },
+          { name: 'com.company.bundled.parent_artifact_sha256', value: scan.artifact.sha256 },
+          {
+            name: 'com.company.bundled.evidence_identity_sha256',
+            value: scan.evidence_identity_sha256,
+          },
+          { name: 'com.company.license.policy_result', value: decision.policy_result },
+          { name: 'com.company.license.policy_version', value: decision.license_policy_version },
+          { name: 'com.company.license.review_id', value: decision.review_id },
+        ],
+      });
+    }
+    dependencies.push({ ref: parentRef, dependsOn: childRefs.sort() });
+  }
+  return { components, dependencies };
+}
+
 export function buildToolchainSbomRecords(toolchains = [], builds = [], licenseDecisions = []) {
   const components = [];
   const dependencies = [];

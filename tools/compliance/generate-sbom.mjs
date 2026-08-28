@@ -8,8 +8,16 @@ import {
   loadInventories,
   validatePackagedInventory,
 } from '../python-supply-chain/inventory.mjs';
-import { buildPythonSbomRecords, validatePythonSbomBinding } from '../python-supply-chain/sbom.mjs';
+import {
+  buildBundledLicenseSbomRecords,
+  buildPythonSbomRecords,
+  validatePythonSbomBinding,
+} from '../python-supply-chain/sbom.mjs';
 import { buildToolchainSbomRecords } from '../python-supply-chain/sbom.mjs';
+import {
+  evaluateBundledLicenseEvidence,
+  loadBundledLicenseEvidence,
+} from '../license-policy/bundled-license.mjs';
 import { loadBuildProvenance, loadToolchainInventory } from '../python-supply-chain/provenance.mjs';
 
 const repositoryRoot = process.cwd();
@@ -64,6 +72,10 @@ const buildProvenancePaths = process.argv
   .flatMap((value, index) => (value === '--build-provenance' ? [process.argv[index + 1]] : []))
   .filter(Boolean)
   .map((path) => resolve(repositoryRoot, path));
+const bundledLicenseScanPaths = process.argv
+  .flatMap((value, index) => (value === '--bundled-license-scan' ? [process.argv[index + 1]] : []))
+  .filter(Boolean)
+  .map((path) => resolve(repositoryRoot, path));
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], {
   cwd: repositoryRoot,
   encoding: 'utf8',
@@ -75,6 +87,8 @@ let packagedInventories;
 let toolchainInventories;
 let buildProvenances;
 let licenseDecisions;
+let bundledLicenseScans;
+let bundledLicenseEvaluations;
 try {
   inventory = collectPnpmInventory(repositoryRoot);
   pythonInventories = loadInventories(
@@ -91,6 +105,12 @@ try {
     const report = JSON.parse(readFileSync(path, 'utf8'));
     return report.decisions ?? [];
   });
+  bundledLicenseScans = bundledLicenseScanPaths.map(
+    (path) => loadBundledLicenseEvidence(path).document,
+  );
+  bundledLicenseEvaluations = bundledLicenseScans.map((scan) =>
+    evaluateBundledLicenseEvidence(scan),
+  );
 } catch (error) {
   console.error(`sbom: FAIL\n${error.message}`);
   process.exit(1);
@@ -134,6 +154,10 @@ const toolchainRecords = buildToolchainSbomRecords(
   toolchainInventories,
   buildProvenances,
   licenseDecisions,
+);
+const bundledLicenseRecords = buildBundledLicenseSbomRecords(
+  bundledLicenseScans,
+  bundledLicenseEvaluations,
 );
 const qualityToolRecords = [
   {
@@ -190,9 +214,26 @@ const components = [
   ...npmComponents,
   ...qualityToolComponents,
   ...pythonRecords.components,
+  ...bundledLicenseRecords.components,
   ...toolchainRecords.components,
 ];
 validatePythonSbomBinding(pythonInventories, components);
+function mergeDependencies(records) {
+  const byRef = new Map();
+  for (const record of records) {
+    const values = byRef.get(record.ref) ?? new Set();
+    for (const dependency of record.dependsOn) values.add(dependency);
+    byRef.set(record.ref, values);
+  }
+  return [...byRef.entries()]
+    .map(([ref, dependsOn]) => ({ ref, dependsOn: [...dependsOn].sort() }))
+    .sort((left, right) => left.ref.localeCompare(right.ref));
+}
+const dependencies = mergeDependencies([
+  ...pythonRecords.dependencies,
+  ...bundledLicenseRecords.dependencies,
+  ...toolchainRecords.dependencies,
+]);
 const bom = {
   bomFormat: 'CycloneDX',
   specVersion: '1.6',
@@ -225,11 +266,11 @@ const bom = {
     },
   },
   components,
-  dependencies: [...pythonRecords.dependencies, ...toolchainRecords.dependencies],
+  dependencies,
 };
 
 mkdirSync(dirname(outputPath), { recursive: true });
 writeFileSync(outputPath, `${JSON.stringify(bom, null, 2)}\n`);
 console.log(
-  `sbom: PASS (scaffold; ${npmComponents.length} npm + ${pythonRecords.components.length} product Python/native + ${qualityToolComponents.length} compliance-tool + ${toolchainRecords.components.length} toolchain/build components; ${outputPath})`,
+  `sbom: PASS (scaffold; ${npmComponents.length} npm + ${pythonRecords.components.length} product Python/native + ${bundledLicenseRecords.components.length} wheel-bundled license components + ${qualityToolComponents.length} compliance-tool + ${toolchainRecords.components.length} toolchain/build components; ${outputPath})`,
 );

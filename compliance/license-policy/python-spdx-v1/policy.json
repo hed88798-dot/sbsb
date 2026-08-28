@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "license_policy_version": "2026.08.28.1",
+  "license_policy_version": "2026.08.28.2",
   "policy_name": "Python artifact and toolchain commercial distribution policy",
   "or_branch_selection_required": false,
   "artifact_roles": [
@@ -102,6 +102,33 @@
     "MPL-2.0": {
       "policy_result": "MANUAL_REVIEW",
       "obligations": ["FILE_LEVEL_SOURCE_DISTRIBUTION_REVIEW_REQUIRED"]
+    },
+    "MIT-CMU": {
+      "rule_id": "MIT-CMU-commercial-v1",
+      "spdx_id": "MIT-CMU",
+      "spdx_license_list_version": "3.28.0",
+      "canonical_license_evidence": {
+        "source": "https://github.com/spdx/license-list-data/blob/v3.28/json/details/MIT-CMU.json",
+        "source_artifact_sha256": "bda725d3d7196cebadc5299b12e2d0461aed38cce65701edf47c4b050ecae317",
+        "canonical_license_text_sha256": "5be0429811d57cd12591f15c748ca3dcc3511b70da0b66f4ef63c90ee67bd516"
+      },
+      "review_reference": "ADR-004-mit-cmu-and-bundled-license-evidence",
+      "policy_result": "PASS",
+      "commercial_use": "ALLOWED",
+      "distribution": "ALLOWED_WITH_OBLIGATIONS",
+      "copyright_holders": [
+        "Secret Labs AB",
+        "Fredrik Lundh and contributors",
+        "Jeffrey 'Alex' Clark and contributors"
+      ],
+      "obligations": [
+        "PRESERVE_LICENSE_TEXT",
+        "PRESERVE_COPYRIGHT_NOTICE",
+        "PRESERVE_PERMISSION_NOTICE",
+        "RETAIN_NOTICE_IN_SUPPORTING_DOCUMENTATION_OR_DISTRIBUTION_MATERIAL",
+        "NO_ENDORSEMENT",
+        "NO_PUBLICITY_NAME_USE_WITHOUT_PERMISSION"
+      ]
     }
   },
   "exception_rules": [
@@ -149,6 +176,456 @@
           "artifact_role": "PYINSTALLER_BOOTLOADER",
           "distribution_role": "MODIFIED_TOOLCHAIN_DISTRIBUTION",
           "policy_result": "MANUAL_REVIEW"
+        }
+      ]
+    }
+  ],
+  "artifact_bundled_license_reviews": [
+    {
+      "review_id": "pillow-12.3.0-cp313-windows-bundled-commercial-v1",
+      "package": "pillow",
+      "version": "12.3.0",
+      "artifact_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
+      "scan_relative_path": "compliance/license-evidence/pillow-12.3.0/windows-cp313.scan.json",
+      "notice_text_relative_path": "compliance/license-evidence/pillow-12.3.0/windows-cp313.LICENSE.txt",
+      "evidence_identity_sha256": "ba005e6c433e964aa3a7559759886bc6480b425197e5232c1d64ca00ca8120e7",
+      "license_evidence_relative_path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+      "license_evidence_sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857",
+      "license_evidence_normalized_lf_sha256": "51ed379cf673c9676b7fa7e1bedbfc5d4ad63caac4f6f99eeec5ccab50c3e0ef",
+      "license_evidence_materialized_text_sha256": "8bf2fbe9891ab424ff96246cd7dc50d779b87f5b779ade971621c22de54cd7e5",
+      "review_reference": "ADR-004-mit-cmu-and-bundled-license-evidence",
+      "policy_result": "PASS",
+      "distribution": "ALLOWED_WITH_OBLIGATIONS",
+      "notice_materialization_required": true,
+      "components": [
+        {
+          "component_id": "brotli",
+          "name": "brotli",
+          "version": "1.2.0",
+          "detected_license_expression": "MIT",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "freetype",
+          "name": "FreeType",
+          "version": "2.14.3",
+          "detected_license_expression": "FTL OR GPL-2.0-or-later",
+          "selected_policy_branch": "FTL",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "harfbuzz",
+          "name": "HarfBuzz",
+          "version": "14.2.1",
+          "detected_license_expression": "MIT",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "lcms2",
+          "name": "Little CMS",
+          "version": "2.19.1",
+          "detected_license_expression": "MIT",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "libavif-license-bundle",
+          "name": "libavif and recorded dependencies",
+          "version": "1.4.2",
+          "detected_license_expression": "LicenseRef-Pillow-libavif-license-bundle",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "libjpeg-turbo-license-bundle",
+          "name": "libjpeg-turbo and recorded dependencies",
+          "version": "3.1.4.1",
+          "detected_license_expression": "LicenseRef-Pillow-libjpeg-turbo-license-bundle",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "libpng",
+          "name": "libpng",
+          "version": "1.6.58",
+          "detected_license_expression": "Libpng-2.0",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "libwebp",
+          "name": "libwebp",
+          "version": "1.6.0",
+          "detected_license_expression": "BSD-3-Clause",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "openjpeg",
+          "name": "OpenJPEG",
+          "version": "2.5.4",
+          "detected_license_expression": "BSD-2-Clause",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "libtiff-license-bundle",
+          "name": "libtiff and recorded dependencies",
+          "version": "4.7.1",
+          "detected_license_expression": "LicenseRef-Pillow-libtiff-license-bundle",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "xz",
+          "name": "XZ Utils",
+          "version": "5.8.3",
+          "detected_license_expression": "0BSD",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "zlib-ng",
+          "name": "zlib-ng",
+          "version": "2.3.3",
+          "detected_license_expression": "Zlib",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        }
+      ]
+    },
+    {
+      "review_id": "pillow-12.3.0-cp313-linux-bundled-commercial-v1",
+      "package": "pillow",
+      "version": "12.3.0",
+      "artifact_sha256": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3",
+      "scan_relative_path": "compliance/license-evidence/pillow-12.3.0/linux-cp313.scan.json",
+      "notice_text_relative_path": "compliance/license-evidence/pillow-12.3.0/linux-cp313.LICENSE.txt",
+      "evidence_identity_sha256": "6be8a7e1d855cc926fddc8a6e0ab7261358536b8ce0ba11fb55a5d78b1777cf6",
+      "license_evidence_relative_path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+      "license_evidence_sha256": "dda12a98c1979cf3d94df1cff45d27a4cb3f04a60c76f76902ac54cac03ec0ce",
+      "license_evidence_normalized_lf_sha256": "dda12a98c1979cf3d94df1cff45d27a4cb3f04a60c76f76902ac54cac03ec0ce",
+      "license_evidence_materialized_text_sha256": "dda12a98c1979cf3d94df1cff45d27a4cb3f04a60c76f76902ac54cac03ec0ce",
+      "review_reference": "ADR-004-mit-cmu-and-bundled-license-evidence",
+      "policy_result": "PASS",
+      "distribution": "ALLOWED_WITH_OBLIGATIONS",
+      "notice_materialization_required": true,
+      "components": [
+        {
+          "component_id": "aom",
+          "name": "Alliance for Open Media codec",
+          "version": null,
+          "detected_license_expression": "BSD-3-Clause",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "brotli",
+          "name": "Brotli",
+          "version": "1.2.0",
+          "detected_license_expression": "MIT",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "bzip2",
+          "name": "bzip2",
+          "version": null,
+          "detected_license_expression": "bzip2-1.0.6",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "dav1d",
+          "name": "dav1d",
+          "version": null,
+          "detected_license_expression": "BSD-2-Clause",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "freetype",
+          "name": "FreeType",
+          "version": null,
+          "detected_license_expression": "FTL OR GPL-2.0-or-later",
+          "selected_policy_branch": "FTL",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "harfbuzz",
+          "name": "HarfBuzz",
+          "version": null,
+          "detected_license_expression": "MIT",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "lcms2",
+          "name": "Little CMS",
+          "version": null,
+          "detected_license_expression": "MIT",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "libavif-license-bundle",
+          "name": "libavif and recorded dependencies",
+          "version": null,
+          "detected_license_expression": "LicenseRef-Pillow-libavif-license-bundle",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "libjpeg",
+          "name": "Independent JPEG Group software",
+          "version": null,
+          "detected_license_expression": "IJG",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "liblzma",
+          "name": "liblzma / XZ Utils",
+          "version": "5.8.3",
+          "detected_license_expression": "0BSD",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "libpng",
+          "name": "libpng",
+          "version": "1.6.58",
+          "detected_license_expression": "Libpng-2.0",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "libtiff",
+          "name": "libtiff",
+          "version": "4.7.1",
+          "detected_license_expression": "libtiff",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "libwebp",
+          "name": "libwebp",
+          "version": "1.6.0",
+          "detected_license_expression": "BSD-3-Clause",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "libyuv",
+          "name": "libyuv",
+          "version": null,
+          "detected_license_expression": "BSD-3-Clause",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "openjpeg",
+          "name": "OpenJPEG",
+          "version": "2.5.4",
+          "detected_license_expression": "BSD-2-Clause",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "raqm",
+          "name": "Raqm",
+          "version": null,
+          "detected_license_expression": "MIT",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "tcl-tk",
+          "name": "Tcl/Tk",
+          "version": null,
+          "detected_license_expression": "TCL",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "xau",
+          "name": "Xau",
+          "version": null,
+          "detected_license_expression": "LicenseRef-Pillow-Xau",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "xcb",
+          "name": "XCB",
+          "version": null,
+          "detected_license_expression": "MIT",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "xdmcp",
+          "name": "XDMCP",
+          "version": null,
+          "detected_license_expression": "LicenseRef-Pillow-XDMCP",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "zlib",
+          "name": "zlib",
+          "version": null,
+          "detected_license_expression": "Zlib",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
+        },
+        {
+          "component_id": "zstd",
+          "name": "Zstandard",
+          "version": "1.5.7",
+          "detected_license_expression": "BSD-3-Clause",
+          "policy_result": "PASS",
+          "obligations": [
+            "PRESERVE_COMPLETE_BUNDLED_LICENSE_TEXT",
+            "PRESERVE_COMPONENT_COPYRIGHT_AND_PERMISSION_NOTICES",
+            "NO_ENDORSEMENT_WHEN_COMPONENT_TERMS_REQUIRE"
+          ]
         }
       ]
     }

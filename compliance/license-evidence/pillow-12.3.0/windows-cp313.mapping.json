@@ -1,0 +1,114 @@
+{
+  "schema_version": "1",
+  "artifact": {
+    "package": "pillow",
+    "version": "12.3.0",
+    "filename": "pillow-12.3.0-cp313-cp313-win_amd64.whl",
+    "sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
+    "source": "https://github.com/python-pillow/Pillow",
+    "source_index": "https://pypi.org/project/Pillow/12.3.0/",
+    "download_url": "https://files.pythonhosted.org/packages/a6/9b/7a58e61d62be561da3a356fe2384d4059a6345fc130e23ef1c36a5b81d24/pillow-12.3.0-cp313-cp313-win_amd64.whl",
+    "supplier": "Python Software Foundation / PyPI",
+    "review_status": "APPROVED",
+    "name": "pillow",
+    "license_expression": "MIT-CMU"
+  },
+  "bundled_components": [
+    {
+      "component_id": "brotli",
+      "name": "brotli",
+      "version": "1.2.0",
+      "license_expression": "MIT",
+      "section_marker": "===== brotli-1.2.0 =====",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "freetype",
+      "name": "FreeType",
+      "version": "2.14.3",
+      "license_expression": "FTL OR GPL-2.0-or-later",
+      "section_marker": "===== freetype-2.14.3 =====",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "harfbuzz",
+      "name": "HarfBuzz",
+      "version": "14.2.1",
+      "license_expression": "MIT",
+      "section_marker": "===== harfbuzz-14.2.1 =====",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "lcms2",
+      "name": "Little CMS",
+      "version": "2.19.1",
+      "license_expression": "MIT",
+      "section_marker": "===== lcms2-2.19.1 =====",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "libavif-license-bundle",
+      "name": "libavif and recorded dependencies",
+      "version": "1.4.2",
+      "license_expression": "LicenseRef-Pillow-libavif-license-bundle",
+      "section_marker": "===== libavif-1.4.2 =====",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "libjpeg-turbo-license-bundle",
+      "name": "libjpeg-turbo and recorded dependencies",
+      "version": "3.1.4.1",
+      "license_expression": "LicenseRef-Pillow-libjpeg-turbo-license-bundle",
+      "section_marker": "===== libjpeg-turbo-3.1.4.1 =====",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "libpng",
+      "name": "libpng",
+      "version": "1.6.58",
+      "license_expression": "Libpng-2.0",
+      "section_marker": "===== libpng-1.6.58 =====",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "libwebp",
+      "name": "libwebp",
+      "version": "1.6.0",
+      "license_expression": "BSD-3-Clause",
+      "section_marker": "===== libwebp-1.6.0 =====",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "openjpeg",
+      "name": "OpenJPEG",
+      "version": "2.5.4",
+      "license_expression": "BSD-2-Clause",
+      "section_marker": "===== openjpeg-2.5.4 =====",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "libtiff-license-bundle",
+      "name": "libtiff and recorded dependencies",
+      "version": "4.7.1",
+      "license_expression": "LicenseRef-Pillow-libtiff-license-bundle",
+      "section_marker": "===== tiff-4.7.1 =====",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "xz",
+      "name": "XZ Utils",
+      "version": "5.8.3",
+      "license_expression": "0BSD",
+      "section_marker": "===== xz-5.8.3 =====",
+      "license_file_basename": "LICENSE"
+    },
+    {
+      "component_id": "zlib-ng",
+      "name": "zlib-ng",
+      "version": "2.3.3",
+      "license_expression": "Zlib",
+      "section_marker": "===== zlib-ng-2.3.3 =====",
+      "license_file_basename": "LICENSE"
+    }
+  ]
+}
