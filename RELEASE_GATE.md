@@ -25,6 +25,11 @@
 - artifact secret scan、release license gate、installer-complete SBOM、NOTICE 和适用的 model/FFmpeg/provider manifests 完整；
 - Python/native SBOM 来自实际 release wheel 和解包后的 packaged worker；locked input 与 packaged native
   inventory reconciliation 无 unexpected/missing/hash mismatch/unknown owner；
+- PyInstaller one-file worker 必须静态解析最终 executable，而不是运行后临时目录或 one-folder staging；
+  bootloader layer、CArchive payload 和 final executable 分别有 hash/provenance，zero-native/unparsed 失败；
+- CPython runtime 回链到 exact、hash 固定的 distribution artifact；wheel-owned 与 toolchain-owned native 分离；
+  build-only pip 不被错误要求进入 runtime；final worker provenance 绑定 commit、run、config、wheel/toolchain manifests
+  与最终 SHA-256；当前不要求不同构建 bit-for-bit 相同；
 - Schema v2 wheel compatibility 由锁定 Compatibility Engine 验证，artifact filename tag set 与真实 target
   `sys_tags()` set 至少一个交集；target descriptor、engine/package version 和 tag-set hash 全部归档；
 - production worker 与 export/evaluation scope 分离，production artifact 中不存在未批准的

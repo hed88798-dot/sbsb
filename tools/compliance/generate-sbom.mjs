@@ -9,6 +9,8 @@ import {
   validatePackagedInventory,
 } from '../python-supply-chain/inventory.mjs';
 import { buildPythonSbomRecords, validatePythonSbomBinding } from '../python-supply-chain/sbom.mjs';
+import { buildToolchainSbomRecords } from '../python-supply-chain/sbom.mjs';
+import { loadBuildProvenance, loadToolchainInventory } from '../python-supply-chain/provenance.mjs';
 
 const repositoryRoot = process.cwd();
 const outputIndex = process.argv.indexOf('--output');
@@ -25,6 +27,15 @@ const qualityToolLock = JSON.parse(
     'utf8',
   ),
 );
+const archiveInspectorLock = JSON.parse(
+  readFileSync(
+    resolve(
+      repositoryRoot,
+      'compliance/quality-tooling/python/pyinstaller-archive-inspector-6.22.2.lock.json',
+    ),
+    'utf8',
+  ),
+);
 const pythonInventoryPaths = process.argv
   .flatMap((value, index) => (value === '--python-inventory' ? [process.argv[index + 1]] : []))
   .filter(Boolean)
@@ -35,6 +46,14 @@ const packagedInventoryPaths = process.argv
   )
   .filter(Boolean)
   .map((path) => resolve(repositoryRoot, path));
+const toolchainInventoryPaths = process.argv
+  .flatMap((value, index) => (value === '--toolchain-inventory' ? [process.argv[index + 1]] : []))
+  .filter(Boolean)
+  .map((path) => resolve(repositoryRoot, path));
+const buildProvenancePaths = process.argv
+  .flatMap((value, index) => (value === '--build-provenance' ? [process.argv[index + 1]] : []))
+  .filter(Boolean)
+  .map((path) => resolve(repositoryRoot, path));
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], {
   cwd: repositoryRoot,
   encoding: 'utf8',
@@ -43,6 +62,8 @@ const commit = execFileSync('git', ['rev-parse', 'HEAD'], {
 let inventory;
 let pythonInventories;
 let packagedInventories;
+let toolchainInventories;
+let buildProvenances;
 try {
   inventory = collectPnpmInventory(repositoryRoot);
   pythonInventories = loadInventories(
@@ -51,6 +72,10 @@ try {
   packagedInventories = packagedInventoryPaths.map((path) =>
     validatePackagedInventory(JSON.parse(readFileSync(path, 'utf8'))),
   );
+  toolchainInventories = toolchainInventoryPaths.map(
+    (path) => loadToolchainInventory(path).document,
+  );
+  buildProvenances = buildProvenancePaths.map((path) => loadBuildProvenance(path).document);
 } catch (error) {
   console.error(`sbom: FAIL\n${error.message}`);
   process.exit(1);
@@ -66,30 +91,64 @@ const npmComponents = inventory.map((entry) => ({
   properties: [{ name: 'com.company.inventory.source', value: 'installed-pnpm-virtual-store' }],
 }));
 const pythonRecords = buildPythonSbomRecords(pythonInventories, packagedInventories);
-const qualityToolComponent = {
+const toolchainRecords = buildToolchainSbomRecords(toolchainInventories, buildProvenances);
+const qualityToolRecords = [
+  {
+    package_name: qualityToolLock.package_name,
+    version: qualityToolLock.version,
+    purl: qualityToolLock.purl,
+    artifact: {
+      filename: qualityToolLock.filename,
+      sha256: qualityToolLock.sha256,
+      download_url: qualityToolLock.download_url,
+    },
+    source: qualityToolLock.source,
+    supplier: qualityToolLock.supplier,
+    license_expression: qualityToolLock.license_expression,
+    provenance_review_status: qualityToolLock.provenance_review_status,
+  },
+  ...archiveInspectorLock.components
+    .map((component) => ({
+      ...component,
+      artifact: component.artifacts.find(
+        (artifact) =>
+          (artifact.platform === 'any' || artifact.platform === process.platform) &&
+          (artifact.architecture === 'any' ||
+            artifact.architecture === (process.arch === 'x64' ? 'x86_64' : process.arch)),
+      ),
+    }))
+    .filter((component) => component.artifact),
+];
+const qualityToolComponents = qualityToolRecords.map((component) => ({
   type: 'library',
-  'bom-ref': `urn:python-wheel:sha256:${qualityToolLock.sha256}`,
-  name: qualityToolLock.package_name,
-  version: qualityToolLock.version,
-  purl: qualityToolLock.purl,
+  'bom-ref': `urn:quality-tool-wheel:sha256:${component.artifact.sha256}`,
+  name: component.package_name,
+  version: component.version,
+  purl: component.purl,
   scope: 'optional',
-  hashes: [{ alg: 'SHA-256', content: qualityToolLock.sha256 }],
-  licenses: [{ expression: qualityToolLock.license_expression }],
+  hashes: [{ alg: 'SHA-256', content: component.artifact.sha256 }],
+  licenses: [{ expression: component.license_expression }],
   externalReferences: [
-    { type: 'distribution', url: qualityToolLock.download_url },
-    { type: 'website', url: qualityToolLock.source },
+    { type: 'distribution', url: component.artifact.download_url },
+    { type: 'website', url: component.source },
   ],
   properties: [
-    { name: 'com.company.python.scope', value: qualityToolLock.scope },
-    { name: 'com.company.python.wheel.filename', value: qualityToolLock.filename },
-    { name: 'com.company.python.provenance.supplier', value: qualityToolLock.supplier },
+    { name: 'com.company.artifact.owner_kind', value: 'QUALITY_TOOL' },
+    { name: 'com.company.python.scope', value: 'COMPLIANCE_TOOLING' },
+    { name: 'com.company.python.wheel.filename', value: component.artifact.filename },
+    { name: 'com.company.python.provenance.supplier', value: component.supplier },
     {
       name: 'com.company.python.provenance.status',
-      value: qualityToolLock.provenance_review_status,
+      value: component.provenance_review_status,
     },
   ],
-};
-const components = [...npmComponents, qualityToolComponent, ...pythonRecords.components];
+}));
+const components = [
+  ...npmComponents,
+  ...qualityToolComponents,
+  ...pythonRecords.components,
+  ...toolchainRecords.components,
+];
 validatePythonSbomBinding(pythonInventories, components);
 const bom = {
   bomFormat: 'CycloneDX',
@@ -123,11 +182,11 @@ const bom = {
     },
   },
   components,
-  dependencies: pythonRecords.dependencies,
+  dependencies: [...pythonRecords.dependencies, ...toolchainRecords.dependencies],
 };
 
 mkdirSync(dirname(outputPath), { recursive: true });
 writeFileSync(outputPath, `${JSON.stringify(bom, null, 2)}\n`);
 console.log(
-  `sbom: PASS (scaffold; ${npmComponents.length} npm + ${pythonRecords.components.length} product Python/native + 1 compliance-tool components; ${outputPath})`,
+  `sbom: PASS (scaffold; ${npmComponents.length} npm + ${pythonRecords.components.length} product Python/native + ${qualityToolComponents.length} compliance-tool + ${toolchainRecords.components.length} toolchain/build components; ${outputPath})`,
 );

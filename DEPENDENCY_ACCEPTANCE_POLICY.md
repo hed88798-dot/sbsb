@@ -53,8 +53,10 @@
   `License-File` 和实际 license file hash。冲突/未知 fail closed；manual review 不得进入 release。
 - Python vulnerability Gate 使用 OSV 官方 API/OSV schema，把 advisory/severity 关联到 scope、purl、wheel
   SHA-256 和 dependency path。离线 advisory 文件仅用于确定性测试，正式 inventory 使用在线 Gate。
-- Windows worker Gate 扫描最终 PyInstaller tree 内 `.pyd`/DLL/SO/dylib，并与 locked wheel inventory
-  reconciliation；unexpected/missing/hash mismatch/unknown owner 全部失败。
+- Windows one-file worker Gate 静态解析最终 executable 的 PyInstaller CArchive，分别记录 bootloader、
+  CArchive payload 和最终 executable SHA-256。每个实际嵌入的 `.pyd`/DLL/SO/dylib 字节只能映射为
+  `WHEEL_OWNED_NATIVE` 或 `TOOLCHAIN_OWNED_NATIVE`；unexpected/missing/hash mismatch/unknown owner、解析失败和
+  zero-native scan 全部失败。
 - PR first-pass 可以报告 `MANUAL_REVIEW`；`--release` 对任何未处置 review 项失败。
 - `tools/secret-scan.mjs` 支持 Git-tracked source 和 `--require <artifact path>`；缺少声明的 artifact 路径也失败。
 - CycloneDX scaffold 明确标为“不完整、release blocking”；stable 必须由解包后的实际 installer 生成完整清单。
@@ -76,5 +78,21 @@ warning、重命名、伪造 tag 或拆 graph。
 `29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484` 和已批准 PyPA/PyPI 来源；license
 文件 hash、Apache-2.0 OR BSD-2-Clause 人工决定及 OSV 结果必须通过 bootstrap Gate。质量工具不享有供应链
 豁免。
+
+PyInstaller one-file inspection 使用 hash 锁定的 `PyInstaller==6.22.2` 官方 wheel 与当前平台完整传递图；
+入口固定为公开的 `PyInstaller.archive.readers.CArchiveReader`。质量工具图中的每个 wheel 都必须有精确
+filename/URL/SHA-256、license 文件 hash、来源、OSV 结果和 `COMPLIANCE_TOOLING` scope，不能借“只用于 CI”
+豁免供应链审查。
+
+Toolchain 采用独立的 Python Toolchain Artifact Inventory v1：CPython 必须绑定 exact patch、target 和真实
+distribution artifact/hash；pip（实际参与时）、PyInstaller 与 bootloader 分别绑定 artifact/hash/provenance。
+`BUILD_TOOLCHAIN_COMPONENT` 与 `PACKAGED_RUNTIME_COMPONENT` 是不同集合，build-only pip 不要求进入最终 worker。
+最终 worker 由 Build Artifact Provenance v1 绑定 commit、run、spec/config hash、wheel manifests、toolchain
+manifest、bootloader/payload layer hash 和 final SHA-256。当前只要求每次构建可追溯，不要求两次构建 bit-for-bit
+相同。
+
+Packaged Native Inventory v1 reader 继续只表示 loose/one-folder 文件；它不能声称验证 one-file artifact。
+one-file 必须重新静态扫描生成 v2，不允许从 v1 自动补造 owner/provenance。详细兼容策略见
+`docs/adr/ADR-002-packaged-native-toolchain-provenance.md`。
 
 批准一次不代表永久批准。版本、hash、build config、发行来源、条款或传递依赖变化均触发重新审查。

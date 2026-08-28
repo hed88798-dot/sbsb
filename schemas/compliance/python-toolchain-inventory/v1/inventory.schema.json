@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/python-toolchain-inventory/v1/inventory.schema.json",
+  "title": "Python Build Toolchain Inventory v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "inventory_id", "target", "graph_complete", "components"],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "inventory_id": { "$ref": "#/$defs/id" },
+    "target": { "$ref": "#/$defs/target" },
+    "graph_complete": { "const": true },
+    "components": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/component" }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "httpsUrl": { "type": "string", "format": "uri", "pattern": "^https://" },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["implementation", "python_version", "os", "architecture"],
+      "properties": {
+        "implementation": { "const": "cpython" },
+        "python_version": { "type": "string", "pattern": "^3\\.[0-9]+\\.[0-9]+$" },
+        "os": { "enum": ["windows", "linux"] },
+        "architecture": { "enum": ["x86_64", "arm64"] }
+      }
+    },
+    "licenseFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relative_path", "sha256"],
+      "properties": {
+        "relative_path": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "filename",
+        "artifact_path",
+        "sha256",
+        "canonical_reference",
+        "canonical_source"
+      ],
+      "properties": {
+        "artifact_type": { "enum": ["distribution", "wheel", "bootloader", "binary"] },
+        "filename": { "type": "string", "minLength": 1 },
+        "artifact_path": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "canonical_reference": { "$ref": "#/$defs/httpsUrl" },
+        "canonical_source": { "$ref": "#/$defs/httpsUrl" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["supplier", "review_status", "reviewed_at"],
+      "properties": {
+        "supplier": { "type": "string", "minLength": 1 },
+        "review_status": { "const": "APPROVED" },
+        "reviewed_at": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" }
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expression", "files", "review_status", "redistribution_evidence"],
+      "properties": {
+        "expression": { "type": "string", "minLength": 1 },
+        "files": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/licenseFile" } },
+        "review_status": { "const": "APPROVED" },
+        "redistribution_evidence": { "$ref": "#/$defs/httpsUrl" }
+      }
+    },
+    "vulnerability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_type",
+        "data_source",
+        "review_status",
+        "reviewed_at",
+        "review_expires_at",
+        "advisory_ids",
+        "unsupported_policy"
+      ],
+      "properties": {
+        "source_type": { "enum": ["OSV", "NVD", "MANUAL"] },
+        "data_source": { "$ref": "#/$defs/httpsUrl" },
+        "review_status": { "const": "APPROVED" },
+        "reviewed_at": { "type": "string", "format": "date-time" },
+        "review_expires_at": { "type": "string", "format": "date-time" },
+        "advisory_ids": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "unsupported_policy": { "type": "string", "minLength": 1 }
+      }
+    },
+    "nativeArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "filename",
+        "internal_path",
+        "sha256",
+        "size",
+        "type",
+        "reason_included",
+        "build_layer"
+      ],
+      "properties": {
+        "filename": { "type": "string", "minLength": 1 },
+        "internal_path": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "size": { "type": "integer", "minimum": 1 },
+        "type": { "enum": ["pyd", "dll", "so", "dylib", "other"] },
+        "reason_included": { "type": "string", "minLength": 1 },
+        "build_layer": { "const": "CARCHIVE_PAYLOAD" }
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "component_id",
+        "component_kind",
+        "name",
+        "version",
+        "usage_scopes",
+        "platform",
+        "architecture",
+        "artifact",
+        "provenance",
+        "license",
+        "vulnerability",
+        "reason_included",
+        "packaged_native_artifacts",
+        "dependencies"
+      ],
+      "properties": {
+        "component_id": { "$ref": "#/$defs/id" },
+        "component_kind": {
+          "enum": ["CPYTHON_DISTRIBUTION", "PIP", "PYINSTALLER", "PYINSTALLER_BOOTLOADER"]
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "usage_scopes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["BUILD_TOOLCHAIN_COMPONENT", "PACKAGED_RUNTIME_COMPONENT"] }
+        },
+        "platform": { "enum": ["windows", "linux", "any"] },
+        "architecture": { "enum": ["x86_64", "arm64", "any"] },
+        "artifact": { "$ref": "#/$defs/artifact" },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "license": { "$ref": "#/$defs/license" },
+        "vulnerability": { "$ref": "#/$defs/vulnerability" },
+        "reason_included": { "type": "string", "minLength": 1 },
+        "packaged_native_artifacts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/nativeArtifact" }
+        },
+        "dependencies": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        }
+      }
+    }
+  }
+}

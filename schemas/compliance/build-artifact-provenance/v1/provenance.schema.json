@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/build-artifact-provenance/v1/provenance.schema.json",
+  "title": "Build Artifact Provenance v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "build_id",
+    "build_commit_sha",
+    "build_timestamp",
+    "run_identity",
+    "target",
+    "build_configuration",
+    "inputs",
+    "output_layers",
+    "final_artifact",
+    "bit_for_bit_reproducible_build_required"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "build_id": { "$ref": "#/$defs/id" },
+    "build_commit_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "build_timestamp": { "type": "string", "format": "date-time" },
+    "run_identity": { "type": "string", "minLength": 1 },
+    "target": { "$ref": "#/$defs/target" },
+    "build_configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "wheel_inventories",
+        "toolchain_inventory",
+        "cpython_component_id",
+        "pyinstaller_component_id",
+        "bootloader_component_id"
+      ],
+      "properties": {
+        "wheel_inventories": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/manifestIdentity" }
+        },
+        "toolchain_inventory": { "$ref": "#/$defs/manifestIdentity" },
+        "cpython_component_id": { "$ref": "#/$defs/id" },
+        "pip_component_id": { "$ref": "#/$defs/id" },
+        "pyinstaller_component_id": { "$ref": "#/$defs/id" },
+        "bootloader_component_id": { "$ref": "#/$defs/id" }
+      }
+    },
+    "output_layers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bootloader_sha256", "archive_payload_sha256"],
+      "properties": {
+        "bootloader_sha256": { "$ref": "#/$defs/sha256" },
+        "archive_payload_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "final_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_type", "filename", "artifact_path", "sha256"],
+      "properties": {
+        "artifact_type": { "const": "PYINSTALLER_ONEFILE" },
+        "filename": { "type": "string", "minLength": 1 },
+        "artifact_path": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "bit_for_bit_reproducible_build_required": { "const": false }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "architecture", "python_version"],
+      "properties": {
+        "os": { "enum": ["windows", "linux"] },
+        "architecture": { "enum": ["x86_64", "arm64"] },
+        "python_version": { "type": "string", "pattern": "^3\\.[0-9]+\\.[0-9]+$" }
+      }
+    },
+    "manifestIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inventory_id", "manifest_path", "manifest_sha256"],
+      "properties": {
+        "inventory_id": { "$ref": "#/$defs/id" },
+        "manifest_path": { "$ref": "#/$defs/relativePath" },
+        "manifest_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}

@@ -271,3 +271,73 @@ RECORDED_IN_FINAL_DELIVERY — a branch cannot predeclare its future merge SHA.
 ARCHITECTURE_QUESTION:
 NONE
 ```
+
+## Packaged Native / Python Toolchain Provenance Contract — Issue #12
+
+```text
+BRANCH:
+code-f/packaged-native-toolchain-provenance
+
+BASELINE_SHA:
+493de878db59eff1f699ab5a722662cac32eef44
+
+CODE_F_PACKAGED_NATIVE_TOOLCHAIN_FIX:
+PENDING_MAIN_MERGE — branch implementation and local evidence cannot declare formal main PASS.
+
+PYTHON_ARTIFACT_SCHEMA_VERSION:
+2 — unchanged wheel graph contract; v1 reader remains supported.
+
+TOOLCHAIN_ARTIFACT_SCHEMA_VERSION:
+1
+
+PACKAGED_NATIVE_SCHEMA_VERSION:
+2 — v1 loose/one-folder reader remains supported; one-file requires explicit rescan.
+
+BUILD_ARTIFACT_PROVENANCE_SCHEMA_VERSION:
+1
+
+OWNER_MODEL:
+PASS — WHEEL_OWNED_NATIVE / TOOLCHAIN_OWNED_NATIVE; UNKNOWN blocks reconciliation.
+
+BUILD_TOOLCHAIN_RUNTIME_SEPARATION:
+PASS — build-only components may be absent from CArchive; pip is optional when it did not participate.
+
+CPYTHON_DISTRIBUTION_ARTIFACT_SUPPORT:
+PASS — exact patch/target/distribution filename/source/hash required.
+
+ONE_FILE_ARCHIVE_INSPECTION:
+PASS — locked PyInstaller 6.22.2 official CArchiveReader; no worker execution or temp-directory inventory.
+
+BOOTLOADER_PAYLOAD_SEPARATION:
+PASS — observed bootloader layer, CArchive payload and final executable have distinct identities.
+
+ZERO_FILE_SCAN_FAIL_CLOSED:
+PASS
+
+UNKNOWN_NATIVE_FAIL_CLOSED:
+PASS
+
+FINAL_WORKER_PROVENANCE:
+PASS — commit/run/config/wheel manifests/toolchain manifest/layer hashes/final SHA-256.
+
+BIT_FOR_BIT_REPRODUCIBLE_BUILD_REQUIRED:
+NO
+
+SBOM_LICENSE_VULNERABILITY_OWNER_SEPARATION:
+PASS — wheel, toolchain, build artifact and build/runtime scopes remain explicit.
+
+QUALITY_TOOL_SUPPLY_CHAIN:
+PASS — exact platform PyInstaller archive-inspector graph, artifact hashes, provenance, licenses and OSV gate.
+
+SCHEMA_BREAKING_CHANGE:
+YES — Packaged Native Inventory v2; old semantics were not changed silently.
+
+ADR_OR_CONTRACT_CHANGE:
+docs/adr/ADR-002-packaged-native-toolchain-provenance.md
+
+MAIN_QUALITY_BASELINE_SHA:
+RECORDED_IN_FINAL_DELIVERY — only the merge commit on main can become the formal baseline.
+
+ARCHITECTURE_QUESTION:
+NONE
+```
