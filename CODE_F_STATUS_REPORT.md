@@ -97,7 +97,7 @@ NONE
 
 ## Verification evidence
 
-- Fixed toolchain local gate: Node `24.19.0`, pnpm `11.19.0`, Python `3.12.13`.
+- Fixed toolchain gate: Node `24.19.0`, pnpm `11.19.0`, Python `3.12.10` (the final CPython 3.12 release with cross-platform binary installers).
 - `pnpm check`: `PASS` — format, lint, typecheck, 16 test files / 152 tests, dependency direction, full-repository portability, workflow security, source secret, license first-pass and Golden manifest.
 - Detached clean checkout with no generated state and isolated pnpm store: `PASS` at `871c5baa13648b978043f0bc6f1f34c9b50a9799`.
 - macOS arm64 unpacked Electron packaged native SQLite smoke: `PASS`（只作为打包工具回归，不替代 Windows）。
