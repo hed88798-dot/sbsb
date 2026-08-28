@@ -17,6 +17,12 @@ function hash(path) {
   return createHash('sha256').update(readFileSync(path)).digest('hex');
 }
 
+export function canonicalLicenseTextHash(path) {
+  return createHash('sha256')
+    .update(readFileSync(path, 'utf8').replaceAll('\r\n', '\n'))
+    .digest('hex');
+}
+
 function canonicalValue(value) {
   if (Array.isArray(value)) return value.map(canonicalValue);
   if (value && typeof value === 'object') {
@@ -156,7 +162,7 @@ export function verifySpdxQualityTooling() {
         policy: { document: policy, sha256: lock.license_policy.sha256 },
       });
       if (
-        hash(resolve(repositoryRoot, review.notice_text_relative_path)) !==
+        canonicalLicenseTextHash(resolve(repositoryRoot, review.notice_text_relative_path)) !==
         review.license_evidence_materialized_text_sha256
       ) {
         failures.push(`${review.review_id}: materialized notice evidence hash mismatch`);

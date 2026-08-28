@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import Ajv2020 from 'ajv/dist/2020.js';
@@ -15,7 +15,10 @@ import {
   parseSpdxExpression,
   spdxParserIdentity,
 } from '../../tools/license-policy/spdx-parser.mjs';
-import { verifySpdxQualityTooling } from '../../tools/license-policy/verify-quality-tooling.mjs';
+import {
+  canonicalLicenseTextHash,
+  verifySpdxQualityTooling,
+} from '../../tools/license-policy/verify-quality-tooling.mjs';
 import {
   auditGeneratedWorkerLicense,
   auditToolchainLicenses,
@@ -385,6 +388,13 @@ describe('Python SPDX expression parser and commercial policy', () => {
 
       const licenseText = readFileSync(join(pillowEvidenceRoot, `${fixture}.LICENSE.txt`), 'utf8');
       const bundle = buildThirdPartyNoticeBundle(scan, topLevel, bundled, licenseText);
+      const crlfBundle = buildThirdPartyNoticeBundle(
+        scan,
+        topLevel,
+        bundled,
+        licenseText.replaceAll('\n', '\r\n'),
+      );
+      expect(crlfBundle.notice_identity_sha256).toBe(bundle.notice_identity_sha256);
       expect(bundle.entries).toHaveLength(bundledCount + 1);
       expect(bundle.entries[0]).toMatchObject({
         parent_artifact_sha256: artifactHash,
@@ -402,6 +412,11 @@ describe('Python SPDX expression parser and commercial policy', () => {
 
       const temporary = mkdtempSync(join(tmpdir(), 'mit-cmu-notice-'));
       try {
+        const crlfEvidencePath = join(temporary, 'LICENSE.crlf.txt');
+        writeFileSync(crlfEvidencePath, licenseText.replaceAll('\n', '\r\n'));
+        expect(canonicalLicenseTextHash(crlfEvidencePath)).toBe(
+          scan.license_evidence_files[0].materialized_text_sha256,
+        );
         const materialized = materializeThirdPartyNotices(
           join(temporary, 'THIRD_PARTY_NOTICES.md'),
           bundle,
