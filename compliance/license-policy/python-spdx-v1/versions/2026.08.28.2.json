@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "license_policy_version": "2026.08.29.1",
+  "license_policy_version": "2026.08.28.2",
   "policy_name": "Python artifact and toolchain commercial distribution policy",
   "or_branch_selection_required": false,
   "artifact_roles": [

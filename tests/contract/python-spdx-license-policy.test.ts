@@ -116,7 +116,7 @@ describe('Python SPDX expression parser and commercial policy', () => {
     expect(verifySpdxQualityTooling()).toMatchObject({
       status: 'PASS',
       scope: 'QUALITY_TOOLING',
-      license_policy_version: '2026.08.28.2',
+      license_policy_version: '2026.08.29.1',
     });
   });
 
@@ -237,7 +237,7 @@ describe('Python SPDX expression parser and commercial policy', () => {
       no_publicity_name_use_without_permission: true,
       copyright_holders: expect.arrayContaining(['Secret Labs AB']),
       spdx_license_list_version: '3.28.0',
-      license_policy_version: '2026.08.28.2',
+      license_policy_version: '2026.08.29.1',
     });
     expect(decision.obligations).toEqual(
       expect.arrayContaining([
@@ -274,7 +274,7 @@ describe('Python SPDX expression parser and commercial policy', () => {
       artifact_sha256: scan.artifact.sha256,
       detected_license_expression: 'MIT-CMU',
       policy_result: 'PASS',
-      license_policy_version: '2026.08.28.2',
+      license_policy_version: '2026.08.29.1',
     });
     expect(unchangedEvidence.artifact_sha256).toBe(scan.artifact.sha256);
     expect(
@@ -484,7 +484,7 @@ describe('Python SPDX expression parser and commercial policy', () => {
     );
     expect(licenseIdentityHash(crlfRoundTrip)).toBe(licenseIdentityHash(currentPolicy));
     const changedPolicy = structuredClone(currentPolicy);
-    changedPolicy.license_policy_version = '2026.08.28.2-test';
+    changedPolicy.license_policy_version = '2026.08.29.1-test';
     changedPolicy.license_rules.MIT.policy_result = 'FAIL';
     const changed = evaluateLicenseCollection([input], {
       policy: { document: changedPolicy, sha256: licenseIdentityHash(changedPolicy) },

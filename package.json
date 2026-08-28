@@ -43,6 +43,7 @@
     "compliance:python:toolchain:license": "node tools/python-supply-chain/cli.mjs toolchain-license",
     "compliance:python:toolchain:vulnerability": "node tools/python-supply-chain/cli.mjs toolchain-vulnerability",
     "compliance:python:build:verify": "node tools/python-supply-chain/cli.mjs build-provenance-verify",
+    "compliance:python:artifact-usage:license": "node tools/python-supply-chain/cli.mjs artifact-usage-license",
     "compliance:python:native:inventory": "node tools/python-supply-chain/cli.mjs native-inventory",
     "compliance:python:packaged:verify": "node tools/python-supply-chain/cli.mjs repo-native-verify",
     "golden:verify": "node tools/golden/validate-manifest.mjs",

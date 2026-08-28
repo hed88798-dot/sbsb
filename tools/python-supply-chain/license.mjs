@@ -4,6 +4,26 @@ import {
 } from '../license-policy/evaluator.mjs';
 import { normalizePythonName } from './inventory.mjs';
 
+function assertApprovedBuildToolUsage(evaluation, evidence) {
+  const packageDecision = evaluation.scope_decisions?.find(
+    (entry) => entry.scope_id === 'package-default',
+  );
+  if (
+    evaluation.schema_version !== '3' ||
+    evaluation.policy_result !== 'PASS' ||
+    evaluation.artifact_identity_reconciled !== true ||
+    evaluation.exception_binding_valid !== true ||
+    evaluation.dependency_role !== 'PYTHON_BUILD_DEPENDENCY' ||
+    evaluation.functional_role !== 'PYINSTALLER_BUILD_TOOL' ||
+    evaluation.distribution_role !== 'BUILD_ONLY' ||
+    packageDecision?.detected_license_expression !== evidence.detected_license_expression
+  ) {
+    throw new Error(
+      `${evaluation.artifact_sha256}: artifact usage evaluation is not an exact approved PyInstaller build-only binding`,
+    );
+  }
+}
+
 function wheelRoles(scope) {
   return scope === 'PRODUCTION_WORKER_RUNTIME'
     ? { artifactRole: 'RUNTIME_WHEEL', distributionRole: 'RUNTIME_DISTRIBUTION' }
@@ -60,10 +80,62 @@ export function buildWheelLicenseEvidence(verifiedArtifacts) {
 
 export function auditPythonLicenses(
   verifiedArtifacts,
-  { release = false, previousReport = null } = {},
+  { release = false, previousReport = null, usageEvaluations = [] } = {},
 ) {
   const evidence = buildWheelLicenseEvidence(verifiedArtifacts);
   const report = evaluateLicenseCollection(evidence);
+  const usageByHash = new Map();
+  for (const evaluation of usageEvaluations) {
+    if (usageByHash.has(evaluation.artifact_sha256)) {
+      throw new Error(`duplicate artifact usage evaluation: ${evaluation.artifact_sha256}`);
+    }
+    usageByHash.set(evaluation.artifact_sha256, evaluation);
+  }
+  const evidenceByHash = new Map(evidence.map((entry) => [entry.artifact_sha256, entry]));
+  for (const hash of usageByHash.keys()) {
+    if (!evidenceByHash.has(hash)) {
+      throw new Error(`artifact usage evaluation has no matching wheel evidence: ${hash}`);
+    }
+  }
+  if (usageByHash.size > 0) {
+    report.schema_version = '3';
+    report.decisions = report.decisions.map((decision) => {
+      const usage = usageByHash.get(decision.artifact_sha256);
+      if (!usage) return decision;
+      if (
+        decision.artifact_role !== 'PYTHON_BUILD_DEPENDENCY' ||
+        decision.distribution_role !== 'BUILD_ONLY_USE'
+      ) {
+        throw new Error(
+          `${decision.artifact_sha256}: usage evaluation cannot replace a non-build-dependency decision`,
+        );
+      }
+      assertApprovedBuildToolUsage(usage, evidenceByHash.get(decision.artifact_sha256));
+      return {
+        ...decision,
+        policy_result: usage.policy_result,
+        reason: usage.reason,
+        license_policy_version: usage.license_policy_version,
+        license_policy_sha256: usage.license_policy_sha256,
+        manual_review_required: usage.policy_result === 'MANUAL_REVIEW',
+        functional_role: usage.functional_role,
+        usage_distribution_role: usage.distribution_role,
+        usage_binding_id: usage.usage_binding_id,
+        build_context_id: usage.build_context_id,
+        context_bound_evaluation_schema_version: usage.schema_version,
+        usage_binding_identity_sha256: usage.usage_binding_identity_sha256,
+        context_free_policy_result: decision.policy_result,
+      };
+    });
+    report.summary = {
+      artifacts: report.decisions.length,
+      passed: report.decisions.filter((entry) => entry.policy_result === 'PASS').length,
+      manual_review: report.decisions.filter((entry) => entry.policy_result === 'MANUAL_REVIEW')
+        .length,
+      failed: report.decisions.filter((entry) => entry.policy_result === 'FAIL').length,
+    };
+    report.usage_binding_evaluations = usageEvaluations;
+  }
   report.mode = release ? 'RELEASE' : 'PR_FIRST_PASS';
   report.evidence = evidence;
   report.policy_result_changes = previousReport

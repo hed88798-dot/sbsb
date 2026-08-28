@@ -7,12 +7,25 @@ CI is verify-only. It must not download a current SPDX License List, Exception L
 - parser: `spdx-expression-parse@5.0.0`
 - license identifiers: `spdx-license-ids@3.0.23`, SPDX License List 3.28.0
 - exception identifiers: `spdx-exceptions@2.5.0`, SPDX Exception List 3.23
-- policy: `2026.08.28.2`
+- policy: `2026.08.29.1`
 
-Policy `2026.08.28.1` is archived byte-for-byte under `python-spdx-v1/versions/` and
-continues to reproduce `MIT-CMU` as a missing-rule failure. Policy `2026.08.28.2` adds
-the identifier-level `MIT-CMU-commercial-v1` decision. It does not normalize `MIT-CMU`
-to `MIT`, and it does not approve other SPDX identifiers by family or pattern.
+Policies `2026.08.28.1` and `2026.08.28.2` are archived byte-for-byte under
+`python-spdx-v1/versions/`. The first continues to reproduce `MIT-CMU` as a missing-rule failure;
+the second introduced the identifier-level `MIT-CMU-commercial-v1` decision. Current policy
+`2026.08.29.1` identifies the context-bound Artifact Usage Binding evaluation. It does not broaden
+the underlying SPDX license or exception rules.
+
+Artifact License Evidence v2 separates immutable SHA-bound package/file-level license facts from
+Artifact Usage Binding v1. A usage binding references Build Artifact Provenance v1 and independently
+records dependency, functional and distribution roles, exact exception sources, policy identity and
+build/runtime/customer reachability. License Policy Evaluation v3 validates this join; a PASS is
+never a permanent artifact allowlist. Artifact License Evidence v1 and Evaluation v2 retain their
+original meanings for historical replay.
+
+Exact PyInstaller 6.22.2 Windows/Linux scan records under `compliance/license-evidence/` preserve
+the package GPL-2.0-or-later with Bootloader exception, Apache-2.0 runtime hooks, and the dual-licensed
+isolated module. The scanner hashes every file in each declared scope and fails if the wheel hash,
+metadata, license-candidate set or evidence-file hash changes.
 
 Wheel-level bundled license evidence is a separate contract. Exact scans under
 `compliance/license-evidence/` record metadata, every license/notice candidate, native

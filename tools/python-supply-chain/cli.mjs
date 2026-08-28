@@ -27,6 +27,11 @@ import {
 } from './provenance.mjs';
 import { auditPythonVulnerabilities } from './vulnerability.mjs';
 import { assertTargetMatchesCurrent, currentTargetDescriptor } from './compatibility.mjs';
+import {
+  evaluateArtifactUsageBinding,
+  loadArtifactLicenseEvidenceV2,
+  loadArtifactUsageBindingV1,
+} from '../license-policy/usage-binding.mjs';
 
 function parseArguments(values) {
   const options = { inventories: [], release: false };
@@ -47,6 +52,9 @@ function parseArguments(values) {
     else if (value === '--toolchain-inventory') options.toolchainInventory = values[++index];
     else if (value === '--toolchain-artifact-root') options.toolchainArtifactRoot = values[++index];
     else if (value === '--build-provenance') options.buildProvenance = values[++index];
+    else if (value === '--artifact-license-evidence')
+      options.artifactLicenseEvidence = values[++index];
+    else if (value === '--artifact-usage-binding') options.artifactUsageBinding = values[++index];
     else if (value === '--build-root') options.buildRoot = values[++index];
     else if (value === '--final-artifact') options.finalArtifact = values[++index];
     else if (value === '--report' || value === '--output') options.output = values[++index];
@@ -128,6 +136,39 @@ async function buildProvenanceVerify(options) {
   return { ...inputs, licenseDecision };
 }
 
+async function artifactUsageLicense(options) {
+  if (!options.artifactUsageBinding) throw new Error('--artifact-usage-binding is required');
+  const report = artifactUsageEvaluation(options);
+  writeReport(options.output, report);
+  if (report.policy_result !== 'PASS') {
+    throw new Error(`artifact-usage-license: ${report.policy_result}: ${report.reason}`);
+  }
+  console.log(
+    `artifact-usage-license: PASS (${report.artifact_sha256}; ${report.build_context_id}; ${report.functional_role}/${report.distribution_role})`,
+  );
+  return report;
+}
+
+function artifactUsageEvaluation(options) {
+  if (!options.artifactLicenseEvidence) {
+    throw new Error('--artifact-license-evidence is required with --artifact-usage-binding');
+  }
+  if (!options.buildProvenance) {
+    throw new Error('--build-provenance is required with --artifact-usage-binding');
+  }
+  if (!options.toolchainInventory) {
+    throw new Error('--toolchain-inventory is required with --artifact-usage-binding');
+  }
+  const evidence = loadArtifactLicenseEvidenceV2(options.artifactLicenseEvidence);
+  const binding = loadArtifactUsageBindingV1(options.artifactUsageBinding);
+  const build = loadBuildProvenance(options.buildProvenance);
+  const toolchain = loadToolchainInventory(options.toolchainInventory);
+  return evaluateArtifactUsageBinding(evidence.document, binding.document, {
+    buildProvenance: build.document,
+    toolchainInventory: toolchain.document,
+  });
+}
+
 function inventoryPaths(options) {
   return options.inventories.length > 0
     ? options.inventories.map((path) => resolve(path))
@@ -172,9 +213,11 @@ async function license(options) {
   const previousReport = options.previousLicenseReport
     ? JSON.parse(readFileSync(resolve(options.previousLicenseReport), 'utf8'))
     : null;
+  const usageEvaluations = options.artifactUsageBinding ? [artifactUsageEvaluation(options)] : [];
   const report = auditPythonLicenses(verified, {
     release: options.release,
     previousReport,
+    usageEvaluations,
   });
   writeReport(options.output, report);
   console.log(
@@ -392,6 +435,7 @@ async function main() {
   else if (command === 'toolchain-license') await toolchainLicense(options);
   else if (command === 'toolchain-vulnerability') await toolchainVulnerability(options);
   else if (command === 'build-provenance-verify') await buildProvenanceVerify(options);
+  else if (command === 'artifact-usage-license') await artifactUsageLicense(options);
   else if (command === 'native-inventory') await nativeInventory(options);
   else if (command === 'reconcile') await reconcile(options);
   else if (command === 'repo-verify') await repoVerify(options);

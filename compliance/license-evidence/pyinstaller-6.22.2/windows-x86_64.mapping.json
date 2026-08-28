@@ -1,0 +1,56 @@
+{
+  "artifact": {
+    "filename": "pyinstaller-6.22.2-py3-none-win_amd64.whl",
+    "sha256": "9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7",
+    "package": "pyinstaller",
+    "version": "6.22.2",
+    "artifact_type": "PYTHON_WHEEL",
+    "download_url": "https://files.pythonhosted.org/packages/3f/53/8ba1d0f6159b490f700eac6161a4be5f0d4672608a6dae9fd73679f183ee/pyinstaller-6.22.2-py3-none-win_amd64.whl",
+    "supplier": "PyInstaller Development Team",
+    "review_status": "APPROVED"
+  },
+  "metadata_license_description": "GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones)",
+  "package_license_expression": "GPL-2.0-or-later WITH Bootloader-exception",
+  "expected_license_candidate_paths": ["pyinstaller-6.22.2.dist-info/licenses/COPYING.txt"],
+  "package_evidence_sources": [
+    {
+      "evidence_id": "metadata-license-description",
+      "evidence_type": "METADATA_LICENSE_DESCRIPTION",
+      "value": "GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones)"
+    },
+    {
+      "evidence_id": "copying-license-and-exception",
+      "evidence_type": "LICENSE_FILE",
+      "relative_path": "pyinstaller-6.22.2.dist-info/licenses/COPYING.txt",
+      "expected_sha256": "dcf75fdb959db1e3b41c0f8505069d2ece781b5ec6b3d0a4d30975cfc6580245"
+    },
+    {
+      "evidence_id": "pyinstaller-license-page",
+      "evidence_type": "EXCEPTION_SOURCE",
+      "source": "https://pyinstaller.org/en/v6.22.0/license.html"
+    }
+  ],
+  "file_level_license_scopes": [
+    {
+      "scope_id": "bootloader-and-loader-exception",
+      "relationship": "ADDITIONAL_PERMISSION",
+      "path_prefixes": ["PyInstaller/bootloader/", "PyInstaller/loader/"],
+      "expression": "GPL-2.0-or-later WITH Bootloader-exception",
+      "evidence_source_ids": ["copying-license-and-exception", "pyinstaller-license-page"]
+    },
+    {
+      "scope_id": "runtime-hooks-apache-2.0",
+      "relationship": "OVERRIDES_PACKAGE_LICENSE",
+      "path_prefixes": ["PyInstaller/hooks/rthooks/"],
+      "expression": "Apache-2.0",
+      "evidence_source_ids": ["copying-license-and-exception"]
+    },
+    {
+      "scope_id": "isolated-dual-license",
+      "relationship": "OVERRIDES_PACKAGE_LICENSE",
+      "path_prefixes": ["PyInstaller/isolated/"],
+      "expression": "GPL-2.0-or-later OR MIT",
+      "evidence_source_ids": ["copying-license-and-exception"]
+    }
+  ]
+}

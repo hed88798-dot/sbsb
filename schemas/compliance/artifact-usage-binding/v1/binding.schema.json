@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/artifact-usage-binding/v1/binding.schema.json",
+  "title": "Artifact Usage Binding v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "usage_binding_id",
+    "artifact_sha256",
+    "artifact_references",
+    "build_context",
+    "dependency_role",
+    "functional_role",
+    "distribution_role",
+    "exception_binding",
+    "policy_binding",
+    "reachability"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "usage_binding_id": { "$ref": "#/$defs/id" },
+    "artifact_sha256": { "$ref": "#/$defs/sha256" },
+    "artifact_references": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "license_evidence_artifact_sha256",
+        "toolchain_artifact_sha256",
+        "build_sbom_artifact_sha256"
+      ],
+      "properties": {
+        "license_evidence_artifact_sha256": { "$ref": "#/$defs/sha256" },
+        "toolchain_artifact_sha256": { "$ref": "#/$defs/sha256" },
+        "build_sbom_artifact_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "build_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "build_context_id",
+        "build_provenance_schema_version",
+        "build_provenance_identity_sha256"
+      ],
+      "properties": {
+        "build_context_id": { "$ref": "#/$defs/id" },
+        "build_provenance_schema_version": { "const": "1" },
+        "build_provenance_identity_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "dependency_role": {
+      "enum": ["PYTHON_BUILD_DEPENDENCY", "PYTHON_RUNTIME_DEPENDENCY"]
+    },
+    "functional_role": {
+      "enum": [
+        "PYINSTALLER_BUILD_TOOL",
+        "PYINSTALLER_PACKAGE",
+        "PYINSTALLER_BOOTLOADER",
+        "GENERATED_FINAL_WORKER",
+        "PRODUCT_RUNTIME_COMPONENT",
+        "UNSPECIFIED"
+      ]
+    },
+    "distribution_role": {
+      "enum": [
+        "BUILD_ONLY",
+        "PRODUCT_RUNTIME",
+        "TOOLCHAIN_REDISTRIBUTION",
+        "BOOTLOADER_INCLUSION",
+        "FINAL_APPLICATION_DISTRIBUTION",
+        "SOURCE_REDISTRIBUTION",
+        "MODIFIED_TOOLCHAIN_DISTRIBUTION"
+      ]
+    },
+    "exception_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_sha256",
+        "build_context_id",
+        "detected_license_expression",
+        "functional_role",
+        "distribution_role",
+        "license_policy_version",
+        "license_policy_sha256",
+        "evidence_source_ids"
+      ],
+      "properties": {
+        "artifact_sha256": { "$ref": "#/$defs/sha256" },
+        "build_context_id": { "$ref": "#/$defs/id" },
+        "detected_license_expression": { "type": "string", "minLength": 1 },
+        "functional_role": { "type": "string", "minLength": 1 },
+        "distribution_role": { "type": "string", "minLength": 1 },
+        "license_policy_version": { "type": "string", "minLength": 1 },
+        "license_policy_sha256": { "$ref": "#/$defs/sha256" },
+        "evidence_source_ids": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        }
+      }
+    },
+    "policy_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["license_policy_version", "license_policy_sha256"],
+      "properties": {
+        "license_policy_version": { "type": "string", "minLength": 1 },
+        "license_policy_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "reachability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["build_sbom", "runtime_sbom", "internal_compliance", "customer_notice"],
+      "properties": {
+        "build_sbom": { "enum": ["INCLUDED", "EXCLUDED"] },
+        "runtime_sbom": { "enum": ["INCLUDED", "EXCLUDED_BUILD_ONLY"] },
+        "internal_compliance": { "enum": ["RETAINED", "EXCLUDED"] },
+        "customer_notice": { "enum": ["INCLUDED", "EXCLUDED_BUILD_ONLY"] }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}
