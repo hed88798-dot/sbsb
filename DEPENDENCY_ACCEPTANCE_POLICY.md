@@ -27,15 +27,15 @@
 
 ## Type-specific rules
 
-| Type               | Usually allowed                                                | Manual review                                            | Rejected / fail closed                                          |
-| ------------------ | -------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------- |
-| npm                | exact lock + MIT/BSD/Apache/ISC，传递依赖已盘点                | MPL/LGPL、postinstall 下载 binary、弃维护关键包          | unknown/GPL/AGPL/SSPL、floating version、未登记 binary download |
-| Python             | Python 3.12、带 hash lock、官方 wheel/source、宽松许可         | PyInstaller exception、native wheel、OpenCV/codec bundle | 无 hash、个人环境、PyAV/x264/x265 未审计 wheel、未知 DLL        |
-| Native / CLI / DLL | 官方源码、可复现 recipe、exact commit/hash、许可/符号依赖已查  | LGPL 动态链接、系统 codec、专利地区问题                  | 整合包、未知 build flags、GPL/nonfree FFmpeg、libx264/libx265   |
-| Model / weight     | 官方 revision/hash，代码许可与 weight 许可分开，允许商业再分发 | API-only、自定义/OpenRAIL 条款、输出/训练/地区限制       | NC/research-only、社区重打包无 provenance、remote code 未审计   |
-| Font               | 固定版本/hash，OFL/Apache 且保留文本                           | 名称保留/嵌入限制                                        | 系统商业字体拷贝、来源/嵌入权未知                               |
-| GitHub Action      | 固定审核过的 commit SHA，最小 token permissions                | 组织内可变 action、需要写权限/OIDC                       | `@latest`、不可信 PR 获得生产 secret、未审批 workflow           |
-| Provider SDK/API   | server-only、条款/region/output rights allowlist               | retention、跨境、voice/portrait、模型级条款              | Desktop 内平台 Key/vendor SDK、未知模型输出权、任意 base URL    |
+| Type               | Usually allowed                                                        | Manual review                                            | Rejected / fail closed                                          |
+| ------------------ | ---------------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------- |
+| npm                | exact lock + MIT/BSD/Apache/ISC，传递依赖已盘点                        | MPL/LGPL、postinstall 下载 binary、弃维护关键包          | unknown/GPL/AGPL/SSPL、floating version、未登记 binary download |
+| Python             | 批准的 exact CPython target、带 hash lock、官方 wheel/source、宽松许可 | PyInstaller exception、native wheel、OpenCV/codec bundle | 无 hash、个人环境、PyAV/x264/x265 未审计 wheel、未知 DLL        |
+| Native / CLI / DLL | 官方源码、可复现 recipe、exact commit/hash、许可/符号依赖已查          | LGPL 动态链接、系统 codec、专利地区问题                  | 整合包、未知 build flags、GPL/nonfree FFmpeg、libx264/libx265   |
+| Model / weight     | 官方 revision/hash，代码许可与 weight 许可分开，允许商业再分发         | API-only、自定义/OpenRAIL 条款、输出/训练/地区限制       | NC/research-only、社区重打包无 provenance、remote code 未审计   |
+| Font               | 固定版本/hash，OFL/Apache 且保留文本                                   | 名称保留/嵌入限制                                        | 系统商业字体拷贝、来源/嵌入权未知                               |
+| GitHub Action      | 固定审核过的 commit SHA，最小 token permissions                        | 组织内可变 action、需要写权限/OIDC                       | `@latest`、不可信 PR 获得生产 secret、未审批 workflow           |
+| Provider SDK/API   | server-only、条款/region/output rights allowlist                       | retention、跨境、voice/portrait、模型级条款              | Desktop 内平台 Key/vendor SDK、未知模型输出权、任意 base URL    |
 
 ## Automated gates
 
@@ -53,6 +53,11 @@
   `License-File` 和实际 license file hash。冲突/未知 fail closed；manual review 不得进入 release。
 - Python vulnerability Gate 使用 OSV 官方 API/OSV schema，把 advisory/severity 关联到 scope、purl、wheel
   SHA-256 和 dependency path。离线 advisory 文件仅用于确定性测试，正式 inventory 使用在线 Gate。
+- CPython/toolchain CVE 使用 Toolchain Vulnerability Disposition v1。PSF/CNA 精确 affected range 优先于
+  粗粒度 CPE/scanner enrichment；真实权威冲突、`UNKNOWN` reachability 或过期 review 一律阻塞。版本受影响、
+  模块存在、能力可达和攻击者可控路径必须分别记录。Stage A 的 `ALLOW_VALIDATION_BUILD_ONLY` 只允许取得最终
+  Worker 证据，不能用于 production/release；Stage B 必须绑定 final Worker 和 build context，受影响但已证明
+  不可达的结论只可记为有期限的 `PASS_WITH_ACCEPTED_RISK`。
 - Windows one-file worker Gate 静态解析最终 executable 的 PyInstaller CArchive，分别记录 bootloader、
   CArchive payload 和最终 executable SHA-256。每个实际嵌入的 `.pyd`/DLL/SO/dylib 字节只能映射为
   `WHEEL_OWNED_NATIVE` 或 `TOOLCHAIN_OWNED_NATIVE`；unexpected/missing/hash mismatch/unknown owner、解析失败和
@@ -94,5 +99,10 @@ manifest、bootloader/payload layer hash 和 final SHA-256。当前只要求每�
 Packaged Native Inventory v1 reader 继续只表示 loose/one-folder 文件；它不能声称验证 one-file artifact。
 one-file 必须重新静态扫描生成 v2，不允许从 v1 自动补造 owner/provenance。详细兼容策略见
 `docs/adr/ADR-002-packaged-native-toolchain-provenance.md`。
+
+Toolchain Vulnerability Disposition v1 的 schema、两阶段语义和 invalidation contract 见
+`schemas/compliance/toolchain-vulnerability-disposition/v1/review.schema.json` 与
+`docs/adr/ADR-006-two-stage-toolchain-vulnerability-disposition.md`。CPython artifact、Worker SHA、source/import、
+dependency/toolchain graph、Sidecar command、network/archive capability 或 policy version 任一变化均触发重审。
 
 批准一次不代表永久批准。版本、hash、build config、发行来源、条款或传递依赖变化均触发重新审查。

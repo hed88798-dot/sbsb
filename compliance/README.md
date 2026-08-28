@@ -17,6 +17,12 @@ SBOM 还包含 `COMPLIANCE_TOOLING` scope 的锁定 `packaging==25.0` compatibil
 component 已绑定 upstream filename、SHA-256、license files、provenance 和 vulnerability source，不能从
 开发机 Python 环境隐式取得。
 
+CPython/toolchain 漏洞使用
+`schemas/compliance/toolchain-vulnerability-disposition/v1/review.schema.json`。Stage A 只可授权构建验证候选，
+Stage B 才能形成绑定 final Worker 的正式风险结论；所有 review 通过 current-context 精确比较实现到期与
+artifact/source/graph/capability/policy 变化失效。示例正式记录位于
+`compliance/vulnerability-reviews/cpython-3.13.15-windows-x64/`。
+
 模板规则：
 
 - `completeness` 为 `SCAFFOLD` 的文件一律不能通过 stable Gate。

@@ -30,6 +30,10 @@
 - CPython runtime 回链到 exact、hash 固定的 distribution artifact；wheel-owned 与 toolchain-owned native 分离；
   build-only pip 不被错误要求进入 runtime；final worker provenance 绑定 commit、run、config、wheel/toolchain manifests
   与最终 SHA-256；当前不要求不同构建 bit-for-bit 相同；
+- 所有命中的 CPython/toolchain CVE 已完成 Stage B；Stage A `ALLOW_VALIDATION_BUILD_ONLY` 或
+  `PENDING_STAGE_B` 不能进入 beta。受影响但不可达的项必须绑定 exact distribution/final Worker/build context、
+  packaged-module 与负测试证据，并以未过期的 `PASS_WITH_ACCEPTED_RISK` 明示；任何 `UNKNOWN`、权威证据冲突、
+  binding 变化、到期/复审触发或 upstream fixed release trigger 均阻塞；
 - Schema v2 wheel compatibility 由锁定 Compatibility Engine 验证，artifact filename tag set 与真实 target
   `sys_tags()` set 至少一个交集；target descriptor、engine/package version 和 tag-set hash 全部归档；
 - production worker 与 export/evaluation scope 分离，production artifact 中不存在未批准的
