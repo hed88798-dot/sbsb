@@ -9,6 +9,10 @@ SHA-256、platform/Python ABI、license 和 provenance；它仍不足以解除 s
 
 stable 候选必须从解包后的真实 installer 重新盘点 Electron app、asar、Python wheels、native DLL、模型、字体、FFmpeg/whisper 和其他二进制，并将完整结果与 artifact SHA-256 一起归档。
 
+Build-only 工具与 runtime 组件使用独立 reachability。Artifact Usage Binding v1 要求 PyInstaller
+build wheel 进入 Build SBOM 与内部合规证据；只有真实进入发布 runtime 的组件才进入 Runtime SBOM
+和 customer-facing notices。Build dependency 身份本身不构成 runtime reachability。
+
 SBOM 还包含 `COMPLIANCE_TOOLING` scope 的锁定 `packaging==25.0` compatibility engine wheel；该 bootstrap
 component 已绑定 upstream filename、SHA-256、license files、provenance 和 vulnerability source，不能从
 开发机 Python 环境隐式取得。

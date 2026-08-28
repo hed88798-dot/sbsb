@@ -1,0 +1,239 @@
+{
+  "schema_version": "2",
+  "artifact": {
+    "artifact_id": "urn:sha256:9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7",
+    "filename": "pyinstaller-6.22.2-py3-none-win_amd64.whl",
+    "sha256": "9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7",
+    "package": "pyinstaller",
+    "version": "6.22.2",
+    "artifact_type": "PYTHON_WHEEL",
+    "download_url": "https://files.pythonhosted.org/packages/3f/53/8ba1d0f6159b490f700eac6161a4be5f0d4672608a6dae9fd73679f183ee/pyinstaller-6.22.2-py3-none-win_amd64.whl",
+    "supplier": "PyInstaller Development Team",
+    "review_status": "APPROVED"
+  },
+  "package_license": {
+    "expression": "GPL-2.0-or-later WITH Bootloader-exception",
+    "metadata_status": "LEGACY_DESCRIPTION_REVIEWED",
+    "evidence_sources": [
+      {
+        "evidence_id": "metadata-license-description",
+        "evidence_type": "METADATA_LICENSE_DESCRIPTION",
+        "value": "GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones)"
+      },
+      {
+        "evidence_id": "copying-license-and-exception",
+        "evidence_type": "LICENSE_FILE",
+        "relative_path": "pyinstaller-6.22.2.dist-info/licenses/COPYING.txt",
+        "sha256": "dcf75fdb959db1e3b41c0f8505069d2ece781b5ec6b3d0a4d30975cfc6580245"
+      },
+      {
+        "evidence_id": "pyinstaller-license-page",
+        "evidence_type": "EXCEPTION_SOURCE",
+        "source": "https://pyinstaller.org/en/v6.22.0/license.html"
+      }
+    ]
+  },
+  "file_level_license_evidence": [
+    {
+      "scope_id": "bootloader-and-loader-exception",
+      "relationship": "ADDITIONAL_PERMISSION",
+      "path_prefixes": ["PyInstaller/bootloader/", "PyInstaller/loader/"],
+      "expression": "GPL-2.0-or-later WITH Bootloader-exception",
+      "evidence_sources": [
+        {
+          "evidence_id": "copying-license-and-exception",
+          "evidence_type": "LICENSE_FILE",
+          "relative_path": "pyinstaller-6.22.2.dist-info/licenses/COPYING.txt",
+          "sha256": "dcf75fdb959db1e3b41c0f8505069d2ece781b5ec6b3d0a4d30975cfc6580245"
+        },
+        {
+          "evidence_id": "pyinstaller-license-page",
+          "evidence_type": "EXCEPTION_SOURCE",
+          "source": "https://pyinstaller.org/en/v6.22.0/license.html"
+        }
+      ],
+      "files": [
+        {
+          "relative_path": "PyInstaller/bootloader/Windows-64bit-intel/run.exe",
+          "sha256": "9f93091d097c7bca65e18e233b68886a017da65c9681efb1fcbfcc254e4fa1fd"
+        },
+        {
+          "relative_path": "PyInstaller/bootloader/Windows-64bit-intel/run_d.exe",
+          "sha256": "ffcc6326d07fd33697a2f083911459ea49a7e2aac67d1cfbed718393ed50c9f3"
+        },
+        {
+          "relative_path": "PyInstaller/bootloader/Windows-64bit-intel/runw.exe",
+          "sha256": "87b0c589906a5d690c26c602bf2ee7e43b3eab55574bf72887a8ca07fbb2dba0"
+        },
+        {
+          "relative_path": "PyInstaller/bootloader/Windows-64bit-intel/runw_d.exe",
+          "sha256": "c8e8a897bf8690ce6e0e98f9d3e7c30fd7e1335100a1516cc83548532b4faf06"
+        },
+        {
+          "relative_path": "PyInstaller/bootloader/images/icon-console.ico",
+          "sha256": "6802d6d4839ec6195344deec61c2dcf602161f9d97b24f6273790469e8477adb"
+        },
+        {
+          "relative_path": "PyInstaller/bootloader/images/icon-windowed.ico",
+          "sha256": "168db1b8a7c62fa2ab92c1210185d145923f31c1be23fded42d9420f48b98392"
+        },
+        {
+          "relative_path": "PyInstaller/loader/__init__.py",
+          "sha256": "32c4858e22cc2c967b42150fa550562a2c839c2cebcaab91cabdf6f4da020022"
+        },
+        {
+          "relative_path": "PyInstaller/loader/pyiboot01_bootstrap.py",
+          "sha256": "6773bb364344a01f176133f8624ddda9e8f992052eaddad32609b1e90399ef1f"
+        },
+        {
+          "relative_path": "PyInstaller/loader/pyimod01_archive.py",
+          "sha256": "38d2c8b801b6c2165d44bc40f47bc1e230110272003da67d4d4eaa59af4ff397"
+        },
+        {
+          "relative_path": "PyInstaller/loader/pyimod02_importers.py",
+          "sha256": "33e786adc20d247cc5acf02eaa021f8629f30b8d3d5bf8a1e651088cca132eef"
+        },
+        {
+          "relative_path": "PyInstaller/loader/pyimod03_ctypes.py",
+          "sha256": "a93c2ec1677cc5d77fa4c000136b9da36f61388f9536f2b1a66193b329d1f312"
+        },
+        {
+          "relative_path": "PyInstaller/loader/pyimod04_pywin32.py",
+          "sha256": "bc55444d6745a5922ba1ab63d131a90c4d9f00c800553b3cd08423acd1982aec"
+        }
+      ]
+    },
+    {
+      "scope_id": "runtime-hooks-apache-2.0",
+      "relationship": "OVERRIDES_PACKAGE_LICENSE",
+      "path_prefixes": ["PyInstaller/hooks/rthooks/"],
+      "expression": "Apache-2.0",
+      "evidence_sources": [
+        {
+          "evidence_id": "copying-license-and-exception",
+          "evidence_type": "LICENSE_FILE",
+          "relative_path": "pyinstaller-6.22.2.dist-info/licenses/COPYING.txt",
+          "sha256": "dcf75fdb959db1e3b41c0f8505069d2ece781b5ec6b3d0a4d30975cfc6580245"
+        }
+      ],
+      "files": [
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/__init__.py",
+          "sha256": "32c4858e22cc2c967b42150fa550562a2c839c2cebcaab91cabdf6f4da020022"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth__tkinter.py",
+          "sha256": "c1f7f579f1fe52d94f4ce705a031331efd667a248e8bc5d8012d1399968dfdbb"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_django.py",
+          "sha256": "f4578efde92d9b7d94f9bf9d66fbcd763ad3d12ebe1f7239ac50874af0661b40"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_gdkpixbuf.py",
+          "sha256": "1246380adc496e0d12180877db08608f4bc17925b5bfae0f3eebde5a4392f0d1"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_gi.py",
+          "sha256": "1f9c1d2fb02396b7cf89bec49ff6182de6df96d9a6e55e00519fcf69c0041654"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_gio.py",
+          "sha256": "e93d0b205aa2f25e47cc2584fb4998210e836b13469f4e77dd79fb574ba12d9a"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_glib.py",
+          "sha256": "5d36d1b1707e510a2fdb5b9e2664a63aa2ac50e8f9873e67ea7b5d272c8b8cba"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_gstreamer.py",
+          "sha256": "be1f3af383514887f07eb9ccdfd3bb21e44fa284374d5f8cc19753368deb1895"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_gtk.py",
+          "sha256": "c91d4d4f9b5147e83dcbe6c6ed393b668b0f4cd1cc9d5eca1667bb765cfa3450"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_inspect.py",
+          "sha256": "e9db311f97b750a30a422e0bf2bdcff7514da67cd35b0f6189ad786956ff1abc"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_kivy.py",
+          "sha256": "8c805978d7b62a66f18b4d1727dea5e4abcd583f4a0afcc5429f9483ddfe1695"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_mplconfig.py",
+          "sha256": "5ee085107a6e774bd8bb0417e7a2dcb86a198248c1fe91cfcac78972ce54c126"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_multiprocessing.py",
+          "sha256": "2834a4a14da13d263183426eb7e61eec75cd720fac1bd0794f8ae63878763e20"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_pkgres.py",
+          "sha256": "194c0f6ffdf9d918d59df9e7a0462bb86d606d91a3ac2a827dc2b7a1c91cff14"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_pkgutil.py",
+          "sha256": "7d006a9675674b9cc7d8b11ea98ad037adea5dbdb6ebdf9b7a45c861501c4204"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_pyqt5.py",
+          "sha256": "a20e98a09545d0d7cf0ef6540b276ae4773598eca51dfa0f959af953d1434387"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_pyqt6.py",
+          "sha256": "2daf6bea77d62735cf1a2f65964704ab93ef2da64b9e4a9d842321c924baa106"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_pyside2.py",
+          "sha256": "50dc5ac8dc8609c6f185e370334cf3f6c8661ae39ccb8b9b22bd0e434a87266b"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_pyside6.py",
+          "sha256": "d12001f8c51dc8f77114d9d48078b107e1d7c0dbd89d038f4ee727d3c1a537ab"
+        },
+        {
+          "relative_path": "PyInstaller/hooks/rthooks/pyi_rth_setuptools.py",
+          "sha256": "aeb0dc75b5064ae52751e5c3451fc76a5c4cd7e821b4989614880ebce20830fa"
+        }
+      ]
+    },
+    {
+      "scope_id": "isolated-dual-license",
+      "relationship": "OVERRIDES_PACKAGE_LICENSE",
+      "path_prefixes": ["PyInstaller/isolated/"],
+      "expression": "GPL-2.0-or-later OR MIT",
+      "evidence_sources": [
+        {
+          "evidence_id": "copying-license-and-exception",
+          "evidence_type": "LICENSE_FILE",
+          "relative_path": "pyinstaller-6.22.2.dist-info/licenses/COPYING.txt",
+          "sha256": "dcf75fdb959db1e3b41c0f8505069d2ece781b5ec6b3d0a4d30975cfc6580245"
+        }
+      ],
+      "files": [
+        {
+          "relative_path": "PyInstaller/isolated/__init__.py",
+          "sha256": "798d5806f04d8abdccc27dbe9525c4066898fa2fe3cf5659fee41546afea666b"
+        },
+        {
+          "relative_path": "PyInstaller/isolated/_child.py",
+          "sha256": "b1011122071bd1b077f0c0193f6b3a50cdbdc842a455e07f8d5d251075dc9334"
+        },
+        {
+          "relative_path": "PyInstaller/isolated/_parent.py",
+          "sha256": "c35006b4af2f5a56b3a4951a023941575d0c4acd4912d7d59f1abf4f8d296364"
+        }
+      ]
+    }
+  ],
+  "scan": {
+    "scanner": "scan-pyinstaller-license-evidence.py",
+    "scanner_version": "1",
+    "wheel_entry_count": 571,
+    "license_candidate_paths": ["pyinstaller-6.22.2.dist-info/licenses/COPYING.txt"],
+    "evidence_identity_sha256": "c8c24eab9978f59c011270dfbbcc5334dff3aab491c5a9d010562941d76e4180"
+  },
+  "evidence_status": "PASS"
+}

@@ -31,3 +31,22 @@ Compatibility Engine v1 is locked to `packaging==25.0` and the public `packaging
 scope and OSV status are recorded in `compliance/quality-tooling/python/packaging-25.0.lock.json`. Candidate,
 migration and verifier use the same engine wrapper. Approved inventories can generate an exact URL/hash install
 lock with `pnpm compliance:python:require-hashes`; installation must use `--require-hashes --no-deps`.
+
+PyInstaller worker-build license decisions use the independent Artifact Usage Binding v1 contract.
+Keep the wheel in its normal build-dependency inventory, then evaluate the exact Artifact License
+Evidence v2 scan plus usage binding against the existing Build Artifact Provenance v1 and Python
+Toolchain Inventory v1 records:
+
+```text
+pnpm compliance:python:artifact-usage:license -- \
+  --artifact-license-evidence <evidence-v2.json> \
+  --artifact-usage-binding <usage-binding-v1.json> \
+  --build-provenance <build-provenance-v1.json> \
+  --toolchain-inventory <toolchain-inventory-v1.json> \
+  --output <evaluation-v3.json>
+```
+
+Pass the same four context inputs to `pnpm compliance:python:license` when the build-dependency
+inventory contains that PyInstaller wheel. Only a complete v3 PASS for the same SHA can replace the
+old context-free build-dependency result; the report preserves both the dependency role and the
+functional build-tool role. A missing, stale, cross-artifact or wrong-role binding remains blocking.

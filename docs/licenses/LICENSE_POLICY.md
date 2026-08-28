@@ -11,3 +11,9 @@
 - Provider 平台条款、模型权重许可和输出权分别审查，付费 API 不自动代表可商用。
 
 书面例外必须记录责任人、范围、依据和到期日，并通过架构与法务审核。
+
+Artifact 的 SHA-256、来源和许可事实与其使用方式分别记录。任何许可证例外必须同时绑定精确
+artifact、Build Artifact Provenance context、dependency/functional/distribution role 和 policy version；
+在一个 build-only context 中通过，不会让同一 artifact 在 product runtime 或 toolchain redistribution
+context 中自动通过。Build SBOM/internal evidence 与 Runtime SBOM/customer notice 的 reachability
+分别审计。

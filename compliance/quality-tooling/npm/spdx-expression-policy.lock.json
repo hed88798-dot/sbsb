@@ -2,19 +2,24 @@
   "schema_version": "1",
   "scope": "QUALITY_TOOLING",
   "tool_name": "python-spdx-license-policy",
-  "reviewed_at": "2026-08-28T00:00:00Z",
+  "reviewed_at": "2026-08-29T00:00:00Z",
   "vulnerability_review_expires_at": "2026-11-28T00:00:00Z",
   "vulnerability_source": "OSV.DEV",
   "license_policy": {
-    "version": "2026.08.28.2",
+    "version": "2026.08.29.1",
     "relative_path": "compliance/license-policy/python-spdx-v1/policy.json",
-    "sha256": "0d708d719c70a219f80961c9bc1be6162ee0a34cb9ca0cbca5acd56e4f8264ac"
+    "sha256": "5ffff7b24c75801e1a75a888b9d4b5e40cf29e0641dcc6b5d2d2562acae4545a"
   },
   "historical_policies": [
     {
       "version": "2026.08.28.1",
       "relative_path": "compliance/license-policy/python-spdx-v1/versions/2026.08.28.1.json",
       "sha256": "93e0ad3c2c723492d5ea5e1d3dd634239c80822489678a35fc458782eb993f84"
+    },
+    {
+      "version": "2026.08.28.2",
+      "relative_path": "compliance/license-policy/python-spdx-v1/versions/2026.08.28.2.json",
+      "sha256": "0d708d719c70a219f80961c9bc1be6162ee0a34cb9ca0cbca5acd56e4f8264ac"
     }
   ],
   "rule_evidence": [

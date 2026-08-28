@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/license-policy-evaluation/v3/report.schema.json",
+  "title": "License Policy Evaluation v3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "usage_binding_id",
+    "artifact_sha256",
+    "build_context_id",
+    "dependency_role",
+    "functional_role",
+    "distribution_role",
+    "artifact_evidence_identity_sha256",
+    "usage_binding_identity_sha256",
+    "build_provenance_identity_sha256",
+    "license_policy_version",
+    "license_policy_sha256",
+    "artifact_identity_reconciled",
+    "exception_binding_valid",
+    "reachability",
+    "scope_decisions",
+    "policy_result",
+    "reason"
+  ],
+  "properties": {
+    "schema_version": { "const": "3" },
+    "usage_binding_id": { "type": "string", "minLength": 1 },
+    "artifact_sha256": { "$ref": "#/$defs/sha256" },
+    "build_context_id": { "type": "string", "minLength": 1 },
+    "dependency_role": { "type": "string", "minLength": 1 },
+    "functional_role": { "type": "string", "minLength": 1 },
+    "distribution_role": { "type": "string", "minLength": 1 },
+    "artifact_evidence_identity_sha256": { "$ref": "#/$defs/sha256" },
+    "usage_binding_identity_sha256": { "$ref": "#/$defs/sha256" },
+    "build_provenance_identity_sha256": { "$ref": "#/$defs/sha256" },
+    "license_policy_version": { "type": "string", "minLength": 1 },
+    "license_policy_sha256": { "$ref": "#/$defs/sha256" },
+    "artifact_identity_reconciled": { "type": "boolean" },
+    "exception_binding_valid": { "type": "boolean" },
+    "reachability": { "type": "object" },
+    "scope_decisions": { "type": "array", "items": { "type": "object" } },
+    "policy_result": { "enum": ["PASS", "MANUAL_REVIEW", "FAIL"] },
+    "reason": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}
