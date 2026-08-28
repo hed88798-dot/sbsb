@@ -5,6 +5,7 @@ import { join } from 'node:path';
 
 const repositoryRoot = process.cwd();
 const packageManifest = JSON.parse(readFileSync(join(repositoryRoot, 'package.json'), 'utf8'));
+const expectedPython = readFileSync(join(repositoryRoot, '.python-version'), 'utf8').trim();
 const expectedNode = packageManifest.engines.node;
 const expectedPnpm = packageManifest.engines.pnpm;
 const pnpmCommand = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
@@ -46,8 +47,8 @@ try {
   if (actualPnpm !== expectedPnpm) {
     throw new Error(`pnpm version mismatch: expected ${expectedPnpm}, got ${actualPnpm}`);
   }
-  if (!/^Python 3\.12(?:\.|$)/.test(actualPython)) {
-    throw new Error(`Python version mismatch: expected 3.12.x, got ${actualPython}`);
+  if (actualPython !== `Python ${expectedPython}`) {
+    throw new Error(`Python version mismatch: expected ${expectedPython}, got ${actualPython}`);
   }
 
   run('git', ['worktree', 'add', '--detach', worktree, 'HEAD']);
@@ -81,6 +82,7 @@ try {
     cleanEnvironment,
   );
   for (const args of [
+    ['compliance:python:tooling:install'],
     ['ci:prepare'],
     ['package:resolution'],
     ['format:check'],
@@ -94,6 +96,7 @@ try {
     ['license:scan'],
     ['vulnerability:scan'],
     ['compliance:python:verify'],
+    ['compliance:python:target:verify'],
     ['golden:verify'],
     ['build'],
     ['sbom:generate'],

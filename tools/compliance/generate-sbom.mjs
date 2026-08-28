@@ -19,6 +19,12 @@ const outputPath = resolve(
     : 'artifacts/compliance/SBOM.cdx.json',
 );
 const rootManifest = JSON.parse(readFileSync(resolve(repositoryRoot, 'package.json'), 'utf8'));
+const qualityToolLock = JSON.parse(
+  readFileSync(
+    resolve(repositoryRoot, 'compliance/quality-tooling/python/packaging-25.0.lock.json'),
+    'utf8',
+  ),
+);
 const pythonInventoryPaths = process.argv
   .flatMap((value, index) => (value === '--python-inventory' ? [process.argv[index + 1]] : []))
   .filter(Boolean)
@@ -60,7 +66,30 @@ const npmComponents = inventory.map((entry) => ({
   properties: [{ name: 'com.company.inventory.source', value: 'installed-pnpm-virtual-store' }],
 }));
 const pythonRecords = buildPythonSbomRecords(pythonInventories, packagedInventories);
-const components = [...npmComponents, ...pythonRecords.components];
+const qualityToolComponent = {
+  type: 'library',
+  'bom-ref': `urn:python-wheel:sha256:${qualityToolLock.sha256}`,
+  name: qualityToolLock.package_name,
+  version: qualityToolLock.version,
+  purl: qualityToolLock.purl,
+  scope: 'optional',
+  hashes: [{ alg: 'SHA-256', content: qualityToolLock.sha256 }],
+  licenses: [{ expression: qualityToolLock.license_expression }],
+  externalReferences: [
+    { type: 'distribution', url: qualityToolLock.download_url },
+    { type: 'website', url: qualityToolLock.source },
+  ],
+  properties: [
+    { name: 'com.company.python.scope', value: qualityToolLock.scope },
+    { name: 'com.company.python.wheel.filename', value: qualityToolLock.filename },
+    { name: 'com.company.python.provenance.supplier', value: qualityToolLock.supplier },
+    {
+      name: 'com.company.python.provenance.status',
+      value: qualityToolLock.provenance_review_status,
+    },
+  ],
+};
+const components = [...npmComponents, qualityToolComponent, ...pythonRecords.components];
 validatePythonSbomBinding(pythonInventories, components);
 const bom = {
   bomFormat: 'CycloneDX',
@@ -100,5 +129,5 @@ const bom = {
 mkdirSync(dirname(outputPath), { recursive: true });
 writeFileSync(outputPath, `${JSON.stringify(bom, null, 2)}\n`);
 console.log(
-  `sbom: PASS (scaffold; ${npmComponents.length} npm + ${pythonRecords.components.length} Python/native components; ${outputPath})`,
+  `sbom: PASS (scaffold; ${npmComponents.length} npm + ${pythonRecords.components.length} product Python/native + 1 compliance-tool components; ${outputPath})`,
 );

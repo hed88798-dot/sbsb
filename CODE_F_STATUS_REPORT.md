@@ -97,7 +97,7 @@ NONE
 
 ## Verification evidence
 
-- Fixed toolchain local gate: Node `24.19.0`, pnpm `11.19.0`, Python `3.12.13`.
+- Fixed toolchain gate: Node `24.19.0`, pnpm `11.19.0`, Python `3.12.10` (the final CPython 3.12 release with cross-platform binary installers).
 - `pnpm check`: `PASS` — format, lint, typecheck, 16 test files / 152 tests, dependency direction, full-repository portability, workflow security, source secret, license first-pass and Golden manifest.
 - Detached clean checkout with no generated state and isolated pnpm store: `PASS` at `871c5baa13648b978043f0bc6f1f34c9b50a9799`.
 - macOS arm64 unpacked Electron packaged native SQLite smoke: `PASS`（只作为打包工具回归，不替代 Windows）。
@@ -157,5 +157,117 @@ KNOWN_ISSUES:
 Code C must still provide its real Windows/Linux complete transitive wheel inventories, hashes, provenance and hash-enforced install. This foundation does not fabricate or approve those inputs.
 
 ARCHITECTURE_QUESTIONS:
+NONE
+```
+
+## Python wheel compatibility contract v2 — 2026-08-28
+
+```text
+ISSUE_10:
+RESOLVED_AFTER_PR_MERGE
+
+SCHEMA_VERSION:
+2 (v1 reader preserved with unchanged semantics)
+
+COMPATIBILITY_ENGINE:
+pypa-packaging / packaging.tags + packaging.utils.parse_wheel_filename
+
+COMPATIBILITY_ENGINE_VERSION:
+1
+
+PACKAGING_VERSION:
+25.0
+
+TARGET_DESCRIPTOR_VERSION:
+1
+
+TARGET_ARTIFACT_SEPARATION:
+PASS
+
+CANDIDATE_VERIFIER_SHARED_ENGINE:
+PASS
+
+WINDOWS_MIXED_TAG_GRAPH:
+PASS
+
+LINUX_MIXED_TAG_GRAPH:
+PASS
+
+ABI3_COMPATIBILITY:
+PASS
+
+MULTI_TAG_WHEEL_COMPATIBILITY:
+PASS
+
+MULTI_PLATFORM_TAG_COMPATIBILITY:
+PASS
+
+INCOMPATIBLE_WHEEL_REJECTION:
+PASS
+
+COMPLETE_GRAPH_VALIDATION:
+PASS
+
+HASH_PROVENANCE_PRESERVED:
+PASS
+
+REQUIRE_HASHES_REGRESSION:
+PASS
+
+SDIST_VCS_FAIL_CLOSED:
+PASS
+
+SBOM_BINDING:
+PASS
+
+LICENSE_BINDING:
+PASS
+
+VULNERABILITY_BINDING:
+PASS
+
+NATIVE_RECONCILIATION:
+PASS
+
+PACKAGED_RECONCILIATION:
+PASS
+
+QUALITY_TOOL_SUPPLY_CHAIN:
+PASS
+
+EXISTING_GATES_REGRESSION:
+PASS — local full gate before the platform-only CLI regression: 222 passed, 1 skipped; the final macOS run adds one intentional Windows/Linux-only skip. npm audit retains one low advisory below the blocking threshold.
+
+LINUX_CI:
+RECORDED_IN_FINAL_DELIVERY — remote PR check cannot be predeclared by the branch.
+
+WINDOWS_NATIVE_SMOKE:
+RECORDED_IN_FINAL_DELIVERY — remote PR check cannot be predeclared by the branch.
+
+SCHEMA_BREAKING_CHANGE:
+YES — v2 introduced instead of redefining v1 fields.
+
+V1_READER_SUPPORTED:
+PASS
+
+V1_TO_V2_MIGRATION:
+PASS
+
+OLD_V1_FIXTURES:
+PASS
+
+NEW_V2_FIXTURES:
+PASS
+
+CONSUMER_COMPATIBILITY:
+PASS — candidate, verifier, hash lock, SBOM, license, vulnerability, native inventory and packaged reconciliation accept v1/v2 through one version-dispatched reader.
+
+ADR_OR_CONTRACT_CHANGE:
+docs/adr/ADR-001-python-wheel-compatibility-contract-v2.md
+
+MAIN_QUALITY_BASELINE_SHA:
+RECORDED_IN_FINAL_DELIVERY — a branch cannot predeclare its future merge SHA.
+
+ARCHITECTURE_QUESTION:
 NONE
 ```

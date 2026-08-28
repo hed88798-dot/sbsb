@@ -9,6 +9,10 @@ SHA-256、platform/Python ABI、license 和 provenance；它仍不足以解除 s
 
 stable 候选必须从解包后的真实 installer 重新盘点 Electron app、asar、Python wheels、native DLL、模型、字体、FFmpeg/whisper 和其他二进制，并将完整结果与 artifact SHA-256 一起归档。
 
+SBOM 还包含 `COMPLIANCE_TOOLING` scope 的锁定 `packaging==25.0` compatibility engine wheel；该 bootstrap
+component 已绑定 upstream filename、SHA-256、license files、provenance 和 vulnerability source，不能从
+开发机 Python 环境隐式取得。
+
 模板规则：
 
 - `completeness` 为 `SCAFFOLD` 的文件一律不能通过 stable Gate。

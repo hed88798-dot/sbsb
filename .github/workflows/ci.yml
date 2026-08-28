@@ -29,8 +29,11 @@ jobs:
           cache: pnpm
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: '3.12'
+          python-version: '3.12.10'
       - run: pnpm install --frozen-lockfile
+      - run: pnpm compliance:python:tooling:install
+      - run: pnpm compliance:python:target -- describe-current --output artifacts/compliance/CURRENT_TARGET.json
+      - run: pnpm compliance:python:target -- verify-current --target artifacts/compliance/CURRENT_TARGET.json
       - run: pnpm ci:prepare
       - run: pnpm package:resolution
       - run: pnpm format:check
@@ -44,6 +47,7 @@ jobs:
       - run: pnpm license:scan -- --report artifacts/compliance/LICENSE_FIRST_PASS.json
       - run: pnpm vulnerability:scan
       - run: pnpm compliance:python:verify
+      - run: pnpm compliance:python:target:verify
       - run: pnpm golden:verify
       - run: pnpm build
       - run: pnpm sbom:generate
@@ -70,5 +74,5 @@ jobs:
           node-version: 24.19.0
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: '3.12'
+          python-version: '3.12.10'
       - run: pnpm clean-checkout

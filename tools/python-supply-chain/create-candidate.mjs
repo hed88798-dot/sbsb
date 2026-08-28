@@ -1,4 +1,4 @@
-import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { basename, dirname, relative, resolve } from 'node:path';
 import {
   canonicalJson,
@@ -7,6 +7,11 @@ import {
   pythonPurl,
   sha256File,
 } from './inventory.mjs';
+import {
+  evaluateWheel,
+  parseWheelFilename,
+  validateTargetCompatibilityMetadata,
+} from './compatibility.mjs';
 
 function parse(values) {
   const options = { direct: [] };
@@ -27,15 +32,13 @@ function parse(values) {
     else if (key === '--download-base') options.downloadBase = value;
     else if (key === '--supplier') options.supplier = value;
     else if (key === '--output') options.output = value;
+    else if (key === '--target-descriptor') options.targetDescriptor = value;
+    else if (key === '--schema-version') options.schemaVersion = value;
     else throw new Error(`unknown argument: ${key}`);
   }
   const required = [
     'artifactRoot',
     'scope',
-    'pythonVersion',
-    'pythonTag',
-    'abiTag',
-    'platformTag',
     'inventoryId',
     'sourceIndex',
     'sourceBase',
@@ -43,6 +46,18 @@ function parse(values) {
     'supplier',
     'output',
   ];
+  if (options.targetDescriptor) {
+    if (options.schemaVersion && options.schemaVersion !== '2') {
+      throw new Error('--target-descriptor requires --schema-version 2');
+    }
+    options.schemaVersion = '2';
+  } else {
+    options.schemaVersion ??= '1';
+    if (options.schemaVersion !== '1') {
+      throw new Error('schema v2 candidate generation requires --target-descriptor');
+    }
+    required.push('pythonVersion', 'pythonTag', 'abiTag', 'platformTag');
+  }
   for (const key of required) if (!options[key]) throw new Error(`--${key} is required`);
   if (options.direct.length === 0) throw new Error('at least one --direct package is required');
   return options;
@@ -59,9 +74,25 @@ function wheelFiles(root) {
 async function main() {
   const options = parse(process.argv.slice(2));
   const artifactRoot = resolve(options.artifactRoot);
+  const target = options.targetDescriptor
+    ? JSON.parse(readFileSync(resolve(options.targetDescriptor), 'utf8'))
+    : {
+        python_version: options.pythonVersion,
+        python_tag: options.pythonTag,
+        abi_tag: options.abiTag,
+        platform_tag: options.platformTag,
+      };
+  if (options.schemaVersion === '2') validateTargetCompatibilityMetadata(target);
   const inspected = wheelFiles(artifactRoot)
     .sort((left, right) => left.localeCompare(right))
-    .map((path) => ({ path, metadata: inspectWheel(path) }));
+    .map((path) => ({
+      path,
+      metadata: inspectWheel(path),
+      parsed:
+        options.schemaVersion === '2'
+          ? evaluateWheel(path.split(/[\\/]/u).at(-1), target)
+          : parseWheelFilename(path.split(/[\\/]/u).at(-1)),
+    }));
   if (inspected.length === 0) throw new Error('candidate generation found no wheels');
   const known = new Map(
     inspected.map(({ metadata }) => [
@@ -70,9 +101,12 @@ async function main() {
     ]),
   );
   const packages = [];
-  for (const { path, metadata } of inspected) {
+  for (const { path, metadata, parsed } of inspected) {
     const normalized = normalizePythonName(metadata.package_name);
-    packages.push({
+    if (options.schemaVersion === '2' && parsed.status !== 'COMPATIBLE') {
+      throw new Error(`${metadata.filename}: wheel is incompatible with target descriptor`);
+    }
+    const artifact = {
       package_name: metadata.package_name,
       version: metadata.version,
       artifact_type: 'wheel',
@@ -81,10 +115,6 @@ async function main() {
       sha256: await sha256File(path),
       source: `${options.sourceBase.replace(/\/$/u, '')}/${normalized}`,
       source_index: options.sourceIndex,
-      python_version: options.pythonVersion,
-      python_tag: options.pythonTag,
-      abi_tag: options.abiTag,
-      platform_tag: options.platformTag,
       purl: pythonPurl(metadata.package_name, metadata.version),
       license_expression: metadata.license_expression ?? metadata.legacy_license ?? 'UNKNOWN',
       license_files: metadata.license_files.map(({ relative_path, sha256 }) => ({
@@ -122,18 +152,27 @@ async function main() {
           reason: purl ? '' : 'REVIEW_REQUIRED',
         };
       }),
-    });
+    };
+    if (options.schemaVersion === '1') {
+      Object.assign(artifact, {
+        python_version: options.pythonVersion,
+        python_tag: options.pythonTag,
+        abi_tag: options.abiTag,
+        platform_tag: options.platformTag,
+      });
+    } else {
+      Object.assign(artifact, {
+        wheel_tags: parsed.wheel_tags,
+        compatibility: { status: parsed.status, matched_tags: parsed.matched_tags },
+      });
+    }
+    packages.push(artifact);
   }
   const candidate = {
-    schema_version: '1',
+    schema_version: options.schemaVersion,
     inventory_id: options.inventoryId,
     scope: options.scope,
-    target: {
-      python_version: options.pythonVersion,
-      python_tag: options.pythonTag,
-      abi_tag: options.abiTag,
-      platform_tag: options.platformTag,
-    },
+    target,
     graph_complete: false,
     packages,
   };

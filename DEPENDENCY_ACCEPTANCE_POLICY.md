@@ -65,4 +65,16 @@ Inventory schema：
 `packaged-native-inventory.schema.json`。任何 schema、artifact version/hash、platform/ABI、scope 或
 provenance 变化都必须产生可审查 Git diff；CI 禁止运行 candidate/update 命令。
 
+新 intake 使用 Inventory Schema v2。v1 的 target/artifact exact tag triple 语义保持不变并进入 deprecated
+reader；mixed-tag graph 必须通过显式 migration 使用 v2。v2 target 记录 CPython patch version、OS、CPU、
+Compatibility Engine v1 / `packaging==25.0` 版本和真实 target 上 `packaging.tags.sys_tags()` 生成的完整 tag
+set；artifact tags 必须由真实 upstream filename 通过 `parse_wheel_filename` 展开。交集为空直接拒绝，不能
+warning、重命名、伪造 tag 或拆 graph。
+
+`packaging==25.0` 本身是 `COMPLIANCE_TOOLING` scope 的锁定依赖：只接受
+`packaging-25.0-py3-none-any.whl`、SHA-256
+`29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484` 和已批准 PyPA/PyPI 来源；license
+文件 hash、Apache-2.0 OR BSD-2-Clause 人工决定及 OSV 结果必须通过 bootstrap Gate。质量工具不享有供应链
+豁免。
+
 批准一次不代表永久批准。版本、hash、build config、发行来源、条款或传递依赖变化均触发重新审查。

@@ -10,6 +10,7 @@ import {
 import { auditPythonLicenses } from './license.mjs';
 import { buildPackagedNativeInventory, reconcilePackagedNativeInventory } from './native.mjs';
 import { auditPythonVulnerabilities } from './vulnerability.mjs';
+import { assertTargetMatchesCurrent, currentTargetDescriptor } from './compatibility.mjs';
 
 function parseArguments(values) {
   const options = { inventories: [], release: false };
@@ -23,6 +24,8 @@ function parseArguments(values) {
     else if (value === '--platform-tag') options.platformTag = values[++index];
     else if (value === '--python-tag') options.pythonTag = values[++index];
     else if (value === '--abi-tag') options.abiTag = values[++index];
+    else if (value === '--target-os') options.targetOs = values[++index];
+    else if (value === '--target-architecture') options.targetArchitecture = values[++index];
     else if (value === '--offline-osv') options.offlineOsv = values[++index];
     else if (value === '--report' || value === '--output') options.output = values[++index];
     else if (value === '--release') options.release = true;
@@ -63,6 +66,12 @@ async function verify(options) {
     `python-inventory: PASS (${loaded.length} inventories; ${verified.length} hash-verified wheels)`,
   );
   return { loaded, verified };
+}
+
+async function validate(options) {
+  const loaded = loadInventories(inventoryPaths(options));
+  console.log(`python-inventory-schema: PASS (${loaded.length} inventories)`);
+  return loaded;
 }
 
 async function license(options) {
@@ -158,18 +167,27 @@ async function repoNativeVerify(options) {
   const platformTag = options.platformTag ?? process.env.PYTHON_TARGET_PLATFORM_TAG;
   const pythonTag = options.pythonTag ?? process.env.PYTHON_TARGET_PYTHON_TAG;
   const abiTag = options.abiTag ?? process.env.PYTHON_TARGET_ABI_TAG;
-  if (platformTag || pythonTag || abiTag) {
-    loaded = loaded.filter(
-      ({ document }) =>
-        (!platformTag || document.target.platform_tag === platformTag) &&
-        (!pythonTag || document.target.python_tag === pythonTag) &&
-        (!abiTag || document.target.abi_tag === abiTag),
+  const targetOs = options.targetOs ?? process.env.PYTHON_TARGET_OS;
+  const targetArchitecture = options.targetArchitecture ?? process.env.PYTHON_TARGET_ARCHITECTURE;
+  if (platformTag || pythonTag || abiTag || targetOs || targetArchitecture) {
+    loaded = loaded.filter(({ document }) =>
+      document.schema_version === '1'
+        ? (!platformTag || document.target.platform_tag === platformTag) &&
+          (!pythonTag || document.target.python_tag === pythonTag) &&
+          (!abiTag || document.target.abi_tag === abiTag) &&
+          !targetOs &&
+          !targetArchitecture
+        : !platformTag &&
+          !pythonTag &&
+          !abiTag &&
+          (!targetOs || document.target.os === targetOs) &&
+          (!targetArchitecture || document.target.architecture === targetArchitecture),
     );
     if (loaded.length === 0)
       throw new Error('no production inventory matches selected target tags');
   } else if (loaded.length > 1) {
     throw new Error(
-      'multiple production targets exist; set PYTHON_TARGET_PLATFORM_TAG/PYTHON_TARGET_PYTHON_TAG/PYTHON_TARGET_ABI_TAG',
+      'multiple production targets exist; select v1 tag variables or PYTHON_TARGET_OS/PYTHON_TARGET_ARCHITECTURE for v2',
     );
   }
   const packagedRoot = options.packagedRoot ?? process.env.PYTHON_PACKAGED_WORKER_ROOT;
@@ -188,16 +206,51 @@ async function repoNativeVerify(options) {
   await reconcile({ ...shared, packagedInventory: temporaryOutput });
 }
 
+async function repoTargetVerifyCurrent(options) {
+  const productionV2 = loadInventories(inventoryPaths(options)).filter(
+    ({ document }) =>
+      document.schema_version === '2' && document.scope === 'PRODUCTION_WORKER_RUNTIME',
+  );
+  if (productionV2.length === 0) {
+    console.log('python-target-current: PASS (not applicable; no v2 production inventory)');
+    return;
+  }
+  if (!['win32', 'linux'].includes(process.platform)) {
+    console.log(`python-target-current: PASS (not applicable on ${process.platform} host)`);
+    return;
+  }
+  const current = currentTargetDescriptor();
+  const matching = productionV2.filter(
+    ({ document }) =>
+      document.target.os === current.os && document.target.architecture === current.architecture,
+  );
+  if (matching.length === 0) {
+    console.log(
+      `python-target-current: PASS (not applicable; no ${current.os}/${current.architecture} production inventory)`,
+    );
+    return;
+  }
+  if (matching.length !== 1) {
+    throw new Error('current target must match exactly one production inventory');
+  }
+  assertTargetMatchesCurrent(matching[0].document.target);
+  console.log(
+    `python-target-current: PASS (${current.os}/${current.architecture}; ${current.compatibility.compatible_tags.length} tags)`,
+  );
+}
+
 async function main() {
   const [command = 'repo-verify', ...values] = process.argv.slice(2);
   const options = parseArguments(values);
-  if (command === 'verify') await verify(options);
+  if (command === 'validate') await validate(options);
+  else if (command === 'verify') await verify(options);
   else if (command === 'license') await license(options);
   else if (command === 'vulnerability') await vulnerability(options);
   else if (command === 'native-inventory') await nativeInventory(options);
   else if (command === 'reconcile') await reconcile(options);
   else if (command === 'repo-verify') await repoVerify(options);
   else if (command === 'repo-native-verify') await repoNativeVerify(options);
+  else if (command === 'repo-target-verify-current') await repoTargetVerifyCurrent(options);
   else throw new Error(`unknown command: ${command}`);
 }
 

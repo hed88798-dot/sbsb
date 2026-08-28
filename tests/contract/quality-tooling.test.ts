@@ -115,8 +115,45 @@ describe('Code F quality tooling', () => {
       .map((name) => readFileSync(join(workflowDirectory, name), 'utf8'))
       .join('\n');
     expect(workflowText).toContain('golden:verify');
+    expect(workflowText).toContain('compliance:python:tooling:install');
+    expect(workflowText).toContain('compliance:python:target:verify');
     expect(workflowText).not.toContain('golden:update');
     expect(workflowText).not.toContain('compliance:python:candidate');
+  });
+
+  it('locks the compatibility engine artifact and preserves schema v1/v2 boundaries', () => {
+    const lock = JSON.parse(
+      readFileSync(
+        join(repositoryRoot, 'compliance/quality-tooling/python/packaging-25.0.lock.json'),
+        'utf8',
+      ),
+    ) as Record<string, unknown>;
+    expect(lock).toMatchObject({
+      scope: 'COMPLIANCE_TOOLING',
+      package_name: 'packaging',
+      version: '25.0',
+      filename: 'packaging-25.0-py3-none-any.whl',
+      sha256: '29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484',
+      license_expression: 'Apache-2.0 OR BSD-2-Clause',
+      license_review_status: 'APPROVED',
+      provenance_review_status: 'APPROVED',
+    });
+    expect(
+      existsSync(
+        join(
+          repositoryRoot,
+          'schemas/compliance/python-artifact-inventory/v1/inventory.schema.json',
+        ),
+      ),
+    ).toBe(true);
+    expect(
+      existsSync(
+        join(
+          repositoryRoot,
+          'schemas/compliance/python-artifact-inventory/v2/inventory.schema.json',
+        ),
+      ),
+    ).toBe(true);
   });
 
   it('fails closed when a required artifact scan target is absent', () => {
