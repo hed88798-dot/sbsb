@@ -236,7 +236,7 @@ QUALITY_TOOL_SUPPLY_CHAIN:
 PASS
 
 EXISTING_GATES_REGRESSION:
-PASS — local full gate: 222 passed, 1 skipped; npm audit retains one low advisory below the blocking threshold.
+PASS — local full gate before the platform-only CLI regression: 222 passed, 1 skipped; the final macOS run adds one intentional Windows/Linux-only skip. npm audit retains one low advisory below the blocking threshold.
 
 LINUX_CI:
 RECORDED_IN_FINAL_DELIVERY — remote PR check cannot be predeclared by the branch.

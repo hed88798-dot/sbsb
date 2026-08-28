@@ -15,7 +15,9 @@ function sameSet(left, right) {
 }
 
 async function main() {
-  const [command, ...values] = process.argv.slice(2);
+  const argumentsValue = process.argv.slice(2);
+  if (argumentsValue[0] === '--') argumentsValue.shift();
+  const [command, ...values] = argumentsValue;
   if (command === 'describe-current') {
     const target = runCompatibilityEngine({ action: 'describe_current_target' });
     validateTargetCompatibilityMetadata(target);

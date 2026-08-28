@@ -12,6 +12,10 @@ const engine = join(repositoryRoot, 'tools/python-supply-chain/compatibility-eng
 const fixtureBuilder = join(repositoryRoot, 'tests/fixtures/python-supply-chain/build_fixture.py');
 const candidateTool = join(repositoryRoot, 'tools/python-supply-chain/create-candidate.mjs');
 const migrationTool = join(repositoryRoot, 'tools/python-supply-chain/migrate-v1-to-v2.mjs');
+const targetDescriptorTool = join(
+  repositoryRoot,
+  'tools/python-supply-chain/target-descriptor.mjs',
+);
 const requireHashesTool = join(
   repositoryRoot,
   'tools/python-supply-chain/generate-require-hashes.mjs',
@@ -213,6 +217,25 @@ describe('Python Artifact Inventory v2 wheel compatibility', () => {
       expect(result.status, result.stderr).toBe(0);
     }
   });
+
+  it.runIf(['win32', 'linux'].includes(process.platform))(
+    'accepts the pnpm argument separator used by Windows workflow shells',
+    () => {
+      const targetPath = join(directory, 'current-target.json');
+      const described = runNode(targetDescriptorTool, [
+        '--',
+        'describe-current',
+        '--output',
+        targetPath,
+      ]);
+      expect(described.status, described.stderr).toBe(0);
+      expect(JSON.parse(readFileSync(targetPath, 'utf8'))).toMatchObject({
+        target_descriptor_version: '1',
+        implementation: 'cpython',
+        python_version: '3.12.10',
+      });
+    },
+  );
 
   it('accepts one complete Windows graph mixing universal and CPython platform wheels', () => {
     const targetDescriptor = target('windows', 'x86_64', ['win_amd64']);
