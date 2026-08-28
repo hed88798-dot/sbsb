@@ -1,0 +1,239 @@
+{
+  "schema_version": "1",
+  "scope": "COMPLIANCE_TOOLING",
+  "tool_name": "pyinstaller-onefile-archive-inspector",
+  "entrypoint": "PyInstaller.archive.readers.CArchiveReader",
+  "version": "6.22.2",
+  "vulnerability_source": "OSV.DEV",
+  "reviewed_at": "2026-08-28T00:00:00Z",
+  "components": [
+    {
+      "package_name": "pyinstaller",
+      "version": "6.22.2",
+      "purl": "pkg:pypi/pyinstaller@6.22.2",
+      "source": "https://github.com/pyinstaller/pyinstaller",
+      "source_index": "https://pypi.org/project/pyinstaller/6.22.2/",
+      "supplier": "PyInstaller Development Team",
+      "license_expression": "GPL-2.0-or-later WITH Bootloader-exception",
+      "license_review_status": "APPROVED",
+      "redistribution_evidence": "https://pyinstaller.org/en/v6.22.0/license.html",
+      "provenance_review_status": "APPROVED",
+      "license_files": [
+        {
+          "relative_path": "pyinstaller-6.22.2.dist-info/licenses/COPYING.txt",
+          "sha256": "dcf75fdb959db1e3b41c0f8505069d2ece781b5ec6b3d0a4d30975cfc6580245"
+        }
+      ],
+      "dependencies": [
+        "pkg:pypi/altgraph@0.17.5",
+        "pkg:pypi/packaging@25.0",
+        "pkg:pypi/pyinstaller-hooks-contrib@2026.7",
+        "pkg:pypi/setuptools@84.0.0"
+      ],
+      "platform_dependencies": {
+        "darwin": ["pkg:pypi/macholib@1.16.4"],
+        "linux": [],
+        "win32": ["pkg:pypi/pefile@2024.8.26", "pkg:pypi/pywin32-ctypes@0.2.3"]
+      },
+      "artifacts": [
+        {
+          "platform": "darwin",
+          "architecture": "any",
+          "filename": "pyinstaller-6.22.2-py3-none-macosx_10_13_universal2.whl",
+          "sha256": "ebd1b1ca932d7cf25d7366ce691aaf79a5ff9425811ed7328b5116e4471b6d6d",
+          "download_url": "https://files.pythonhosted.org/packages/57/39/08cd53632276de70426e7c273820277a48253fee397b4048301ec03c3566/pyinstaller-6.22.2-py3-none-macosx_10_13_universal2.whl"
+        },
+        {
+          "platform": "linux",
+          "architecture": "x86_64",
+          "filename": "pyinstaller-6.22.2-py3-none-manylinux2014_x86_64.whl",
+          "sha256": "9622686ecc5d5fa492fe6cde29d47df9dd41138cff8177be9f901ca3260f2096",
+          "download_url": "https://files.pythonhosted.org/packages/2b/07/b304ff3f5f8333778065e3658b604b0e108cd934b920f3fbab825a0dd5b7/pyinstaller-6.22.2-py3-none-manylinux2014_x86_64.whl"
+        },
+        {
+          "platform": "win32",
+          "architecture": "x86_64",
+          "filename": "pyinstaller-6.22.2-py3-none-win_amd64.whl",
+          "sha256": "9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7",
+          "download_url": "https://files.pythonhosted.org/packages/3f/53/8ba1d0f6159b490f700eac6161a4be5f0d4672608a6dae9fd73679f183ee/pyinstaller-6.22.2-py3-none-win_amd64.whl"
+        }
+      ]
+    },
+    {
+      "package_name": "altgraph",
+      "version": "0.17.5",
+      "purl": "pkg:pypi/altgraph@0.17.5",
+      "source": "https://github.com/ronaldoussoren/altgraph",
+      "source_index": "https://pypi.org/project/altgraph/0.17.5/",
+      "supplier": "altgraph maintainers",
+      "license_expression": "MIT",
+      "license_review_status": "APPROVED",
+      "provenance_review_status": "APPROVED",
+      "license_files": [
+        {
+          "relative_path": "altgraph-0.17.5.dist-info/LICENSE",
+          "sha256": "6c194d6db0c64d45535d10c95142b9b0cda7b7dcc7f1ddee302b3d536f3dbe46"
+        }
+      ],
+      "dependencies": [],
+      "platform_dependencies": {},
+      "artifacts": [
+        {
+          "platform": "any",
+          "architecture": "any",
+          "filename": "altgraph-0.17.5-py2.py3-none-any.whl",
+          "sha256": "f3a22400bce1b0c701683820ac4f3b159cd301acab067c51c653e06961600597",
+          "download_url": "https://files.pythonhosted.org/packages/a9/ba/000a1996d4308bc65120167c21241a3b205464a2e0b58deda26ae8ac21d1/altgraph-0.17.5-py2.py3-none-any.whl"
+        }
+      ]
+    },
+    {
+      "package_name": "macholib",
+      "version": "1.16.4",
+      "purl": "pkg:pypi/macholib@1.16.4",
+      "source": "https://github.com/ronaldoussoren/macholib",
+      "source_index": "https://pypi.org/project/macholib/1.16.4/",
+      "supplier": "macholib maintainers",
+      "license_expression": "MIT",
+      "license_review_status": "APPROVED",
+      "provenance_review_status": "APPROVED",
+      "license_files": [
+        {
+          "relative_path": "macholib-1.16.4.dist-info/LICENSE",
+          "sha256": "47082ab2bc0184123ec9f10fdf80c70723ee68f07d44382e17615c2a6ba70b09"
+        }
+      ],
+      "dependencies": ["pkg:pypi/altgraph@0.17.5"],
+      "platform_dependencies": {},
+      "artifacts": [
+        {
+          "platform": "darwin",
+          "architecture": "any",
+          "filename": "macholib-1.16.4-py2.py3-none-any.whl",
+          "sha256": "da1a3fa8266e30f0ce7e97c6a54eefaae8edd1e5f86f3eb8b95457cae90265ea",
+          "download_url": "https://files.pythonhosted.org/packages/c7/d1/a9f36f8ecdf0fb7c9b1e78c8d7af12b8c8754e74851ac7b94a8305540fc7/macholib-1.16.4-py2.py3-none-any.whl"
+        }
+      ]
+    },
+    {
+      "package_name": "pyinstaller-hooks-contrib",
+      "version": "2026.7",
+      "purl": "pkg:pypi/pyinstaller-hooks-contrib@2026.7",
+      "source": "https://github.com/pyinstaller/pyinstaller-hooks-contrib",
+      "source_index": "https://pypi.org/project/pyinstaller-hooks-contrib/2026.7/",
+      "supplier": "PyInstaller Development Team",
+      "license_expression": "Apache-2.0 OR GPL-2.0-or-later",
+      "license_review_status": "APPROVED",
+      "provenance_review_status": "APPROVED",
+      "license_files": [
+        {
+          "relative_path": "pyinstaller_hooks_contrib-2026.7.dist-info/licenses/LICENSE",
+          "sha256": "91d0baaff00773038e72c0a1fc9d5d2d38706b7a2b9c04f34296608f931b9cd0"
+        }
+      ],
+      "dependencies": ["pkg:pypi/packaging@25.0"],
+      "platform_dependencies": {},
+      "artifacts": [
+        {
+          "platform": "any",
+          "architecture": "any",
+          "filename": "pyinstaller_hooks_contrib-2026.7-py3-none-any.whl",
+          "sha256": "24257a04c7a5a7a034cf28e39dcee20fbeeb9f043076729480f2e1b69904408a",
+          "download_url": "https://files.pythonhosted.org/packages/0a/67/350377af7b50416344ab8792756d414eef7629c618a73e9a0b13bb1552d9/pyinstaller_hooks_contrib-2026.7-py3-none-any.whl"
+        }
+      ]
+    },
+    {
+      "package_name": "setuptools",
+      "version": "84.0.0",
+      "purl": "pkg:pypi/setuptools@84.0.0",
+      "source": "https://github.com/pypa/setuptools",
+      "source_index": "https://pypi.org/project/setuptools/84.0.0/",
+      "supplier": "Python Packaging Authority (PyPA)",
+      "license_expression": "MIT",
+      "license_review_status": "APPROVED",
+      "provenance_review_status": "APPROVED",
+      "license_files": [
+        {
+          "relative_path": "setuptools-84.0.0.dist-info/licenses/LICENSE",
+          "sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741"
+        },
+        {
+          "relative_path": "setuptools/config/NOTICE",
+          "sha256": "2dddf08818297a3b89d43d95ff659d8da85741108c9136dfa3a4d856c0623bd8"
+        },
+        {
+          "relative_path": "setuptools/config/_validate_pyproject/NOTICE",
+          "sha256": "09c9bcea95ca086f8bc5bed174e40bc835b297d40fb5f86bbbb570fe0a5581a7"
+        }
+      ],
+      "dependencies": [],
+      "platform_dependencies": {},
+      "artifacts": [
+        {
+          "platform": "any",
+          "architecture": "any",
+          "filename": "setuptools-84.0.0-py3-none-any.whl",
+          "sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+          "download_url": "https://files.pythonhosted.org/packages/95/9c/c510029fc6ef33a6275cd2c5d3cecd6613dfd6aa401d57c54f1c18852ccf/setuptools-84.0.0-py3-none-any.whl"
+        }
+      ]
+    },
+    {
+      "package_name": "pefile",
+      "version": "2024.8.26",
+      "purl": "pkg:pypi/pefile@2024.8.26",
+      "source": "https://github.com/erocarrera/pefile",
+      "source_index": "https://pypi.org/project/pefile/2024.8.26/",
+      "supplier": "pefile maintainers",
+      "license_expression": "MIT",
+      "license_review_status": "APPROVED",
+      "provenance_review_status": "APPROVED",
+      "license_files": [
+        {
+          "relative_path": "pefile-2024.8.26.dist-info/LICENSE",
+          "sha256": "b44409c067c6da52bfb54bb6624fb11a7b52157c3a13ae1400232f8196e86ad3"
+        }
+      ],
+      "dependencies": [],
+      "platform_dependencies": {},
+      "artifacts": [
+        {
+          "platform": "win32",
+          "architecture": "any",
+          "filename": "pefile-2024.8.26-py3-none-any.whl",
+          "sha256": "76f8b485dcd3b1bb8166f1128d395fa3d87af26360c2358fb75b80019b957c6f",
+          "download_url": "https://files.pythonhosted.org/packages/54/16/12b82f791c7f50ddec566873d5bdd245baa1491bac11d15ffb98aecc8f8b/pefile-2024.8.26-py3-none-any.whl"
+        }
+      ]
+    },
+    {
+      "package_name": "pywin32-ctypes",
+      "version": "0.2.3",
+      "purl": "pkg:pypi/pywin32-ctypes@0.2.3",
+      "source": "https://github.com/enthought/pywin32-ctypes",
+      "source_index": "https://pypi.org/project/pywin32-ctypes/0.2.3/",
+      "supplier": "Enthought",
+      "license_expression": "BSD-3-Clause",
+      "license_review_status": "APPROVED",
+      "provenance_review_status": "APPROVED",
+      "license_files": [
+        {
+          "relative_path": "pywin32_ctypes-0.2.3.dist-info/LICENSE.txt",
+          "sha256": "dfa83b3e2709adfcdb838d9ad55823ca674abb780e60563d9dd9544ccbf785e9"
+        }
+      ],
+      "dependencies": [],
+      "platform_dependencies": {},
+      "artifacts": [
+        {
+          "platform": "win32",
+          "architecture": "any",
+          "filename": "pywin32_ctypes-0.2.3-py3-none-any.whl",
+          "sha256": "8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8",
+          "download_url": "https://files.pythonhosted.org/packages/de/3d/8161f7711c017e01ac9f008dfddd9410dff3674334c233bde66e7ba65bbf/pywin32_ctypes-0.2.3-py3-none-any.whl"
+        }
+      ]
+    }
+  ]
+}

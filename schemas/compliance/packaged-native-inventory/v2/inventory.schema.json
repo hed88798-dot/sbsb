@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/packaged-native-inventory/v2/inventory.schema.json",
+  "title": "Packaged Native Inventory v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "inventory_id",
+    "generated_at",
+    "source_wheel_inventory_ids",
+    "source_toolchain_inventory_ids",
+    "build_provenance",
+    "inspection",
+    "final_artifact",
+    "bootloader_layer",
+    "archive_payload",
+    "native_artifacts"
+  ],
+  "properties": {
+    "schema_version": { "const": "2" },
+    "inventory_id": { "$ref": "#/$defs/id" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "source_wheel_inventory_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/id" }
+    },
+    "source_toolchain_inventory_ids": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/id" }
+    },
+    "build_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["build_id", "manifest_sha256"],
+      "properties": {
+        "build_id": { "$ref": "#/$defs/id" },
+        "manifest_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "inspection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine",
+        "engine_version",
+        "reader",
+        "status",
+        "archive_entry_count",
+        "native_entry_count"
+      ],
+      "properties": {
+        "engine": { "const": "pyinstaller" },
+        "engine_version": { "const": "6.22.2" },
+        "reader": { "const": "PyInstaller.archive.readers.CArchiveReader" },
+        "status": { "const": "PARSED" },
+        "archive_entry_count": { "type": "integer", "minimum": 1 },
+        "native_entry_count": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "final_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["filename", "sha256", "size", "target_os", "target_architecture"],
+      "properties": {
+        "filename": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "size": { "type": "integer", "minimum": 1 },
+        "target_os": { "enum": ["windows", "linux"] },
+        "target_architecture": { "enum": ["x86_64", "arm64"] }
+      }
+    },
+    "bootloader_layer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256",
+        "size",
+        "owner_kind",
+        "owner_component_id",
+        "source_artifact_sha256",
+        "owner_resolution",
+        "build_layer"
+      ],
+      "properties": {
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "size": { "type": "integer", "minimum": 1 },
+        "owner_kind": { "const": "TOOLCHAIN_OWNED_NATIVE" },
+        "owner_component_id": { "$ref": "#/$defs/id" },
+        "source_artifact_sha256": { "$ref": "#/$defs/sha256" },
+        "owner_resolution": { "const": "MATCHED" },
+        "build_layer": { "const": "PYINSTALLER_BOOTLOADER" }
+      }
+    },
+    "archive_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "size", "trailing_data_size"],
+      "properties": {
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "size": { "type": "integer", "minimum": 1 },
+        "trailing_data_size": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "native_artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/nativeArtifact" }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "nativeArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "filename",
+        "internal_path",
+        "sha256",
+        "size",
+        "type",
+        "owner_kind",
+        "owner_resolution",
+        "owner_reference",
+        "source_artifact_sha256",
+        "build_layer"
+      ],
+      "properties": {
+        "filename": { "type": "string", "minLength": 1 },
+        "internal_path": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "size": { "type": "integer", "minimum": 1 },
+        "type": { "enum": ["pyd", "dll", "so", "dylib", "other"] },
+        "owner_kind": { "enum": ["WHEEL_OWNED_NATIVE", "TOOLCHAIN_OWNED_NATIVE", "UNKNOWN"] },
+        "owner_resolution": { "enum": ["MATCHED", "UNKNOWN"] },
+        "owner_reference": { "type": "string", "minLength": 1 },
+        "source_artifact_sha256": {
+          "type": "string",
+          "pattern": "^(?:[a-f0-9]{64}|UNKNOWN)$"
+        },
+        "build_layer": { "const": "CARCHIVE_PAYLOAD" }
+      }
+    }
+  }
+}

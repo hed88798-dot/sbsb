@@ -41,7 +41,9 @@ def inspect(path: Path) -> dict[str, object]:
             raise SystemExit(f"wheel contains duplicate archive paths: {path.name}")
         for name in names:
             safe_entry(name)
-        metadata_names = [name for name in names if name.endswith(".dist-info/METADATA")]
+        metadata_names = [
+            name for name in names if re.fullmatch(r"[^/]+\.dist-info/METADATA", name)
+        ]
         if len(metadata_names) != 1:
             raise SystemExit(f"wheel must contain exactly one METADATA file: {path.name}")
         metadata = BytesParser().parsebytes(wheel.read(metadata_names[0]))
@@ -60,8 +62,11 @@ def inspect(path: Path) -> dict[str, object]:
                 name == declared_name or name == f"{dist_info}{declared_name}"
                 for declared_name in declared_license_files
             )
-            conventional = name.startswith(f"{dist_info}licenses/") or re.search(
+            conventional_name = re.search(
                 r"(?:^|/)(?:license|licence|copying|notice)(?:[._-]|$)", lower
+            )
+            conventional = conventional_name and (
+                name.startswith(dist_info) or ".dist-info/" not in name
             )
             if declared or conventional:
                 value = wheel.read(name)

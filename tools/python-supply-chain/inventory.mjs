@@ -21,6 +21,10 @@ export const packagedSchemaPath = resolve(
   repositoryRoot,
   'schemas/compliance/python-artifact-inventory/v1/packaged-native-inventory.schema.json',
 );
+export const packagedV2SchemaPath = resolve(
+  repositoryRoot,
+  'schemas/compliance/packaged-native-inventory/v2/inventory.schema.json',
+);
 export const scopeOrder = [
   'PRODUCTION_WORKER_RUNTIME',
   'WORKER_BUILD',
@@ -72,7 +76,8 @@ function validatorFor(path) {
 
 const validateInventoryV1Schema = validatorFor(inventorySchemaPath);
 const validateInventoryV2Schema = validatorFor(inventoryV2SchemaPath);
-const validatePackagedSchema = validatorFor(packagedSchemaPath);
+const validatePackagedV1Schema = validatorFor(packagedSchemaPath);
+const validatePackagedV2Schema = validatorFor(packagedV2SchemaPath);
 
 function schemaErrors(validator) {
   return (validator.errors ?? [])
@@ -411,10 +416,15 @@ export async function verifyArtifactInventories(loaded, artifactRoot) {
 }
 
 export function validatePackagedInventory(document) {
-  if (!validatePackagedSchema(document)) {
-    throw new Error(
-      `packaged native inventory schema invalid: ${schemaErrors(validatePackagedSchema)}`,
-    );
+  const validator =
+    document.schema_version === '1'
+      ? validatePackagedV1Schema
+      : document.schema_version === '2'
+        ? validatePackagedV2Schema
+        : null;
+  if (!validator) throw new Error('unsupported packaged native inventory schema_version');
+  if (!validator(document)) {
+    throw new Error(`packaged native inventory schema invalid: ${schemaErrors(validator)}`);
   }
   return document;
 }

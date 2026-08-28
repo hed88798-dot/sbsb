@@ -154,6 +154,34 @@ describe('Code F quality tooling', () => {
         ),
       ),
     ).toBe(true);
+    const inspectorLock = JSON.parse(
+      readFileSync(
+        join(
+          repositoryRoot,
+          'compliance/quality-tooling/python/pyinstaller-archive-inspector-6.22.2.lock.json',
+        ),
+        'utf8',
+      ),
+    ) as {
+      entrypoint: string;
+      version: string;
+      components: Array<{ purl: string; artifacts: Array<{ sha256: string }> }>;
+    };
+    expect(inspectorLock.entrypoint).toBe('PyInstaller.archive.readers.CArchiveReader');
+    expect(inspectorLock.version).toBe('6.22.2');
+    expect(inspectorLock.components.map((component) => component.purl)).toEqual(
+      expect.arrayContaining([
+        'pkg:pypi/pyinstaller@6.22.2',
+        'pkg:pypi/altgraph@0.17.5',
+        'pkg:pypi/pyinstaller-hooks-contrib@2026.7',
+        'pkg:pypi/setuptools@84.0.0',
+      ]),
+    );
+    expect(
+      inspectorLock.components.every((component) =>
+        component.artifacts.every((artifact) => /^[a-f0-9]{64}$/u.test(artifact.sha256)),
+      ),
+    ).toBe(true);
   });
 
   it('fails closed when a required artifact scan target is absent', () => {

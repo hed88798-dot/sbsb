@@ -5,10 +5,25 @@ import {
   discoverInventoryPaths,
   loadInventories,
   repositoryRoot,
+  sha256File,
   verifyArtifactInventories,
 } from './inventory.mjs';
 import { auditPythonLicenses } from './license.mjs';
-import { buildPackagedNativeInventory, reconcilePackagedNativeInventory } from './native.mjs';
+import {
+  buildOnefilePackagedNativeInventory,
+  buildPackagedNativeInventory,
+  inspectPyInstallerOnefile,
+  reconcileOnefilePackagedNativeInventory,
+  reconcilePackagedNativeInventory,
+} from './native.mjs';
+import {
+  auditToolchainLicenses,
+  auditToolchainVulnerabilities,
+  loadBuildProvenance,
+  loadToolchainInventory,
+  verifyBuildProvenance,
+  verifyToolchainArtifacts,
+} from './provenance.mjs';
 import { auditPythonVulnerabilities } from './vulnerability.mjs';
 import { assertTargetMatchesCurrent, currentTargetDescriptor } from './compatibility.mjs';
 
@@ -27,12 +42,77 @@ function parseArguments(values) {
     else if (value === '--target-os') options.targetOs = values[++index];
     else if (value === '--target-architecture') options.targetArchitecture = values[++index];
     else if (value === '--offline-osv') options.offlineOsv = values[++index];
+    else if (value === '--toolchain-inventory') options.toolchainInventory = values[++index];
+    else if (value === '--toolchain-artifact-root') options.toolchainArtifactRoot = values[++index];
+    else if (value === '--build-provenance') options.buildProvenance = values[++index];
+    else if (value === '--build-root') options.buildRoot = values[++index];
+    else if (value === '--final-artifact') options.finalArtifact = values[++index];
     else if (value === '--report' || value === '--output') options.output = values[++index];
     else if (value === '--release') options.release = true;
     else throw new Error(`unknown argument: ${value}`);
   }
   if (options.inventories.some((path) => !path)) throw new Error('--inventory requires a path');
   return options;
+}
+
+function requireToolchainOptions(options) {
+  if (!options.toolchainInventory) throw new Error('--toolchain-inventory is required');
+  if (!options.toolchainArtifactRoot) throw new Error('--toolchain-artifact-root is required');
+  return loadToolchainInventory(options.toolchainInventory);
+}
+
+async function toolchainVerify(options) {
+  const loaded = requireToolchainOptions(options);
+  await verifyToolchainArtifacts(loaded, options.toolchainArtifactRoot);
+  console.log(`python-toolchain: PASS (${loaded.document.components.length} exact artifacts)`);
+  return loaded;
+}
+
+async function toolchainLicense(options) {
+  const loaded = await toolchainVerify(options);
+  const report = auditToolchainLicenses(loaded.document);
+  writeReport(options.output, report);
+  console.log(`python-toolchain-license: PASS (${report.components.length} components)`);
+  return report;
+}
+
+async function toolchainVulnerability(options) {
+  const loaded = await toolchainVerify(options);
+  const report = auditToolchainVulnerabilities(loaded.document);
+  writeReport(options.output, report);
+  console.log(`python-toolchain-vulnerability: PASS (${report.components.length} components)`);
+  return report;
+}
+
+async function v2Inputs(options) {
+  if (!options.buildProvenance) throw new Error('--build-provenance is required');
+  if (!options.buildRoot) throw new Error('--build-root is required');
+  const { loaded: wheels } = await verify(options);
+  if (wheels.length === 0)
+    throw new Error('one-file provenance requires at least one wheel inventory');
+  const toolchain = await toolchainVerify(options);
+  const build = loadBuildProvenance(options.buildProvenance);
+  const finalArtifact = resolve(
+    options.finalArtifact ??
+      resolve(options.buildRoot, build.document.final_artifact.artifact_path),
+  );
+  const inspection = inspectPyInstallerOnefile(finalArtifact);
+  await verifyBuildProvenance(build, toolchain, wheels, options.buildRoot, inspection);
+  return {
+    wheels,
+    toolchain,
+    build,
+    finalArtifact,
+    buildManifestSha256: await sha256File(build.path),
+  };
+}
+
+async function buildProvenanceVerify(options) {
+  const inputs = await v2Inputs(options);
+  console.log(
+    `python-build-provenance: PASS (${inputs.build.document.build_id}; ${inputs.build.document.final_artifact.sha256})`,
+  );
+  return inputs;
 }
 
 function inventoryPaths(options) {
@@ -106,8 +186,24 @@ async function vulnerability(options) {
 }
 
 async function nativeInventory(options) {
-  if (!options.packagedRoot) throw new Error('native-inventory requires --packaged-root');
   if (!options.inventoryId) throw new Error('native-inventory requires --inventory-id');
+  if (options.toolchainInventory || options.buildProvenance) {
+    const inputs = await v2Inputs(options);
+    const packaged = await buildOnefilePackagedNativeInventory(
+      inputs.wheels,
+      inputs.toolchain,
+      inputs.build,
+      inputs.buildManifestSha256,
+      inputs.finalArtifact,
+      { inventoryId: options.inventoryId },
+    );
+    writeReport(options.output, packaged);
+    console.log(
+      `packaged-native-inventory: PASS (${packaged.native_artifacts.length} one-file native artifacts inventoried)`,
+    );
+    return packaged;
+  }
+  if (!options.packagedRoot) throw new Error('native-inventory requires --packaged-root');
   const { loaded } = await verify(options);
   if (loaded.length === 0)
     throw new Error('native-inventory requires at least one locked inventory');
@@ -125,8 +221,23 @@ async function nativeInventory(options) {
 
 async function reconcile(options) {
   if (!options.packagedInventory) throw new Error('reconcile requires --packaged-inventory');
-  const { loaded } = await verify(options);
   const packaged = JSON.parse(readFileSync(resolve(options.packagedInventory), 'utf8'));
+  if (packaged.schema_version === '2') {
+    const inputs = await v2Inputs(options);
+    const report = reconcileOnefilePackagedNativeInventory(
+      inputs.wheels,
+      inputs.toolchain,
+      inputs.build,
+      inputs.buildManifestSha256,
+      packaged,
+    );
+    writeReport(options.output, report);
+    console.log(
+      `packaged-native-reconcile: PASS (${report.packaged_native_artifacts} one-file native artifacts)`,
+    );
+    return report;
+  }
+  const { loaded } = await verify(options);
   const report = reconcilePackagedNativeInventory(loaded, packaged);
   writeReport(options.output, report);
   console.log(
@@ -190,15 +301,27 @@ async function repoNativeVerify(options) {
       'multiple production targets exist; select v1 tag variables or PYTHON_TARGET_OS/PYTHON_TARGET_ARCHITECTURE for v2',
     );
   }
+  const v2Environment = {
+    toolchainInventory: options.toolchainInventory ?? process.env.PYTHON_TOOLCHAIN_INVENTORY,
+    toolchainArtifactRoot:
+      options.toolchainArtifactRoot ?? process.env.PYTHON_TOOLCHAIN_ARTIFACT_ROOT,
+    buildProvenance: options.buildProvenance ?? process.env.PYTHON_BUILD_PROVENANCE,
+    buildRoot: options.buildRoot ?? process.env.PYTHON_BUILD_ROOT,
+    finalArtifact: options.finalArtifact ?? process.env.PYTHON_FINAL_ARTIFACT,
+  };
+  const useOnefile = Boolean(v2Environment.toolchainInventory || v2Environment.buildProvenance);
   const packagedRoot = options.packagedRoot ?? process.env.PYTHON_PACKAGED_WORKER_ROOT;
-  if (!packagedRoot) {
-    throw new Error('production inventory exists but PYTHON_PACKAGED_WORKER_ROOT is missing');
+  if (!useOnefile && !packagedRoot) {
+    throw new Error(
+      'production inventory exists but one-file provenance inputs or PYTHON_PACKAGED_WORKER_ROOT are missing',
+    );
   }
   const temporaryOutput = resolve('artifacts/compliance/PACKAGED_NATIVE_INVENTORY.json');
   const shared = {
     ...options,
     inventories: loaded.map(({ path }) => path),
     packagedRoot,
+    ...v2Environment,
     inventoryId: 'packaged-worker-ci',
     output: temporaryOutput,
   };
@@ -246,6 +369,10 @@ async function main() {
   else if (command === 'verify') await verify(options);
   else if (command === 'license') await license(options);
   else if (command === 'vulnerability') await vulnerability(options);
+  else if (command === 'toolchain-verify') await toolchainVerify(options);
+  else if (command === 'toolchain-license') await toolchainLicense(options);
+  else if (command === 'toolchain-vulnerability') await toolchainVulnerability(options);
+  else if (command === 'build-provenance-verify') await buildProvenanceVerify(options);
   else if (command === 'native-inventory') await nativeInventory(options);
   else if (command === 'reconcile') await reconcile(options);
   else if (command === 'repo-verify') await repoVerify(options);

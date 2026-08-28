@@ -81,6 +81,7 @@ export function buildPythonSbomRecords(loaded, packagedInventories = []) {
           name: native.filename,
           hashes: [{ alg: 'SHA-256', content: native.sha256 }],
           properties: [
+            { name: 'com.company.native.owner_kind', value: 'WHEEL_OWNED_NATIVE' },
             { name: 'com.company.native.type', value: native.type },
             { name: 'com.company.native.relative_path', value: native.relative_path },
             {
@@ -108,12 +109,28 @@ export function buildPythonSbomRecords(loaded, packagedInventories = []) {
         'bom-ref': `urn:sha256:${native.sha256}`,
         name: native.filename,
         hashes: [{ alg: 'SHA-256', content: native.sha256 }],
-        properties: [
-          { name: 'com.company.native.packaged_relative_path', value: native.relative_path },
-          { name: 'com.company.native.source_package', value: native.source_package },
-          { name: 'com.company.native.source_wheel_sha256', value: native.source_artifact_sha256 },
-          { name: 'com.company.native.owner_resolution', value: native.owner_resolution },
-        ],
+        properties:
+          packaged.schema_version === '1'
+            ? [
+                { name: 'com.company.native.packaged_relative_path', value: native.relative_path },
+                { name: 'com.company.native.source_package', value: native.source_package },
+                {
+                  name: 'com.company.native.source_wheel_sha256',
+                  value: native.source_artifact_sha256,
+                },
+                { name: 'com.company.native.owner_resolution', value: native.owner_resolution },
+              ]
+            : [
+                { name: 'com.company.native.internal_path', value: native.internal_path },
+                { name: 'com.company.native.owner_kind', value: native.owner_kind },
+                { name: 'com.company.native.owner_reference', value: native.owner_reference },
+                {
+                  name: 'com.company.native.source_artifact_sha256',
+                  value: native.source_artifact_sha256,
+                },
+                { name: 'com.company.native.owner_resolution', value: native.owner_resolution },
+                { name: 'com.company.native.build_layer', value: native.build_layer },
+              ],
       });
     }
   }
@@ -140,4 +157,103 @@ export function validatePythonSbomBinding(loaded, components) {
     }
   }
   if (failures.length > 0) throw new Error(failures.join('\n'));
+}
+
+export function buildToolchainSbomRecords(toolchains = [], builds = []) {
+  const components = [];
+  const dependencies = [];
+  for (const toolchain of toolchains) {
+    const byId = new Map(
+      toolchain.components.map((component) => [
+        component.component_id,
+        `urn:toolchain-artifact:sha256:${component.artifact.sha256}`,
+      ]),
+    );
+    for (const component of toolchain.components) {
+      const ref = byId.get(component.component_id);
+      components.push({
+        type: 'framework',
+        'bom-ref': ref,
+        name: component.name,
+        version: component.version,
+        hashes: [{ alg: 'SHA-256', content: component.artifact.sha256 }],
+        licenses: [{ expression: component.license.expression }],
+        externalReferences: [
+          { type: 'distribution', url: component.artifact.canonical_reference },
+          { type: 'website', url: component.artifact.canonical_source },
+        ],
+        properties: [
+          { name: 'com.company.native.owner_kind', value: 'TOOLCHAIN_OWNED_NATIVE' },
+          { name: 'com.company.toolchain.inventory_id', value: toolchain.inventory_id },
+          { name: 'com.company.toolchain.component_id', value: component.component_id },
+          { name: 'com.company.toolchain.component_kind', value: component.component_kind },
+          {
+            name: 'com.company.toolchain.usage_scopes',
+            value: JSON.stringify(component.usage_scopes),
+          },
+          { name: 'com.company.toolchain.artifact.filename', value: component.artifact.filename },
+        ],
+      });
+      for (const native of component.packaged_native_artifacts) {
+        const nativeRef = `urn:toolchain-native:sha256:${native.sha256}:${native.internal_path}`;
+        components.push({
+          type: 'file',
+          'bom-ref': nativeRef,
+          name: native.filename,
+          hashes: [{ alg: 'SHA-256', content: native.sha256 }],
+          properties: [
+            { name: 'com.company.native.owner_kind', value: 'TOOLCHAIN_OWNED_NATIVE' },
+            { name: 'com.company.native.owner_reference', value: component.component_id },
+            { name: 'com.company.native.internal_path', value: native.internal_path },
+            { name: 'com.company.native.source_artifact_sha256', value: component.artifact.sha256 },
+            { name: 'com.company.native.build_layer', value: native.build_layer },
+          ],
+        });
+      }
+      dependencies.push({
+        ref,
+        dependsOn: [
+          ...component.dependencies.map((dependency) => byId.get(dependency)).filter(Boolean),
+          ...component.packaged_native_artifacts.map(
+            (native) => `urn:toolchain-native:sha256:${native.sha256}:${native.internal_path}`,
+          ),
+        ].sort(),
+      });
+    }
+  }
+  for (const build of builds) {
+    const ref = `urn:build-artifact:sha256:${build.final_artifact.sha256}`;
+    components.push({
+      type: 'application',
+      'bom-ref': ref,
+      name: build.final_artifact.filename,
+      hashes: [{ alg: 'SHA-256', content: build.final_artifact.sha256 }],
+      properties: [
+        { name: 'com.company.artifact.owner_kind', value: 'BUILD_ARTIFACT' },
+        { name: 'com.company.build.id', value: build.build_id },
+        { name: 'com.company.build.commit', value: build.build_commit_sha },
+        { name: 'com.company.build.run_identity', value: build.run_identity },
+        { name: 'com.company.build.config.sha256', value: build.build_configuration.sha256 },
+        { name: 'com.company.build.bit_for_bit_required', value: 'false' },
+        {
+          name: 'com.company.build.bootloader_sha256',
+          value: build.output_layers.bootloader_sha256,
+        },
+        {
+          name: 'com.company.build.archive_payload_sha256',
+          value: build.output_layers.archive_payload_sha256,
+        },
+      ],
+    });
+    dependencies.push({
+      ref,
+      dependsOn: [
+        ...build.inputs.wheel_inventories.map(
+          (inventory) => `urn:wheel-inventory:sha256:${inventory.manifest_sha256}`,
+        ),
+        `urn:toolchain-inventory:sha256:${build.inputs.toolchain_inventory.manifest_sha256}`,
+      ].sort(),
+    });
+  }
+  return { components, dependencies };
 }
