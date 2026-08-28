@@ -28,6 +28,10 @@ import {
 import { auditPythonVulnerabilities } from './vulnerability.mjs';
 import { assertTargetMatchesCurrent, currentTargetDescriptor } from './compatibility.mjs';
 import {
+  assertVulnerabilityReviewContext,
+  loadVulnerabilityDisposition,
+} from './vulnerability-disposition.mjs';
+import {
   evaluateArtifactUsageBinding,
   loadArtifactLicenseEvidenceV2,
   loadArtifactUsageBindingV1,
@@ -57,6 +61,8 @@ function parseArguments(values) {
     else if (value === '--artifact-usage-binding') options.artifactUsageBinding = values[++index];
     else if (value === '--build-root') options.buildRoot = values[++index];
     else if (value === '--final-artifact') options.finalArtifact = values[++index];
+    else if (value === '--vulnerability-review') options.vulnerabilityReview = values[++index];
+    else if (value === '--current-context') options.currentContext = values[++index];
     else if (value === '--report' || value === '--output') options.output = values[++index];
     else if (value === '--release') options.release = true;
     else throw new Error(`unknown argument: ${value}`);
@@ -92,6 +98,26 @@ async function toolchainVulnerability(options) {
   writeReport(options.output, report);
   console.log(`python-toolchain-vulnerability: PASS (${report.components.length} components)`);
   return report;
+}
+
+async function toolchainVulnerabilityDisposition(options) {
+  if (!options.vulnerabilityReview) throw new Error('--vulnerability-review is required');
+  if (!options.currentContext) throw new Error('--current-context is required');
+  const review = loadVulnerabilityDisposition(options.vulnerabilityReview);
+  const context = JSON.parse(readFileSync(resolve(options.currentContext), 'utf8'));
+  assertVulnerabilityReviewContext(review, context);
+  writeReport(options.output, {
+    schema_version: '1',
+    review_id: review.review_id,
+    stage: review.stage,
+    validation_build_authorization: review.validation_build_authorization,
+    final_risk_disposition: review.final_risk_disposition,
+    policy_version: review.policy_version,
+  });
+  console.log(
+    `python-toolchain-vulnerability-disposition: PASS (${review.stage}; ${review.validation_build_authorization}; ${review.final_risk_disposition})`,
+  );
+  return review;
 }
 
 async function v2Inputs(options) {
@@ -434,6 +460,8 @@ async function main() {
   else if (command === 'toolchain-verify') await toolchainVerify(options);
   else if (command === 'toolchain-license') await toolchainLicense(options);
   else if (command === 'toolchain-vulnerability') await toolchainVulnerability(options);
+  else if (command === 'toolchain-vulnerability-disposition')
+    await toolchainVulnerabilityDisposition(options);
   else if (command === 'build-provenance-verify') await buildProvenanceVerify(options);
   else if (command === 'artifact-usage-license') await artifactUsageLicense(options);
   else if (command === 'native-inventory') await nativeInventory(options);
