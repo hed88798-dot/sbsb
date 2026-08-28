@@ -2,15 +2,15 @@
 
 ## Fixed toolchain for v0.1
 
-| Component                   |            Version |
-| --------------------------- | -----------------: |
-| Node.js                     |        24.19.0 x64 |
-| pnpm                        |            11.19.0 |
-| Electron                    |             43.4.1 |
-| electron-builder            |            26.15.3 |
-| better-sqlite3              |             13.0.3 |
-| bundled SQLite              |             3.53.4 |
-| Python for the mock sidecar | 3.12.x recommended |
+| Component                             |                              Version |
+| ------------------------------------- | -----------------------------------: |
+| Node.js                               |                          24.19.0 x64 |
+| pnpm                                  |                              11.19.0 |
+| Electron                              |                               43.4.1 |
+| electron-builder                      |                              26.15.3 |
+| better-sqlite3                        |                               13.0.3 |
+| bundled SQLite                        |                               3.53.4 |
+| Python for sidecar/compliance tooling | 3.12.13 required (`.python-version`) |
 
 Use Windows 10 22H2 or Windows 11 x64, Git for Windows, Visual Studio Build Tools with the Desktop C++ workload, and Python 3.12 x64. Do not use a network share for the repository, pnpm store, application database, or WAL files.
 

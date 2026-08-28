@@ -5,12 +5,17 @@ import { basename, dirname, isAbsolute, relative, resolve, sep } from 'node:path
 import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
+import { evaluateWheel, validateTargetCompatibilityMetadata } from './compatibility.mjs';
 
 const toolDirectory = dirname(fileURLToPath(import.meta.url));
 export const repositoryRoot = resolve(toolDirectory, '../..');
 export const inventorySchemaPath = resolve(
   repositoryRoot,
   'schemas/compliance/python-artifact-inventory/v1/inventory.schema.json',
+);
+export const inventoryV2SchemaPath = resolve(
+  repositoryRoot,
+  'schemas/compliance/python-artifact-inventory/v2/inventory.schema.json',
 );
 export const packagedSchemaPath = resolve(
   repositoryRoot,
@@ -65,7 +70,8 @@ function validatorFor(path) {
   return ajv.compile(JSON.parse(readFileSync(path, 'utf8')));
 }
 
-const validateInventorySchema = validatorFor(inventorySchemaPath);
+const validateInventoryV1Schema = validatorFor(inventorySchemaPath);
+const validateInventoryV2Schema = validatorFor(inventoryV2SchemaPath);
 const validatePackagedSchema = validatorFor(packagedSchemaPath);
 
 function schemaErrors(validator) {
@@ -103,23 +109,59 @@ export function discoverInventoryPaths(root = repositoryRoot) {
     .sort((left, right) => left.localeCompare(right));
 }
 
+function sameSet(left, right) {
+  const leftSet = new Set(left);
+  const rightSet = new Set(right);
+  return leftSet.size === rightSet.size && [...leftSet].every((value) => rightSet.has(value));
+}
+
+function isSorted(values) {
+  return values.every((value, index) => index === 0 || values[index - 1] <= value);
+}
+
 function validateSemanticInventory(document, sourcePath) {
   const failures = [];
   const byPurl = new Map();
   const artifactPaths = new Set();
   const artifactHashes = new Set();
+  if (document.schema_version === '2') {
+    try {
+      validateTargetCompatibilityMetadata(document.target);
+    } catch (error) {
+      failures.push(`${sourcePath}: ${error.message}`);
+    }
+    const formalInventoryRoot = resolve(repositoryRoot, 'compliance/python-artifacts');
+    const relativeToFormalRoot = relative(formalInventoryRoot, resolve(sourcePath));
+    const isFormalInventory =
+      relativeToFormalRoot !== '..' &&
+      !relativeToFormalRoot.startsWith(`..${sep}`) &&
+      !isAbsolute(relativeToFormalRoot);
+    if (
+      isFormalInventory &&
+      document.target.compatibility.tag_source !== 'packaging.tags.sys_tags'
+    ) {
+      failures.push(
+        `${sourcePath}: formal inventory target tags must be captured by packaging.tags.sys_tags on the real target`,
+      );
+    }
+    if (!isSorted(document.target.compatibility.compatible_tags)) {
+      failures.push(`${sourcePath}: target compatible_tags must be sorted canonically`);
+    }
+  }
   for (const artifact of document.packages) {
     const prefix = `${sourcePath}:${artifact.package_name}@${artifact.version}`;
     const expectedPurl = pythonPurl(artifact.package_name, artifact.version);
     if (artifact.purl !== expectedPurl) failures.push(`${prefix}: purl must be ${expectedPurl}`);
-    if (artifact.python_version !== document.target.python_version)
-      failures.push(`${prefix}: python_version differs from target`);
-    if (artifact.python_tag !== document.target.python_tag)
-      failures.push(`${prefix}: python_tag differs from target`);
-    if (artifact.abi_tag !== document.target.abi_tag)
-      failures.push(`${prefix}: abi_tag differs from target`);
-    if (artifact.platform_tag !== document.target.platform_tag)
-      failures.push(`${prefix}: platform_tag differs from target`);
+    if (document.schema_version === '1') {
+      if (artifact.python_version !== document.target.python_version)
+        failures.push(`${prefix}: python_version differs from target`);
+      if (artifact.python_tag !== document.target.python_tag)
+        failures.push(`${prefix}: python_tag differs from target`);
+      if (artifact.abi_tag !== document.target.abi_tag)
+        failures.push(`${prefix}: abi_tag differs from target`);
+      if (artifact.platform_tag !== document.target.platform_tag)
+        failures.push(`${prefix}: platform_tag differs from target`);
+    }
     if (byPurl.has(artifact.purl)) failures.push(`${prefix}: duplicate purl`);
     byPurl.set(artifact.purl, artifact);
     if (artifactPaths.has(artifact.artifact_path))
@@ -128,14 +170,50 @@ function validateSemanticInventory(document, sourcePath) {
     if (artifactHashes.has(artifact.sha256)) failures.push(`${prefix}: duplicate artifact hash`);
     artifactHashes.add(artifact.sha256);
     if (artifact.artifact_type !== 'wheel') {
-      failures.push(`${prefix}: artifact_type ${artifact.artifact_type} is rejected by v1`);
+      failures.push(
+        `${prefix}: artifact_type ${artifact.artifact_type} is rejected by schema v${document.schema_version}`,
+      );
     }
     if (!artifact.filename.endsWith('.whl') || !artifact.provenance.download_url.includes('.whl')) {
       failures.push(`${prefix}: approved artifact must be an exact wheel URL and filename`);
     }
-    const expectedWheelTags = `-${artifact.python_tag}-${artifact.abi_tag}-${artifact.platform_tag}.whl`;
-    if (!artifact.filename.endsWith(expectedWheelTags)) {
-      failures.push(`${prefix}: wheel filename does not match target tags ${expectedWheelTags}`);
+    if (document.schema_version === '1') {
+      const expectedWheelTags = `-${artifact.python_tag}-${artifact.abi_tag}-${artifact.platform_tag}.whl`;
+      if (!artifact.filename.endsWith(expectedWheelTags)) {
+        failures.push(`${prefix}: wheel filename does not match target tags ${expectedWheelTags}`);
+      }
+    } else {
+      try {
+        const evaluated = evaluateWheel(artifact.filename, document.target);
+        if (
+          normalizePythonName(evaluated.package_name) !== normalizePythonName(artifact.package_name)
+        ) {
+          failures.push(`${prefix}: wheel filename package name mismatch`);
+        }
+        if (evaluated.version !== artifact.version) {
+          failures.push(`${prefix}: wheel filename version mismatch`);
+        }
+        if (!sameSet(evaluated.wheel_tags, artifact.wheel_tags)) {
+          failures.push(`${prefix}: declared wheel_tags differ from parsed upstream filename`);
+        }
+        if (!isSorted(artifact.wheel_tags)) {
+          failures.push(`${prefix}: wheel_tags must be sorted canonically`);
+        }
+        if (evaluated.status !== 'COMPATIBLE') {
+          failures.push(`${prefix}: wheel is incompatible with declared target`);
+        }
+        if (
+          artifact.compatibility.status !== evaluated.status ||
+          !sameSet(evaluated.matched_tags, artifact.compatibility.matched_tags)
+        ) {
+          failures.push(`${prefix}: compatibility evidence differs from shared engine result`);
+        }
+        if (!isSorted(artifact.compatibility.matched_tags)) {
+          failures.push(`${prefix}: compatibility matched_tags must be sorted canonically`);
+        }
+      } catch (error) {
+        failures.push(`${prefix}: wheel compatibility evaluation failed: ${error.message}`);
+      }
     }
     if (/latest|git\+|\/refs\/heads\//iu.test(artifact.provenance.download_url)) {
       failures.push(`${prefix}: floating/VCS artifact URL is rejected`);
@@ -210,10 +288,15 @@ export function loadInventories(paths = discoverInventoryPaths()) {
   const inventoryPaths = [...new Set(paths.map((path) => resolve(path)))].sort();
   const loaded = inventoryPaths.map((path) => {
     const document = JSON.parse(readFileSync(path, 'utf8'));
-    if (!validateInventorySchema(document)) {
-      throw new Error(
-        `${path}: inventory schema invalid: ${schemaErrors(validateInventorySchema)}`,
-      );
+    const validator =
+      document.schema_version === '1'
+        ? validateInventoryV1Schema
+        : document.schema_version === '2'
+          ? validateInventoryV2Schema
+          : null;
+    if (!validator) throw new Error(`${path}: unsupported inventory schema_version`);
+    if (!validator(document)) {
+      throw new Error(`${path}: inventory schema invalid: ${schemaErrors(validator)}`);
     }
     validateSemanticInventory(document, path);
     return { path, document };

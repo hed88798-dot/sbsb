@@ -1,0 +1,33 @@
+{
+  "schema_version": "1",
+  "scope": "COMPLIANCE_TOOLING",
+  "package_name": "packaging",
+  "version": "25.0",
+  "purl": "pkg:pypi/packaging@25.0",
+  "artifact_type": "wheel",
+  "filename": "packaging-25.0-py3-none-any.whl",
+  "sha256": "29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484",
+  "download_url": "https://files.pythonhosted.org/packages/20/12/38679034af332785aac8774540895e234f4d07f7545804097de4b666afd8/packaging-25.0-py3-none-any.whl",
+  "source": "https://github.com/pypa/packaging",
+  "source_index": "https://pypi.org/project/packaging/25.0/",
+  "supplier": "Python Packaging Authority (PyPA)",
+  "license_expression": "Apache-2.0 OR BSD-2-Clause",
+  "license_review_status": "APPROVED",
+  "reviewed_at": "2026-08-28T00:00:00Z",
+  "license_files": [
+    {
+      "relative_path": "packaging-25.0.dist-info/licenses/LICENSE",
+      "sha256": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48"
+    },
+    {
+      "relative_path": "packaging-25.0.dist-info/licenses/LICENSE.APACHE",
+      "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+    },
+    {
+      "relative_path": "packaging-25.0.dist-info/licenses/LICENSE.BSD",
+      "sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5"
+    }
+  ],
+  "vulnerability_source": "OSV.DEV",
+  "provenance_review_status": "APPROVED"
+}

@@ -25,6 +25,8 @@
 - artifact secret scan、release license gate、installer-complete SBOM、NOTICE 和适用的 model/FFmpeg/provider manifests 完整；
 - Python/native SBOM 来自实际 release wheel 和解包后的 packaged worker；locked input 与 packaged native
   inventory reconciliation 无 unexpected/missing/hash mismatch/unknown owner；
+- Schema v2 wheel compatibility 由锁定 Compatibility Engine 验证，artifact filename tag set 与真实 target
+  `sys_tags()` set 至少一个交集；target descriptor、engine/package version 和 tag-set hash 全部归档；
 - production worker 与 export/evaluation scope 分离，production artifact 中不存在未批准的
   `torch`/`transformers`；
 - 相关 golden regression 无未批准退化；

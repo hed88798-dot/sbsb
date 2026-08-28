@@ -1,19 +1,47 @@
 import { pythonPurl } from './inventory.mjs';
 
 function scopeProperties(inventory, artifact) {
-  return [
+  const properties = [
     { name: 'com.company.python.scope', value: inventory.scope },
     { name: 'com.company.python.inventory_id', value: inventory.inventory_id },
     { name: 'com.company.python.wheel.filename', value: artifact.filename },
-    { name: 'com.company.python.python_version', value: artifact.python_version },
-    { name: 'com.company.python.python_tag', value: artifact.python_tag },
-    { name: 'com.company.python.abi_tag', value: artifact.abi_tag },
-    { name: 'com.company.python.platform_tag', value: artifact.platform_tag },
     { name: 'com.company.python.source', value: artifact.source },
     { name: 'com.company.python.source_index', value: artifact.source_index },
     { name: 'com.company.python.provenance.supplier', value: artifact.provenance.supplier },
     { name: 'com.company.python.provenance.status', value: artifact.provenance.review_status },
   ];
+  if (inventory.schema_version === '1') {
+    properties.push(
+      { name: 'com.company.python.python_version', value: artifact.python_version },
+      { name: 'com.company.python.python_tag', value: artifact.python_tag },
+      { name: 'com.company.python.abi_tag', value: artifact.abi_tag },
+      { name: 'com.company.python.platform_tag', value: artifact.platform_tag },
+    );
+  } else {
+    properties.push(
+      { name: 'com.company.python.python_version', value: inventory.target.python_version },
+      { name: 'com.company.python.target_os', value: inventory.target.os },
+      { name: 'com.company.python.target_architecture', value: inventory.target.architecture },
+      { name: 'com.company.python.wheel_tags', value: JSON.stringify(artifact.wheel_tags) },
+      {
+        name: 'com.company.python.compatibility_engine',
+        value: inventory.target.compatibility.compatibility_engine,
+      },
+      {
+        name: 'com.company.python.compatibility_engine_version',
+        value: inventory.target.compatibility.compatibility_engine_version,
+      },
+      {
+        name: 'com.company.python.packaging_version',
+        value: inventory.target.compatibility.packaging_version,
+      },
+      {
+        name: 'com.company.python.compatibility_matched_tags',
+        value: JSON.stringify(artifact.compatibility.matched_tags),
+      },
+    );
+  }
+  return properties;
 }
 
 export function buildPythonSbomRecords(loaded, packagedInventories = []) {

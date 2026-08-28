@@ -3,7 +3,7 @@ import { accessSync, constants } from 'node:fs';
 import { delimiter, extname, isAbsolute, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const PYTHON_312_PATTERN = /^Python 3\.12\.\d+$/;
+const PYTHON_312_PATTERN = /^Python 3\.12\.13$/;
 
 function executableExtensions(platform: NodeJS.Platform, pathExt?: string): string[] {
   if (platform !== 'win32') return [''];
@@ -78,7 +78,7 @@ export function resolvePythonExecutable(options?: {
     if (version && isSupportedPythonVersion(version)) return executable;
   }
 
-  throw new Error('PYTHON_RUNTIME_NOT_FOUND: Python 3.12.x is required');
+  throw new Error('PYTHON_RUNTIME_NOT_FOUND: Python 3.12.13 is required');
 }
 
 export function resolveMockSidecarScript(): string {

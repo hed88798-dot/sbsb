@@ -1,0 +1,41 @@
+{
+  "schema_version": "1",
+  "inventory_id": "code-f-old-v1-fixture",
+  "scope": "PRODUCTION_WORKER_RUNTIME",
+  "target": {
+    "python_version": "3.12",
+    "python_tag": "cp312",
+    "abi_tag": "cp312",
+    "platform_tag": "win_amd64"
+  },
+  "graph_complete": true,
+  "packages": [
+    {
+      "package_name": "legacy-fixture",
+      "version": "1.0.0",
+      "artifact_type": "wheel",
+      "filename": "legacy_fixture-1.0.0-cp312-cp312-win_amd64.whl",
+      "artifact_path": "legacy_fixture-1.0.0-cp312-cp312-win_amd64.whl",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "source": "https://example.invalid/legacy-fixture",
+      "source_index": "https://pypi.org/simple",
+      "python_version": "3.12",
+      "python_tag": "cp312",
+      "abi_tag": "cp312",
+      "platform_tag": "win_amd64",
+      "purl": "pkg:pypi/legacy-fixture@1.0.0",
+      "license_expression": "MIT",
+      "license_files": [],
+      "native_artifacts": [],
+      "provenance": {
+        "supplier": "Synthetic Code F fixture",
+        "download_url": "https://example.invalid/artifacts/legacy_fixture-1.0.0-cp312-cp312-win_amd64.whl",
+        "review_status": "APPROVED",
+        "reviewed_at": "2026-08-28T00:00:00Z"
+      },
+      "direct": true,
+      "dependencies": [],
+      "dependency_declarations": []
+    }
+  ]
+}

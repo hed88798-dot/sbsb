@@ -1,0 +1,86 @@
+{
+  "schema_version": "2",
+  "inventory_id": "code-f-new-v2-fixture",
+  "scope": "PRODUCTION_WORKER_RUNTIME",
+  "target": {
+    "target_descriptor_version": "1",
+    "implementation": "cpython",
+    "python_version": "3.12.0",
+    "os": "windows",
+    "architecture": "x86_64",
+    "compatibility": {
+      "compatibility_engine": "pypa-packaging",
+      "compatibility_engine_version": "1",
+      "packaging_version": "25.0",
+      "wheel_tag_parser": "packaging.utils.parse_wheel_filename",
+      "wheel_tag_parser_version": "25.0",
+      "tag_source": "packaging.tags.cpython_tags+compatible_tags",
+      "compatible_tags": ["cp312-cp312-win_amd64", "py3-none-any"],
+      "compatible_tags_sha256": "7af9acacc78122cf4b62125425d8132d9084ffcbcc503152ff7995f9f2e2f548"
+    }
+  },
+  "graph_complete": true,
+  "packages": [
+    {
+      "package_name": "fixture-root",
+      "version": "1.0.0",
+      "artifact_type": "wheel",
+      "filename": "fixture_root-1.0.0-py3-none-any.whl",
+      "artifact_path": "fixture_root-1.0.0-py3-none-any.whl",
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "source": "https://example.invalid/fixture-root",
+      "source_index": "https://pypi.org/simple",
+      "purl": "pkg:pypi/fixture-root@1.0.0",
+      "wheel_tags": ["py3-none-any"],
+      "compatibility": { "status": "COMPATIBLE", "matched_tags": ["py3-none-any"] },
+      "license_expression": "MIT",
+      "license_files": [],
+      "native_artifacts": [],
+      "provenance": {
+        "supplier": "Synthetic Code F fixture",
+        "download_url": "https://example.invalid/artifacts/fixture_root-1.0.0-py3-none-any.whl",
+        "review_status": "APPROVED",
+        "reviewed_at": "2026-08-28T00:00:00Z"
+      },
+      "direct": true,
+      "dependencies": ["pkg:pypi/fixture-native@1.0.0"],
+      "dependency_declarations": [
+        {
+          "requirement": "fixture-native==1.0.0",
+          "package_name": "fixture-native",
+          "disposition": "INCLUDED",
+          "purl": "pkg:pypi/fixture-native@1.0.0",
+          "reason": ""
+        }
+      ]
+    },
+    {
+      "package_name": "fixture-native",
+      "version": "1.0.0",
+      "artifact_type": "wheel",
+      "filename": "fixture_native-1.0.0-cp312-cp312-win_amd64.whl",
+      "artifact_path": "fixture_native-1.0.0-cp312-cp312-win_amd64.whl",
+      "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "source": "https://example.invalid/fixture-native",
+      "source_index": "https://pypi.org/simple",
+      "purl": "pkg:pypi/fixture-native@1.0.0",
+      "wheel_tags": ["cp312-cp312-win_amd64"],
+      "compatibility": {
+        "status": "COMPATIBLE",
+        "matched_tags": ["cp312-cp312-win_amd64"]
+      },
+      "license_expression": "MIT",
+      "license_files": [],
+      "native_artifacts": [],
+      "provenance": {
+        "supplier": "Synthetic Code F fixture",
+        "download_url": "https://example.invalid/artifacts/fixture_native-1.0.0-cp312-cp312-win_amd64.whl",
+        "review_status": "APPROVED",
+        "reviewed_at": "2026-08-28T00:00:00Z"
+      },
+      "direct": false,
+      "dependencies": [],
+      "dependency_declarations": []
+    }
+  ]
+}
