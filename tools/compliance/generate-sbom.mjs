@@ -36,6 +36,16 @@ const archiveInspectorLock = JSON.parse(
     'utf8',
   ),
 );
+const spdxQualityToolLock = JSON.parse(
+  readFileSync(
+    resolve(repositoryRoot, 'compliance/quality-tooling/npm/spdx-expression-policy.lock.json'),
+    'utf8',
+  ),
+);
+const licenseReportPaths = process.argv
+  .flatMap((value, index) => (value === '--license-report' ? [process.argv[index + 1]] : []))
+  .filter(Boolean)
+  .map((path) => resolve(repositoryRoot, path));
 const pythonInventoryPaths = process.argv
   .flatMap((value, index) => (value === '--python-inventory' ? [process.argv[index + 1]] : []))
   .filter(Boolean)
@@ -64,6 +74,7 @@ let pythonInventories;
 let packagedInventories;
 let toolchainInventories;
 let buildProvenances;
+let licenseDecisions;
 try {
   inventory = collectPnpmInventory(repositoryRoot);
   pythonInventories = loadInventories(
@@ -76,22 +87,54 @@ try {
     (path) => loadToolchainInventory(path).document,
   );
   buildProvenances = buildProvenancePaths.map((path) => loadBuildProvenance(path).document);
+  licenseDecisions = licenseReportPaths.flatMap((path) => {
+    const report = JSON.parse(readFileSync(path, 'utf8'));
+    return report.decisions ?? [];
+  });
 } catch (error) {
   console.error(`sbom: FAIL\n${error.message}`);
   process.exit(1);
 }
 
-const npmComponents = inventory.map((entry) => ({
-  type: 'library',
-  'bom-ref': npmPackageUrl(entry.name, entry.version),
-  name: entry.name,
-  version: entry.version,
-  purl: npmPackageUrl(entry.name, entry.version),
-  licenses: [{ expression: entry.license }],
-  properties: [{ name: 'com.company.inventory.source', value: 'installed-pnpm-virtual-store' }],
-}));
-const pythonRecords = buildPythonSbomRecords(pythonInventories, packagedInventories);
-const toolchainRecords = buildToolchainSbomRecords(toolchainInventories, buildProvenances);
+const spdxToolByPurl = new Map(
+  spdxQualityToolLock.components.map((component) => [component.purl, component]),
+);
+const npmComponents = inventory.map((entry) => {
+  const purl = npmPackageUrl(entry.name, entry.version);
+  const qualityTool = spdxToolByPurl.get(purl);
+  return {
+    type: 'library',
+    'bom-ref': purl,
+    name: entry.name,
+    version: entry.version,
+    purl,
+    licenses: [{ expression: entry.license }],
+    ...(qualityTool ? { hashes: [{ alg: 'SHA-256', content: qualityTool.artifact_sha256 }] } : {}),
+    properties: [
+      { name: 'com.company.inventory.source', value: 'installed-pnpm-virtual-store' },
+      ...(qualityTool
+        ? [
+            { name: 'com.company.artifact.owner_kind', value: 'QUALITY_TOOL' },
+            { name: 'com.company.quality.scope', value: 'QUALITY_TOOLING' },
+            {
+              name: 'com.company.quality.provenance.status',
+              value: qualityTool.provenance_review_status,
+            },
+          ]
+        : []),
+    ],
+  };
+});
+const pythonRecords = buildPythonSbomRecords(
+  pythonInventories,
+  packagedInventories,
+  licenseDecisions,
+);
+const toolchainRecords = buildToolchainSbomRecords(
+  toolchainInventories,
+  buildProvenances,
+  licenseDecisions,
+);
 const qualityToolRecords = [
   {
     package_name: qualityToolLock.package_name,

@@ -44,9 +44,32 @@ function scopeProperties(inventory, artifact) {
   return properties;
 }
 
-export function buildPythonSbomRecords(loaded, packagedInventories = []) {
+function licensePolicyProperties(expression, decision) {
+  const properties = [{ name: 'com.company.license.declared_expression', value: expression }];
+  if (!decision) return properties;
+  properties.push(
+    { name: 'com.company.license.policy_result', value: decision.policy_result },
+    { name: 'com.company.license.policy_version', value: decision.license_policy_version },
+    {
+      name: 'com.company.license.acceptable_or_branches',
+      value: JSON.stringify(decision.acceptable_or_branches),
+    },
+  );
+  if (decision.selected_policy_branch) {
+    properties.push({
+      name: 'com.company.license.selected_policy_branch',
+      value: decision.selected_policy_branch,
+    });
+  }
+  return properties;
+}
+
+export function buildPythonSbomRecords(loaded, packagedInventories = [], licenseDecisions = []) {
   const components = [];
   const dependencyMap = new Map();
+  const decisionsByHash = new Map(
+    licenseDecisions.map((decision) => [decision.artifact_sha256, decision]),
+  );
   for (const { document: inventory } of loaded) {
     const refs = new Map(
       inventory.packages.map((artifact) => [
@@ -69,7 +92,13 @@ export function buildPythonSbomRecords(loaded, packagedInventories = []) {
           { type: 'distribution', url: artifact.provenance.download_url },
           { type: 'website', url: artifact.source },
         ],
-        properties: scopeProperties(inventory, artifact),
+        properties: [
+          ...scopeProperties(inventory, artifact),
+          ...licensePolicyProperties(
+            artifact.license_expression,
+            decisionsByHash.get(artifact.sha256),
+          ),
+        ],
       });
       const dependencies = new Set(
         artifact.dependencies.map((dependency) => refs.get(dependency)).filter(Boolean),
@@ -159,9 +188,12 @@ export function validatePythonSbomBinding(loaded, components) {
   if (failures.length > 0) throw new Error(failures.join('\n'));
 }
 
-export function buildToolchainSbomRecords(toolchains = [], builds = []) {
+export function buildToolchainSbomRecords(toolchains = [], builds = [], licenseDecisions = []) {
   const components = [];
   const dependencies = [];
+  const decisionsByHash = new Map(
+    licenseDecisions.map((decision) => [decision.artifact_sha256, decision]),
+  );
   for (const toolchain of toolchains) {
     const byId = new Map(
       toolchain.components.map((component) => [
@@ -192,6 +224,10 @@ export function buildToolchainSbomRecords(toolchains = [], builds = []) {
             value: JSON.stringify(component.usage_scopes),
           },
           { name: 'com.company.toolchain.artifact.filename', value: component.artifact.filename },
+          ...licensePolicyProperties(
+            component.license.expression,
+            decisionsByHash.get(component.artifact.sha256),
+          ),
         ],
       });
       for (const native of component.packaged_native_artifacts) {
@@ -243,6 +279,11 @@ export function buildToolchainSbomRecords(toolchains = [], builds = []) {
           name: 'com.company.build.archive_payload_sha256',
           value: build.output_layers.archive_payload_sha256,
         },
+        ...licensePolicyProperties(
+          decisionsByHash.get(build.final_artifact.sha256)?.detected_license_expression ??
+            'INHERITED_TOOLCHAIN_LICENSE_RELATIONSHIP',
+          decisionsByHash.get(build.final_artifact.sha256),
+        ),
       ],
     });
     dependencies.push({

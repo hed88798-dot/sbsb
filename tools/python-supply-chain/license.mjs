@@ -1,81 +1,87 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { normalizePythonName, repositoryRoot } from './inventory.mjs';
+import {
+  compareLicenseDecisionReports,
+  evaluateLicenseCollection,
+} from '../license-policy/evaluator.mjs';
+import { normalizePythonName } from './inventory.mjs';
 
-const policy = JSON.parse(
-  readFileSync(resolve(repositoryRoot, 'config/dependency-license-policy.json'), 'utf8'),
-);
-
-function matchesPattern(value, patterns) {
-  return patterns.some((pattern) => new RegExp(pattern, 'iu').test(value));
+function wheelRoles(scope) {
+  return scope === 'PRODUCTION_WORKER_RUNTIME'
+    ? { artifactRole: 'RUNTIME_WHEEL', distributionRole: 'RUNTIME_DISTRIBUTION' }
+    : { artifactRole: 'PYTHON_BUILD_DEPENDENCY', distributionRole: 'BUILD_ONLY_USE' };
 }
 
-function classify(expression) {
-  const normalized = /^\([^()]+\)$/u.test(expression) ? expression.slice(1, -1).trim() : expression;
-  if (!normalized || normalized.toUpperCase() === 'UNKNOWN') return 'REJECT';
-  if (matchesPattern(normalized, policy.blocked_patterns)) return 'REJECT';
-  if (policy.allowed.includes(normalized)) return 'ALLOW';
-  if (policy.manual_review.includes(normalized)) return 'REVIEW';
-  return 'REJECT';
-}
-
-export function auditPythonLicenses(verifiedArtifacts, { release = false } = {}) {
-  const packages = [];
-  const failures = [];
-  for (const { inventory, artifact, inspected } of verifiedArtifacts) {
+export function buildWheelLicenseEvidence(verifiedArtifacts) {
+  return verifiedArtifacts.map(({ inventory, artifact, inspected }) => {
     const metadataExpression = inspected.license_expression?.trim() || null;
     const legacyLicense = inspected.legacy_license?.trim() || null;
-    let metadataSource = 'License-Expression';
-    let metadataDecision = 'MATCH';
+    const { artifactRole, distributionRole } = wheelRoles(inventory.scope);
+    let evidenceStatus = 'PASS';
     if (metadataExpression && metadataExpression !== artifact.license_expression) {
-      metadataDecision = 'CONFLICT';
-      failures.push(
-        `${artifact.purl}: wheel License-Expression ${metadataExpression} conflicts with inventory ${artifact.license_expression}`,
-      );
+      evidenceStatus = 'CONFLICT';
     } else if (!metadataExpression) {
-      metadataSource = 'License';
-      if (!legacyLicense || legacyLicense !== artifact.license_expression) {
-        metadataDecision = 'MANUAL_REVIEW';
-      }
+      evidenceStatus =
+        legacyLicense && legacyLicense === artifact.license_expression ? 'PASS' : 'MANUAL_REVIEW';
     }
-    const decision = classify(artifact.license_expression);
-    if (decision === 'REJECT') failures.push(`${artifact.purl}: rejected/unknown license`);
-    if (artifact.license_files.length === 0) {
-      metadataDecision = 'MANUAL_REVIEW';
+    if (artifact.license_files.length === 0 && evidenceStatus === 'PASS') {
+      evidenceStatus = 'MANUAL_REVIEW';
     }
-    if (release && (decision === 'REVIEW' || metadataDecision === 'MANUAL_REVIEW')) {
-      failures.push(`${artifact.purl}: license manual review is unresolved for release`);
-    }
-    packages.push({
-      package_name: normalizePythonName(artifact.package_name),
-      version: artifact.version,
-      purl: artifact.purl,
-      scope: inventory.scope,
+    return {
       artifact_sha256: artifact.sha256,
-      license_expression: artifact.license_expression,
-      metadata_license_source: metadataSource,
-      metadata_license_value: metadataExpression ?? legacyLicense ?? 'UNKNOWN',
-      metadata_decision: metadataDecision,
-      policy_decision: decision,
-      license_files: artifact.license_files,
-    });
+      package: normalizePythonName(artifact.package_name),
+      version: artifact.version,
+      artifact_type: 'PYTHON_WHEEL',
+      artifact_role: artifactRole,
+      distribution_role: distributionRole,
+      detected_license_expression: artifact.license_expression,
+      evidence_status: evidenceStatus,
+      source_provenance: {
+        purl: artifact.purl,
+        source: artifact.source,
+        source_index: artifact.source_index,
+        download_url: artifact.provenance.download_url,
+        supplier: artifact.provenance.supplier,
+        review_status: artifact.provenance.review_status,
+      },
+      evidence_sources: [
+        {
+          evidence_type: metadataExpression ? 'METADATA_LICENSE_EXPRESSION' : 'METADATA_LICENSE',
+          value: metadataExpression ?? legacyLicense ?? 'MISSING',
+        },
+        ...artifact.license_files.map((entry) => ({
+          evidence_type: 'LICENSE_FILE',
+          relative_path: entry.relative_path,
+          sha256: entry.sha256,
+        })),
+      ],
+      exception_evidence: [],
+    };
+  });
+}
+
+export function auditPythonLicenses(
+  verifiedArtifacts,
+  { release = false, previousReport = null } = {},
+) {
+  const evidence = buildWheelLicenseEvidence(verifiedArtifacts);
+  const report = evaluateLicenseCollection(evidence);
+  report.mode = release ? 'RELEASE' : 'PR_FIRST_PASS';
+  report.evidence = evidence;
+  report.policy_result_changes = previousReport
+    ? compareLicenseDecisionReports(previousReport, report)
+    : [];
+  const failures = report.decisions.filter(
+    (entry) =>
+      entry.policy_result === 'FAIL' || (release && entry.policy_result === 'MANUAL_REVIEW'),
+  );
+  if (failures.length > 0) {
+    throw new Error(
+      failures
+        .map(
+          (entry) =>
+            `${entry.package}@${entry.version} (${entry.artifact_sha256}): ${entry.policy_result}: ${entry.reason}`,
+        )
+        .join('\n'),
+    );
   }
-  const report = {
-    schema_version: '1',
-    mode: release ? 'RELEASE' : 'PR_FIRST_PASS',
-    summary: {
-      packages: packages.length,
-      allowed: packages.filter((entry) => entry.policy_decision === 'ALLOW').length,
-      manual_review: packages.filter(
-        (entry) =>
-          entry.policy_decision === 'REVIEW' || entry.metadata_decision === 'MANUAL_REVIEW',
-      ).length,
-      rejected: packages.filter(
-        (entry) => entry.policy_decision === 'REJECT' || entry.metadata_decision === 'CONFLICT',
-      ).length,
-    },
-    packages,
-  };
-  if (failures.length > 0) throw new Error(failures.join('\n'));
   return report;
 }

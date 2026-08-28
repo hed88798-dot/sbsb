@@ -2,6 +2,8 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { delimiter, dirname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { evaluateLicenseCollection } from '../license-policy/evaluator.mjs';
+import { verifySpdxQualityTooling } from '../license-policy/verify-quality-tooling.mjs';
 import { canonicalJson, inspectWheel, repositoryRoot, sha256File } from './inventory.mjs';
 
 const toolDirectory = dirname(fileURLToPath(import.meta.url));
@@ -34,6 +36,8 @@ function packagingComponent() {
     source_index: packagingLock.source_index,
     supplier: packagingLock.supplier,
     license_expression: packagingLock.license_expression,
+    license_artifact_role: packagingLock.license_artifact_role,
+    license_distribution_role: packagingLock.license_distribution_role,
     license_review_status: packagingLock.license_review_status,
     provenance_review_status: packagingLock.provenance_review_status,
     license_files: packagingLock.license_files,
@@ -318,6 +322,7 @@ print(json.dumps(resolved, sort_keys=True))
 }
 
 export async function installAndVerifyQualityTooling() {
+  const spdxTooling = verifySpdxQualityTooling();
   const selected = selectedComponents();
   assertLocks(selected);
   const paths = qualityToolingPaths();
@@ -342,6 +347,14 @@ export async function installAndVerifyQualityTooling() {
     if (!exactFiles(component.license_files, inspected.license_files)) {
       throw new Error(`${component.purl}: wheel license files/hash mismatch`);
     }
+    if (
+      inspected.license_expression &&
+      inspected.license_expression !== component.license_expression
+    ) {
+      throw new Error(
+        `${component.purl}: wheel license metadata conflicts with reviewed artifact evidence`,
+      );
+    }
     inspections.set(component.purl, inspected);
     installWheel(wheel, paths.sitePackages, pythonExecutable);
     reports.push({
@@ -365,14 +378,94 @@ export async function installAndVerifyQualityTooling() {
   await queryOsv(selected);
   const imported = verifyImports(paths.sitePackages, pythonExecutable);
   verifyDependencyGraph(selected, inspections, paths.sitePackages, pythonExecutable);
+  const licenseEvidence = selected.map(({ component, artifact }) => {
+    const inspected = inspections.get(component.purl);
+    return {
+      artifact_sha256: artifact.sha256,
+      package: component.package_name,
+      version: component.version,
+      artifact_type: 'QUALITY_TOOL_WHEEL',
+      artifact_role: component.license_artifact_role ?? 'PYTHON_BUILD_DEPENDENCY',
+      distribution_role: component.license_distribution_role ?? 'BUILD_ONLY_USE',
+      detected_license_expression: component.license_expression,
+      evidence_status: 'PASS',
+      source_provenance: {
+        purl: component.purl,
+        source: component.source,
+        source_index: component.source_index,
+        download_url: artifact.download_url,
+        supplier: component.supplier,
+        review_status: component.provenance_review_status,
+      },
+      evidence_sources: [
+        ...(inspected.license_expression
+          ? [
+              {
+                evidence_type: 'METADATA_LICENSE_EXPRESSION',
+                value: inspected.license_expression,
+              },
+            ]
+          : [
+              ...(inspected.legacy_license
+                ? [
+                    {
+                      evidence_type: 'METADATA_LICENSE',
+                      value: inspected.legacy_license,
+                    },
+                  ]
+                : []),
+              {
+                evidence_type: 'REVIEWED_BUNDLED_LICENSE_EXPRESSION',
+                value: component.license_expression,
+              },
+            ]),
+        ...component.license_files.map((entry) => ({
+          evidence_type: 'LICENSE_FILE',
+          relative_path: entry.relative_path,
+          sha256: entry.sha256,
+        })),
+      ],
+      exception_evidence: [
+        ...component.license_files.map((entry) => ({
+          evidence_type: 'LICENSE_FILE',
+          relative_path: entry.relative_path,
+          sha256: entry.sha256,
+        })),
+        ...(component.redistribution_evidence
+          ? [
+              {
+                evidence_type: 'EXCEPTION_SOURCE',
+                source: component.redistribution_evidence,
+              },
+            ]
+          : []),
+      ],
+    };
+  });
+  const licenseEvaluation = evaluateLicenseCollection(licenseEvidence);
+  const blockingLicenses = licenseEvaluation.decisions.filter(
+    (entry) => entry.policy_result !== 'PASS',
+  );
+  if (blockingLicenses.length > 0) {
+    throw new Error(
+      blockingLicenses
+        .map(
+          (entry) => `${entry.package}@${entry.version}: ${entry.policy_result}: ${entry.reason}`,
+        )
+        .join('\n'),
+    );
+  }
   const report = {
-    schema_version: '2',
+    schema_version: '3',
     status: 'PASS',
     scope: 'COMPLIANCE_TOOLING',
     tool_name: inspectorLock.tool_name,
     entrypoint: inspectorLock.entrypoint,
     components: reports,
     imports: imported,
+    spdx_quality_tooling: spdxTooling,
+    license_evidence: licenseEvidence,
+    license_evaluation: licenseEvaluation,
   };
   mkdirSync(dirname(paths.report), { recursive: true });
   writeFileSync(paths.report, canonicalJson(report));

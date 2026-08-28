@@ -17,6 +17,7 @@ import {
   reconcilePackagedNativeInventory,
 } from './native.mjs';
 import {
+  auditGeneratedWorkerLicense,
   auditToolchainLicenses,
   auditToolchainVulnerabilities,
   loadBuildProvenance,
@@ -42,6 +43,7 @@ function parseArguments(values) {
     else if (value === '--target-os') options.targetOs = values[++index];
     else if (value === '--target-architecture') options.targetArchitecture = values[++index];
     else if (value === '--offline-osv') options.offlineOsv = values[++index];
+    else if (value === '--previous-license-report') options.previousLicenseReport = values[++index];
     else if (value === '--toolchain-inventory') options.toolchainInventory = values[++index];
     else if (value === '--toolchain-artifact-root') options.toolchainArtifactRoot = values[++index];
     else if (value === '--build-provenance') options.buildProvenance = values[++index];
@@ -91,6 +93,7 @@ async function v2Inputs(options) {
   if (wheels.length === 0)
     throw new Error('one-file provenance requires at least one wheel inventory');
   const toolchain = await toolchainVerify(options);
+  const toolchainLicense = auditToolchainLicenses(toolchain.document);
   const build = loadBuildProvenance(options.buildProvenance);
   const finalArtifact = resolve(
     options.finalArtifact ??
@@ -101,6 +104,7 @@ async function v2Inputs(options) {
   return {
     wheels,
     toolchain,
+    toolchainLicense,
     build,
     finalArtifact,
     buildManifestSha256: await sha256File(build.path),
@@ -109,10 +113,19 @@ async function v2Inputs(options) {
 
 async function buildProvenanceVerify(options) {
   const inputs = await v2Inputs(options);
-  console.log(
-    `python-build-provenance: PASS (${inputs.build.document.build_id}; ${inputs.build.document.final_artifact.sha256})`,
+  const licenseDecision = auditGeneratedWorkerLicense(
+    inputs.toolchain.document,
+    inputs.build.document,
   );
-  return inputs;
+  if (licenseDecision.policy_result !== 'PASS') {
+    throw new Error(
+      `generated worker license: ${licenseDecision.policy_result}: ${licenseDecision.reason}`,
+    );
+  }
+  console.log(
+    `python-build-provenance: PASS (${inputs.build.document.build_id}; ${inputs.build.document.final_artifact.sha256}; generated-worker license PASS)`,
+  );
+  return { ...inputs, licenseDecision };
 }
 
 function inventoryPaths(options) {
@@ -156,10 +169,16 @@ async function validate(options) {
 
 async function license(options) {
   const { verified } = await verify(options);
-  const report = auditPythonLicenses(verified, { release: options.release });
+  const previousReport = options.previousLicenseReport
+    ? JSON.parse(readFileSync(resolve(options.previousLicenseReport), 'utf8'))
+    : null;
+  const report = auditPythonLicenses(verified, {
+    release: options.release,
+    previousReport,
+  });
   writeReport(options.output, report);
   console.log(
-    `python-license: PASS (${report.summary.packages} wheels; ${report.summary.manual_review} manual review)`,
+    `python-license: PASS (${report.summary.artifacts} wheels; ${report.summary.manual_review} manual review; policy ${report.license_policy_version})`,
   );
   return report;
 }

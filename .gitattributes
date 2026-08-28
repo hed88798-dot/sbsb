@@ -4,4 +4,5 @@ packages/test-fixtures/src/index.ts text eol=lf
 tests/golden/** text eol=lf
 tools/golden/** text eol=lf
 schemas/golden/** text eol=lf
-
+compliance/license-policy/** text eol=lf
+compliance/quality-tooling/npm/** text eol=lf

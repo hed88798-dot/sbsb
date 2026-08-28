@@ -15,6 +15,8 @@
       "source_index": "https://pypi.org/project/pyinstaller/6.22.2/",
       "supplier": "PyInstaller Development Team",
       "license_expression": "GPL-2.0-or-later WITH Bootloader-exception",
+      "license_artifact_role": "PYINSTALLER_BUILD_TOOL",
+      "license_distribution_role": "BUILD_ONLY_USE",
       "license_review_status": "APPROVED",
       "redistribution_evidence": "https://pyinstaller.org/en/v6.22.0/license.html",
       "provenance_review_status": "APPROVED",

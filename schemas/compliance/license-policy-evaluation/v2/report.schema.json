@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/license-policy-evaluation/v2/report.schema.json",
+  "title": "License Policy Evaluation Report v2",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "license_policy_version",
+    "license_policy_sha256",
+    "parser",
+    "summary",
+    "decisions"
+  ],
+  "properties": {
+    "schema_version": { "const": "2" },
+    "license_policy_version": { "type": ["string", "null"] },
+    "license_policy_sha256": { "type": ["string", "null"] },
+    "parser": { "type": "object" },
+    "summary": { "type": "object" },
+    "decisions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/decision" }
+    },
+    "mode": { "enum": ["PR_FIRST_PASS", "RELEASE"] },
+    "evidence": { "type": "array" },
+    "policy_result_changes": { "type": "array" }
+  },
+  "$defs": {
+    "decision": {
+      "type": "object",
+      "required": [
+        "artifact_sha256",
+        "artifact_role",
+        "distribution_role",
+        "detected_license_expression",
+        "normalized_expression",
+        "acceptable_or_branches",
+        "selected_policy_branch",
+        "exceptions",
+        "policy_result",
+        "obligations",
+        "parser_name",
+        "parser_version",
+        "spdx_license_list_version",
+        "spdx_exception_list_version",
+        "license_policy_version",
+        "license_policy_sha256",
+        "policy_input_hash"
+      ],
+      "properties": {
+        "artifact_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "artifact_role": { "type": "string" },
+        "distribution_role": { "type": "string" },
+        "detected_license_expression": { "type": "string" },
+        "normalized_expression": { "type": ["string", "null"] },
+        "acceptable_or_branches": { "type": "array", "items": { "type": "string" } },
+        "selected_policy_branch": { "type": ["string", "null"] },
+        "exceptions": { "type": "array" },
+        "policy_result": { "enum": ["PASS", "FAIL", "MANUAL_REVIEW"] },
+        "obligations": { "type": "array", "items": { "type": "string" } },
+        "parser_name": { "type": "string" },
+        "parser_version": { "type": "string" },
+        "spdx_license_list_version": { "type": "string" },
+        "spdx_exception_list_version": { "type": "string" },
+        "license_policy_version": { "type": "string" },
+        "license_policy_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "policy_input_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    }
+  }
+}
