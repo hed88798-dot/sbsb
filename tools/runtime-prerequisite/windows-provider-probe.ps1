@@ -13,10 +13,16 @@ $artifact = Join-Path $downloadRoot $bootstrap.filename
 $installLog = Join-Path $downloadRoot 'install.log'
 $uninstallLog = Join-Path $downloadRoot 'uninstall.log'
 
+function Convert-RuntimeVersion {
+  param([Parameter(Mandatory = $true)][string]$Value)
+  $normalized = $Value.Trim() -replace '^[vV]', ''
+  return ([version]$normalized).ToString()
+}
+
 Invoke-WebRequest -Uri $bootstrap.canonical_source -OutFile $artifact
 $actualHash = (Get-FileHash -Algorithm SHA256 $artifact).Hash.ToLowerInvariant()
 $actualSize = (Get-Item $artifact).Length
-$fileVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($artifact).ProductVersion.Trim()
+$fileVersion = Convert-RuntimeVersion ([Diagnostics.FileVersionInfo]::GetVersionInfo($artifact).ProductVersion)
 if ($actualHash -ne $bootstrap.sha256) { throw "bootstrap SHA-256 mismatch: $actualHash" }
 if ($actualSize -ne $bootstrap.size) { throw "bootstrap size mismatch: $actualSize" }
 if ([version]$fileVersion -ne [version]$bootstrap.version) {
@@ -43,7 +49,11 @@ function Read-RuntimeState {
     if (Test-Path $path) {
       $item = Get-ItemProperty $path
       if ($null -ne $item.Version) {
-        return [pscustomobject]@{ Path = $path; Installed = [int]$item.Installed; Version = [string]$item.Version }
+        return [pscustomobject]@{
+          Path = $path
+          Installed = [int]$item.Installed
+          Version = Convert-RuntimeVersion ([string]$item.Version)
+        }
       }
     }
   }
