@@ -10,6 +10,13 @@ import sys
 from pathlib import Path
 
 from canonical_evidence import canonical_sha256, write_canonical_json
+from evidence_paths import (
+    EvidencePathError,
+    repository_relative_identity,
+    resolve_repository_cli_path,
+    same_filesystem_identity,
+    verify_repository_future_path,
+)
 
 import PyInstaller
 
@@ -48,20 +55,20 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def git_head() -> str:
+def git_head(repository_root: Path) -> str:
     return subprocess.run(
         ["git", "rev-parse", "HEAD"],
-        cwd=REPOSITORY_ROOT,
+        cwd=repository_root,
         check=True,
         capture_output=True,
         text=True,
     ).stdout.strip()
 
 
-def require_baseline(commit: str) -> None:
+def require_baseline(commit: str, repository_root: Path) -> None:
     if subprocess.run(
         ["git", "merge-base", "--is-ancestor", commit, "HEAD"],
-        cwd=REPOSITORY_ROOT,
+        cwd=repository_root,
         check=False,
         capture_output=True,
         text=True,
@@ -69,18 +76,27 @@ def require_baseline(commit: str) -> None:
         raise SystemExit(f"Code C HEAD does not contain required main quality baseline: {commit}")
 
 
-def fresh_directory(path: Path, label: str) -> None:
+def fresh_directory(path: Path, label: str, repository_root: Path) -> None:
     if path.exists() and (not path.is_dir() or any(path.iterdir())):
         raise SystemExit(f"{label} must be a fresh empty directory: {path}")
     path.mkdir(parents=True, exist_ok=True)
+    resolved = path.resolve(strict=True)
+    try:
+        resolved.relative_to(repository_root)
+    except ValueError as error:
+        raise SystemExit(f"{label} resolves outside the explicit repository root: {resolved}") from error
     if any(path.iterdir()):
         raise SystemExit(f"{label} was not empty after creation: {path}")
 
 
-def identity(path: Path) -> dict[str, object]:
+def identity(path: Path, repository_root: Path) -> dict[str, object]:
     value = json.loads(path.read_text(encoding="utf-8"))
     return {
-        "path": path.resolve().relative_to(REPOSITORY_ROOT).as_posix(),
+        "path": repository_relative_identity(
+            path,
+            repository_root=repository_root,
+            field="build_context.inputs.wheel_inventories[].path",
+        ),
         "sha256": sha256_file(path),
         "inventory_id": value["inventory_id"],
     }
@@ -89,6 +105,7 @@ def identity(path: Path) -> dict[str, object]:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", choices=["linux", "windows"], required=True)
+    parser.add_argument("--repository-root", type=Path, required=True)
     parser.add_argument("--workpath", type=Path, required=True)
     parser.add_argument("--distpath", type=Path, required=True)
     parser.add_argument("--spec", type=Path, required=True)
@@ -103,15 +120,69 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
 
+    try:
+        if not arguments.repository_root.is_absolute():
+            raise SystemExit("--repository-root must be an explicit absolute path")
+        repository_root = arguments.repository_root.resolve(strict=True)
+        if not same_filesystem_identity(repository_root, REPOSITORY_ROOT):
+            raise SystemExit(
+                "explicit repository root does not identify the checkout executing the producer"
+            )
+        existing_inputs = (
+            "spec",
+            "runtime_inventory",
+            "worker_build_inventory",
+            "runtime_identity",
+            "distribution",
+            "pip_wheel",
+            "pyinstaller_wheel",
+        )
+        if arguments.build_environment_manifest:
+            existing_inputs += ("build_environment_manifest",)
+        for name in existing_inputs:
+            setattr(
+                arguments,
+                name,
+                resolve_repository_cli_path(
+                    getattr(arguments, name),
+                    repository_root=repository_root,
+                    label=f"--{name.replace('_', '-')}",
+                    filesystem_identity=True,
+                ),
+            )
+        for name in ("workpath", "distpath", "output"):
+            setattr(
+                arguments,
+                name,
+                resolve_repository_cli_path(
+                    getattr(arguments, name),
+                    repository_root=repository_root,
+                    label=f"--{name.replace('_', '-')}",
+                    filesystem_identity=False,
+                ),
+            )
+    except EvidencePathError as error:
+        raise SystemExit(str(error)) from error
+
     if PyInstaller.__version__ != EXPECTED_PYINSTALLER_VERSION:
         raise SystemExit(
             f"build context requires PyInstaller {EXPECTED_PYINSTALLER_VERSION}, got {PyInstaller.__version__}"
         )
-    require_baseline(arguments.main_quality_baseline)
-    fresh_directory(arguments.workpath, "PyInstaller workpath")
-    fresh_directory(arguments.distpath, "PyInstaller distpath")
+    require_baseline(arguments.main_quality_baseline, repository_root)
+    fresh_directory(arguments.workpath, "PyInstaller workpath", repository_root)
+    fresh_directory(arguments.distpath, "PyInstaller distpath", repository_root)
+    try:
+        arguments.output = verify_repository_future_path(
+            arguments.output,
+            repository_root=repository_root,
+            label="--output",
+        )
+    except EvidencePathError as error:
+        raise SystemExit(str(error)) from error
 
-    source_lock = json.loads(SOURCE_LOCK.read_text(encoding="utf-8"))
+    source_lock = json.loads(
+        (repository_root / SOURCE_LOCK.relative_to(REPOSITORY_ROOT)).read_text(encoding="utf-8")
+    )
     target_lock = source_lock["targets"][arguments.target]
     if (
         sha256_file(arguments.distribution) != target_lock["cpython_distribution"]["sha256"]
@@ -129,8 +200,8 @@ def main() -> None:
     if len(hooks) != 1:
         raise SystemExit("worker-build inventory must contain one pyinstaller-hooks-contrib artifact")
     wheel_inventories = [
-        identity(arguments.runtime_inventory),
-        identity(arguments.worker_build_inventory),
+        identity(arguments.runtime_inventory, repository_root),
+        identity(arguments.worker_build_inventory, repository_root),
     ]
     source_graph = collect_worker_source_evidence()
 
@@ -162,6 +233,16 @@ def main() -> None:
             != expected_identity_sha256
             or environment_document.get("build_environment_manifest_id")
             != f"code-c-build-environment-{expected_identity_sha256[:32]}"
+            or not same_filesystem_identity(
+                environment_document.get("runtime_anchors", {}).get("repository_root", ""),
+                repository_root,
+            )
+            or not same_filesystem_identity(
+                environment_document.get("environment", {})
+                .get("effective", {})
+                .get("CODE_C_REPOSITORY_ROOT", ""),
+                repository_root,
+            )
             or Path(environment_document.get("locked_python", {}).get("executable", "")).resolve()
             != Path(sys.executable).resolve()
             or environment_document.get("locked_python", {}).get("executable_sha256")
@@ -177,7 +258,11 @@ def main() -> None:
         ):
             raise SystemExit("Build Environment Manifest is not an approved Windows x64 environment")
         build_environment = {
-            "path": environment_path.relative_to(REPOSITORY_ROOT).as_posix(),
+            "path": repository_relative_identity(
+                environment_path,
+                repository_root=repository_root,
+                field="build_context.inputs.build_environment_manifest.path",
+            ),
             "sha256": sha256_file(environment_path),
             "build_environment_manifest_id": environment_document[
                 "build_environment_manifest_id"
@@ -187,7 +272,7 @@ def main() -> None:
         raise SystemExit("Windows Build Context requires a Build Environment Manifest")
 
     build_inputs = {
-        "code_c_commit": git_head(),
+        "code_c_commit": git_head(repository_root),
         "main_quality_baseline": arguments.main_quality_baseline,
         "target": {
             "os": arguments.target,
@@ -226,11 +311,19 @@ def main() -> None:
             "sidecar_command_surface_sha256"
         ],
         "runtime_identity": {
-            "path": arguments.runtime_identity.resolve().relative_to(REPOSITORY_ROOT).as_posix(),
+            "path": repository_relative_identity(
+                arguments.runtime_identity,
+                repository_root=repository_root,
+                field="build_context.inputs.runtime_identity.path",
+            ),
             "sha256": sha256_file(arguments.runtime_identity),
         },
         "specification": {
-            "path": arguments.spec.resolve().relative_to(REPOSITORY_ROOT).as_posix(),
+            "path": repository_relative_identity(
+                arguments.spec,
+                repository_root=repository_root,
+                field="build_context.inputs.specification.path",
+            ),
             "sha256": sha256_file(arguments.spec),
         },
         "build_environment_manifest": build_environment,
@@ -240,8 +333,16 @@ def main() -> None:
             "strip": False,
             "upx": False,
             "onefile": True,
-            "workpath": arguments.workpath.resolve().relative_to(REPOSITORY_ROOT).as_posix(),
-            "distpath": arguments.distpath.resolve().relative_to(REPOSITORY_ROOT).as_posix(),
+            "workpath": repository_relative_identity(
+                arguments.workpath,
+                repository_root=repository_root,
+                field="build_context.inputs.build_settings.workpath",
+            ),
+            "distpath": repository_relative_identity(
+                arguments.distpath,
+                repository_root=repository_root,
+                field="build_context.inputs.build_settings.distpath",
+            ),
         },
     }
     build_context_id = f"code-c-pyinstaller-{hashlib.sha256(canonical_bytes(build_inputs)).hexdigest()[:32]}"
@@ -254,7 +355,6 @@ def main() -> None:
         "evidence_capture_alters_build_inputs": "NO",
         "inputs": build_inputs,
     }
-    arguments.output.parent.mkdir(parents=True, exist_ok=True)
     write_canonical_json(arguments.output, document)
     print(f"pyinstaller-build-context: PASS ({build_context_id})")
 

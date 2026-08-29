@@ -246,6 +246,7 @@ jobs:
         run: >-
           ${{ matrix.venv_python }} -I tools/code-c-python-supply-chain/prepare_pyinstaller_environment.py
           --target windows
+          --repository-root '${{ github.workspace }}'
           --runtime-inventory artifacts/python-supply-chain/candidates/code-c-windows-runtime.v2.json
           --worker-build-inventory artifacts/python-supply-chain/candidates/code-c-windows-worker-build.v2.json
           --cpython-distribution artifacts/python-supply-chain/toolchain/windows/${{ matrix.distribution }}
@@ -272,6 +273,7 @@ jobs:
           fi
           ${{ matrix.venv_python }} tools/code-c-python-supply-chain/prepare_pyinstaller_build_context.py \
             --target ${{ matrix.target }} \
+            --repository-root '${{ github.workspace }}' \
             --workpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/work \
             --distpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/dist \
             --spec sidecars/media-worker/media-worker.spec \

@@ -155,6 +155,7 @@ def build_child_environment(
     worker_root: Path,
     manifest_path: Path,
     selected_evidence_path: Path,
+    repository_root: Path,
 ) -> tuple[dict[str, str], dict[str, object]]:
     required_names = (
         "SYSTEMROOT",
@@ -199,6 +200,7 @@ def build_child_environment(
             "PYINSTALLER_CONFIG_DIR": str(cache_root),
             "CODE_C_BUILD_ENVIRONMENT_MANIFEST": str(manifest_path),
             "CODE_C_PREPACKAGE_SELECTED_EVIDENCE": str(selected_evidence_path),
+            "CODE_C_REPOSITORY_ROOT": str(repository_root),
         }
     )
     forbidden = ("JAVA_HOME", "MAGICK_HOME", "CONDA_PREFIX", "PYTHONPATH", "PYTHONHOME")

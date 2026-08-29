@@ -18,6 +18,13 @@ import PyInstaller
 from packaging.utils import canonicalize_name
 
 from canonical_evidence import canonical_sha256, write_canonical_json
+from evidence_paths import (
+    EvidencePathError,
+    repository_relative_identity,
+    resolve_repository_cli_path,
+    same_filesystem_identity,
+    verify_repository_future_path,
+)
 from hermetic_pyinstaller import (
     HermeticBuildError,
     attest_python_search_path,
@@ -34,24 +41,33 @@ EXPECTED_PYINSTALLER_VERSION = "6.22.2"
 MANIFEST_SCHEMA = "code-c-pyinstaller-build-environment-v1"
 
 
-def fresh_directory(path: Path, label: str) -> Path:
-    resolved = path.resolve()
+def fresh_directory(path: Path, label: str, repository_root: Path) -> Path:
+    resolved = path
     if resolved.exists() and (not resolved.is_dir() or any(resolved.iterdir())):
         raise SystemExit(f"{label} must be a fresh empty directory: {resolved}")
     resolved.mkdir(parents=True, exist_ok=True)
+    resolved = resolved.resolve(strict=True)
+    if not path_is_within(resolved, repository_root):
+        raise SystemExit(f"{label} resolves outside the explicit repository root: {resolved}")
     if any(resolved.iterdir()):
         raise SystemExit(f"{label} was not empty after creation: {resolved}")
     return resolved
 
 
-def inventory_union(paths: list[Path]) -> tuple[dict[str, dict[str, object]], list[dict[str, object]]]:
+def inventory_union(
+    paths: list[Path], repository_root: Path
+) -> tuple[dict[str, dict[str, object]], list[dict[str, object]]]:
     packages: dict[str, dict[str, object]] = {}
     identities = []
     for path in paths:
         document = json.loads(path.read_text(encoding="utf-8"))
         identities.append(
             {
-                "path": path.resolve().relative_to(REPOSITORY_ROOT).as_posix(),
+                "path": repository_relative_identity(
+                    path,
+                    repository_root=repository_root,
+                    field="build_context.inputs.wheel_inventories[].path",
+                ),
                 "sha256": sha256_file(path),
                 "inventory_id": document["inventory_id"],
             }
@@ -180,6 +196,7 @@ def unique_existing_paths(values: list[Path]) -> list[Path]:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", choices=["windows"], required=True)
+    parser.add_argument("--repository-root", type=Path, required=True)
     parser.add_argument("--runtime-inventory", type=Path, required=True)
     parser.add_argument("--worker-build-inventory", type=Path, required=True)
     parser.add_argument("--cpython-distribution", type=Path, required=True)
@@ -196,6 +213,57 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
 
+    try:
+        if not arguments.repository_root.is_absolute():
+            raise SystemExit("--repository-root must be an explicit absolute path")
+        repository_root = arguments.repository_root.resolve(strict=True)
+        if not same_filesystem_identity(repository_root, REPOSITORY_ROOT):
+            raise SystemExit(
+                "explicit repository root does not identify the checkout executing the producer"
+            )
+        existing_inputs = (
+            "runtime_inventory",
+            "worker_build_inventory",
+            "cpython_distribution",
+            "pip_wheel",
+            "pyinstaller_wheel",
+            "cpython_installation",
+            "runtime_identity",
+            "spec",
+        )
+        future_outputs = (
+            "workpath",
+            "distpath",
+            "cache_root",
+            "selected_evidence",
+            "build_context",
+            "output",
+        )
+        for name in existing_inputs:
+            setattr(
+                arguments,
+                name,
+                resolve_repository_cli_path(
+                    getattr(arguments, name),
+                    repository_root=repository_root,
+                    label=f"--{name.replace('_', '-')}",
+                    filesystem_identity=True,
+                ),
+            )
+        for name in future_outputs:
+            setattr(
+                arguments,
+                name,
+                resolve_repository_cli_path(
+                    getattr(arguments, name),
+                    repository_root=repository_root,
+                    label=f"--{name.replace('_', '-')}",
+                    filesystem_identity=False,
+                ),
+            )
+    except EvidencePathError as error:
+        raise SystemExit(str(error)) from error
+
     if sys.platform != "win32" or platform.machine().lower() not in {"amd64", "x86_64"}:
         raise SystemExit(f"Windows x64 build environment required, got {sys.platform}/{platform.machine()}")
     if PyInstaller.__version__ != EXPECTED_PYINSTALLER_VERSION:
@@ -206,9 +274,24 @@ def main() -> None:
     executable = Path(sys.executable).resolve(strict=True)
     if worker_root == base_root or not path_is_within(executable, worker_root):
         raise SystemExit("PyInstaller must run from a fresh Worker virtual environment")
-    workpath = fresh_directory(arguments.workpath, "PyInstaller workpath")
-    distpath = fresh_directory(arguments.distpath, "PyInstaller distpath")
-    cache_root = fresh_directory(arguments.cache_root, "PyInstaller cache/config root")
+    workpath = fresh_directory(arguments.workpath, "PyInstaller workpath", repository_root)
+    distpath = fresh_directory(arguments.distpath, "PyInstaller distpath", repository_root)
+    cache_root = fresh_directory(
+        arguments.cache_root, "PyInstaller cache/config root", repository_root
+    )
+    try:
+        for name in ("selected_evidence", "build_context", "output"):
+            setattr(
+                arguments,
+                name,
+                verify_repository_future_path(
+                    getattr(arguments, name),
+                    repository_root=repository_root,
+                    label=f"--{name.replace('_', '-')}",
+                ),
+            )
+    except EvidencePathError as error:
+        raise SystemExit(str(error)) from error
 
     installation = json.loads(arguments.cpython_installation.read_text(encoding="utf-8"))
     runtime = json.loads(arguments.runtime_identity.read_text(encoding="utf-8"))
@@ -223,7 +306,7 @@ def main() -> None:
         raise SystemExit("Worker environment is not bound to approved standard-GIL CPython 3.13.15")
 
     packages, inventory_identities = inventory_union(
-        [arguments.runtime_inventory, arguments.worker_build_inventory]
+        [arguments.runtime_inventory, arguments.worker_build_inventory], repository_root
     )
     pyinstaller_package = packages.get("pyinstaller")
     if (
@@ -266,6 +349,7 @@ def main() -> None:
         worker_root=worker_root,
         manifest_path=manifest_path,
         selected_evidence_path=selected_evidence_path,
+        repository_root=repository_root,
     )
     required_environment = (
         "SYSTEMROOT",
@@ -293,7 +377,7 @@ def main() -> None:
     )
     probe = subprocess.run(
         [str(executable), "-I", "-c", probe_code],
-        cwd=REPOSITORY_ROOT,
+        cwd=repository_root,
         env=child_environment,
         shell=False,
         check=True,
@@ -333,8 +417,8 @@ def main() -> None:
     if not all(path_is_within(path, worker_root) for path in hook_roots):
         raise SystemExit("PyInstaller hook search root escapes the Worker environment")
 
-    pathex = [(REPOSITORY_ROOT / "sidecars" / "media-worker" / "src").resolve(strict=True)]
-    application_root = (REPOSITORY_ROOT / "sidecars" / "media-worker").resolve(strict=True)
+    pathex = [(repository_root / "sidecars" / "media-worker" / "src").resolve(strict=True)]
+    application_root = (repository_root / "sidecars" / "media-worker").resolve(strict=True)
     if not all(path_is_within(path, application_root) for path in pathex):
         raise SystemExit("PyInstaller pathex escapes the approved application source root")
 
@@ -377,6 +461,7 @@ def main() -> None:
     identity = {
         "schema_version": MANIFEST_SCHEMA,
         "target": {"os": "windows", "architecture": "x86_64"},
+        "runtime_anchors": {"repository_root": str(repository_root)},
         "locked_python": {
             "executable": str(executable),
             "executable_sha256": sha256_file(executable),
@@ -466,7 +551,6 @@ def main() -> None:
             "approved_source_root_file_manifest_count": len(file_manifest),
         },
     }
-    arguments.output.parent.mkdir(parents=True, exist_ok=True)
     result = write_canonical_json(arguments.output, document)
     print(
         f"pyinstaller-build-environment: PASS ({manifest_id}; "

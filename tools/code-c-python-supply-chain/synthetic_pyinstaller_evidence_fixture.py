@@ -4,6 +4,7 @@ import copy
 from pathlib import Path
 
 from canonical_evidence import canonical_sha256, write_canonical_json
+from evidence_paths import repository_relative_identity
 from hermetic_pyinstaller import normalized_realpath, sha256_file
 from msvc_runtime_dependency import validate_msvc_evidence_pointers
 
@@ -14,7 +15,10 @@ SYNTHETIC_PYINSTALLER_FILENAME = "pyinstaller-6.22.2-py3-none-win_amd64.whl"
 
 
 def _write_build_context(
-    manifest: dict[str, object], manifest_path: Path, build_context_path: Path
+    manifest: dict[str, object],
+    manifest_path: Path,
+    build_context_path: Path,
+    repository_root: Path,
 ) -> dict[str, object]:
     pyinstaller = manifest["pyinstaller"]
     toolchain = manifest["toolchain_artifact_identities"]["pyinstaller_wheel"]
@@ -33,7 +37,11 @@ def _write_build_context(
                 "implementation": "CPython",
             },
             "build_environment_manifest": {
-                "path": manifest_path.name,
+                "path": repository_relative_identity(
+                    manifest_path,
+                    repository_root=repository_root,
+                    field="build_context.inputs.build_environment_manifest.path",
+                ),
                 "sha256": sha256_file(manifest_path),
                 "build_environment_manifest_id": manifest[
                     "build_environment_manifest_id"
@@ -51,7 +59,11 @@ def _write_build_context(
                 "purl": "pkg:pypi/pyinstaller-hooks-contrib@2026.7",
             },
             "specification": {
-                "path": pyinstaller["spec"],
+                "path": repository_relative_identity(
+                    Path(pyinstaller["spec"]),
+                    repository_root=repository_root,
+                    field="build_context.inputs.specification.path",
+                ),
                 "sha256": pyinstaller["spec_sha256"],
             },
             "build_settings": {
@@ -60,8 +72,16 @@ def _write_build_context(
                 "onefile": True,
                 "strip": False,
                 "upx": False,
-                "workpath": pyinstaller["workpath"],
-                "distpath": pyinstaller["distpath"],
+                "workpath": repository_relative_identity(
+                    Path(pyinstaller["workpath"]),
+                    repository_root=repository_root,
+                    field="build_context.inputs.build_settings.workpath",
+                ),
+                "distpath": repository_relative_identity(
+                    Path(pyinstaller["distpath"]),
+                    repository_root=repository_root,
+                    field="build_context.inputs.build_settings.distpath",
+                ),
             },
         },
     }
@@ -74,10 +94,12 @@ def build_synthetic_pyinstaller_evidence_fixture(
     approved_root: Path,
     approved_file: Path,
 ) -> dict[str, object]:
-    spec = root / "media-worker.spec"
+    spec = root / "sidecars" / "media-worker" / "media-worker.spec"
+    spec.parent.mkdir(parents=True)
     spec.write_bytes(b"# synthetic one-file Worker specification\n")
-    workpath = root / "work"
-    distpath = root / "dist"
+    workpath = root / "artifacts" / "pyinstaller-build" / "windows" / "work"
+    distpath = root / "artifacts" / "pyinstaller-build" / "windows" / "dist"
+    workpath.parent.mkdir(parents=True)
     workpath.mkdir()
     distpath.mkdir()
     manifest_path = root / "build-environment-manifest.json"
@@ -89,6 +111,10 @@ def build_synthetic_pyinstaller_evidence_fixture(
     identity = {
         "schema_version": SYNTHETIC_MANIFEST_SCHEMA,
         "target": {"os": "windows", "architecture": "x86_64"},
+        "runtime_anchors": {"repository_root": str(root.resolve(strict=True))},
+        "environment": {
+            "effective": {"CODE_C_REPOSITORY_ROOT": str(root.resolve(strict=True))}
+        },
         "packaging_approved_source_roots": [
             {"kind": "TEST_APPROVED_ROOT", "realpath": normalized_realpath(approved_root)}
         ],
@@ -138,8 +164,8 @@ def build_synthetic_pyinstaller_evidence_fixture(
         "build_environment_identity_sha256": identity_sha256,
     }
     write_canonical_json(manifest_path, manifest)
-    context = _write_build_context(manifest, manifest_path, build_context_path)
-    validate_msvc_evidence_pointers(manifest, manifest_path)
+    context = _write_build_context(manifest, manifest_path, build_context_path, root)
+    validate_msvc_evidence_pointers(manifest, manifest_path, repository_root=root)
     return {
         "manifest": manifest,
         "manifest_path": manifest_path,
@@ -148,6 +174,7 @@ def build_synthetic_pyinstaller_evidence_fixture(
         "selected_evidence_path": selected_evidence,
         "msvc_evidence_path": msvc_evidence,
         "msvc_request_path": msvc_request,
+        "repository_root": root,
     }
 
 

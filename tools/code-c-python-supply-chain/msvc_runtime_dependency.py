@@ -8,6 +8,12 @@ from collections import deque
 from pathlib import Path, PurePosixPath
 
 from canonical_evidence import canonical_sha256, sha256_bytes, write_canonical_json
+from evidence_paths import (
+    EvidencePathError,
+    resolve_evidence_path,
+    runtime_repository_root,
+    same_filesystem_identity,
+)
 from hermetic_pyinstaller import normalized_realpath, path_is_within, sha256_file
 
 
@@ -30,19 +36,31 @@ class MsvcRuntimeEvidenceError(RuntimeError):
 
 
 def validate_msvc_evidence_pointers(
-    manifest: dict[str, object], manifest_path: Path
+    manifest: dict[str, object],
+    manifest_path: Path,
+    *,
+    repository_root: Path,
 ) -> tuple[dict[str, object], Path]:
     try:
+        frozen_repository_root = runtime_repository_root(
+            manifest, explicit_repository_root=repository_root
+        )
         pyinstaller = manifest["pyinstaller"]
         toolchain = manifest["toolchain_artifact_identities"]["pyinstaller_wheel"]
-        build_context_path = Path(pyinstaller["build_context"]).resolve(strict=True)
+        build_context_path = resolve_evidence_path(
+            pyinstaller["build_context"],
+            field="build_environment.pyinstaller.build_context",
+            trusted_runtime_anchors={},
+            expected_scope=frozen_repository_root,
+            filesystem_identity=True,
+        )
         build_context = json.loads(build_context_path.read_text(encoding="utf-8"))
         binding = build_context["inputs"]["build_environment_manifest"]
         context_pyinstaller = build_context["inputs"]["pyinstaller_artifact"]
         build_settings = build_context["inputs"]["build_settings"]
         target = build_context["inputs"]["target"]
         specification = build_context["inputs"]["specification"]
-    except (KeyError, TypeError, OSError, json.JSONDecodeError) as error:
+    except (EvidencePathError, KeyError, TypeError, OSError, json.JSONDecodeError) as error:
         raise MsvcRuntimeEvidenceError(
             "required production PyInstaller evidence pointer is missing or unreadable"
         ) from error
@@ -53,6 +71,18 @@ def validate_msvc_evidence_pointers(
         != manifest.get("build_environment_manifest_id")
     ):
         raise MsvcRuntimeEvidenceError("PyInstaller pointer Build Context binding failed")
+    try:
+        bound_manifest_path = resolve_evidence_path(
+            binding.get("path"),
+            field="build_context.inputs.build_environment_manifest.path",
+            trusted_runtime_anchors={"repository_root": frozen_repository_root},
+            expected_scope=frozen_repository_root,
+            filesystem_identity=True,
+        )
+        if not same_filesystem_identity(bound_manifest_path, manifest_path):
+            raise MsvcRuntimeEvidenceError("PyInstaller pointer Build Context path binding failed")
+    except EvidencePathError as error:
+        raise MsvcRuntimeEvidenceError("PyInstaller pointer Build Context path binding failed") from error
     if (
         context_pyinstaller.get("filename") != toolchain.get("filename")
         or context_pyinstaller.get("sha256") != toolchain.get("sha256")
@@ -68,16 +98,60 @@ def validate_msvc_evidence_pointers(
     ):
         raise MsvcRuntimeEvidenceError("PyInstaller artifact usage binding is not this Worker build")
     try:
-        if (
-            normalized_realpath(build_settings["workpath"])
-            != normalized_realpath(pyinstaller["workpath"])
-            or normalized_realpath(build_settings["distpath"])
-            != normalized_realpath(pyinstaller["distpath"])
+        trusted_anchors = {"repository_root": frozen_repository_root}
+        context_workpath = resolve_evidence_path(
+            build_settings["workpath"],
+            field="build_context.inputs.build_settings.workpath",
+            trusted_runtime_anchors=trusted_anchors,
+            expected_scope=frozen_repository_root,
+            filesystem_identity=True,
+        )
+        context_distpath = resolve_evidence_path(
+            build_settings["distpath"],
+            field="build_context.inputs.build_settings.distpath",
+            trusted_runtime_anchors=trusted_anchors,
+            expected_scope=frozen_repository_root,
+            filesystem_identity=True,
+        )
+        environment_workpath = resolve_evidence_path(
+            pyinstaller["workpath"],
+            field="build_environment.pyinstaller.workpath",
+            trusted_runtime_anchors={},
+            expected_scope=frozen_repository_root,
+            filesystem_identity=True,
+        )
+        environment_distpath = resolve_evidence_path(
+            pyinstaller["distpath"],
+            field="build_environment.pyinstaller.distpath",
+            trusted_runtime_anchors={},
+            expected_scope=frozen_repository_root,
+            filesystem_identity=True,
+        )
+        context_spec = resolve_evidence_path(
+            specification["path"],
+            field="build_context.inputs.specification.path",
+            trusted_runtime_anchors=trusted_anchors,
+            expected_scope=frozen_repository_root,
+            filesystem_identity=True,
+        )
+        environment_spec = resolve_evidence_path(
+            pyinstaller["spec"],
+            field="build_environment.pyinstaller.spec",
+            trusted_runtime_anchors={},
+            expected_scope=frozen_repository_root,
+            filesystem_identity=True,
+        )
+        if not all(
+            (
+                same_filesystem_identity(context_workpath, environment_workpath),
+                same_filesystem_identity(context_distpath, environment_distpath),
+                same_filesystem_identity(context_spec, environment_spec),
+            )
         ):
             raise MsvcRuntimeEvidenceError(
                 "PyInstaller artifact usage binding is not this Worker build"
             )
-    except (KeyError, OSError) as error:
+    except (EvidencePathError, KeyError, OSError) as error:
         raise MsvcRuntimeEvidenceError("PyInstaller build-path usage binding failed") from error
     for pointer in (
         "selected_evidence",
@@ -420,9 +494,10 @@ def capture_msvc_runtime_dependency_request(
     manifest_path: Path,
     output_json: Path,
     output_markdown: Path,
+    repository_root: Path,
 ) -> dict[str, object]:
     build_context, build_context_path = validate_msvc_evidence_pointers(
-        manifest, manifest_path
+        manifest, manifest_path, repository_root=repository_root
     )
 
     selected = []

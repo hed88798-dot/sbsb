@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -15,6 +16,13 @@ from hermetic_pyinstaller import (
     attest_python_search_path,
     build_child_environment,
     sha256_file,
+)
+from evidence_paths import (
+    EvidencePathAnchor,
+    EvidencePathError,
+    FORMAL_PATH_ANCHORS,
+    declared_anchor,
+    resolve_evidence_path,
 )
 from prepackage_selected_source_gate import validate_selected_sources
 from msvc_runtime_dependency import (
@@ -52,6 +60,30 @@ def make_escape(link: Path, target: Path) -> None:
             raise AssertionError(result.stderr or result.stdout or "junction creation failed")
     else:
         link.symlink_to(target, target_is_directory=True)
+
+
+@contextmanager
+def changed_directory(path: Path):
+    previous = Path.cwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(previous)
+
+
+def expect_evidence_path_rejected(value: str, *, root: Path, field: str) -> None:
+    try:
+        resolve_evidence_path(
+            value,
+            field=field,
+            trusted_runtime_anchors={"repository_root": root},
+            expected_scope=root,
+            filesystem_identity=False,
+        )
+    except EvidencePathError:
+        return
+    raise AssertionError(f"unsafe evidence path unexpectedly passed: {field}: {value}")
 
 
 def main() -> None:
@@ -193,11 +225,12 @@ def main() -> None:
         expect_rejected(ambient_file, digest, manifest)
         manifest_path = fixture["manifest_path"]
         selected_path = fixture["selected_evidence_path"]
-        validate_msvc_evidence_pointers(manifest, manifest_path)
+        validate_msvc_evidence_pointers(manifest, manifest_path, repository_root=root)
         approved_gate = validate_selected_sources(
             [(approved_file.name, str(approved_file), "BINARY")],
             manifest_path,
             selected_path,
+            repository_root=root,
         )
         assert approved_gate["status"] == "PASS"
         try:
@@ -205,6 +238,7 @@ def main() -> None:
                 [(ambient_file.name, str(ambient_file), "BINARY")],
                 manifest_path,
                 selected_path,
+                repository_root=root,
             )
         except SystemExit:
             assert json.loads(selected_path.read_text(encoding="utf-8"))["status"] == "FAIL"
@@ -219,6 +253,7 @@ def main() -> None:
                 [(ambient_file.name, str(escape / ambient_file.name), "BINARY")],
                 manifest_path,
                 selected_path,
+                repository_root=root,
             )
         except SystemExit:
             assert json.loads(selected_path.read_text(encoding="utf-8"))["status"] == "FAIL"
@@ -238,6 +273,7 @@ def main() -> None:
             worker_root=approved,
             manifest_path=manifest_path,
             selected_evidence_path=selected_path,
+            repository_root=root,
         )
         assert child["PATH"] == str(approved)
         assert all(not entry["present_in_child"] for entry in audit["forbidden_ambient_toolchain_environment"])
@@ -263,11 +299,124 @@ def main() -> None:
                 mutation_fixture, mutation
             )
             try:
-                validate_msvc_evidence_pointers(mutated_manifest, mutated_manifest_path)
+                validate_msvc_evidence_pointers(
+                    mutated_manifest,
+                    mutated_manifest_path,
+                    repository_root=mutation_root,
+                )
             except MsvcRuntimeEvidenceError:
                 pass
             else:
                 raise AssertionError(f"synthetic PyInstaller mutation passed: {mutation}")
+
+        required_classifications = {
+            "build_context.inputs.build_settings.workpath": EvidencePathAnchor.REPOSITORY_ROOT,
+            "build_context.inputs.build_settings.distpath": EvidencePathAnchor.REPOSITORY_ROOT,
+            "build_context.inputs.specification.path": EvidencePathAnchor.REPOSITORY_ROOT,
+            "build_environment.pyinstaller.hook_search_roots[]": (
+                EvidencePathAnchor.ABSOLUTE_RUNTIME_PROVENANCE
+            ),
+            "build_environment.pyinstaller.cache_config_root": (
+                EvidencePathAnchor.ABSOLUTE_RUNTIME_PROVENANCE
+            ),
+            "pyinstaller_build_evidence.raw_evidence.*.preserved_path": (
+                EvidencePathAnchor.EVIDENCE_OUTPUT_ROOT
+            ),
+        }
+        assert all(FORMAL_PATH_ANCHORS.get(field) == anchor for field, anchor in required_classifications.items())
+        try:
+            declared_anchor("build_context.inputs.undeclared_relative_path")
+        except EvidencePathError:
+            pass
+        else:
+            raise AssertionError("undeclared formal relative path anchor passed")
+
+        for unsafe in (
+            "../outside",
+            "nested/../../outside",
+            "/absolute/injection",
+            "C:/drive/escape",
+            "C:drive-relative-escape",
+            "//server/share/escape",
+        ):
+            expect_evidence_path_rejected(
+                unsafe,
+                root=root,
+                field="build_context.inputs.build_settings.workpath",
+            )
+
+        context_sha256_before_cwd_variation = sha256_file(fixture["build_context_path"])
+        spec_directory = Path(manifest["pyinstaller"]["spec"]).parent
+        tools_directory = root / "tools" / "code-c-python-supply-chain"
+        arbitrary_directory = root / "arbitrary temp cwd"
+        tools_directory.mkdir(parents=True)
+        arbitrary_directory.mkdir()
+        resolved_pairs = []
+        for cwd in (root, spec_directory, tools_directory, arbitrary_directory):
+            with changed_directory(cwd):
+                validate_msvc_evidence_pointers(
+                    manifest, manifest_path, repository_root=root
+                )
+                context = fixture["build_context"]
+                resolved_pairs.append(
+                    (
+                        resolve_evidence_path(
+                            context["inputs"]["build_settings"]["workpath"],
+                            field="build_context.inputs.build_settings.workpath",
+                            trusted_runtime_anchors={"repository_root": root},
+                            expected_scope=root,
+                            filesystem_identity=True,
+                        ),
+                        resolve_evidence_path(
+                            context["inputs"]["build_settings"]["distpath"],
+                            field="build_context.inputs.build_settings.distpath",
+                            trusted_runtime_anchors={"repository_root": root},
+                            expected_scope=root,
+                            filesystem_identity=True,
+                        ),
+                    )
+                )
+        assert len({tuple(map(str, pair)) for pair in resolved_pairs}) == 1
+        assert sha256_file(fixture["build_context_path"]) == context_sha256_before_cwd_variation
+
+        checkout_b = root / "checkout-b"
+        checkout_b.mkdir()
+        approved_b = checkout_b / "approved worker"
+        approved_b.mkdir()
+        approved_file_b = approved_b / approved_file.name
+        approved_file_b.write_bytes(approved_file.read_bytes())
+        fixture_b = build_synthetic_pyinstaller_evidence_fixture(
+            checkout_b, approved_b, approved_file_b
+        )
+        assert (
+            fixture_b["build_context"]["inputs"]["build_settings"]["workpath"]
+            == fixture["build_context"]["inputs"]["build_settings"]["workpath"]
+        )
+        try:
+            validate_msvc_evidence_pointers(
+                manifest, manifest_path, repository_root=checkout_b
+            )
+        except MsvcRuntimeEvidenceError:
+            pass
+        else:
+            raise AssertionError("Build Context A passed with checkout B runtime anchor")
+
+        with tempfile.TemporaryDirectory(prefix="code-c-outside-evidence-root-") as outside_value:
+            outside = Path(outside_value)
+            escape_path = root / "formal-evidence-escape"
+            make_escape(escape_path, outside)
+            try:
+                resolve_evidence_path(
+                    escape_path.name,
+                    field="build_context.inputs.build_settings.workpath",
+                    trusted_runtime_anchors={"repository_root": root},
+                    expected_scope=root,
+                    filesystem_identity=True,
+                )
+            except EvidencePathError:
+                pass
+            else:
+                raise AssertionError("formal evidence symlink/junction escape passed")
 
     emit_json_result(
         {
@@ -286,6 +435,27 @@ def main() -> None:
             "WRONG_BUILD_CONTEXT_FAIL_CLOSED": "PASS",
             "WRONG_ARTIFACT_REFERENCE_FAIL_CLOSED": "PASS",
             "WRONG_USAGE_BINDING_FAIL_CLOSED": "PASS",
+            "PATH_ANCHOR_CLASSIFICATION": "PASS",
+            "UNDECLARED_RELATIVE_PATH_ANCHOR_FAIL_CLOSED": "PASS",
+            "LEXICAL_PATH_ESCAPE_GATE": "PASS",
+            "FILESYSTEM_PATH_IDENTITY_GATE": "PASS",
+            "BUILD_PATH_USAGE_BINDING": "PASS",
+            "CWD_INDEPENDENT_PATH_RESOLUTION": "PASS",
+            "REPO_ROOT_CWD": "PASS",
+            "SPEC_DIR_CWD": "PASS",
+            "TOOLS_DIR_CWD": "PASS",
+            "ARBITRARY_TEMP_CWD": "PASS",
+            "CWD_VARIATION_CHANGES_CANONICAL_IDENTITY": "NO",
+            "EVIDENCE_PATH_ROUNDTRIP": "PASS",
+            "WRONG_ANCHOR_FAIL_CLOSED": "PASS",
+            "CROSS_CHECKOUT_WRONG_ANCHOR_FAIL_CLOSED": "PASS",
+            "TRAVERSAL_FAIL_CLOSED": "PASS",
+            "SYMLINK_ESCAPE_FAIL_CLOSED": "PASS",
+            "WINDOWS_JUNCTION_ESCAPE_FAIL_CLOSED": "PASS",
+            "REPARSE_ESCAPE_FAIL_CLOSED": "PASS",
+            "EVIDENCE_RELATIVE_PATH_PRODUCER_ANCHOR": "EXPLICIT",
+            "EVIDENCE_RELATIVE_PATH_CONSUMER_ANCHOR": "EXPLICIT",
+            "PROCESS_CWD_SEMANTICS": "NONE",
         }
     )
 

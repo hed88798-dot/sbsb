@@ -13,6 +13,8 @@ from hermetic_pyinstaller import (
     sha256_file,
     verify_environment_manifest_identity,
 )
+from evidence_paths import EvidencePathError, runtime_repository_root
+from msvc_runtime_dependency import MsvcRuntimeEvidenceError, validate_msvc_evidence_pointers
 
 
 def require_empty(path: Path, label: str) -> None:
@@ -29,6 +31,20 @@ def main() -> None:
     manifest_path = arguments.manifest.resolve(strict=True)
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     verify_environment_manifest_identity(manifest)
+    try:
+        repository_root_value = (
+            manifest.get("environment", {})
+            .get("effective", {})
+            .get("CODE_C_REPOSITORY_ROOT")
+        )
+        if not isinstance(repository_root_value, str) or not repository_root_value:
+            raise EvidencePathError("child environment lacks an explicit repository root")
+        repository_root = runtime_repository_root(
+            manifest,
+            explicit_repository_root=repository_root_value,
+        )
+    except EvidencePathError as error:
+        raise SystemExit(str(error)) from error
     if arguments.build_context:
         build_context_path = arguments.build_context.resolve(strict=True)
         build_context = json.loads(build_context_path.read_text(encoding="utf-8"))
@@ -44,6 +60,12 @@ def main() -> None:
             build_context_path
         ):
             raise SystemExit("Build Environment Manifest build-context pointer drift")
+        try:
+            validate_msvc_evidence_pointers(
+                manifest, manifest_path, repository_root=repository_root
+            )
+        except MsvcRuntimeEvidenceError as error:
+            raise SystemExit(str(error)) from error
     python = Path(manifest["locked_python"]["executable"]).resolve(strict=True)
     if sha256_file(python) != manifest["locked_python"]["executable_sha256"]:
         raise SystemExit("locked PyInstaller executable hash drift")

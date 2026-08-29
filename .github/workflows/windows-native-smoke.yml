@@ -158,6 +158,7 @@ jobs:
           artifacts/worker-venv/Scripts/python.exe -I
           tools/code-c-python-supply-chain/prepare_pyinstaller_environment.py
           --target windows
+          --repository-root '${{ github.workspace }}'
           --runtime-inventory compliance/python-artifacts/windows/runtime.v2.json
           --worker-build-inventory compliance/python-artifacts/windows/worker-build.v2.json
           --cpython-distribution artifacts/python-approved/toolchain/windows/cpython/python-3.13.15-win32-x64.zip

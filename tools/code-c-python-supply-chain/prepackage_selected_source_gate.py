@@ -5,6 +5,7 @@ import os
 from pathlib import Path, PurePosixPath
 
 from canonical_evidence import write_canonical_json
+from evidence_paths import EvidencePathError, runtime_repository_root
 from hermetic_pyinstaller import (
     approved_source_entry,
     sha256_file,
@@ -21,9 +22,17 @@ def validate_selected_sources(
     binaries: object,
     manifest_path: Path,
     output_path: Path,
+    *,
+    repository_root: Path,
 ) -> dict[str, object]:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     verify_environment_manifest_identity(manifest)
+    try:
+        frozen_repository_root = runtime_repository_root(
+            manifest, explicit_repository_root=repository_root
+        )
+    except EvidencePathError as error:
+        raise SystemExit(str(error)) from error
     entries = []
     failures = []
     for index, item in enumerate(binaries):
@@ -78,6 +87,7 @@ def validate_selected_sources(
                 manifest_path,
                 msvc_output,
                 Path(manifest["pyinstaller"]["msvc_runtime_approval_request"]),
+                frozen_repository_root,
             )
             msvc_request_binding = {
                 "evidence_id": request["evidence_id"],
@@ -113,11 +123,17 @@ def validate_selected_sources(
 def validate_analysis_binaries(binaries: object) -> None:
     manifest_value = os.environ.get("CODE_C_BUILD_ENVIRONMENT_MANIFEST")
     output_value = os.environ.get("CODE_C_PREPACKAGE_SELECTED_EVIDENCE")
-    if not manifest_value or not output_value:
+    repository_root_value = os.environ.get("CODE_C_REPOSITORY_ROOT")
+    if not manifest_value or not output_value or not repository_root_value:
         if os.name == "nt":
             raise SystemExit("Windows PyInstaller build lacks hermetic provenance gate configuration")
         return
-    document = validate_selected_sources(binaries, Path(manifest_value), Path(output_value))
+    document = validate_selected_sources(
+        binaries,
+        Path(manifest_value),
+        Path(output_value),
+        repository_root=Path(repository_root_value),
+    )
     log_status(
         "pre-package-selected-source-provenance: PASS "
         f"({document['selected_native_count']} selected native sources)"
