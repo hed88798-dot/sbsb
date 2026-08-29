@@ -156,6 +156,18 @@ export function validateWindowsRuntimeProviderProbe(probe, prerequisiteValue) {
   ) {
     throw new Error(`${probe.evidence_id}: provider probe identity binding mismatch`);
   }
+  const recordedProbe = prerequisite.provider.installation_probe;
+  if (recordedProbe.status === 'PASS') {
+    if (
+      probe.evidence_id !== recordedProbe.evidence_id ||
+      probe.runner.workflow_run_id !== recordedProbe.workflow_run_id ||
+      probe.installed_runtime.version !== recordedProbe.installed_provider_version ||
+      probe.probe_sha256 !== recordedProbe.probe_sha256 ||
+      recordedProbe.artifact_bound !== true
+    ) {
+      throw new Error(`${probe.evidence_id}: provider probe approval-record binding mismatch`);
+    }
+  }
   const expected = prerequisite.provider.bootstrap_artifact;
   for (const key of ['filename', 'version', 'sha256', 'size']) {
     if (probe.bootstrap_artifact[key] !== expected[key]) {
@@ -321,6 +333,9 @@ export function evaluateExternalRuntimePrerequisite(
   if (bootstrap.signature_status !== 'PASS') blockers.push('bootstrap Authenticode probe pending');
   if (probe.status !== 'PASS' || probe.artifact_bound !== true) {
     blockers.push('artifact-bound runtime provider installation probe pending');
+  }
+  if (probe.status === 'PASS' && probe.probe_sha256 === null) {
+    failures.push('approved installation probe has no exact evidence hash');
   }
   if (prerequisite.license_evidence.status !== 'PASS') {
     blockers.push('redistribution license evidence incomplete');

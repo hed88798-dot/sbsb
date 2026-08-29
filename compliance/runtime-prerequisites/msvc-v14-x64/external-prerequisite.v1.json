@@ -24,16 +24,17 @@
       "canonical_source": "https://download.visualstudio.microsoft.com/download/pr/ebdab8e5-1d7b-4d9f-a11b-cbb1720c3b12/843068991DAAA1F73AD9F6239BCE4D0F6A07A51F18C37EA2A867E9BECA71295C/VC_redist.x64.exe",
       "latest_alias_not_identity": "https://aka.ms/vc14/vc_redist.x64.exe",
       "source_status": "PASS",
-      "signature_status": "PENDING_WINDOWS_AUTHENTICODE_PROBE",
+      "signature_status": "PASS",
       "expected_signer_subject": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
       "expected_signer_certificate_sha256": "c30b441672c82883d92eddac6d24cb57e9960bda4486c7fb5865e74157f35850"
     },
     "installation_probe": {
-      "status": "BLOCKED_PENDING_WINDOWS_PROBE",
-      "evidence_id": null,
-      "workflow_run_id": null,
-      "installed_provider_version": null,
-      "artifact_bound": false
+      "status": "PASS",
+      "evidence_id": "msvc-provider-33270823951-1",
+      "workflow_run_id": 33270823951,
+      "installed_provider_version": "14.51.36247.0",
+      "artifact_bound": true,
+      "probe_sha256": "1db2f448d9ac2f44f058333e4af800a7a8d8c2b805be65a9a55c508979dfc347"
     }
   },
   "compatibility_policy": {
@@ -112,10 +113,9 @@
     "expires_at": "2026-11-30T00:00:00Z",
     "revoked": false,
     "blocking_reasons": [
-      "Windows Authenticode and installation probe not yet recorded",
       "Licensed Visual Studio user and applicable license terms attestation missing"
     ]
   },
   "provider_identity_sha256": "648806da208e60fe36b91b3fd0c6eb4d35bdd15cc8ceccbc6d2437f87d418dc9",
-  "manifest_sha256": "0b41a3df690b780b0ba6affec8c0f62873e8dca93d442c6b157af41e583e4ce7"
+  "manifest_sha256": "c3dd16982ee2c406aa3795aabc2e18ba3870125f861fea7a06f75111449ebe3b"
 }

@@ -89,7 +89,8 @@
             "evidence_id",
             "workflow_run_id",
             "installed_provider_version",
-            "artifact_bound"
+            "artifact_bound",
+            "probe_sha256"
           ],
           "properties": {
             "status": { "enum": ["PASS", "BLOCKED_PENDING_WINDOWS_PROBE"] },
@@ -99,7 +100,11 @@
               "type": ["string", "null"],
               "pattern": "^[0-9]+(?:\\.[0-9]+){2,3}$"
             },
-            "artifact_bound": { "type": "boolean" }
+            "artifact_bound": { "type": "boolean" },
+            "probe_sha256": {
+              "type": ["string", "null"],
+              "pattern": "^[a-f0-9]{64}$"
+            }
           }
         }
       }

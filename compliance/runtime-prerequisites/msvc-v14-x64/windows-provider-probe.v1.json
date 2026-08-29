@@ -1,0 +1,65 @@
+{
+  "bootstrap_artifact": {
+    "authenticode_status": "Valid",
+    "filename": "VC_redist.x64.exe",
+    "sha256": "843068991daaa1f73ad9f6239bce4d0f6a07a51f18c37ea2a867e9beca71295c",
+    "signer_certificate_sha256": "c30b441672c82883d92eddac6d24cb57e9960bda4486c7fb5865e74157f35850",
+    "signer_subject": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+    "size": 18731856,
+    "source": "https://download.visualstudio.microsoft.com/download/pr/ebdab8e5-1d7b-4d9f-a11b-cbb1720c3b12/843068991DAAA1F73AD9F6239BCE4D0F6A07A51F18C37EA2A867E9BECA71295C/VC_redist.x64.exe",
+    "version": "14.51.36247.0"
+  },
+  "captured_at": "2026-08-29T19:26:07.7065591Z",
+  "evidence_id": "msvc-provider-33270823951-1",
+  "installation": {
+    "install_exit_code": 0,
+    "mode": "EXACT_BOOTSTRAP_UNINSTALL_THEN_INSTALL",
+    "pre_probe_version": "14.51.36247.0",
+    "uninstall_exit_code": 0
+  },
+  "installed_runtime": {
+    "installed": 1,
+    "minimum_version_satisfied": true,
+    "registry_key": "HKLM/SOFTWARE\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\x64",
+    "version": "14.51.36247.0"
+  },
+  "prerequisite_id": "microsoft-vc-v14-x64-14.51.36247.0",
+  "probe_sha256": "1db2f448d9ac2f44f058333e4af800a7a8d8c2b805be65a9a55c508979dfc347",
+  "provider_identity_sha256": "648806da208e60fe36b91b3fd0c6eb4d35bdd15cc8ceccbc6d2437f87d418dc9",
+  "provider_installation_artifact_bound": true,
+  "provider_installed_required_capabilities": [
+    {
+      "capability": "msvcp140.dll",
+      "file_version": "14.51.36247.0",
+      "installed_path": "%WINDIR%/System32/msvcp140.dll",
+      "sha256": "7c26614e1d733892c2deac7e245ce115504b1d80592dd0a01b08e3e5a55f89ca"
+    },
+    {
+      "capability": "msvcp140_1.dll",
+      "file_version": "14.51.36247.0",
+      "installed_path": "%WINDIR%/System32/msvcp140_1.dll",
+      "sha256": "206c931bf90fdad8816de3b5e2ef80b2bcaa9406c89ecc05fe6fddffe251e982"
+    },
+    {
+      "capability": "vcruntime140.dll",
+      "file_version": "14.51.36247.0",
+      "installed_path": "%WINDIR%/System32/vcruntime140.dll",
+      "sha256": "d1f4225df2cd877dbf130d5668a021dce3f94118455ff5ec952061c30afc9ce7"
+    },
+    {
+      "capability": "vcruntime140_1.dll",
+      "file_version": "14.51.36247.0",
+      "installed_path": "%WINDIR%/System32/vcruntime140_1.dll",
+      "sha256": "a7146c08f89fe5b04541ab507cdb59ff7b44534d4ba3c668a426c6450a03434e"
+    }
+  ],
+  "runner": {
+    "architecture": "X64",
+    "image": "20260824.284.2",
+    "os": "Windows",
+    "workflow_run_attempt": 1,
+    "workflow_run_id": 33270823951
+  },
+  "runtime_provider_closure": "PASS",
+  "schema_version": "1"
+}

@@ -1,6 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { evaluateExternalRuntimePrerequisite, repositoryRoot } from './runtime-prerequisite.mjs';
+import {
+  evaluateExternalRuntimePrerequisite,
+  repositoryRoot,
+  validateWindowsRuntimeProviderProbe,
+} from './runtime-prerequisite.mjs';
 
 const root = resolve(repositoryRoot, 'compliance/runtime-prerequisites/msvc-v14-x64');
 const requirement = JSON.parse(
@@ -9,14 +13,18 @@ const requirement = JSON.parse(
 const prerequisite = JSON.parse(
   readFileSync(resolve(root, 'external-prerequisite.v1.json'), 'utf8'),
 );
+const providerProbe = JSON.parse(
+  readFileSync(resolve(root, 'windows-provider-probe.v1.json'), 'utf8'),
+);
 const requireApproved = process.argv.includes('--require-approved');
 
 try {
+  validateWindowsRuntimeProviderProbe(providerProbe, prerequisite);
   const report = evaluateExternalRuntimePrerequisite(requirement, prerequisite, {
     requireApproved,
   });
   console.log(
-    `runtime-prerequisite: PASS (${report.target_disposition}; record=${report.status}; ${report.external_capabilities.length} external capabilities; verify-only)`,
+    `runtime-prerequisite: PASS (${report.target_disposition}; record=${report.status}; ${report.external_capabilities.length} external capabilities; probe=${providerProbe.evidence_id}; verify-only)`,
   );
 } catch (error) {
   console.error(`runtime-prerequisite: FAIL\n${error.message}`);

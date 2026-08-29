@@ -54,6 +54,7 @@ function approvedPrerequisite(requirementValue = requirement()) {
       workflow_run_id: 123456,
       installed_provider_version: value.provider.version,
       artifact_bound: true,
+      probe_sha256: 'e'.repeat(64),
     };
     value.license_evidence.status = 'PASS';
     value.license_evidence.missing_evidence = null;
@@ -112,7 +113,7 @@ describe('External Runtime Prerequisite v1', () => {
     });
   });
 
-  it('records the current exact provider but blocks release until probe and license entitlement exist', () => {
+  it('records the current exact provider but blocks release until license entitlement exists', () => {
     const value = validateExternalRuntimePrerequisite(prerequisiteFixture);
     expect(value.provider.bootstrap_artifact).toMatchObject({
       filename: 'VC_redist.x64.exe',
@@ -181,14 +182,24 @@ describe('External Runtime Prerequisite v1', () => {
       probe_sha256: '',
     };
     probe.probe_sha256 = windowsRuntimeProviderProbeHash(probe);
-    expect(validateWindowsRuntimeProviderProbe(probe, prerequisiteValue)).toBe(probe);
+    const boundPrerequisite = structuredClone(prerequisiteValue);
+    boundPrerequisite.provider.installation_probe = {
+      status: 'PASS',
+      evidence_id: probe.evidence_id,
+      workflow_run_id: probe.runner.workflow_run_id,
+      installed_provider_version: probe.installed_runtime.version,
+      artifact_bound: true,
+      probe_sha256: probe.probe_sha256,
+    };
+    boundPrerequisite.manifest_sha256 = externalRuntimePrerequisiteHash(boundPrerequisite);
+    expect(validateWindowsRuntimeProviderProbe(probe, boundPrerequisite)).toBe(probe);
 
-    const reviewUpdate = structuredClone(prerequisiteValue);
+    const reviewUpdate = structuredClone(boundPrerequisite);
     reviewUpdate.approval.reviewed_at = '2026-08-31T00:00:00Z';
     reviewUpdate.manifest_sha256 = externalRuntimePrerequisiteHash(reviewUpdate);
     expect(validateWindowsRuntimeProviderProbe(probe, reviewUpdate)).toBe(probe);
 
-    const providerChange = structuredClone(prerequisiteValue);
+    const providerChange = structuredClone(boundPrerequisite);
     providerChange.provider.version = '14.52.40000.0';
     providerChange.provider.bootstrap_artifact.version = '14.52.40000.0';
     providerChange.provider_identity_sha256 = externalRuntimeProviderIdentityHash(providerChange);
