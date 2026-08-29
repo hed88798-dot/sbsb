@@ -1,0 +1,16 @@
+{
+  "schema_version": "1",
+  "policy_id": "artifact-license-review-authority",
+  "version": "2026.08.29.1",
+  "allowed_approval_methods": ["CONTROLLED_PULL_REQUEST_REQUIRED_REVIEW"],
+  "authorities": [
+    {
+      "authority_id": "code-f-quality-release-compliance",
+      "role": "LICENSE_COMPLIANCE_APPROVER",
+      "allowed_identities": ["github:hed88798-dot"],
+      "repository": "hed88798-dot/ai-video-platform"
+    }
+  ],
+  "ci_may_create_approved_records": false,
+  "unknown_authority": "FAIL_CLOSED"
+}

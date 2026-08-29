@@ -232,7 +232,7 @@ describe('Python/native supply-chain gates', () => {
     ]);
     expect(unknownLicense.status).toBe(1);
     expect(unknownLicense.stderr).toMatch(
-      /conflicts with inventory|rejected\/unknown license|SPDX parser rejected expression/u,
+      /conflicts with inventory|rejected\/unknown license|SPDX parser rejected expression|artifact license evidence conflict/u,
     );
   });
 

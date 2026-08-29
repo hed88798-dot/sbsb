@@ -82,6 +82,7 @@ try {
     cleanEnvironment,
   );
   for (const args of [
+    ['compliance:artifact-license:verify'],
     ['compliance:python:tooling:install'],
     ['ci:prepare'],
     ['package:resolution'],

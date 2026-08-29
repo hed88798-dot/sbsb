@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "pnpm -r --if-present build",
-    "check": "pnpm compliance:license-policy:verify && pnpm compliance:python:tooling:install && pnpm ci:prepare && pnpm format:check && pnpm lint && pnpm ci:typecheck && pnpm ci:test && pnpm media-worker:test && pnpm dependency:check && pnpm portability:check && pnpm workflow:security && pnpm secret:scan && pnpm license:scan && pnpm vulnerability:scan && pnpm compliance:python:verify && pnpm compliance:python:target:verify && pnpm golden:verify",
+    "check": "pnpm compliance:license-policy:verify && pnpm compliance:artifact-license:verify && pnpm compliance:python:tooling:install && pnpm ci:prepare && pnpm format:check && pnpm lint && pnpm ci:typecheck && pnpm ci:test && pnpm media-worker:test && pnpm dependency:check && pnpm portability:check && pnpm workflow:security && pnpm secret:scan && pnpm license:scan && pnpm vulnerability:scan && pnpm compliance:python:verify && pnpm compliance:python:target:verify && pnpm golden:verify",
     "ci:prepare": "pnpm --filter @app/desktop... --filter @app/gateway... build",
     "ci:test": "vitest run",
     "ci:typecheck": "pnpm -r --if-present typecheck",
@@ -28,6 +28,7 @@
     "vulnerability:scan": "pnpm audit --audit-level moderate",
     "compliance:python:tooling:install": "node tools/python-supply-chain/quality-tooling.mjs",
     "compliance:license-policy:verify": "node tools/license-policy/verify-quality-tooling.mjs",
+    "compliance:artifact-license:verify": "node tools/license-policy/verify-artifact-license-records.mjs",
     "compliance:license-policy:notices": "node tools/license-policy/notices.mjs",
     "compliance:python:verify": "node tools/python-supply-chain/cli.mjs repo-verify",
     "compliance:python:target:verify": "node tools/python-supply-chain/cli.mjs repo-target-verify-current",
