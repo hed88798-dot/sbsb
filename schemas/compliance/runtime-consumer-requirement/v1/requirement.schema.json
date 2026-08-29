@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/runtime-consumer-requirement/v1/requirement.schema.json",
+  "title": "Runtime Consumer Requirement v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "requirement_id",
+    "runtime_family",
+    "architecture",
+    "required_capabilities",
+    "application_closure",
+    "raw_observations",
+    "raw_selection_preserved",
+    "raw_source_approval",
+    "requirement_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "requirement_id": { "$ref": "#/$defs/id" },
+    "runtime_family": { "$ref": "#/$defs/nonEmpty" },
+    "architecture": { "enum": ["x86_64", "arm64"] },
+    "required_capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z0-9._-]+$" }
+    },
+    "application_closure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "evidence_id",
+        "evidence_sha256",
+        "code_commit_sha",
+        "build_context_id",
+        "build_context_sha256",
+        "analysis_toc_sha256",
+        "selected_native_manifest_sha256",
+        "static_import_audit",
+        "static_import_edge_count",
+        "static_msvc_importer_count",
+        "delay_import_audit",
+        "delay_import_edge_count",
+        "msvc_runtime_delay_importer_count",
+        "dynamic_load_surface_audit",
+        "unbounded_dynamic_load_count",
+        "msvc_related_unresolved_dynamic_load_count",
+        "product_importer_provenance",
+        "unapproved_product_importer_count"
+      ],
+      "properties": {
+        "status": { "const": "PASS" },
+        "evidence_id": { "$ref": "#/$defs/id" },
+        "evidence_sha256": { "$ref": "#/$defs/sha256" },
+        "code_commit_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "build_context_id": { "$ref": "#/$defs/id" },
+        "build_context_sha256": { "$ref": "#/$defs/sha256" },
+        "analysis_toc_sha256": { "$ref": "#/$defs/sha256" },
+        "selected_native_manifest_sha256": { "$ref": "#/$defs/sha256" },
+        "static_import_audit": { "const": "PASS" },
+        "static_import_edge_count": { "type": "integer", "minimum": 1 },
+        "static_msvc_importer_count": { "type": "integer", "minimum": 1 },
+        "delay_import_audit": { "const": "PASS" },
+        "delay_import_edge_count": { "type": "integer", "minimum": 0 },
+        "msvc_runtime_delay_importer_count": { "type": "integer", "minimum": 0 },
+        "dynamic_load_surface_audit": { "const": "PASS" },
+        "unbounded_dynamic_load_count": { "const": 0 },
+        "msvc_related_unresolved_dynamic_load_count": { "const": 0 },
+        "product_importer_provenance": { "const": "PASS" },
+        "unapproved_product_importer_count": { "const": 0 }
+      }
+    },
+    "raw_observations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "observation_id",
+          "capability",
+          "selected_source_path",
+          "selected_source_sha256",
+          "source_provenance",
+          "packaging_source",
+          "distribution_artifact",
+          "distribution_role_approval"
+        ],
+        "properties": {
+          "observation_id": { "$ref": "#/$defs/id" },
+          "capability": { "type": "string", "pattern": "^[a-z0-9._-]+$" },
+          "selected_source_path": { "$ref": "#/$defs/nonEmpty" },
+          "selected_source_sha256": { "$ref": "#/$defs/sha256" },
+          "source_provenance": {
+            "enum": ["UNAPPROVED_SYSTEM_COPY", "LOCKED_ARTIFACT_IDENTITY_ROLE_NOT_APPROVED"]
+          },
+          "packaging_source": {
+            "enum": ["REJECTED", "ARTIFACT_IDENTITY_APPROVED_ROLE_NOT_APPROVED"]
+          },
+          "distribution_artifact": { "const": false },
+          "distribution_role_approval": { "const": "NONE" }
+        }
+      }
+    },
+    "raw_selection_preserved": { "const": true },
+    "raw_source_approval": { "const": "NOT_IMPLIED_BY_PROVIDER_DISPOSITION" },
+    "requirement_sha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{2,191}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "nonEmpty": { "type": "string", "minLength": 1 }
+  }
+}

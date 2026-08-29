@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/external-runtime-prerequisite/v1/prerequisite.schema.json",
+  "title": "External Runtime Prerequisite v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "prerequisite_id",
+    "consumer_requirement_id",
+    "target_disposition",
+    "provider",
+    "compatibility_policy",
+    "license_evidence",
+    "provider_binding",
+    "approval",
+    "provider_identity_sha256",
+    "manifest_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "prerequisite_id": { "$ref": "#/$defs/id" },
+    "consumer_requirement_id": { "$ref": "#/$defs/id" },
+    "target_disposition": { "const": "EXTERNAL_PREREQUISITE" },
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider_id",
+        "official_product",
+        "version",
+        "architecture",
+        "publisher",
+        "deployment_mode",
+        "provided_capabilities",
+        "bootstrap_artifact",
+        "installation_probe"
+      ],
+      "properties": {
+        "provider_id": { "$ref": "#/$defs/id" },
+        "official_product": { "$ref": "#/$defs/nonEmpty" },
+        "version": { "$ref": "#/$defs/version" },
+        "architecture": { "enum": ["x86_64", "arm64"] },
+        "publisher": { "const": "Microsoft Corporation" },
+        "deployment_mode": { "const": "CENTRAL_INSTALLER_PREREQUISITE" },
+        "provided_capabilities": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9._-]+$" }
+        },
+        "bootstrap_artifact": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "filename",
+            "version",
+            "sha256",
+            "size",
+            "canonical_source",
+            "latest_alias_not_identity",
+            "source_status",
+            "signature_status",
+            "expected_signer_subject",
+            "expected_signer_certificate_sha256"
+          ],
+          "properties": {
+            "filename": { "const": "VC_redist.x64.exe" },
+            "version": { "$ref": "#/$defs/version" },
+            "sha256": { "$ref": "#/$defs/sha256" },
+            "size": { "type": "integer", "minimum": 1 },
+            "canonical_source": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://download\\.visualstudio\\.microsoft\\.com/"
+            },
+            "latest_alias_not_identity": { "type": "string", "format": "uri" },
+            "source_status": { "const": "PASS" },
+            "signature_status": { "enum": ["PASS", "PENDING_WINDOWS_AUTHENTICODE_PROBE"] },
+            "expected_signer_subject": { "$ref": "#/$defs/nonEmpty" },
+            "expected_signer_certificate_sha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "installation_probe": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "evidence_id",
+            "workflow_run_id",
+            "installed_provider_version",
+            "artifact_bound"
+          ],
+          "properties": {
+            "status": { "enum": ["PASS", "BLOCKED_PENDING_WINDOWS_PROBE"] },
+            "evidence_id": { "type": ["string", "null"], "minLength": 1 },
+            "workflow_run_id": { "type": ["integer", "null"], "minimum": 1 },
+            "installed_provider_version": {
+              "type": ["string", "null"],
+              "pattern": "^[0-9]+(?:\\.[0-9]+){2,3}$"
+            },
+            "artifact_bound": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "compatibility_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_id",
+        "version",
+        "runtime_family",
+        "architecture",
+        "minimum_accepted_version",
+        "newer_compatible_runtime_accepted",
+        "detection_mechanism",
+        "required_registry_values",
+        "upgrade_behavior",
+        "downgrade_behavior",
+        "review_triggers",
+        "evidence"
+      ],
+      "properties": {
+        "policy_id": { "$ref": "#/$defs/id" },
+        "version": { "$ref": "#/$defs/nonEmpty" },
+        "runtime_family": { "$ref": "#/$defs/nonEmpty" },
+        "architecture": { "enum": ["x86_64", "arm64"] },
+        "minimum_accepted_version": { "$ref": "#/$defs/version" },
+        "newer_compatible_runtime_accepted": { "const": true },
+        "detection_mechanism": { "const": "WINDOWS_REGISTRY_VC_RUNTIME_X64_PLUS_DLL_FAMILY_PROBE" },
+        "required_registry_values": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmpty" }
+        },
+        "upgrade_behavior": { "const": "INSTALL_EXACT_BOOTSTRAP_WHEN_MISSING_OR_OLDER" },
+        "downgrade_behavior": { "const": "NEVER_DOWNGRADE_NEWER_COMPATIBLE_RUNTIME" },
+        "review_triggers": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmpty" }
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "format": "uri" }
+        }
+      }
+    },
+    "license_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "status", "basis", "official_evidence", "missing_evidence"],
+      "properties": {
+        "evidence_id": { "$ref": "#/$defs/id" },
+        "status": { "enum": ["PASS", "BLOCKED_PENDING_LICENSED_VISUAL_STUDIO_USER_ATTESTATION"] },
+        "basis": { "$ref": "#/$defs/nonEmpty" },
+        "official_evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "format": "uri" }
+        },
+        "missing_evidence": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "provider_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer_requirement_sha256",
+        "build_context_id",
+        "build_context_sha256",
+        "analysis_toc_sha256",
+        "capability_dispositions",
+        "provider_partition",
+        "internal_provider",
+        "external_provider",
+        "raw_source_approval_not_implied",
+        "external_entries_must_not_materialize",
+        "external_entries_must_not_appear_in_final"
+      ],
+      "properties": {
+        "consumer_requirement_sha256": { "$ref": "#/$defs/sha256" },
+        "build_context_id": { "$ref": "#/$defs/id" },
+        "build_context_sha256": { "$ref": "#/$defs/sha256" },
+        "analysis_toc_sha256": { "$ref": "#/$defs/sha256" },
+        "capability_dispositions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["capability", "disposition", "provider_id"],
+            "properties": {
+              "capability": { "type": "string", "pattern": "^[a-z0-9._-]+$" },
+              "disposition": { "enum": ["INTERNAL_PROVIDER", "EXTERNAL_PROVIDER"] },
+              "provider_id": { "type": ["string", "null"], "minLength": 3 }
+            }
+          }
+        },
+        "provider_partition": { "const": "Q_EQUALS_I_UNION_E_AND_I_INTERSECTION_E_EMPTY" },
+        "internal_provider": { "type": "boolean" },
+        "external_provider": { "const": true },
+        "raw_source_approval_not_implied": { "const": true },
+        "external_entries_must_not_materialize": { "const": true },
+        "external_entries_must_not_appear_in_final": { "const": true }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reviewer",
+        "reviewed_at",
+        "expires_at",
+        "revoked",
+        "blocking_reasons"
+      ],
+      "properties": {
+        "status": { "enum": ["PASS", "BLOCKED"] },
+        "reviewer": { "$ref": "#/$defs/nonEmpty" },
+        "reviewed_at": { "type": "string", "format": "date-time" },
+        "expires_at": { "type": "string", "format": "date-time" },
+        "revoked": { "type": "boolean" },
+        "blocking_reasons": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmpty" }
+        }
+      }
+    },
+    "provider_identity_sha256": { "$ref": "#/$defs/sha256" },
+    "manifest_sha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{2,191}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "nonEmpty": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "pattern": "^[0-9]+(?:\\.[0-9]+){2,3}$" }
+  }
+}
