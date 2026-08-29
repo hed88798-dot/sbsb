@@ -9,17 +9,25 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from canonical_evidence import canonical_sha256, write_canonical_json
 from hermetic_pyinstaller import (
     HermeticBuildError,
     approved_source_entry,
     attest_python_search_path,
     build_child_environment,
-    normalized_realpath,
     sha256_file,
 )
 from prepackage_selected_source_gate import validate_selected_sources
-from msvc_runtime_dependency import build_import_closure, normalize_runtime_name
+from msvc_runtime_dependency import (
+    MsvcRuntimeEvidenceError,
+    build_import_closure,
+    normalize_runtime_name,
+    validate_msvc_evidence_pointers,
+)
+from synthetic_pyinstaller_evidence_fixture import (
+    SYNTHETIC_MANIFEST_SCHEMA,
+    build_synthetic_pyinstaller_evidence_fixture,
+    mutate_synthetic_fixture,
+)
 
 
 def expect_rejected(path: Path, digest: str, manifest: dict[str, object]) -> None:
@@ -172,37 +180,19 @@ def main() -> None:
                 raise AssertionError(f"unapproved missing Python search root passed: {rejected_missing}")
         approved_file = approved / "same-name.dll"
         ambient_file = ambient / "same-name.dll"
-        approved_file.write_bytes(b"identical native bytes")
+        source_pe = Path(sys.base_prefix) / "python313.dll"
+        if not source_pe.is_file():
+            source_pe = Path(sys.executable)
+        approved_file.write_bytes(source_pe.read_bytes())
         ambient_file.write_bytes(approved_file.read_bytes())
         digest = sha256_file(approved_file)
-        manifest = {
-            "packaging_approved_source_roots": [
-                {"kind": "TEST_APPROVED_ROOT", "realpath": normalized_realpath(approved)}
-            ],
-            "approved_source_file_manifest": [
-                {
-                    "resolved_path": str(approved_file.resolve()),
-                    "resolved_path_key": normalized_realpath(approved_file),
-                    "sha256": digest,
-                    "source_kind": "SYNTHETIC_APPROVED_NATIVE",
-                    "source_artifact_identity": {"artifact_sha256": "a" * 64},
-                }
-            ],
-        }
+        fixture = build_synthetic_pyinstaller_evidence_fixture(root, approved, approved_file)
+        manifest = fixture["manifest"]
         approved_source_entry(approved_file, digest, manifest)
         expect_rejected(ambient_file, digest, manifest)
-
-        identity_sha256 = canonical_sha256(manifest)
-        gate_manifest = {
-            **manifest,
-            "build_environment_manifest_id": (
-                f"code-c-build-environment-{identity_sha256[:32]}"
-            ),
-            "build_environment_identity_sha256": identity_sha256,
-        }
-        manifest_path = root / "manifest.json"
-        selected_path = root / "selected.json"
-        write_canonical_json(manifest_path, gate_manifest)
+        manifest_path = fixture["manifest_path"]
+        selected_path = fixture["selected_evidence_path"]
+        validate_msvc_evidence_pointers(manifest, manifest_path)
         approved_gate = validate_selected_sources(
             [(approved_file.name, str(approved_file), "BINARY")],
             manifest_path,
@@ -252,6 +242,32 @@ def main() -> None:
         assert all(not entry["present_in_child"] for entry in audit["forbidden_ambient_toolchain_environment"])
         assert not any(str(ambient) in value for value in child.values())
 
+        for mutation in (
+            "MISSING_POINTER",
+            "WRONG_HASH",
+            "WRONG_BUILD_CONTEXT",
+            "WRONG_ARTIFACT",
+            "WRONG_USAGE_BINDING",
+        ):
+            mutation_root = root / mutation.lower()
+            mutation_root.mkdir()
+            mutation_approved = mutation_root / "approved"
+            mutation_approved.mkdir()
+            mutation_file = mutation_approved / "fixture.dll"
+            mutation_file.write_bytes(approved_file.read_bytes())
+            mutation_fixture = build_synthetic_pyinstaller_evidence_fixture(
+                mutation_root, mutation_approved, mutation_file
+            )
+            mutated_manifest, mutated_manifest_path = mutate_synthetic_fixture(
+                mutation_fixture, mutation
+            )
+            try:
+                validate_msvc_evidence_pointers(mutated_manifest, mutated_manifest_path)
+            except MsvcRuntimeEvidenceError:
+                pass
+            else:
+                raise AssertionError(f"synthetic PyInstaller mutation passed: {mutation}")
+
     print(
         json.dumps(
             {
@@ -261,6 +277,15 @@ def main() -> None:
                 "OPTIONAL_CPYTHON_STDLIB_ZIP_ATTESTATION": "PASS",
                 "ARBITRARY_MISSING_PYTHON_SEARCH_ROOT_FAIL_CLOSED": "PASS",
                 "MSVC_RUNTIME_IMPORT_CLOSURE_REGRESSION": "PASS",
+                "SYNTHETIC_MANIFEST_SCHEMA": SYNTHETIC_MANIFEST_SCHEMA,
+                "SYNTHETIC_FIXTURE_SCHEMA_PARITY": "PASS",
+                "POSITIVE_FIXTURE_ROUNDTRIP": "PASS",
+                "SYNTHETIC_PYINSTALLER_EVIDENCE": "PASS",
+                "MISSING_POINTER_FAIL_CLOSED": "PASS",
+                "WRONG_HASH_FAIL_CLOSED": "PASS",
+                "WRONG_BUILD_CONTEXT_FAIL_CLOSED": "PASS",
+                "WRONG_ARTIFACT_REFERENCE_FAIL_CLOSED": "PASS",
+                "WRONG_USAGE_BINDING_FAIL_CLOSED": "PASS",
             },
             sort_keys=True,
         )

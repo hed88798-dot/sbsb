@@ -29,6 +29,67 @@ class MsvcRuntimeEvidenceError(RuntimeError):
     pass
 
 
+def validate_msvc_evidence_pointers(
+    manifest: dict[str, object], manifest_path: Path
+) -> tuple[dict[str, object], Path]:
+    try:
+        pyinstaller = manifest["pyinstaller"]
+        toolchain = manifest["toolchain_artifact_identities"]["pyinstaller_wheel"]
+        build_context_path = Path(pyinstaller["build_context"]).resolve(strict=True)
+        build_context = json.loads(build_context_path.read_text(encoding="utf-8"))
+        binding = build_context["inputs"]["build_environment_manifest"]
+        context_pyinstaller = build_context["inputs"]["pyinstaller_artifact"]
+        build_settings = build_context["inputs"]["build_settings"]
+        target = build_context["inputs"]["target"]
+        specification = build_context["inputs"]["specification"]
+    except (KeyError, TypeError, OSError, json.JSONDecodeError) as error:
+        raise MsvcRuntimeEvidenceError(
+            "required production PyInstaller evidence pointer is missing or unreadable"
+        ) from error
+
+    if (
+        binding.get("sha256") != sha256_file(manifest_path)
+        or binding.get("build_environment_manifest_id")
+        != manifest.get("build_environment_manifest_id")
+    ):
+        raise MsvcRuntimeEvidenceError("PyInstaller pointer Build Context binding failed")
+    if (
+        context_pyinstaller.get("filename") != toolchain.get("filename")
+        or context_pyinstaller.get("sha256") != toolchain.get("sha256")
+        or context_pyinstaller.get("version") != toolchain.get("version")
+        or pyinstaller.get("version") != toolchain.get("version")
+    ):
+        raise MsvcRuntimeEvidenceError("PyInstaller artifact reference binding failed")
+    if (
+        target.get("os") != "windows"
+        or target.get("architecture") != "x86_64"
+        or build_settings.get("onefile") is not True
+        or specification.get("sha256") != pyinstaller.get("spec_sha256")
+    ):
+        raise MsvcRuntimeEvidenceError("PyInstaller artifact usage binding is not this Worker build")
+    try:
+        if (
+            normalized_realpath(build_settings["workpath"])
+            != normalized_realpath(pyinstaller["workpath"])
+            or normalized_realpath(build_settings["distpath"])
+            != normalized_realpath(pyinstaller["distpath"])
+        ):
+            raise MsvcRuntimeEvidenceError(
+                "PyInstaller artifact usage binding is not this Worker build"
+            )
+    except (KeyError, OSError) as error:
+        raise MsvcRuntimeEvidenceError("PyInstaller build-path usage binding failed") from error
+    for pointer in (
+        "selected_evidence",
+        "msvc_runtime_evidence",
+        "msvc_runtime_approval_request",
+    ):
+        value = pyinstaller.get(pointer)
+        if not isinstance(value, str) or not value:
+            raise MsvcRuntimeEvidenceError(f"required PyInstaller evidence pointer is missing: {pointer}")
+    return build_context, build_context_path
+
+
 def normalize_runtime_name(value: str) -> str | None:
     name = PurePosixPath(value.replace("\\", "/")).name.lower()
     return name if MSVC_RUNTIME_PATTERN.fullmatch(name) else None
@@ -360,16 +421,9 @@ def capture_msvc_runtime_dependency_request(
     output_json: Path,
     output_markdown: Path,
 ) -> dict[str, object]:
-    build_context_path = Path(manifest["pyinstaller"]["build_context"])
-    build_context = json.loads(build_context_path.read_text(encoding="utf-8"))
-    binding = build_context.get("inputs", {}).get("build_environment_manifest")
-    if (
-        not binding
-        or binding.get("sha256") != sha256_file(manifest_path)
-        or binding.get("build_environment_manifest_id")
-        != manifest["build_environment_manifest_id"]
-    ):
-        raise MsvcRuntimeEvidenceError("MSVC evidence Build Context binding failed")
+    build_context, build_context_path = validate_msvc_evidence_pointers(
+        manifest, manifest_path
+    )
 
     selected = []
     parse_failures = []
