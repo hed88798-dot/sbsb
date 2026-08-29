@@ -45,6 +45,7 @@ jobs:
         with:
           python-version: '3.12.10'
       - run: pnpm install --frozen-lockfile
+      - run: pnpm compliance:runtime-prerequisite:release
       - run: pnpm check
       - run: pnpm secret:scan
       - run: pnpm license:scan -- --report artifacts/compliance/LICENSE_FIRST_PASS.json
