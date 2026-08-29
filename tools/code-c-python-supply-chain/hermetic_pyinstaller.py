@@ -66,6 +66,46 @@ def path_is_within(path: Path | str, root: Path | str) -> bool:
         return False
 
 
+def attest_python_search_path(
+    path: Path | str,
+    *,
+    worker_root: Path | str,
+    base_root: Path | str,
+    optional_standard_library_zip_name: str,
+) -> dict[str, object]:
+    candidate = Path(path)
+    try:
+        candidate.lstat()
+    except FileNotFoundError:
+        expected = Path(base_root) / optional_standard_library_zip_name
+        candidate_key = os.path.normcase(os.path.abspath(os.path.normpath(str(candidate))))
+        expected_key = os.path.normcase(os.path.abspath(os.path.normpath(str(expected))))
+        if candidate_key != expected_key:
+            raise HermeticBuildError(f"Python search root does not exist: {candidate}")
+        if normalized_realpath(candidate.parent) != normalized_realpath(base_root):
+            raise HermeticBuildError(
+                f"optional standard-library zip parent is not the locked CPython root: {candidate}"
+            )
+        return {
+            "path": str(candidate),
+            "status": "NOT_PRESENT_OPTIONAL_STANDARD_LIBRARY_ZIP",
+            "realpath": None,
+        }
+    except OSError as error:
+        raise HermeticBuildError(f"Python search root is unreadable: {candidate}") from error
+
+    resolved = normalized_realpath(candidate)
+    if not any(path_is_within(resolved, root) for root in (worker_root, base_root)):
+        raise HermeticBuildError(
+            f"Python search root resolves outside approved interpreter roots: {candidate} -> {resolved}"
+        )
+    return {
+        "path": str(candidate),
+        "status": "PRESENT_APPROVED_INTERPRETER_ROOT",
+        "realpath": resolved,
+    }
+
+
 def approved_source_entry(
     source_path: Path | str,
     source_sha256: str,

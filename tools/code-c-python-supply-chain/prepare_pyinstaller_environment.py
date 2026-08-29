@@ -19,6 +19,8 @@ from packaging.utils import canonicalize_name
 
 from canonical_evidence import canonical_sha256, write_canonical_json
 from hermetic_pyinstaller import (
+    HermeticBuildError,
+    attest_python_search_path,
     build_child_environment,
     is_native_path,
     normalized_realpath,
@@ -299,9 +301,23 @@ def main() -> None:
     python_paths = json.loads(probe.stdout)
     if python_paths["enable_user_site"] is not False:
         raise SystemExit("isolated PyInstaller interpreter did not disable user site")
-    for value in [*python_paths["sys_path"], *python_paths["site_packages"]]:
-        if value and not any(path_is_within(value, root) for root in (worker_root, base_root)):
-            raise SystemExit(f"unapproved Python search root: {value}")
+    python_search_evidence = []
+    optional_standard_library_zip_name = (
+        f"python{sys.version_info.major}{sys.version_info.minor}.zip"
+    )
+    try:
+        for value in [*python_paths["sys_path"], *python_paths["site_packages"]]:
+            if value:
+                python_search_evidence.append(
+                    attest_python_search_path(
+                        value,
+                        worker_root=worker_root,
+                        base_root=base_root,
+                        optional_standard_library_zip_name=optional_standard_library_zip_name,
+                    )
+                )
+    except HermeticBuildError as error:
+        raise SystemExit(str(error)) from error
 
     pyinstaller_root = Path(PyInstaller.__file__).resolve().parent
     hook_roots = [pyinstaller_root / "hooks"]
@@ -399,6 +415,8 @@ def main() -> None:
             "site_packages_roots": python_paths["site_packages"],
             "user_site_path": python_paths["user_site"],
             "user_site_enabled": python_paths["enable_user_site"],
+            "path_attestations": python_search_evidence,
+            "optional_standard_library_zip_name": optional_standard_library_zip_name,
         },
         "pyinstaller": {
             "version": PyInstaller.__version__,

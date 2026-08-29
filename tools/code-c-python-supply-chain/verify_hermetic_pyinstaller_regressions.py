@@ -13,6 +13,7 @@ from canonical_evidence import canonical_sha256, write_canonical_json
 from hermetic_pyinstaller import (
     HermeticBuildError,
     approved_source_entry,
+    attest_python_search_path,
     build_child_environment,
     normalized_realpath,
     sha256_file,
@@ -52,6 +53,30 @@ def main() -> None:
         approved.mkdir()
         ambient.mkdir()
         cache.mkdir()
+
+        optional_zip = approved / "python313.zip"
+        optional_attestation = attest_python_search_path(
+            optional_zip,
+            worker_root=approved,
+            base_root=approved,
+            optional_standard_library_zip_name="python313.zip",
+        )
+        assert optional_attestation["status"] == "NOT_PRESENT_OPTIONAL_STANDARD_LIBRARY_ZIP"
+        for rejected_missing in (
+            approved / "ambient.zip",
+            ambient / "python313.zip",
+        ):
+            try:
+                attest_python_search_path(
+                    rejected_missing,
+                    worker_root=approved,
+                    base_root=approved,
+                    optional_standard_library_zip_name="python313.zip",
+                )
+            except HermeticBuildError:
+                pass
+            else:
+                raise AssertionError(f"unapproved missing Python search root passed: {rejected_missing}")
         approved_file = approved / "same-name.dll"
         ambient_file = ambient / "same-name.dll"
         approved_file.write_bytes(b"identical native bytes")
@@ -140,6 +165,8 @@ def main() -> None:
                 "HOSTILE_AMBIENT_PATH_REGRESSION": "PASS",
                 "SAME_BYTES_UNAPPROVED_SOURCE_FAIL_CLOSED": "PASS",
                 "APPROVED_ROOT_REPARSE_ESCAPE_REGRESSION": "PASS",
+                "OPTIONAL_CPYTHON_STDLIB_ZIP_ATTESTATION": "PASS",
+                "ARBITRARY_MISSING_PYTHON_SEARCH_ROOT_FAIL_CLOSED": "PASS",
             },
             sort_keys=True,
         )

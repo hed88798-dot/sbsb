@@ -9,7 +9,7 @@ const verifier = resolve(
 );
 
 describe('Code C hermetic PyInstaller source provenance', () => {
-  it('excludes hostile PATH entries and rejects same-byte and realpath escapes', () => {
+  it('attests Python search roots and rejects ambient source and realpath escapes', () => {
     const result = spawnSync(process.env.PYTHON_EXECUTABLE || 'python3', [verifier], {
       cwd: repositoryRoot,
       encoding: 'utf8',
@@ -18,7 +18,9 @@ describe('Code C hermetic PyInstaller source provenance', () => {
     expect(result.status, result.stderr || result.stdout).toBe(0);
     expect(JSON.parse(result.stdout.trim())).toEqual({
       APPROVED_ROOT_REPARSE_ESCAPE_REGRESSION: 'PASS',
+      ARBITRARY_MISSING_PYTHON_SEARCH_ROOT_FAIL_CLOSED: 'PASS',
       HOSTILE_AMBIENT_PATH_REGRESSION: 'PASS',
+      OPTIONAL_CPYTHON_STDLIB_ZIP_ATTESTATION: 'PASS',
       SAME_BYTES_UNAPPROVED_SOURCE_FAIL_CLOSED: 'PASS',
     });
   });
