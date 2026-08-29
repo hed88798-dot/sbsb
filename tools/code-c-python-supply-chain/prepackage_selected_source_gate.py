@@ -24,6 +24,7 @@ def validate_selected_sources(
     output_path: Path,
     *,
     repository_root: Path,
+    capture_msvc_runtime: bool | None = None,
 ) -> dict[str, object]:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     verify_environment_manifest_identity(manifest)
@@ -100,7 +101,13 @@ def validate_selected_sources(
     # Freeze the exact raw Analysis selection before producing any derived
     # dependency evidence. The closure bundle binds this immutable file by hash.
     write_canonical_json(output_path, document)
-    if os.name == "nt":
+    if capture_msvc_runtime is False and not any(
+        root.get("kind") == "TEST_APPROVED_ROOT"
+        for root in manifest.get("packaging_approved_source_roots", [])
+    ):
+        raise SystemExit("production MSVC Runtime evidence capture cannot be disabled")
+    should_capture_msvc = os.name == "nt" if capture_msvc_runtime is None else capture_msvc_runtime
+    if should_capture_msvc:
         try:
             msvc_output = Path(manifest["pyinstaller"]["msvc_runtime_evidence"])
             request = capture_msvc_runtime_dependency_request(

@@ -259,17 +259,18 @@ def main() -> None:
         manifest_path = fixture["manifest_path"]
         selected_path = fixture["selected_evidence_path"]
         validate_msvc_evidence_pointers(manifest, manifest_path, repository_root=root)
+        analysis_directory = Path(manifest["pyinstaller"]["workpath"]) / "media-worker"
+        analysis_directory.mkdir(parents=True)
+        analysis_toc = analysis_directory / "Analysis-17.toc"
+        analysis_toc.write_bytes(b"synthetic Analysis TOC bytes\n")
         approved_gate = validate_selected_sources(
             [(approved_file.name, str(approved_file), "BINARY")],
             manifest_path,
             selected_path,
             repository_root=root,
+            capture_msvc_runtime=False,
         )
         assert approved_gate["status"] == "PASS"
-        analysis_directory = Path(manifest["pyinstaller"]["workpath"]) / "media-worker"
-        analysis_directory.mkdir(parents=True)
-        analysis_toc = analysis_directory / "Analysis-17.toc"
-        analysis_toc.write_bytes(b"synthetic Analysis TOC bytes\n")
         selected_sha_before_capture = sha256_file(selected_path)
         toc_binding = _preserve_analysis_toc(
             manifest,
@@ -290,6 +291,7 @@ def main() -> None:
                 manifest_path,
                 selected_path,
                 repository_root=root,
+                capture_msvc_runtime=False,
             )
         except SystemExit:
             assert json.loads(selected_path.read_text(encoding="utf-8"))["status"] == "FAIL"
@@ -305,6 +307,7 @@ def main() -> None:
                 manifest_path,
                 selected_path,
                 repository_root=root,
+                capture_msvc_runtime=False,
             )
         except SystemExit:
             assert json.loads(selected_path.read_text(encoding="utf-8"))["status"] == "FAIL"
