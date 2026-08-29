@@ -27,6 +27,7 @@ from evidence_paths import (
 from prepackage_selected_source_gate import validate_selected_sources
 from msvc_runtime_dependency import (
     MsvcRuntimeEvidenceError,
+    _preserve_analysis_toc,
     build_import_closure,
     normalize_runtime_name,
     validate_msvc_evidence_pointers,
@@ -89,7 +90,11 @@ def expect_evidence_path_rejected(value: str, *, root: Path, field: str) -> None
 def main() -> None:
     synthetic_owner = {
         "source_kind": "HASH_LOCKED_WHEEL_NATIVE",
-        "source_artifact_identity": {"artifact_sha256": "b" * 64},
+        "source_artifact_identity": {
+            "filename": "synthetic-product-1.0.0-py3-none-any.whl",
+            "artifact_sha256": "b" * 64,
+            "member_relative_path": "package/native.pyd",
+        },
     }
     synthetic_graph = build_import_closure(
         [
@@ -118,7 +123,7 @@ def main() -> None:
                     "source_kind": "UNAPPROVED_SYSTEM_COPY",
                     "source_artifact_identity": None,
                 },
-                "pe": {"machine": "x86_64", "imports": []},
+                "pe": {"machine": "x86_64", "imports": ["concrt140.dll"]},
             },
             {
                 "internal_path": "MSVCP140_1.dll",
@@ -151,6 +156,34 @@ def main() -> None:
     ]
     assert synthetic_graph["selected_but_not_import_closure_required"] == ["msvcp140_1.dll"]
     assert synthetic_graph["required_but_not_pyinstaller_selected"] == ["vcruntime140_1.dll"]
+    assert synthetic_graph["approved_product_root_required_dlls"] == [
+        "msvcp140.dll",
+        "vcruntime140_1.dll",
+    ]
+    assert synthetic_graph["observed_runtime_endpoint_transitive_dlls"] == [
+        "concrt140.dll"
+    ]
+    assert "concrt140.dll" not in synthetic_graph["application_required_msvc_dll_family"]
+    delay_graph = build_import_closure(
+        [
+            {
+                "internal_path": "delay-app.pyd",
+                "selected_source_path": "approved/delay-app.pyd",
+                "sha256": "8" * 64,
+                "owner": synthetic_owner,
+                "pe": {
+                    "machine": "x86_64",
+                    "static_imports": [],
+                    "delay_imports": [{"dll": "msvcp140_2.dll", "symbols": []}],
+                    "delay_import_directory_parsed": True,
+                },
+            }
+        ]
+    )
+    assert delay_graph["delay_import_directory_audit"] == "PASS"
+    assert delay_graph["delay_import_parse_failure_count"] == 0
+    assert delay_graph["delay_import_edge_count"] == 1
+    assert delay_graph["msvc_runtime_delay_importer_count"] == 1
     ambiguous_graph = build_import_closure(
         [
             {
@@ -233,6 +266,24 @@ def main() -> None:
             repository_root=root,
         )
         assert approved_gate["status"] == "PASS"
+        analysis_directory = Path(manifest["pyinstaller"]["workpath"]) / "media-worker"
+        analysis_directory.mkdir(parents=True)
+        analysis_toc = analysis_directory / "Analysis-17.toc"
+        analysis_toc.write_bytes(b"synthetic Analysis TOC bytes\n")
+        selected_sha_before_capture = sha256_file(selected_path)
+        toc_binding = _preserve_analysis_toc(
+            manifest,
+            fixture["build_context"],
+            fixture["build_context_path"],
+            manifest_path,
+            selected_path,
+            fixture["msvc_evidence_path"],
+        )
+        assert toc_binding["evidence_status"] == "DIAGNOSTIC_PRE_GATE"
+        assert toc_binding["captured_at_gate"] == "PRE_PACKAGE_PROVENANCE"
+        assert toc_binding["pyinstaller_analysis_toc_sha256"] == sha256_file(analysis_toc)
+        assert toc_binding["selected_native_manifest_sha256"] == selected_sha_before_capture
+        assert sha256_file(selected_path) == selected_sha_before_capture
         try:
             validate_selected_sources(
                 [(ambient_file.name, str(ambient_file), "BINARY")],
@@ -426,6 +477,11 @@ def main() -> None:
             "OPTIONAL_CPYTHON_STDLIB_ZIP_ATTESTATION": "PASS",
             "ARBITRARY_MISSING_PYTHON_SEARCH_ROOT_FAIL_CLOSED": "PASS",
             "MSVC_RUNTIME_IMPORT_CLOSURE_REGRESSION": "PASS",
+            "ANALYSIS_TOC_DIAGNOSTIC_PRE_GATE_BINDING": "PASS",
+            "SELECTED_MANIFEST_IMMUTABLE_DURING_DERIVED_CAPTURE": "PASS",
+            "MSVC_APPLICATION_REQUIREMENT_ROOT_PROVENANCE": "PASS",
+            "UNAPPROVED_RUNTIME_ENDPOINT_EDGE_NOT_PROMOTED": "PASS",
+            "STATIC_DELAY_IMPORT_SEPARATION_REGRESSION": "PASS",
             "SYNTHETIC_MANIFEST_SCHEMA": SYNTHETIC_MANIFEST_SCHEMA,
             "SYNTHETIC_FIXTURE_SCHEMA_PARITY": "PASS",
             "POSITIVE_FIXTURE_ROUNDTRIP": "PASS",

@@ -48,23 +48,38 @@ def validate_selected_sources(
         source_path = Path(source)
         try:
             digest = sha256_file(source_path)
-            approved = approved_source_entry(source_path, digest, manifest)
-            entries.append(
-                {
-                    "internal_path": destination.replace("\\", "/"),
-                    "filename": PurePosixPath(destination.replace("\\", "/")).name,
-                    "category": category,
-                    "selected_source_path": str(source_path),
-                    "selected_source_realpath": approved["resolved_path"],
-                    "selected_source_sha256": digest,
-                    "source_kind": approved["source_kind"],
-                    "source_artifact_identity": approved["source_artifact_identity"],
-                }
-            )
-        except (OSError, RuntimeError) as error:
+            entry = {
+                "internal_path": destination.replace("\\", "/"),
+                "filename": PurePosixPath(destination.replace("\\", "/")).name,
+                "category": category,
+                "selected_source_path": str(source_path),
+                "selected_source_sha256": digest,
+            }
+            try:
+                approved = approved_source_entry(source_path, digest, manifest)
+                entries.append(
+                    {
+                        **entry,
+                        "selected_source_realpath": approved["resolved_path"],
+                        "source_provenance_status": "APPROVED",
+                        "source_kind": approved["source_kind"],
+                        "source_artifact_identity": approved["source_artifact_identity"],
+                    }
+                )
+            except RuntimeError as error:
+                entries.append(
+                    {
+                        **entry,
+                        "selected_source_realpath": str(source_path.resolve(strict=True)),
+                        "source_provenance_status": "UNAPPROVED",
+                        "source_kind": "UNAPPROVED_SELECTED_SOURCE",
+                        "source_artifact_identity": None,
+                    }
+                )
+                failures.append(f"{destination}: {error}")
+        except OSError as error:
             failures.append(f"{destination}: {error}")
     entries.sort(key=lambda entry: str(entry["internal_path"]))
-    msvc_request_binding = None
     document = {
         "schema_version": "code-c-prepackage-selected-native-provenance-v1",
         "build_environment_manifest_id": manifest["build_environment_manifest_id"],
@@ -76,8 +91,15 @@ def validate_selected_sources(
         "ambient_image_magick_selected_count": 0 if not failures else None,
         "other_unapproved_source_root_count": 0 if not failures else len(failures),
         "entries": entries,
+        "msvc_runtime_dependency_request": {
+            "capture_lifecycle": "SEPARATE_EVIDENCE_BINDS_THIS_IMMUTABLE_MANIFEST",
+            "path": manifest["pyinstaller"].get("msvc_runtime_evidence"),
+        },
         "failures": failures,
     }
+    # Freeze the exact raw Analysis selection before producing any derived
+    # dependency evidence. The closure bundle binds this immutable file by hash.
+    write_canonical_json(output_path, document)
     if os.name == "nt":
         try:
             msvc_output = Path(manifest["pyinstaller"]["msvc_runtime_evidence"])
@@ -88,12 +110,8 @@ def validate_selected_sources(
                 msvc_output,
                 Path(manifest["pyinstaller"]["msvc_runtime_approval_request"]),
                 frozen_repository_root,
+                selected_manifest_path=output_path,
             )
-            msvc_request_binding = {
-                "evidence_id": request["evidence_id"],
-                "status": request["status"],
-                "sha256": sha256_file(msvc_output),
-            }
             log_status(
                 "msvc-runtime-dependency-request: "
                 f"{request['status']} ({request['evidence_id']})"
@@ -102,17 +120,8 @@ def validate_selected_sources(
                 failures.append("MSVC Runtime dependency evidence is incomplete")
         except (OSError, KeyError, ValueError, MsvcRuntimeEvidenceError) as error:
             failures.append(f"MSVC Runtime dependency evidence capture failed: {error}")
-    document = {
-        **document,
-        "status": "PASS" if not failures else "FAIL",
-        "ambient_temurin_selected_count": 0 if not failures else None,
-        "ambient_bootstrap_python_selected_count": 0 if not failures else None,
-        "ambient_image_magick_selected_count": 0 if not failures else None,
-        "other_unapproved_source_root_count": 0 if not failures else len(failures),
-        "msvc_runtime_dependency_request": msvc_request_binding,
-        "failures": failures,
-    }
-    write_canonical_json(output_path, document)
+    # Do not rewrite output_path here: doing so would invalidate the exact
+    # Selected Native Manifest SHA captured by the derived closure evidence.
     if failures:
         raise SystemExit(
             "pre-package selected-source provenance failed closed:\n" + "\n".join(failures)
