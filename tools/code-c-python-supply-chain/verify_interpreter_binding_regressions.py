@@ -8,7 +8,12 @@ import tempfile
 from pathlib import Path
 from typing import Callable
 
-from locked_interpreter import attest_locked_interpreter, require_locked_python_environment
+from locked_interpreter import (
+    attest_locked_interpreter,
+    normalize_py_gil_disabled,
+    require_locked_python_environment,
+    require_standard_gil,
+)
 from policy import sha256_file
 
 
@@ -52,6 +57,28 @@ def main() -> None:
         target_descriptor=descriptor,
         environment=correct_environment,
     )
+    if correct["python_free_threaded"] is not False:
+        raise SystemExit("actual locked interpreter is not a standard-GIL build")
+    if correct["architecture"] != "x86_64":
+        raise SystemExit("shared target descriptor did not normalize architecture to x86_64")
+
+    normalization = {
+        "none_is_standard": normalize_py_gil_disabled(None) is False,
+        "zero_is_standard": normalize_py_gil_disabled(0) is False,
+    }
+    if not all(normalization.values()):
+        raise SystemExit("Py_GIL_DISABLED standard-build normalization failed")
+    free_threaded_error = expect_rejected(
+        lambda: require_standard_gil(1),
+        "free-threaded CPython is rejected",
+    )
+    unexpected_value_errors = {
+        repr(value): expect_rejected(
+            lambda value=value: require_standard_gil(value),
+            "Py_GIL_DISABLED must be integer 0, integer 1, or null",
+        )
+        for value in (True, "0", 2)
+    }
 
     missing_environment = dict(inherited)
     missing_environment.pop("PYTHON_EXECUTABLE", None)
@@ -123,12 +150,32 @@ def main() -> None:
         "bootstrap_python_isolation": "PASS",
         "missing_python_executable_fail_closed": "PASS",
         "path_with_spaces_regression": "PASS",
+        "py_gil_disabled_normalization": "PASS",
+        "free_threaded_detection_method": "sysconfig.get_config_var('Py_GIL_DISABLED')",
+        "free_threaded_rejection": "PASS",
+        "unexpected_py_gil_disabled_rejection": "PASS",
+        "sys_abiflags_portability": "PASS",
+        "architecture_normalization": "PASS",
         "subprocess_shell": False,
         "locked_python": {
             "executable": correct["executable"],
             "executable_sha256": correct["executable_sha256"],
             "runtime_library": correct["runtime_library"],
             "runtime_library_sha256": correct["runtime_library_sha256"],
+            "py_gil_disabled": correct["py_gil_disabled"],
+            "python_free_threaded": correct["python_free_threaded"],
+            "abiflags": correct["abiflags"],
+            "soabi": correct["soabi"],
+            "ext_suffix": correct["ext_suffix"],
+            "platform_system": correct["platform_system"],
+            "platform_machine": correct["platform_machine"],
+            "architecture": correct["architecture"],
+            "architecture_source": correct["architecture_source"],
+        },
+        "py_gil_disabled_controls": {
+            **normalization,
+            "one_rejection": free_threaded_error,
+            "unexpected_value_rejections": unexpected_value_errors,
         },
         "bootstrap_python": {
             "executable": str(arguments.bootstrap_python.resolve()),

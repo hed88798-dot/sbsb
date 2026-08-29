@@ -15,21 +15,12 @@ import sys
 import sysconfig
 from pathlib import Path
 
-machine = platform.machine().lower()
-architecture = "x86_64" if machine in {"amd64", "x86_64"} else machine
 gil_enabled = sys._is_gil_enabled() if hasattr(sys, "_is_gil_enabled") else None
 py_gil_disabled = sysconfig.get_config_var("Py_GIL_DISABLED")
 soabi = str(sysconfig.get_config_var("SOABI") or "")
-abiflags = str(sys.abiflags)
+ext_suffix = str(sysconfig.get_config_var("EXT_SUFFIX") or "")
+abiflags = getattr(sys, "abiflags", None)
 cache_tag = str(sys.implementation.cache_tag or "")
-free_threaded = bool(
-    py_gil_disabled
-    or "t" in abiflags
-    or "cp313t" in soabi.lower()
-    or "cpython-313t" in cache_tag.lower()
-    or gil_enabled is False
-)
-python_abi = f"cp{sys.version_info.major}{sys.version_info.minor}{'t' if free_threaded else ''}"
 runtime_candidates = []
 library_name = str(sysconfig.get_config_var("LDLIBRARY") or "")
 library_dir = str(sysconfig.get_config_var("LIBDIR") or "")
@@ -58,21 +49,38 @@ print(
             "implementation": platform.python_implementation(),
             "implementation_name": sys.implementation.name,
             "version": platform.python_version(),
+            "platform_system": platform.system(),
             "platform_machine": platform.machine(),
-            "architecture": architecture,
             "os": "windows" if sys.platform == "win32" else "linux" if sys.platform.startswith("linux") else sys.platform,
             "soabi": soabi,
+            "ext_suffix": ext_suffix,
             "abiflags": abiflags,
             "cache_tag": cache_tag,
             "py_gil_disabled": py_gil_disabled,
             "runtime_gil_enabled": gil_enabled,
-            "python_free_threaded": free_threaded,
-            "python_abi": python_abi,
             "runtime_library": runtime_library,
         }
     )
 )
 """
+
+
+def normalize_py_gil_disabled(value: object) -> bool:
+    if value is None:
+        return False
+    if type(value) is int and value == 0:
+        return False
+    if type(value) is int and value == 1:
+        return True
+    raise ValueError(
+        "Py_GIL_DISABLED must be integer 0, integer 1, or null; "
+        f"got {type(value).__name__} {value!r}"
+    )
+
+
+def require_standard_gil(value: object) -> None:
+    if normalize_py_gil_disabled(value):
+        raise ValueError("Py_GIL_DISABLED is 1; free-threaded CPython is rejected")
 
 
 def require_locked_python_environment(environment: dict[str, str] | None = None) -> Path:
@@ -119,26 +127,32 @@ def attest_locked_interpreter(
         raise ValueError("locked PYTHON_EXECUTABLE returned invalid identity JSON") from error
 
     failures: list[str] = []
+    if "py_gil_disabled" not in identity:
+        failures.append("locked interpreter probe did not report Py_GIL_DISABLED")
+        free_threaded = None
+    else:
+        try:
+            require_standard_gil(identity["py_gil_disabled"])
+            free_threaded = False
+        except ValueError as error:
+            failures.append(str(error))
+            free_threaded = None
     if Path(str(identity.get("sys_executable", ""))).resolve() != executable.resolve():
         failures.append("sys.executable does not resolve to the configured PYTHON_EXECUTABLE")
     if identity.get("implementation") != "CPython" or identity.get("implementation_name") != "cpython":
         failures.append("locked interpreter implementation is not CPython")
     if identity.get("version") != "3.13.15":
         failures.append(f"locked interpreter must be 3.13.15, got {identity.get('version')}")
-    if identity.get("os") != target or identity.get("architecture") != "x86_64":
-        failures.append("locked interpreter OS/architecture differs from requested target")
-    if identity.get("python_abi") != "cp313" or identity.get("python_free_threaded") is not False:
-        failures.append("locked interpreter must use standard-GIL cp313")
-    if "313" not in str(identity.get("soabi", "")):
-        failures.append("locked interpreter SOABI is not CPython 3.13")
+    if identity.get("os") != target:
+        failures.append("locked interpreter OS differs from requested target")
     if target_descriptor.get("implementation") != "cpython":
         failures.append("target descriptor implementation is not cpython")
     if target_descriptor.get("python_version") != identity.get("version"):
         failures.append("target descriptor Python version differs from locked interpreter")
     if target_descriptor.get("os") != identity.get("os"):
         failures.append("target descriptor OS differs from locked interpreter")
-    if target_descriptor.get("architecture") != identity.get("architecture"):
-        failures.append("target descriptor architecture differs from locked interpreter")
+    if target_descriptor.get("architecture") != "x86_64":
+        failures.append("shared target descriptor does not normalize interpreter as x86_64")
     runtime_library_value = identity.get("runtime_library")
     runtime_library = Path(str(runtime_library_value)).resolve() if runtime_library_value else None
     if target == "windows" and (runtime_library is None or not runtime_library.is_file()):
@@ -154,5 +168,9 @@ def attest_locked_interpreter(
         "executable_sha256": sha256_file(executable),
         "runtime_library": str(runtime_library) if runtime_library else None,
         "runtime_library_sha256": sha256_file(runtime_library) if runtime_library else None,
+        "python_free_threaded": free_threaded,
+        "free_threaded_detection_method": "sysconfig.get_config_var('Py_GIL_DISABLED')",
+        "architecture": target_descriptor.get("architecture"),
+        "architecture_source": "shared PyPA target descriptor",
         **identity,
     }

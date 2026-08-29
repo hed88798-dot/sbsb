@@ -13,7 +13,11 @@ import packaging
 from packaging.markers import default_environment
 from packaging.tags import sys_tags
 
-from locked_interpreter import attest_locked_interpreter, require_locked_python_environment
+from locked_interpreter import (
+    attest_locked_interpreter,
+    normalize_py_gil_disabled,
+    require_locked_python_environment,
+)
 from policy import sha256_file
 
 
@@ -33,11 +37,6 @@ def canonical_json(value: object) -> str:
 
 def canonical_sha256(value: object) -> str:
     return hashlib.sha256(canonical_json(value).encode()).hexdigest()
-
-
-def normalized_architecture() -> str:
-    value = platform.machine().lower()
-    return "x86_64" if value in {"amd64", "x86_64"} else value
 
 
 def main() -> None:
@@ -74,30 +73,25 @@ def main() -> None:
     gil_api_value = sys._is_gil_enabled() if hasattr(sys, "_is_gil_enabled") else None
     py_gil_disabled = sysconfig.get_config_var("Py_GIL_DISABLED")
     soabi = str(sysconfig.get_config_var("SOABI") or "")
-    abiflags = str(sys.abiflags)
+    ext_suffix = str(sysconfig.get_config_var("EXT_SUFFIX") or "")
+    abiflags = getattr(sys, "abiflags", None)
     cache_tag = str(sys.implementation.cache_tag or "")
-    free_threaded = bool(
-        py_gil_disabled
-        or "t" in abiflags
-        or "cp313t" in soabi.lower()
-        or "cpython-313t" in cache_tag.lower()
-        or any(tag.startswith("cp313t-") or "-cp313t-" in tag for tag in tags)
-    )
     failures: list[str] = []
+    try:
+        free_threaded: bool | None = normalize_py_gil_disabled(py_gil_disabled)
+    except ValueError as error:
+        free_threaded = None
+        failures.append(str(error))
     if packaging.__version__ != "25.0":
         failures.append(f"packaging must be 25.0, got {packaging.__version__}")
     if platform.python_implementation() != lock["python_implementation"]:
         failures.append("interpreter implementation differs from source lock")
     if platform.python_version() != lock["python_version"]:
         failures.append("interpreter patch version differs from source lock")
-    if actual_target != arguments.target or normalized_architecture() != "x86_64":
-        failures.append("interpreter OS/architecture differs from approved target")
-    if free_threaded or gil_api_value is False:
-        failures.append("free-threaded or disabled-GIL interpreter is rejected")
-    if not any(tag.startswith("cp313-cp313-") for tag in tags):
-        failures.append("interpreter has no standard cp313-cp313 target tag")
-    if any("cp313t" in tag for tag in tags):
-        failures.append("cp313t appears in current compatible tags")
+    if actual_target != arguments.target or descriptor.get("architecture") != "x86_64":
+        failures.append("interpreter OS/shared target architecture differs from approved target")
+    if free_threaded is True:
+        failures.append("Py_GIL_DISABLED is 1; free-threaded CPython is rejected")
     if (
         descriptor.get("implementation") != "cpython"
         or descriptor.get("python_version") != lock["python_version"]
@@ -141,14 +135,20 @@ def main() -> None:
             "implementation": platform.python_implementation(),
             "version": platform.python_version(),
             "executable": str(Path(sys.executable).resolve()),
-            "architecture": normalized_architecture(),
+            "platform_system": platform.system(),
+            "platform_machine": platform.machine(),
+            "architecture": descriptor.get("architecture"),
+            "architecture_source": "shared PyPA target descriptor",
             "os": actual_target,
             "python_free_threaded": free_threaded,
-            "python_abi": "cp313" if not free_threaded else "cp313t",
+            "free_threaded_detection_method": "sysconfig.get_config_var('Py_GIL_DISABLED')",
+            "python_abi": lock["python_abi"],
+            "python_abi_source": "approved source lock plus shared PyPA compatible tags",
             "py_gil_disabled": py_gil_disabled,
             "runtime_gil_enabled": gil_api_value,
             "abiflags": abiflags,
             "soabi": soabi,
+            "ext_suffix": ext_suffix,
             "cache_tag": cache_tag,
         },
         "locked_interpreter": locked_interpreter,

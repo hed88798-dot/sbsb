@@ -127,6 +127,11 @@ def main() -> None:
         or binding_regressions.get("bootstrap_python_isolation") != "PASS"
         or binding_regressions.get("missing_python_executable_fail_closed") != "PASS"
         or binding_regressions.get("path_with_spaces_regression") != "PASS"
+        or binding_regressions.get("py_gil_disabled_normalization") != "PASS"
+        or binding_regressions.get("free_threaded_rejection") != "PASS"
+        or binding_regressions.get("unexpected_py_gil_disabled_rejection") != "PASS"
+        or binding_regressions.get("sys_abiflags_portability") != "PASS"
+        or binding_regressions.get("architecture_normalization") != "PASS"
         or binding_regressions.get("subprocess_shell") is not False
     ):
         failures.append("locked interpreter binding regressions are not PASS")
