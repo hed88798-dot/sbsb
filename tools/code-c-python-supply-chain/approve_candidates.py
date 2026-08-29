@@ -88,23 +88,56 @@ def approved_license(
 
 def native_path(
     scope_name: str,
+    package: dict[str, object],
     native: dict[str, object],
-    inspection: dict[str, object] | None,
+    selection: dict[str, object],
+    reconciliation: dict[str, object],
 ) -> str:
     if scope_name != "runtime":
         return f"installed-environment/{scope_name}/{native['relative_path']}"
-    if inspection is None:
-        raise SystemExit("runtime approval requires actual one-file CArchive inspection evidence")
-    matches = [
+    provenance = {
+        "source_artifact_sha256": package["sha256"],
+        "source_path": native["relative_path"],
+        "payload_sha256": native["sha256"],
+        "owner_kind": "WHEEL_OWNED_NATIVE",
+    }
+
+    def matches_provenance(entry: dict[str, object]) -> bool:
+        return all(entry.get(key) == value for key, value in provenance.items())
+
+    approved = [
         entry
-        for entry in inspection["native_artifacts"]
-        if entry["sha256"] == native["sha256"] and entry["filename"] == native["filename"]
+        for entry in reconciliation["approved_native_universe"]
+        if matches_provenance(entry)
     ]
-    if len(matches) != 1:
+    if len(approved) != 1:
         raise SystemExit(
-            f"runtime native {native['relative_path']} has {len(matches)} exact CArchive matches"
+            f"runtime native {native['relative_path']} has {len(approved)} exact approved-universe matches"
         )
-    return str(matches[0]["internal_path"])
+    selected = [
+        entry
+        for entry in selection["selected_native_entries"]
+        if matches_provenance(entry)
+    ]
+    if not selected:
+        return (
+            f"approved-not-selected/{canonicalize_name(str(package['package_name']))}/"
+            f"{native['relative_path']}"
+        )
+    if len(selected) != 1:
+        raise SystemExit(
+            f"runtime native {native['relative_path']} has {len(selected)} selected-entry matches"
+        )
+    final = [
+        entry
+        for entry in reconciliation["final_native_entries"]
+        if matches_provenance(entry)
+    ]
+    if len(final) != 1:
+        raise SystemExit(
+            f"selected runtime native {native['relative_path']} has {len(final)} final-entry matches"
+        )
+    return str(final[0]["internal_path"])
 
 
 def approve_scope(
@@ -116,6 +149,8 @@ def approve_scope(
     lock_root: Path,
     reviewed_at: str,
     environment: dict[str, str],
+    selection: dict[str, object],
+    reconciliation: dict[str, object],
 ) -> None:
     candidate_path = bundle / "candidates" / f"code-c-{target}-{scope_name}.v2.json"
     resolution_path = bundle / "resolution" / f"{target}-{scope_name}.json"
@@ -132,12 +167,6 @@ def approve_scope(
         canonicalize_name(package["package_name"]) for package in candidate["packages"]
     }:
         raise SystemExit(f"{target}/{scope_name}: candidate differs from metadata resolution")
-    inspection_path = bundle / "inspection" / f"{target}-worker-onefile.json"
-    inspection = (
-        json.loads(inspection_path.read_text(encoding="utf-8"))
-        if inspection_path.is_file()
-        else None
-    )
     approved_packages = []
     for package in candidate["packages"]:
         normalized = canonicalize_name(package["package_name"])
@@ -195,7 +224,13 @@ def approve_scope(
                     {
                         "filename": native["filename"],
                         "relative_path": native["relative_path"],
-                        "packaged_relative_path": native_path(scope_name, native, inspection),
+                        "packaged_relative_path": native_path(
+                            scope_name,
+                            package,
+                            native,
+                            selection,
+                            reconciliation,
+                        ),
                         "sha256": native["sha256"],
                         "type": native["type"],
                         "source_package": package["package_name"],
@@ -259,6 +294,35 @@ def main() -> None:
         environment = hermetic_environment()
     except ValueError as error:
         raise SystemExit(str(error)) from error
+    native_root = arguments.bundle / "native-v3" / arguments.target
+    selection_path = native_root / "packaging-selection-evidence.v1.json"
+    reconciliation_path = native_root / "native-reconciliation.v3.json"
+    reconciliation_report_path = native_root / "native-reconciliation-report.v3.json"
+    run(
+        [
+            "node",
+            str(PYTHON_CLI),
+            "native-reconcile-v3",
+            "--selection-evidence",
+            str(selection_path),
+            "--native-reconciliation",
+            str(reconciliation_path),
+            "--output",
+            str(reconciliation_report_path),
+        ],
+        environment,
+    )
+    selection = json.loads(selection_path.read_text(encoding="utf-8"))
+    reconciliation = json.loads(reconciliation_path.read_text(encoding="utf-8"))
+    report = json.loads(reconciliation_report_path.read_text(encoding="utf-8"))
+    if (
+        report.get("status") != "PASS"
+        or selection.get("build_context", {}).get("target", {}).get("os")
+        != arguments.target
+        or reconciliation.get("build_context_id") != report.get("build_context_id")
+    ):
+        raise SystemExit("candidate approval requires Native Reconciliation v3 PASS")
+
     definitions = json.loads(DEFINITIONS.read_text(encoding="utf-8"))
     for scope_name, scope in definitions["scopes"].items():
         if arguments.target in scope["targets"]:
@@ -271,6 +335,8 @@ def main() -> None:
                 arguments.lock_root,
                 arguments.reviewed_at,
                 environment,
+                selection,
+                reconciliation,
             )
 
 
