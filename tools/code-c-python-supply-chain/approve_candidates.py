@@ -151,7 +151,7 @@ def approve_scope(
     environment: dict[str, str],
     selection: dict[str, object],
     reconciliation: dict[str, object],
-) -> None:
+) -> tuple[Path, int]:
     candidate_path = bundle / "candidates" / f"code-c-{target}-{scope_name}.v2.json"
     resolution_path = bundle / "resolution" / f"{target}-{scope_name}.json"
     candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
@@ -244,18 +244,6 @@ def approve_scope(
     output = inventory_root / target / f"{scope_name}.v2.json"
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(canonical_json(approved), encoding="utf-8")
-    run(
-        [
-            "node",
-            str(PYTHON_CLI),
-            "verify",
-            "--inventory",
-            str(output),
-            "--artifact-root",
-            str(artifact_root),
-        ],
-        environment,
-    )
     lock = lock_root / f"{target}-{scope_name}.requirements.txt"
     run(
         [
@@ -270,7 +258,7 @@ def approve_scope(
         ],
         environment,
     )
-    print(f"candidate-approval: PASS ({target}/{scope_name}; {len(approved_packages)} wheels)")
+    return output, len(approved_packages)
 
 
 def main() -> None:
@@ -324,20 +312,29 @@ def main() -> None:
         raise SystemExit("candidate approval requires Native Reconciliation v3 PASS")
 
     definitions = json.loads(DEFINITIONS.read_text(encoding="utf-8"))
+    approved_scopes = []
     for scope_name, scope in definitions["scopes"].items():
         if arguments.target in scope["targets"]:
-            approve_scope(
-                arguments.target,
-                scope_name,
-                arguments.bundle,
-                arguments.artifact_root,
-                arguments.inventory_root,
-                arguments.lock_root,
-                arguments.reviewed_at,
-                environment,
-                selection,
-                reconciliation,
+            output, count = approve_scope(
+                target=arguments.target,
+                scope_name=scope_name,
+                bundle=arguments.bundle,
+                artifact_root=arguments.artifact_root,
+                inventory_root=arguments.inventory_root,
+                lock_root=arguments.lock_root,
+                reviewed_at=arguments.reviewed_at,
+                environment=environment,
+                selection=selection,
+                reconciliation=reconciliation,
             )
+            approved_scopes.append((scope_name, output, count))
+    verify_arguments = ["node", str(PYTHON_CLI), "verify"]
+    for _, inventory, _ in approved_scopes:
+        verify_arguments.extend(["--inventory", str(inventory)])
+    verify_arguments.extend(["--artifact-root", str(arguments.artifact_root)])
+    run(verify_arguments, environment)
+    for scope_name, _, count in approved_scopes:
+        print(f"candidate-approval: PASS ({arguments.target}/{scope_name}; {count} wheels)")
 
 
 if __name__ == "__main__":
