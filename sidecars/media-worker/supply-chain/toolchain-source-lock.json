@@ -2,6 +2,9 @@
   "schema_version": "1",
   "approved_index": "https://pypi.org/simple",
   "python_version": "3.13.15",
+  "python_implementation": "CPython",
+  "python_abi": "cp313",
+  "free_threaded": false,
   "pip": {
     "version": "26.2.1",
     "filename": "pip-26.2.1-py3-none-any.whl",
@@ -28,7 +31,11 @@
         "sha256": "4e544242f8a4ef647a6f511b67f9b00eefc9ef366644e3c40a27a6eff709ae2b",
         "size": 102312718,
         "download_url": "https://github.com/actions/python-versions/releases/download/3.13.15-31064747964/python-3.13.15-linux-24.04-x64.tar.gz",
-        "canonical_source": "https://github.com/actions/python-versions/releases/tag/3.13.15-31064747964"
+        "canonical_source": "https://github.com/actions/python-versions/releases/tag/3.13.15-31064747964",
+        "installer_entry": "setup.sh",
+        "installer_entry_sha256": "83f5fa50d6d9f86e77d41f8b2eb9b08260b81d422635df7485ce6f04aa59f504",
+        "interpreter_payload": "bin/python3.13",
+        "interpreter_payload_sha256": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
       },
       "pyinstaller": {
         "version": "6.22.2",
@@ -48,7 +55,11 @@
         "sha256": "73c2a2935597f8181e9bc60bc3a35cd2be28698d8f64b965055a29b43425a2b7",
         "size": 29163819,
         "download_url": "https://github.com/actions/python-versions/releases/download/3.13.15-31064747964/python-3.13.15-win32-x64.zip",
-        "canonical_source": "https://github.com/actions/python-versions/releases/tag/3.13.15-31064747964"
+        "canonical_source": "https://github.com/actions/python-versions/releases/tag/3.13.15-31064747964",
+        "installer_entry": "setup.ps1",
+        "installer_entry_sha256": "8eebc19fc3795df2c77ae4cc3ea850567e3a43b4d5271a3f1a2c33a39a625e00",
+        "interpreter_payload": "python-3.13.15-amd64.exe",
+        "interpreter_payload_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
       },
       "pyinstaller": {
         "version": "6.22.2",

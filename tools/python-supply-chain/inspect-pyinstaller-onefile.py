@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import json
+import zipfile
 from pathlib import Path, PurePosixPath
 
 import PyInstaller
@@ -67,6 +69,33 @@ def inspect(path: Path) -> dict[str, object]:
                 "type": kind,
             }
         )
+    pyz_modules: list[str] = []
+    if "PYZ.pyz" in reader.toc:
+        try:
+            pyz_modules = sorted(reader.open_embedded_archive("PYZ.pyz").toc)
+        except Exception as error:
+            raise SystemExit(f"failed to inventory embedded PYZ modules: {error}") from error
+    base_library_modules: list[str] = []
+    if "base_library.zip" in reader.toc:
+        try:
+            base_library = reader.extract("base_library.zip")
+            if not isinstance(base_library, bytes):
+                raise TypeError("base_library.zip is not byte content")
+            with zipfile.ZipFile(io.BytesIO(base_library)) as archive:
+                names = archive.namelist()
+                if len(names) != len(set(names)):
+                    raise ValueError("base_library.zip contains duplicate paths")
+                for name in names:
+                    normalized = PurePosixPath(name.replace("\\", "/"))
+                    if normalized.is_absolute() or ".." in normalized.parts:
+                        raise ValueError(f"base_library.zip contains unsafe path: {name}")
+                    if normalized.suffix == ".pyc":
+                        base_library_modules.append(
+                            ".".join(normalized.with_suffix("").parts)
+                        )
+            base_library_modules.sort()
+        except Exception as error:
+            raise SystemExit(f"failed to inventory base_library.zip modules: {error}") from error
     if len(reader.toc) == 0:
         raise SystemExit("CArchive parsed zero entries")
     if len(entries) == 0:
@@ -78,6 +107,17 @@ def inspect(path: Path) -> dict[str, object]:
         "status": "PARSED",
         "archive_entry_count": len(reader.toc),
         "native_entry_count": len(entries),
+        "python_module_inventory": {
+            "pyz_module_count": len(pyz_modules),
+            "pyz_modules": pyz_modules,
+            "base_library_module_count": len(base_library_modules),
+            "base_library_modules": base_library_modules,
+            "cve_relevant_module_presence": {
+                "urllib.request": "urllib.request" in pyz_modules
+                or "urllib.request" in base_library_modules,
+                "zipfile": "zipfile" in pyz_modules or "zipfile" in base_library_modules,
+            },
+        },
         "final_artifact": {
             "filename": path.name,
             "sha256": sha256(final_bytes),

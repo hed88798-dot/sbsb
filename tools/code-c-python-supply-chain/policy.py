@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import re
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -75,3 +76,17 @@ def assert_intake_reference(reference: str) -> None:
     if lowered.startswith(("file:", "/", "./", "../")):
         raise ValueError("arbitrary local Python artifact is rejected")
     assert_exact_wheel_url(reference)
+
+
+def assert_standard_cp313_artifact(filename: str) -> None:
+    normalized = filename.strip().lower()
+    if not normalized.endswith(".whl"):
+        raise ValueError(f"binary-only policy rejected non-wheel artifact: {filename}")
+    tags = normalized.removesuffix(".whl").rsplit("-", 3)[-3:]
+    if len(tags) != 3:
+        raise ValueError(f"wheel filename has no parseable tag triple: {filename}")
+    python_tag, abi_tag, _platform_tag = tags
+    if re.search(r"(?:^|\.)cp313t(?:\.|$)", python_tag) or re.search(
+        r"(?:^|\.)cp313t(?:\.|$)", abi_tag
+    ):
+        raise ValueError(f"free-threaded cp313t artifact is rejected: {filename}")

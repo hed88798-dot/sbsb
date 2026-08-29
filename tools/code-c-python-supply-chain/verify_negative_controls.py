@@ -9,6 +9,7 @@ from policy import (
     PIP_CONFIG_PATH,
     assert_approved_pip_environment,
     assert_intake_reference,
+    assert_standard_cp313_artifact,
     hermetic_environment,
 )
 
@@ -43,6 +44,20 @@ def main() -> None:
         ("../local-package.whl", "local path"),
     ):
         expect_rejected(lambda value=reference: assert_intake_reference(value), label)
+    assert_standard_cp313_artifact("synthetic-1.0.0-cp313-cp313-win_amd64.whl")
+    assert_standard_cp313_artifact("synthetic-1.0.0-py3-none-any.whl")
+    expect_rejected(
+        lambda: assert_standard_cp313_artifact(
+            "synthetic-1.0.0-cp313-cp313t-win_amd64.whl"
+        ),
+        "cp313t ABI",
+    )
+    expect_rejected(
+        lambda: assert_standard_cp313_artifact(
+            "synthetic-1.0.0-cp313t-cp313t-manylinux_2_28_x86_64.whl"
+        ),
+        "cp313t interpreter",
+    )
 
     environment = hermetic_environment({"PIP_CONFIG_FILE": str(PIP_CONFIG_PATH)})
     with tempfile.TemporaryDirectory(prefix="code-c-wrong-hash-") as directory:
@@ -79,7 +94,7 @@ def main() -> None:
         raise SystemExit("wrong-hash installation did not fail closed")
     print(
         "python-supply-chain-negative-controls: PASS "
-        "(pip config/index, sdist, VCS, floating, local, wrong hash rejected)"
+        "(pip config/index, sdist, VCS, floating, local, cp313t, wrong hash rejected)"
     )
 
 

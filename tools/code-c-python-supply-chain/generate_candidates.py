@@ -15,7 +15,7 @@ from packaging.requirements import Requirement
 from packaging.utils import canonicalize_name
 from packaging.version import Version
 
-from policy import hermetic_environment, sha256_file
+from policy import assert_standard_cp313_artifact, hermetic_environment, sha256_file
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -103,6 +103,8 @@ def resolve_scope(
     definitions: dict[str, object],
     target_name: str,
     target_descriptor: Path,
+    runtime_identity_path: Path,
+    runtime_identity: dict[str, object],
     output_root: Path,
     environment: dict[str, str],
 ) -> None:
@@ -154,6 +156,10 @@ def resolve_scope(
             env=environment,
         )
         downloaded = select_downloaded_wheel(package_download)
+        try:
+            assert_standard_cp313_artifact(downloaded.name)
+        except ValueError as error:
+            raise SystemExit(str(error)) from error
         destination = wheel_root / downloaded.name
         shutil.copyfile(downloaded, destination)
         metadata = inspect_wheel(destination, environment)
@@ -222,6 +228,13 @@ def resolve_scope(
         "python_version": definitions["python_version"],
         "approved_index": definitions["approved_index"],
         "resolver": "Code C metadata closure using packaging 25.0 markers",
+        "runtime_identity": {
+            "sha256": sha256_file(runtime_identity_path),
+            "distribution_sha256": runtime_identity["distribution"]["sha256"],
+            "python_free_threaded": runtime_identity["interpreter"]["python_free_threaded"],
+            "python_abi": runtime_identity["interpreter"]["python_abi"],
+            "target_descriptor_sha256": runtime_identity["target_descriptor"]["sha256"],
+        },
         "marker_environment": marker_environment,
         "extras_reason": scope["extras_reason"],
         "packages": [resolved[name] for name in sorted(resolved)],
@@ -265,6 +278,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", choices=["windows", "linux"], required=True)
     parser.add_argument("--target-descriptor", type=Path, required=True)
+    parser.add_argument("--runtime-identity", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     arguments = parser.parse_args()
     if packaging.__version__ != "25.0":
@@ -286,6 +300,16 @@ def main() -> None:
     definitions = json.loads(DEFINITIONS_PATH.read_text(encoding="utf-8"))
     if definitions["python_version"] != "3.13.15":
         raise SystemExit("dependency definitions must bind approved CPython 3.13.15")
+    runtime_identity = json.loads(arguments.runtime_identity.read_text(encoding="utf-8"))
+    if (
+        runtime_identity.get("status") != "PASS"
+        or runtime_identity.get("interpreter", {}).get("version") != "3.13.15"
+        or runtime_identity.get("interpreter", {}).get("python_free_threaded") is not False
+        or runtime_identity.get("interpreter", {}).get("python_abi") != "cp313"
+        or runtime_identity.get("target_descriptor", {}).get("sha256")
+        != sha256_file(arguments.target_descriptor)
+    ):
+        raise SystemExit("candidate generation requires matching standard-GIL cp313 runtime evidence")
     arguments.output_root.mkdir(parents=True, exist_ok=True)
     for scope_name, scope in definitions["scopes"].items():
         if arguments.target not in scope["targets"]:
@@ -296,6 +320,8 @@ def main() -> None:
             definitions,
             arguments.target,
             arguments.target_descriptor,
+            arguments.runtime_identity,
+            runtime_identity,
             arguments.output_root,
             environment,
         )

@@ -38,19 +38,31 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--run-identity", default=os.environ.get("GITHUB_RUN_ID", "local-explicit-build"))
     arguments = parser.parse_args()
-    runtime_inventory_path = (
-        REPOSITORY_ROOT
-        / "compliance"
-        / "python-artifacts"
-        / arguments.target
-        / "runtime.v2.json"
-    )
+    inventory_root = REPOSITORY_ROOT / "compliance" / "python-artifacts" / arguments.target
+    runtime_inventory_path = inventory_root / "runtime.v2.json"
+    worker_build_inventory_path = inventory_root / "worker-build.v2.json"
     toolchain_path = (
         REPOSITORY_ROOT / "compliance" / "python-toolchain" / f"{arguments.target}.v1.json"
     )
     runtime = json.loads(runtime_inventory_path.read_text(encoding="utf-8"))
+    worker_build = json.loads(worker_build_inventory_path.read_text(encoding="utf-8"))
     toolchain = json.loads(toolchain_path.read_text(encoding="utf-8"))
     by_kind = {component["component_kind"]: component for component in toolchain["components"]}
+    worker_build_by_name = {
+        package["package_name"].lower().replace("_", "-"): package
+        for package in worker_build["packages"]
+    }
+    hooks = worker_build_by_name.get("pyinstaller-hooks-contrib")
+    pyinstaller_wheel = worker_build_by_name.get("pyinstaller")
+    if hooks is None:
+        raise SystemExit("WORKER_BUILD inventory omits pyinstaller-hooks-contrib")
+    if pyinstaller_wheel is None:
+        raise SystemExit("WORKER_BUILD inventory omits PyInstaller")
+    if (
+        pyinstaller_wheel["version"] != by_kind["PYINSTALLER"]["version"]
+        or pyinstaller_wheel["sha256"] != by_kind["PYINSTALLER"]["artifact"]["sha256"]
+    ):
+        raise SystemExit("WORKER_BUILD PyInstaller differs from Toolchain Inventory v1")
     inspection = json.loads(
         subprocess.run(
             [sys.executable, str(INSPECT_ONEFILE), str(arguments.final_artifact)],
@@ -83,7 +95,12 @@ def main() -> None:
                     "inventory_id": runtime["inventory_id"],
                     "manifest_path": runtime_inventory_path.relative_to(REPOSITORY_ROOT).as_posix(),
                     "manifest_sha256": sha256_file(runtime_inventory_path),
-                }
+                },
+                {
+                    "inventory_id": worker_build["inventory_id"],
+                    "manifest_path": worker_build_inventory_path.relative_to(REPOSITORY_ROOT).as_posix(),
+                    "manifest_sha256": sha256_file(worker_build_inventory_path),
+                },
             ],
             "toolchain_inventory": {
                 "inventory_id": toolchain["inventory_id"],
@@ -111,7 +128,8 @@ def main() -> None:
     arguments.output.write_text(canonical_json(provenance), encoding="utf-8")
     print(
         f"build-provenance-create: PASS ({arguments.target}; "
-        f"{inspection['final_artifact']['sha256']})"
+        f"{inspection['final_artifact']['sha256']}; "
+        f"pyinstaller-hooks-contrib {hooks['version']} {hooks['sha256']})"
     )
 
 

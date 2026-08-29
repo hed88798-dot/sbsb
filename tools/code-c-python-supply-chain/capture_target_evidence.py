@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import importlib.metadata
 import json
 import platform
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -135,6 +137,41 @@ def main() -> None:
             encoding="utf-8"
         )
     )
+    worker_build = json.loads(
+        (arguments.bundle / "candidates" / f"code-c-{target}-worker-build.v2.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    worker_build_resolution = json.loads(
+        (arguments.bundle / "resolution" / f"{target}-worker-build.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    hooks_candidates = [
+        package
+        for package in worker_build["packages"]
+        if package["package_name"].lower().replace("_", "-") == "pyinstaller-hooks-contrib"
+    ]
+    if len(hooks_candidates) != 1:
+        raise SystemExit("worker-build graph must contain one pyinstaller-hooks-contrib wheel")
+    hooks = hooks_candidates[0]
+    hooks_resolution = next(
+        (
+            package
+            for package in worker_build_resolution["packages"]
+            if package["name"].lower().replace("_", "-") == "pyinstaller-hooks-contrib"
+        ),
+        None,
+    )
+    if hooks_resolution is None or hooks_resolution["provenance"]["sha256"] != hooks["sha256"]:
+        raise SystemExit("pyinstaller-hooks-contrib candidate differs from metadata resolution")
+    installed_hooks = importlib.metadata.distribution("pyinstaller-hooks-contrib")
+    if installed_hooks.version != hooks["version"]:
+        raise SystemExit("installed pyinstaller-hooks-contrib differs from worker-build graph")
+    direct_url_text = installed_hooks.read_text("direct_url.json")
+    direct_url = json.loads(direct_url_text) if direct_url_text else {}
+    if direct_url.get("archive_info", {}).get("hash") != f"sha256={hooks['sha256']}":
+        raise SystemExit("installed pyinstaller-hooks-contrib hash provenance differs from graph")
     wheel_natives = []
     for package in runtime["packages"]:
         for native in package["native_artifacts"]:
@@ -204,6 +241,16 @@ def main() -> None:
     bootloader_copy.parent.mkdir(parents=True, exist_ok=True)
     bootloader_copy.write_bytes(bootloader.read_bytes())
     license_path = cpython_license()
+    cpython_license_evidence = (
+        arguments.bundle
+        / "license-evidence"
+        / "cpython-3.13.15"
+        / f"{target}.LICENSE.txt"
+    )
+    cpython_license_evidence.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(license_path, cpython_license_evidence)
+    if sha256_file(cpython_license_evidence) != sha256_file(license_path):
+        raise SystemExit("captured CPython license evidence hash drift")
     evidence = {
         "schema_version": "1",
         "status": "PASS" if not unknown and not missing else "FAIL",
@@ -220,6 +267,9 @@ def main() -> None:
                     "relative_path": license_path.relative_to(Path(sys.base_prefix).resolve()).as_posix(),
                     "sha256": sha256_file(license_path),
                     "size": license_path.stat().st_size,
+                    "evidence_path": cpython_license_evidence.relative_to(
+                        arguments.bundle
+                    ).as_posix(),
                 },
             },
             "pip": {**lock["pip"], "actual_sha256": sha256_file(arguments.pip_wheel)},
@@ -233,6 +283,20 @@ def main() -> None:
                 "sha256": sha256_file(bootloader),
                 "size": bootloader.stat().st_size,
                 "source_pyinstaller_wheel_sha256": target_lock["pyinstaller"]["sha256"],
+            },
+            "pyinstaller_hooks_contrib": {
+                "version": hooks["version"],
+                "filename": hooks["filename"],
+                "sha256": hooks["sha256"],
+                "download_url": hooks_resolution["provenance"]["download_url"],
+                "installed_direct_url": direct_url,
+                "source_worker_build_inventory_id": worker_build["inventory_id"],
+            },
+            "media_worker_spec": {
+                "relative_path": "sidecars/media-worker/media-worker.spec",
+                "sha256": sha256_file(
+                    REPOSITORY_ROOT / "sidecars" / "media-worker" / "media-worker.spec"
+                ),
             },
         },
         "final_artifact": inspection["final_artifact"],

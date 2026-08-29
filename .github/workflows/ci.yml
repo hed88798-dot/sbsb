@@ -48,7 +48,7 @@ jobs:
       - run: pnpm secret:scan
       - run: pnpm license:scan -- --report artifacts/compliance/LICENSE_FIRST_PASS.json
       - run: pnpm vulnerability:scan
-      - run: pnpm compliance:python:verify
+      - run: pnpm compliance:python:schema
       - run: pnpm compliance:python:target:verify
       - run: pnpm golden:verify
       - run: pnpm build
@@ -58,6 +58,205 @@ jobs:
           name: pr-compliance-${{ github.sha }}
           path: artifacts/compliance
           if-no-files-found: error
+          retention-days: 30
+
+  python-worker-supply-chain:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          # Bootstrap only. The Worker graph/build consume the locked distribution below.
+          python-version: '3.12.13'
+      - run: pnpm install --frozen-lockfile
+      - name: Hydrate only approved Python and toolchain artifacts
+        run: >-
+          python tools/code-c-python-supply-chain/hydrate_approved_artifacts.py
+          --target linux
+          --artifact-root artifacts/python-approved/wheels
+          --toolchain-artifact-root artifacts/python-approved/toolchain
+      - name: Install the exact approved CPython distribution
+        id: locked-python
+        run: >-
+          python tools/code-c-python-supply-chain/install_locked_cpython.py
+          --target linux
+          --distribution artifacts/python-approved/toolchain/linux/cpython/python-3.13.15-linux-24.04-x64.tar.gz
+          --pip-wheel artifacts/python-approved/toolchain/linux/pip/pip-26.2.1-py3-none-any.whl
+          --output artifacts/compliance/linux/CPYTHON_INSTALLATION.json
+      - name: Install hash-locked shared Python compliance tooling
+        env:
+          PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
+        run: pnpm compliance:python:tooling:install
+      - name: Verify current target and standard-GIL cp313 identity
+        env:
+          PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
+          PYTHONPATH: ${{ github.workspace }}/artifacts/python-compliance-tools/site-packages
+          PYTHONNOUSERSITE: '1'
+        run: |
+          pnpm compliance:python:target -- describe-current --output artifacts/compliance/linux/TARGET_DESCRIPTOR.json
+          '${{ steps.locked-python.outputs.python }}' tools/code-c-python-supply-chain/capture_runtime_identity.py \
+            --target linux \
+            --target-descriptor artifacts/compliance/linux/TARGET_DESCRIPTOR.json \
+            --distribution artifacts/python-approved/toolchain/linux/cpython/python-3.13.15-linux-24.04-x64.tar.gz \
+            --installation-evidence artifacts/compliance/linux/CPYTHON_INSTALLATION.json \
+            --output artifacts/compliance/linux/RUNTIME_IDENTITY.json
+          pnpm compliance:python:target:verify
+      - name: Create pinned-pip clean Worker environment
+        run: >-
+          '${{ steps.locked-python.outputs.python }}'
+          tools/code-c-python-supply-chain/bootstrap_pinned_pip.py
+          --wheel artifacts/python-approved/toolchain/linux/pip/pip-26.2.1-py3-none-any.whl
+          --venv artifacts/worker-venv
+      - name: Verify fail-closed intake controls
+        env:
+          PIP_CONFIG_FILE: ${{ github.workspace }}/sidecars/media-worker/supply-chain/pip-hermetic.conf
+        run: >-
+          '${{ steps.locked-python.outputs.python }}'
+          tools/code-c-python-supply-chain/verify_negative_controls.py
+          --python artifacts/worker-venv/bin/python
+          --wheel artifacts/python-approved/toolchain/linux/pip/pip-26.2.1-py3-none-any.whl
+      - name: Verify exact inventories, locks, markers and extras
+        env:
+          PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
+        run: |
+          node tools/python-supply-chain/cli.mjs verify \
+            --inventory compliance/python-artifacts/linux/runtime.v2.json \
+            --inventory compliance/python-artifacts/linux/worker-build.v2.json \
+            --artifact-root artifacts/python-approved/wheels
+          artifacts/worker-venv/bin/python tools/code-c-python-supply-chain/verify_locks.py \
+            --target linux --artifact-root artifacts/python-approved/wheels
+          PYTHONPATH="$PWD/artifacts/python-compliance-tools/site-packages" \
+            artifacts/worker-venv/bin/python tools/code-c-python-supply-chain/verify_resolution.py \
+            --target linux --artifact-root artifacts/python-approved/wheels
+      - name: Install approved runtime and Worker build graph
+        env:
+          PIP_CONFIG_FILE: ${{ github.workspace }}/sidecars/media-worker/supply-chain/pip-hermetic.conf
+        run: |
+          artifacts/worker-venv/bin/python tools/code-c-python-supply-chain/install_approved.py \
+            --target linux --python artifacts/worker-venv/bin/python \
+            --scope runtime --scope worker-build
+          artifacts/worker-venv/bin/python tools/code-c-python-supply-chain/verify_installed.py \
+            --target linux --scope runtime --scope worker-build
+      - name: Run Worker regressions on the approved graph
+        env:
+          PYTHON_EXECUTABLE: ${{ github.workspace }}/artifacts/worker-venv/bin/python
+        run: pnpm media-worker:test
+      - name: Build actual one-file Worker
+        run: artifacts/worker-venv/bin/python -I -m PyInstaller --clean --noconfirm sidecars/media-worker/media-worker.spec
+      - name: Create build provenance and PyInstaller usage binding
+        env:
+          PYTHONNOUSERSITE: '1'
+        run: |
+          artifacts/worker-venv/bin/python tools/code-c-python-supply-chain/create_build_provenance.py \
+            --target linux --final-artifact dist/media-worker \
+            --run-identity "${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            --output artifacts/compliance/linux/BUILD_PROVENANCE.json
+          artifacts/worker-venv/bin/python tools/code-c-python-supply-chain/create_usage_binding.py \
+            --target linux \
+            --build-provenance artifacts/compliance/linux/BUILD_PROVENANCE.json \
+            --output artifacts/compliance/linux/PYINSTALLER_USAGE_BINDING.json \
+            --evaluation-output artifacts/compliance/linux/PYINSTALLER_USAGE_LICENSE.json
+      - name: Verify wheel/toolchain license and vulnerability gates
+        env:
+          PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
+        run: |
+          node tools/python-supply-chain/cli.mjs license \
+            --inventory compliance/python-artifacts/linux/runtime.v2.json \
+            --inventory compliance/python-artifacts/linux/worker-build.v2.json \
+            --artifact-root artifacts/python-approved/wheels \
+            --artifact-license-evidence compliance/license-evidence/pyinstaller-6.22.2/linux-x86_64.scan.json \
+            --artifact-usage-binding artifacts/compliance/linux/PYINSTALLER_USAGE_BINDING.json \
+            --build-provenance artifacts/compliance/linux/BUILD_PROVENANCE.json \
+            --toolchain-inventory compliance/python-toolchain/linux.v1.json \
+            --release --output artifacts/compliance/linux/PYTHON_LICENSE.json
+          node tools/python-supply-chain/cli.mjs vulnerability \
+            --inventory compliance/python-artifacts/linux/runtime.v2.json \
+            --inventory compliance/python-artifacts/linux/worker-build.v2.json \
+            --artifact-root artifacts/python-approved/wheels \
+            --output artifacts/compliance/linux/PYTHON_VULNERABILITIES.json
+          node tools/python-supply-chain/cli.mjs toolchain-license \
+            --toolchain-inventory compliance/python-toolchain/linux.v1.json \
+            --toolchain-artifact-root artifacts/python-approved/toolchain \
+            --output artifacts/compliance/linux/TOOLCHAIN_LICENSE.json
+          node tools/python-supply-chain/cli.mjs toolchain-vulnerability \
+            --toolchain-inventory compliance/python-toolchain/linux.v1.json \
+            --toolchain-artifact-root artifacts/python-approved/toolchain \
+            --output artifacts/compliance/linux/TOOLCHAIN_VULNERABILITIES.json
+      - name: Verify build provenance and exact native reconciliation
+        env:
+          PYTHON_EXECUTABLE: ${{ github.workspace }}/artifacts/worker-venv/bin/python
+        run: |
+          node tools/python-supply-chain/cli.mjs build-provenance-verify \
+            --inventory compliance/python-artifacts/linux/runtime.v2.json \
+            --inventory compliance/python-artifacts/linux/worker-build.v2.json \
+            --artifact-root artifacts/python-approved/wheels \
+            --toolchain-inventory compliance/python-toolchain/linux.v1.json \
+            --toolchain-artifact-root artifacts/python-approved/toolchain \
+            --build-provenance artifacts/compliance/linux/BUILD_PROVENANCE.json \
+            --build-root . --final-artifact dist/media-worker
+          node tools/python-supply-chain/cli.mjs native-inventory \
+            --inventory compliance/python-artifacts/linux/runtime.v2.json \
+            --inventory compliance/python-artifacts/linux/worker-build.v2.json \
+            --artifact-root artifacts/python-approved/wheels \
+            --toolchain-inventory compliance/python-toolchain/linux.v1.json \
+            --toolchain-artifact-root artifacts/python-approved/toolchain \
+            --build-provenance artifacts/compliance/linux/BUILD_PROVENANCE.json \
+            --build-root . --final-artifact dist/media-worker \
+            --inventory-id code-c-linux-packaged-worker \
+            --output artifacts/compliance/linux/PACKAGED_NATIVE_INVENTORY.json
+          node tools/python-supply-chain/cli.mjs reconcile \
+            --inventory compliance/python-artifacts/linux/runtime.v2.json \
+            --inventory compliance/python-artifacts/linux/worker-build.v2.json \
+            --artifact-root artifacts/python-approved/wheels \
+            --toolchain-inventory compliance/python-toolchain/linux.v1.json \
+            --toolchain-artifact-root artifacts/python-approved/toolchain \
+            --build-provenance artifacts/compliance/linux/BUILD_PROVENANCE.json \
+            --build-root . --final-artifact dist/media-worker \
+            --packaged-inventory artifacts/compliance/linux/PACKAGED_NATIVE_INVENTORY.json \
+            --output artifacts/compliance/linux/PACKAGED_NATIVE_RECONCILIATION.json
+      - name: Materialize notices and target SBOM
+        run: |
+          artifacts/worker-venv/bin/python tools/code-c-python-supply-chain/assemble_release_notices.py \
+            --target linux \
+            --artifact-root artifacts/python-approved/wheels \
+            --toolchain-artifact-root artifacts/python-approved/toolchain \
+            --wheel-license-report artifacts/compliance/linux/PYTHON_LICENSE.json \
+            --toolchain-license-report artifacts/compliance/linux/TOOLCHAIN_LICENSE.json \
+            --usage-evaluation artifacts/compliance/linux/PYINSTALLER_USAGE_LICENSE.json \
+            --output artifacts/compliance/linux/THIRD_PARTY_NOTICES.md \
+            --report artifacts/compliance/linux/NOTICE_RECONCILIATION.json
+          node tools/compliance/generate-sbom.mjs \
+            --output artifacts/compliance/linux/SBOM.cdx.json \
+            --license-report artifacts/compliance/linux/PYTHON_LICENSE.json \
+            --license-report artifacts/compliance/linux/TOOLCHAIN_LICENSE.json \
+            --python-inventory compliance/python-artifacts/linux/runtime.v2.json \
+            --python-inventory compliance/python-artifacts/linux/worker-build.v2.json \
+            --packaged-native-inventory artifacts/compliance/linux/PACKAGED_NATIVE_INVENTORY.json \
+            --toolchain-inventory compliance/python-toolchain/linux.v1.json \
+            --build-provenance artifacts/compliance/linux/BUILD_PROVENANCE.json \
+            --bundled-license-scan compliance/license-evidence/pillow-12.3.0/linux-cp313.scan.json
+      - name: Packaged Worker runtime smoke
+        run: |
+          dist/media-worker --runtime-smoke > artifacts/compliance/linux/WORKER_RUNTIME_SMOKE.json
+          artifacts/worker-venv/bin/python -c 'import json; value=json.load(open("artifacts/compliance/linux/WORKER_RUNTIME_SMOKE.json")); assert value["status"] == "PASS" and value["onnxruntime"] == "1.29.0" and "CPUExecutionProvider" in value["providers"] and not value["contains_torch"] and not value["contains_transformers"]'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: linux-worker-supply-chain-${{ github.sha }}
+          path: |
+            artifacts/compliance/linux
+            dist/media-worker
+          if-no-files-found: error
+          compression-level: 0
           retention-days: 30
 
   isolated-clean-checkout:

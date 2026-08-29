@@ -19,7 +19,6 @@ DEFINITIONS = (
     / "supply-chain"
     / "dependency-definitions.json"
 )
-LICENSE_POLICY = REPOSITORY_ROOT / "config" / "dependency-license-policy.json"
 PYTHON_CLI = REPOSITORY_ROOT / "tools" / "python-supply-chain" / "cli.mjs"
 REQUIRE_HASHES = (
     REPOSITORY_ROOT / "tools" / "python-supply-chain" / "generate-require-hashes.mjs"
@@ -46,23 +45,45 @@ def run(arguments: list[str], environment: dict[str, str]) -> None:
 def approved_license(
     package: dict[str, object],
     resolution: dict[str, object],
-    accepted: set[str],
+    target: str,
 ) -> tuple[str, str]:
     metadata = resolution["metadata"]
     expression = metadata.get("license_expression")
     if expression:
-        if expression not in accepted:
-            raise SystemExit(
-                f"{package['package_name']}: upstream License-Expression is not approved: {expression}"
-            )
         return str(expression), "Upstream wheel License-Expression was verified byte-for-byte."
+    normalized = canonicalize_name(str(package["package_name"]))
+    if normalized == "pyinstaller":
+        evidence_name = "windows-x86_64.scan.json" if target == "windows" else "linux-x86_64.scan.json"
+        evidence = json.loads(
+            (
+                REPOSITORY_ROOT
+                / "compliance"
+                / "license-evidence"
+                / "pyinstaller-6.22.2"
+                / evidence_name
+            ).read_text(encoding="utf-8")
+        )
+        if (
+            evidence["artifact"]["sha256"] != package["sha256"]
+            or evidence["artifact"]["filename"] != package["filename"]
+            or evidence["package_license"]["metadata_status"]
+            != "LEGACY_DESCRIPTION_REVIEWED"
+            or metadata.get("legacy_license")
+            != next(
+                source["value"]
+                for source in evidence["package_license"]["evidence_sources"]
+                if source["evidence_type"] == "METADATA_LICENSE_DESCRIPTION"
+            )
+        ):
+            raise SystemExit("PyInstaller candidate differs from public Artifact License Evidence v2")
+        return (
+            str(evidence["package_license"]["expression"]),
+            "Expression comes from exact public Artifact License Evidence v2; usage approval remains build-context-bound.",
+        )
     legacy = str(metadata.get("legacy_license") or "").strip()
-    if legacy in accepted:
-        return legacy, "Legacy wheel License field matches the approved policy expression."
-    raise SystemExit(
-        f"{package['package_name']}: shared license policy cannot approve the exact wheel metadata; "
-        "mandatory stop (docs/quality/CODE_C_QICR_PYTHON_RUNTIME_LICENSE_POLICY.md)"
-    )
+    if legacy:
+        return legacy, "Exact legacy wheel License value is retained for the shared policy gate."
+    return "UNKNOWN", "Wheel metadata contains no license expression or legacy License value."
 
 
 def native_path(
@@ -94,7 +115,6 @@ def approve_scope(
     inventory_root: Path,
     lock_root: Path,
     reviewed_at: str,
-    accepted_licenses: set[str],
     environment: dict[str, str],
 ) -> None:
     candidate_path = bundle / "candidates" / f"code-c-{target}-{scope_name}.v2.json"
@@ -133,9 +153,7 @@ def approve_scope(
         shutil.copyfile(source, destination)
         if sha256_file(destination) != package["sha256"]:
             raise SystemExit(f"{target}/{scope_name}/{normalized}: approved artifact copy drift")
-        license_expression, license_note = approved_license(
-            package, item, accepted_licenses
-        )
+        license_expression, license_note = approved_license(package, item, target)
         by_dependency = {
             canonicalize_name(other["name"]): f"pkg:pypi/{canonicalize_name(other['name'])}@{other['version']}"
             for other in resolution["packages"]
@@ -226,16 +244,22 @@ def main() -> None:
     parser.add_argument("--bundle", type=Path, required=True)
     parser.add_argument("--artifact-root", type=Path, required=True)
     parser.add_argument("--reviewed-at", required=True)
+    parser.add_argument(
+        "--inventory-root",
+        type=Path,
+        default=REPOSITORY_ROOT / "compliance" / "python-artifacts",
+    )
+    parser.add_argument(
+        "--lock-root",
+        type=Path,
+        default=REPOSITORY_ROOT / "sidecars" / "media-worker" / "supply-chain" / "locks",
+    )
     arguments = parser.parse_args()
     try:
         environment = hermetic_environment()
     except ValueError as error:
         raise SystemExit(str(error)) from error
     definitions = json.loads(DEFINITIONS.read_text(encoding="utf-8"))
-    policy = json.loads(LICENSE_POLICY.read_text(encoding="utf-8"))
-    accepted = set(policy["allowed"] + policy["manual_review"])
-    inventory_root = REPOSITORY_ROOT / "compliance" / "python-artifacts"
-    lock_root = REPOSITORY_ROOT / "sidecars" / "media-worker" / "supply-chain" / "locks"
     for scope_name, scope in definitions["scopes"].items():
         if arguments.target in scope["targets"]:
             approve_scope(
@@ -243,10 +267,9 @@ def main() -> None:
                 scope_name,
                 arguments.bundle,
                 arguments.artifact_root,
-                inventory_root,
-                lock_root,
+                arguments.inventory_root,
+                arguments.lock_root,
                 arguments.reviewed_at,
-                accepted,
                 environment,
             )
 

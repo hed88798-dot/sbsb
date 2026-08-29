@@ -26,17 +26,7 @@ jobs:
         with:
           node-version: 24.19.0
           cache: pnpm
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
-        with:
-          python-version: '3.13.15'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm compliance:python:tooling:install
-      - run: pnpm compliance:python:target -- describe-current --output artifacts/compliance/CURRENT_TARGET.json
-      - run: pnpm compliance:python:target -- verify-current --target artifacts/compliance/CURRENT_TARGET.json
-      - run: >-
-          python -m pip install --no-deps
-          --requirement sidecars/media-worker/requirements.lock
-          --requirement sidecars/media-worker/tools/build-requirements.lock
       - run: pnpm ci:prepare
       - run: pnpm package:resolution
       - run: pnpm portability:check
@@ -44,17 +34,224 @@ jobs:
       - run: pnpm secret:scan
       - run: pnpm license:scan
       - run: pnpm vulnerability:scan
-      - run: pnpm compliance:python:verify
-      - run: pnpm compliance:python:target:verify
       - run: pnpm golden:verify
-      - run: pnpm exec vitest run tests/contract/packaged-native-toolchain-provenance.test.ts --maxWorkers=1
       - run: pnpm exec vitest run tests/contract/mock-sidecar.test.ts --maxWorkers=1
-      - run: pnpm media-worker:test
-      - run: python -m PyInstaller --clean --noconfirm sidecars/media-worker/media-worker.spec
-      - name: Packaged media worker runtime smoke
+      - run: pnpm native:rebuild
+      - run: pnpm package:dir
+      - run: $env:REQUIRE_PACKAGED_SMOKE='1'; pnpm exec vitest run tests/integration/native-addon-packaging.test.ts --maxWorkers=1
+
+  python-worker-supply-chain:
+    runs-on: windows-2022
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          # Bootstrap only. The Worker graph/build consume the locked distribution below.
+          python-version: '3.12.13'
+      - run: pnpm install --frozen-lockfile
+      - name: Hydrate only approved Python and toolchain artifacts
+        run: >-
+          python tools/code-c-python-supply-chain/hydrate_approved_artifacts.py
+          --target windows
+          --artifact-root artifacts/python-approved/wheels
+          --toolchain-artifact-root artifacts/python-approved/toolchain
+      - name: Install the exact approved CPython distribution
+        id: locked-python
+        shell: bash
+        run: >-
+          python tools/code-c-python-supply-chain/install_locked_cpython.py
+          --target windows
+          --distribution artifacts/python-approved/toolchain/windows/cpython/python-3.13.15-win32-x64.zip
+          --pip-wheel artifacts/python-approved/toolchain/windows/pip/pip-26.2.1-py3-none-any.whl
+          --output artifacts/compliance/windows/CPYTHON_INSTALLATION.json
+      - name: Install hash-locked shared Python compliance tooling
+        env:
+          PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
+        run: pnpm compliance:python:tooling:install
+      - name: Verify current target and standard-GIL cp313 identity
+        shell: bash
+        env:
+          PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
+          PYTHONPATH: ${{ github.workspace }}/artifacts/python-compliance-tools/site-packages
+          PYTHONNOUSERSITE: '1'
+        run: |
+          pnpm compliance:python:target -- describe-current --output artifacts/compliance/windows/TARGET_DESCRIPTOR.json
+          '${{ steps.locked-python.outputs.python }}' tools/code-c-python-supply-chain/capture_runtime_identity.py \
+            --target windows \
+            --target-descriptor artifacts/compliance/windows/TARGET_DESCRIPTOR.json \
+            --distribution artifacts/python-approved/toolchain/windows/cpython/python-3.13.15-win32-x64.zip \
+            --installation-evidence artifacts/compliance/windows/CPYTHON_INSTALLATION.json \
+            --output artifacts/compliance/windows/RUNTIME_IDENTITY.json
+          pnpm compliance:python:target:verify
+      - name: Create pinned-pip clean Worker environment
+        shell: bash
+        run: >-
+          '${{ steps.locked-python.outputs.python }}'
+          tools/code-c-python-supply-chain/bootstrap_pinned_pip.py
+          --wheel artifacts/python-approved/toolchain/windows/pip/pip-26.2.1-py3-none-any.whl
+          --venv artifacts/worker-venv
+      - name: Verify fail-closed intake controls
+        shell: bash
+        env:
+          PIP_CONFIG_FILE: ${{ github.workspace }}/sidecars/media-worker/supply-chain/pip-hermetic.conf
+        run: >-
+          '${{ steps.locked-python.outputs.python }}'
+          tools/code-c-python-supply-chain/verify_negative_controls.py
+          --python artifacts/worker-venv/Scripts/python.exe
+          --wheel artifacts/python-approved/toolchain/windows/pip/pip-26.2.1-py3-none-any.whl
+      - name: Verify exact inventories, locks, markers and extras
+        shell: bash
+        env:
+          PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
+        run: |
+          node tools/python-supply-chain/cli.mjs verify \
+            --inventory compliance/python-artifacts/windows/runtime.v2.json \
+            --inventory compliance/python-artifacts/windows/worker-build.v2.json \
+            --inventory compliance/python-artifacts/windows/model-export.v2.json \
+            --inventory compliance/python-artifacts/windows/model-evaluation.v2.json \
+            --artifact-root artifacts/python-approved/wheels
+          artifacts/worker-venv/Scripts/python.exe tools/code-c-python-supply-chain/verify_locks.py \
+            --target windows --artifact-root artifacts/python-approved/wheels
+          PYTHONPATH="$PWD/artifacts/python-compliance-tools/site-packages" \
+            artifacts/worker-venv/Scripts/python.exe tools/code-c-python-supply-chain/verify_resolution.py \
+            --target windows --artifact-root artifacts/python-approved/wheels
+      - name: Install approved runtime and Worker build graph
+        shell: bash
+        env:
+          PIP_CONFIG_FILE: ${{ github.workspace }}/sidecars/media-worker/supply-chain/pip-hermetic.conf
+        run: |
+          artifacts/worker-venv/Scripts/python.exe tools/code-c-python-supply-chain/install_approved.py \
+            --target windows --python artifacts/worker-venv/Scripts/python.exe \
+            --scope runtime --scope worker-build
+          artifacts/worker-venv/Scripts/python.exe tools/code-c-python-supply-chain/verify_installed.py \
+            --target windows --scope runtime --scope worker-build
+      - name: Run Worker and supply-chain contract regressions
+        env:
+          PYTHON_EXECUTABLE: ${{ github.workspace }}\artifacts\worker-venv\Scripts\python.exe
+        run: |
+          pnpm media-worker:test
+          pnpm exec vitest run tests/contract/python-supply-chain-tooling.test.ts tests/contract/packaged-native-toolchain-provenance.test.ts --maxWorkers=1
+      - name: Build actual one-file Worker
+        run: artifacts\worker-venv\Scripts\python.exe -I -m PyInstaller --clean --noconfirm sidecars/media-worker/media-worker.spec
+      - name: Create build provenance and PyInstaller usage binding
+        shell: bash
+        env:
+          PYTHONNOUSERSITE: '1'
+        run: |
+          artifacts/worker-venv/Scripts/python.exe tools/code-c-python-supply-chain/create_build_provenance.py \
+            --target windows --final-artifact dist/media-worker.exe \
+            --run-identity "${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            --output artifacts/compliance/windows/BUILD_PROVENANCE.json
+          artifacts/worker-venv/Scripts/python.exe tools/code-c-python-supply-chain/create_usage_binding.py \
+            --target windows \
+            --build-provenance artifacts/compliance/windows/BUILD_PROVENANCE.json \
+            --output artifacts/compliance/windows/PYINSTALLER_USAGE_BINDING.json \
+            --evaluation-output artifacts/compliance/windows/PYINSTALLER_USAGE_LICENSE.json
+      - name: Verify wheel/toolchain license and vulnerability gates
+        shell: bash
+        env:
+          PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
+        run: |
+          node tools/python-supply-chain/cli.mjs license \
+            --inventory compliance/python-artifacts/windows/runtime.v2.json \
+            --inventory compliance/python-artifacts/windows/worker-build.v2.json \
+            --inventory compliance/python-artifacts/windows/model-export.v2.json \
+            --inventory compliance/python-artifacts/windows/model-evaluation.v2.json \
+            --artifact-root artifacts/python-approved/wheels \
+            --artifact-license-evidence compliance/license-evidence/pyinstaller-6.22.2/windows-x86_64.scan.json \
+            --artifact-usage-binding artifacts/compliance/windows/PYINSTALLER_USAGE_BINDING.json \
+            --build-provenance artifacts/compliance/windows/BUILD_PROVENANCE.json \
+            --toolchain-inventory compliance/python-toolchain/windows.v1.json \
+            --release --output artifacts/compliance/windows/PYTHON_LICENSE.json
+          node tools/python-supply-chain/cli.mjs vulnerability \
+            --inventory compliance/python-artifacts/windows/runtime.v2.json \
+            --inventory compliance/python-artifacts/windows/worker-build.v2.json \
+            --inventory compliance/python-artifacts/windows/model-export.v2.json \
+            --inventory compliance/python-artifacts/windows/model-evaluation.v2.json \
+            --artifact-root artifacts/python-approved/wheels \
+            --output artifacts/compliance/windows/PYTHON_VULNERABILITIES.json
+          node tools/python-supply-chain/cli.mjs toolchain-license \
+            --toolchain-inventory compliance/python-toolchain/windows.v1.json \
+            --toolchain-artifact-root artifacts/python-approved/toolchain \
+            --output artifacts/compliance/windows/TOOLCHAIN_LICENSE.json
+          node tools/python-supply-chain/cli.mjs toolchain-vulnerability \
+            --toolchain-inventory compliance/python-toolchain/windows.v1.json \
+            --toolchain-artifact-root artifacts/python-approved/toolchain \
+            --output artifacts/compliance/windows/TOOLCHAIN_VULNERABILITIES.json
+      - name: Verify build provenance and exact native reconciliation
+        shell: bash
+        env:
+          PYTHON_EXECUTABLE: ${{ github.workspace }}\artifacts\worker-venv\Scripts\python.exe
+        run: |
+          node tools/python-supply-chain/cli.mjs build-provenance-verify \
+            --inventory compliance/python-artifacts/windows/runtime.v2.json \
+            --inventory compliance/python-artifacts/windows/worker-build.v2.json \
+            --artifact-root artifacts/python-approved/wheels \
+            --toolchain-inventory compliance/python-toolchain/windows.v1.json \
+            --toolchain-artifact-root artifacts/python-approved/toolchain \
+            --build-provenance artifacts/compliance/windows/BUILD_PROVENANCE.json \
+            --build-root . --final-artifact dist/media-worker.exe
+          node tools/python-supply-chain/cli.mjs native-inventory \
+            --inventory compliance/python-artifacts/windows/runtime.v2.json \
+            --inventory compliance/python-artifacts/windows/worker-build.v2.json \
+            --artifact-root artifacts/python-approved/wheels \
+            --toolchain-inventory compliance/python-toolchain/windows.v1.json \
+            --toolchain-artifact-root artifacts/python-approved/toolchain \
+            --build-provenance artifacts/compliance/windows/BUILD_PROVENANCE.json \
+            --build-root . --final-artifact dist/media-worker.exe \
+            --inventory-id code-c-windows-packaged-worker \
+            --output artifacts/compliance/windows/PACKAGED_NATIVE_INVENTORY.json
+          node tools/python-supply-chain/cli.mjs reconcile \
+            --inventory compliance/python-artifacts/windows/runtime.v2.json \
+            --inventory compliance/python-artifacts/windows/worker-build.v2.json \
+            --artifact-root artifacts/python-approved/wheels \
+            --toolchain-inventory compliance/python-toolchain/windows.v1.json \
+            --toolchain-artifact-root artifacts/python-approved/toolchain \
+            --build-provenance artifacts/compliance/windows/BUILD_PROVENANCE.json \
+            --build-root . --final-artifact dist/media-worker.exe \
+            --packaged-inventory artifacts/compliance/windows/PACKAGED_NATIVE_INVENTORY.json \
+            --output artifacts/compliance/windows/PACKAGED_NATIVE_RECONCILIATION.json
+      - name: Materialize notices and target SBOM
+        shell: bash
+        run: |
+          artifacts/worker-venv/Scripts/python.exe tools/code-c-python-supply-chain/assemble_release_notices.py \
+            --target windows \
+            --artifact-root artifacts/python-approved/wheels \
+            --toolchain-artifact-root artifacts/python-approved/toolchain \
+            --wheel-license-report artifacts/compliance/windows/PYTHON_LICENSE.json \
+            --toolchain-license-report artifacts/compliance/windows/TOOLCHAIN_LICENSE.json \
+            --usage-evaluation artifacts/compliance/windows/PYINSTALLER_USAGE_LICENSE.json \
+            --output artifacts/compliance/windows/THIRD_PARTY_NOTICES.md \
+            --report artifacts/compliance/windows/NOTICE_RECONCILIATION.json
+          node tools/compliance/generate-sbom.mjs \
+            --output artifacts/compliance/windows/SBOM.cdx.json \
+            --license-report artifacts/compliance/windows/PYTHON_LICENSE.json \
+            --license-report artifacts/compliance/windows/TOOLCHAIN_LICENSE.json \
+            --python-inventory compliance/python-artifacts/windows/runtime.v2.json \
+            --python-inventory compliance/python-artifacts/windows/worker-build.v2.json \
+            --python-inventory compliance/python-artifacts/windows/model-export.v2.json \
+            --python-inventory compliance/python-artifacts/windows/model-evaluation.v2.json \
+            --packaged-native-inventory artifacts/compliance/windows/PACKAGED_NATIVE_INVENTORY.json \
+            --toolchain-inventory compliance/python-toolchain/windows.v1.json \
+            --build-provenance artifacts/compliance/windows/BUILD_PROVENANCE.json \
+            --bundled-license-scan compliance/license-evidence/pillow-12.3.0/windows-cp313.scan.json
+      - name: Packaged media Worker runtime smoke
         shell: pwsh
         run: |
-          $runtime = & .\dist\media-worker.exe --runtime-smoke | ConvertFrom-Json
+          New-Item -ItemType Directory -Force artifacts/compliance/windows | Out-Null
+          $runtimeJson = & .\dist\media-worker.exe --runtime-smoke
+          $runtimeJson | Set-Content -Encoding utf8 artifacts/compliance/windows/WORKER_RUNTIME_SMOKE.json
+          $runtime = $runtimeJson | ConvertFrom-Json
           if ($runtime.status -ne 'PASS') { throw 'Packaged worker runtime smoke failed' }
           if ($runtime.onnxruntime -ne '1.29.0') { throw 'Unexpected ONNX Runtime version' }
           if ($runtime.providers -notcontains 'CPUExecutionProvider') { throw 'CPU provider missing' }
@@ -64,10 +261,12 @@ jobs:
           $hello = $helloRequest | & .\dist\media-worker.exe | ConvertFrom-Json
           if ($hello.type -ne 'hello') { throw 'Packaged worker hello failed' }
           if ($hello.protocol_version -ne '1.0') { throw 'Sidecar protocol changed' }
-      - run: pnpm native:rebuild
-      - run: pnpm package:dir
-      - run: $env:REQUIRE_PACKAGED_SMOKE='1'; pnpm exec vitest run tests/integration/native-addon-packaging.test.ts --maxWorkers=1
-      - run: pnpm compliance:python:packaged:verify
-        env:
-          PYTHON_TARGET_OS: windows
-          PYTHON_TARGET_ARCHITECTURE: x86_64
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-worker-supply-chain-${{ github.sha }}
+          path: |
+            artifacts/compliance/windows
+            dist/media-worker.exe
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30

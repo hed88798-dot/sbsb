@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import shutil
 import subprocess
-from pathlib import Path
+import zipfile
+from pathlib import Path, PurePosixPath
 
 from policy import hermetic_environment, sha256_file
 
@@ -38,6 +40,29 @@ def copy_exact(source: Path, destination: Path, expected_hash: str) -> None:
     shutil.copyfile(source, destination)
     if sha256_file(destination) != expected_hash:
         raise SystemExit(f"approved artifact copy drift: {destination.name}")
+
+
+def verify_wheel_license_files(
+    wheel: Path, expected: list[dict[str, object]], label: str
+) -> None:
+    with zipfile.ZipFile(wheel) as archive:
+        names = archive.namelist()
+        if len(names) != len(set(names)):
+            raise SystemExit(f"{label} wheel contains duplicate archive paths")
+        for name in names:
+            path = PurePosixPath(name)
+            if path.is_absolute() or ".." in path.parts or "\\" in name:
+                raise SystemExit(f"{label} wheel contains unsafe path: {name}")
+        for entry in expected:
+            relative_path = str(entry["relative_path"])
+            matches = [name for name in names if name == relative_path]
+            if len(matches) != 1:
+                raise SystemExit(
+                    f"{label} wheel has {len(matches)} exact license files: {relative_path}"
+                )
+            actual_hash = hashlib.sha256(archive.read(matches[0])).hexdigest()
+            if actual_hash != entry["sha256"]:
+                raise SystemExit(f"{label} wheel license evidence hash drift: {relative_path}")
 
 
 def vulnerability(
@@ -84,6 +109,18 @@ def main() -> None:
         raise SystemExit("toolchain vulnerability review schema is invalid")
 
     target_source = arguments.bundle / "toolchain" / arguments.target
+    cpython_license = evidence["actual_sources"]["cpython_distribution"][
+        "installed_license"
+    ]
+    cpython_license_source = arguments.bundle / cpython_license["evidence_path"]
+    cpython_license_destination = (
+        REPOSITORY_ROOT
+        / "compliance"
+        / "license-evidence"
+        / "cpython-3.13.15"
+        / f"{arguments.target}.LICENSE.txt"
+    )
+    copy_exact(cpython_license_source, cpython_license_destination, cpython_license["sha256"])
     distribution = target_lock["cpython_distribution"]
     pip = source_lock["pip"]
     pyinstaller = target_lock["pyinstaller"]
@@ -112,6 +149,12 @@ def main() -> None:
     pyinstaller_lock = json.loads(PYINSTALLER_QUALITY_LOCK.read_text(encoding="utf-8"))
     pyinstaller_component = next(
         item for item in pyinstaller_lock["components"] if item["package_name"] == "pyinstaller"
+    )
+    verify_wheel_license_files(source_paths["pip"], pip["license_files"], "pip")
+    verify_wheel_license_files(
+        source_paths["pyinstaller"],
+        pyinstaller_component["license_files"],
+        "PyInstaller",
     )
     ids = {
         "cpython": f"cpython-{source_lock['python_version'].replace('.', '')}-{arguments.target}-x64",
@@ -155,8 +198,10 @@ def main() -> None:
                 "expression": source_lock["cpython_license_expression"],
                 "files": [
                     {
-                        "relative_path": evidence["actual_sources"]["cpython_distribution"]["installed_license"]["relative_path"],
-                        "sha256": evidence["actual_sources"]["cpython_distribution"]["installed_license"]["sha256"],
+                        "relative_path": cpython_license_destination.relative_to(
+                            REPOSITORY_ROOT
+                        ).as_posix(),
+                        "sha256": cpython_license["sha256"],
                     }
                 ],
                 "review_status": "APPROVED",

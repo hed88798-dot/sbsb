@@ -9,13 +9,16 @@ closures are calculated independently from the exact wheel `METADATA` on the rea
 Candidate refresh is intentionally not part of pull-request CI. Dispatch the manual
 `Python supply-chain candidate generation` workflow. Each target job:
 
-1. uses the exact `actions/setup-python` distribution in `toolchain-source-lock.json`;
-2. creates a venv without pip and extracts the hash-locked pip wheel into it;
-3. resolves markers and extras from exact wheel metadata using the shared packaging 25.0 engine;
-4. downloads binary wheels only from the approved PyPI index and records their canonical artifact URLs;
-5. installs the candidate runtime/build graph with `--require-hashes`;
-6. builds the real PyInstaller one-file worker and inspects its CArchive;
-7. fails if any wheel-native byte is absent or any embedded native byte has no exact wheel/CPython owner.
+1. uses a bootstrap interpreter only to download the locked CPython distribution;
+2. verifies the distribution, installer entry, and interpreter payload hashes before installing the exact
+   `actions/python-versions` CPython 3.13.15 artifact;
+3. attests the installed interpreter as standard-GIL `cp313` from its real `sys_tags` and runner identity;
+4. creates a venv without pip and extracts the hash-locked pip 26.2.1 wheel into it;
+5. resolves markers and extras from exact wheel metadata using the shared packaging 25.0 engine;
+6. downloads binary wheels only from the approved PyPI index and records their canonical artifact URLs;
+7. installs and reconciles the candidate runtime/build graph with `--require-hashes`;
+8. builds the real PyInstaller one-file worker and inspects its CArchive;
+9. fails if any wheel-native byte is absent or any embedded native byte has no exact wheel/CPython owner.
 
 The uploaded candidates remain `PENDING` and `graph_complete: false`. They are deliberately rejected by
 ordinary CI.
@@ -35,15 +38,18 @@ Approval writes only shared F-contract manifests: Python Artifact Inventory v2 a
 Inventory v1. It also writes exact `--require-hashes` locks. Any unknown license, unresolved advisory,
 candidate drift, missing CArchive native, or artifact hash mismatch stops approval.
 
-The current shared license policy cannot approve every legal exact expression in this graph. Approval therefore
-stops at `CODE_C_QICR_PYTHON_RUNTIME_LICENSE_POLICY.md`; Code C has no private license-decision schema or
+License approval consumes exact upstream wheel metadata and shared Code F evidence. PyInstaller's legacy
+metadata description is bound to the exact public Artifact License Evidence v2 scan and remains subject to
+the dynamic worker-build Usage Binding v1 evaluation. Code C has no private license-decision schema or
 allowlist.
 
 ## Ordinary CI
 
 Ordinary Linux and Windows jobs hydrate only the exact URLs already present in approved manifests, verify
 every byte and metadata edge, install with the pinned pip wheel and committed hash locks, then build and
-reconcile the final worker. They never invoke candidate generation or rewrite inventories.
+reconcile the final worker. Build Provenance, PyInstaller usage binding, license/vulnerability reports, SBOM,
+packaged-native reconciliation, and `THIRD_PARTY_NOTICES` are regenerated for each actual build. Ordinary CI
+never invokes candidate generation or rewrites inventories.
 
 `pip-hermetic.conf` is the only accepted pip configuration. User config, extra indexes, mirrors, arbitrary
 local inputs, VCS references, floating URLs, sdists, cache-source substitutions, and wrong hashes are
