@@ -36,6 +36,10 @@ import {
   loadArtifactLicenseEvidenceV2,
   loadArtifactUsageBindingV1,
 } from '../license-policy/usage-binding.mjs';
+import {
+  reconcilePackagingNativeEvidence,
+  validatePackagingSelectionEvidence,
+} from './packaging-selection.mjs';
 
 function parseArguments(values) {
   const options = { inventories: [], release: false };
@@ -45,6 +49,8 @@ function parseArguments(values) {
     else if (value === '--artifact-root') options.artifactRoot = values[++index];
     else if (value === '--packaged-root') options.packagedRoot = values[++index];
     else if (value === '--packaged-inventory') options.packagedInventory = values[++index];
+    else if (value === '--selection-evidence') options.selectionEvidence = values[++index];
+    else if (value === '--native-reconciliation') options.nativeReconciliation = values[++index];
     else if (value === '--inventory-id') options.inventoryId = values[++index];
     else if (value === '--platform-tag') options.platformTag = values[++index];
     else if (value === '--python-tag') options.pythonTag = values[++index];
@@ -334,6 +340,32 @@ async function reconcile(options) {
   return report;
 }
 
+function packagingSelectionValidate(options) {
+  if (!options.selectionEvidence) {
+    throw new Error('packaging-selection-validate requires --selection-evidence');
+  }
+  const selection = JSON.parse(readFileSync(resolve(options.selectionEvidence), 'utf8'));
+  validatePackagingSelectionEvidence(selection);
+  console.log(
+    `packaging-selection-evidence: PASS (${selection.selected_native_entries.length} authoritative selected native entries; ${selection.symlink_metadata.length} symlinks)`,
+  );
+  return selection;
+}
+
+function nativeReconcileV3(options) {
+  if (!options.nativeReconciliation) {
+    throw new Error('native-reconcile-v3 requires --native-reconciliation');
+  }
+  const selection = packagingSelectionValidate(options);
+  const reconciliation = JSON.parse(readFileSync(resolve(options.nativeReconciliation), 'utf8'));
+  const report = reconcilePackagingNativeEvidence(selection, reconciliation);
+  writeReport(options.output, report);
+  console.log(
+    `packaged-native-reconcile-v3: PASS (${report.counts.approved_manifest} approved; ${report.counts.selected_manifest} selected; ${report.counts.final_manifest} final)`,
+  );
+  return report;
+}
+
 async function repoVerify(options) {
   const paths = inventoryPaths(options);
   const loaded = loadInventories(paths);
@@ -466,6 +498,8 @@ async function main() {
   else if (command === 'artifact-usage-license') await artifactUsageLicense(options);
   else if (command === 'native-inventory') await nativeInventory(options);
   else if (command === 'reconcile') await reconcile(options);
+  else if (command === 'packaging-selection-validate') packagingSelectionValidate(options);
+  else if (command === 'native-reconcile-v3') nativeReconcileV3(options);
   else if (command === 'repo-verify') await repoVerify(options);
   else if (command === 'repo-native-verify') await repoNativeVerify(options);
   else if (command === 'repo-target-verify-current') await repoTargetVerifyCurrent(options);
