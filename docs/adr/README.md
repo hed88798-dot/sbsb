@@ -6,4 +6,5 @@ Code 0 的批准基线保存在 `docs/architecture/code-0/`，不得直接重写
 
 当前共享质量与合规决定：
 
+- [ADR-007: Packaging Selected Native Contract](ADR-007-packaging-selected-native-contract.md)
 - [ADR-006: Two-stage Toolchain Vulnerability Disposition](ADR-006-two-stage-toolchain-vulnerability-disposition.md)

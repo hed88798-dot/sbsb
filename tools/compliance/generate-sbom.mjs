@@ -11,6 +11,7 @@ import {
 import {
   buildBundledLicenseSbomRecords,
   buildPythonSbomRecords,
+  buildRuntimeNativeSbomRecords,
   validatePythonSbomBinding,
 } from '../python-supply-chain/sbom.mjs';
 import { buildToolchainSbomRecords } from '../python-supply-chain/sbom.mjs';
@@ -72,6 +73,14 @@ const buildProvenancePaths = process.argv
   .flatMap((value, index) => (value === '--build-provenance' ? [process.argv[index + 1]] : []))
   .filter(Boolean)
   .map((path) => resolve(repositoryRoot, path));
+const selectionEvidencePaths = process.argv
+  .flatMap((value, index) => (value === '--selection-evidence' ? [process.argv[index + 1]] : []))
+  .filter(Boolean)
+  .map((path) => resolve(repositoryRoot, path));
+const nativeReconciliationPaths = process.argv
+  .flatMap((value, index) => (value === '--native-reconciliation' ? [process.argv[index + 1]] : []))
+  .filter(Boolean)
+  .map((path) => resolve(repositoryRoot, path));
 const bundledLicenseScanPaths = process.argv
   .flatMap((value, index) => (value === '--bundled-license-scan' ? [process.argv[index + 1]] : []))
   .filter(Boolean)
@@ -89,6 +98,7 @@ let buildProvenances;
 let licenseDecisions;
 let bundledLicenseScans;
 let bundledLicenseEvaluations;
+let runtimeNativeRecords;
 try {
   inventory = collectPnpmInventory(repositoryRoot);
   pythonInventories = loadInventories(
@@ -110,6 +120,17 @@ try {
   );
   bundledLicenseEvaluations = bundledLicenseScans.map((scan) =>
     evaluateBundledLicenseEvidence(scan),
+  );
+  if (selectionEvidencePaths.length !== nativeReconciliationPaths.length) {
+    throw new Error(
+      '--selection-evidence and --native-reconciliation must be supplied in matching pairs',
+    );
+  }
+  runtimeNativeRecords = selectionEvidencePaths.map((path, index) =>
+    buildRuntimeNativeSbomRecords(
+      JSON.parse(readFileSync(path, 'utf8')),
+      JSON.parse(readFileSync(nativeReconciliationPaths[index], 'utf8')),
+    ),
   );
 } catch (error) {
   console.error(`sbom: FAIL\n${error.message}`);
@@ -216,6 +237,7 @@ const components = [
   ...pythonRecords.components,
   ...bundledLicenseRecords.components,
   ...toolchainRecords.components,
+  ...runtimeNativeRecords.flatMap((record) => record.components),
 ];
 validatePythonSbomBinding(pythonInventories, components);
 function mergeDependencies(records) {
@@ -233,6 +255,7 @@ const dependencies = mergeDependencies([
   ...pythonRecords.dependencies,
   ...bundledLicenseRecords.dependencies,
   ...toolchainRecords.dependencies,
+  ...runtimeNativeRecords.flatMap((record) => record.dependencies),
 ]);
 const bom = {
   bomFormat: 'CycloneDX',
@@ -272,5 +295,5 @@ const bom = {
 mkdirSync(dirname(outputPath), { recursive: true });
 writeFileSync(outputPath, `${JSON.stringify(bom, null, 2)}\n`);
 console.log(
-  `sbom: PASS (scaffold; ${npmComponents.length} npm + ${pythonRecords.components.length} product Python/native + ${bundledLicenseRecords.components.length} wheel-bundled license components + ${qualityToolComponents.length} compliance-tool + ${toolchainRecords.components.length} toolchain/build components; ${outputPath})`,
+  `sbom: PASS (scaffold; ${npmComponents.length} npm + ${pythonRecords.components.length} build/dependency Python/native + ${runtimeNativeRecords.flatMap((record) => record.components).length} final runtime native + ${bundledLicenseRecords.components.length} wheel-bundled license components + ${qualityToolComponents.length} compliance-tool + ${toolchainRecords.components.length} toolchain/build components; ${outputPath})`,
 );
