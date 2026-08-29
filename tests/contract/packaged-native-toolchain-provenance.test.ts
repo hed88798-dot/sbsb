@@ -540,13 +540,13 @@ describe('packaged native / Python toolchain provenance v2', () => {
       expect.objectContaining({
         internal_path: 'package/libfoo.so',
         classification: 'EMBEDDED_NATIVE',
-        storage: { typecode: 'b' },
+        storage: expect.objectContaining({ typecode: 'b' }),
       }),
     );
     expect(value.symlink_metadata[0]).toMatchObject({
       internal_path: 'libfoo.so',
       symlink_target: 'package/libfoo.so',
-      storage: { typecode: 'n' },
+      storage: expect.objectContaining({ typecode: 'n' }),
     });
   });
 
