@@ -4,6 +4,7 @@ import argparse
 import json
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 from packaging.utils import canonicalize_name
@@ -245,19 +246,26 @@ def approve_scope(
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(canonical_json(approved), encoding="utf-8")
     lock = lock_root / f"{target}-{scope_name}.requirements.txt"
-    run(
-        [
-            "node",
-            str(REQUIRE_HASHES),
-            "--inventory",
-            str(output),
-            "--artifact-root",
-            str(artifact_root),
-            "--output",
-            str(lock),
-        ],
-        environment,
-    )
+    with tempfile.TemporaryDirectory(prefix=f"code-c-{target}-{scope_name}-") as directory:
+        scope_artifact_root = Path(directory)
+        for package in approved_packages:
+            relative = Path(str(package["artifact_path"]))
+            copy = scope_artifact_root / relative
+            copy.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(artifact_root / relative, copy)
+        run(
+            [
+                "node",
+                str(REQUIRE_HASHES),
+                "--inventory",
+                str(output),
+                "--artifact-root",
+                str(scope_artifact_root),
+                "--output",
+                str(lock),
+            ],
+            environment,
+        )
     return output, len(approved_packages)
 
 
