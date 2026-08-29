@@ -393,3 +393,48 @@ jobs:
           if-no-files-found: error
           compression-level: 0
           retention-days: 30
+
+  report-license-preparation-status:
+    if: always()
+    needs: [generate-target-candidate, assemble-license-review-bundle]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      statuses: write
+    steps:
+      - name: Download completed license preparation summary
+        if: needs.assemble-license-review-bundle.result == 'success'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: code-c-artifact-license-review-bundle-${{ github.sha }}
+          path: artifacts/python-supply-chain/license-review-bundle
+      - name: Publish exact candidate preparation status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          TARGET_SHA: ${{ github.sha }}
+          TARGET_REPOSITORY: ${{ github.repository }}
+          TARGET_JOBS_RESULT: ${{ needs.generate-target-candidate.result }}
+          BUNDLE_JOB_RESULT: ${{ needs.assemble-license-review-bundle.result }}
+        shell: bash
+        run: |
+          state=failure
+          description="candidate preparation failed before exact-artifact bundle"
+          summary=artifacts/python-supply-chain/license-review-bundle/CODE_C_LICENSE_REVIEW_PREPARATION.json
+          if [[ "$TARGET_JOBS_RESULT" == success && "$BUNDLE_JOB_RESULT" == success && -f "$summary" ]]; then
+            state=success
+            description="$(jq -r '"bundle ready; gate=" + .python_license_gate + "; total=" + (.total_unique_wheel_artifacts|tostring) + ", review=" + (.required_review|tostring) + ", blocked=" + (.hard_blocked|tostring)' "$summary")"
+          fi
+          payload="$(jq -n \
+            --arg state "$state" \
+            --arg context 'code-c/artifact-license-review-preparation' \
+            --arg description "$description" \
+            --arg target_url "$TARGET_URL" \
+            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+          curl --fail --silent --show-error \
+            --request POST \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'Accept: application/vnd.github+json' \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "${{ github.api_url }}/repos/$TARGET_REPOSITORY/statuses/$TARGET_SHA" \
+            --data "$payload"
