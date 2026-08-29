@@ -1,0 +1,64 @@
+{
+  "schema_version": "1",
+  "fixture_scope": "REGRESSION_ONLY_NOT_RELEASE_APPROVAL",
+  "source_candidate_commit": "92550e038c43ff0b1d832c7819d3a3873d1a2972",
+  "source_workflow_run_id": "33243775925",
+  "source_workflow_job_id": "99077641636",
+  "reviewer_fixture": {
+    "identity": "github:hed88798-dot",
+    "role": "LICENSE_COMPLIANCE_APPROVER",
+    "authority_id": "code-f-quality-release-compliance",
+    "approval_method": "CONTROLLED_PULL_REQUEST_REQUIRED_REVIEW"
+  },
+  "artifacts": [
+    {
+      "evidence": "flatbuffers.evidence.v3.json",
+      "review_id": "code-c-linux-flatbuffers-25.12.19-qicr",
+      "reviewed_spdx_expression": "Apache-2.0",
+      "expected_review_outcome": "ACTIVE_POLICY_PASS",
+      "evidence_references": ["raw:legacy-license", "raw:license-classifier"]
+    },
+    {
+      "evidence": "numpy.evidence.v3.json",
+      "review_id": "code-c-linux-numpy-2.3.5-qicr",
+      "reviewed_spdx_expression": "BSD-3-Clause",
+      "expected_review_outcome": "ACTIVE_TOP_LEVEL_ASSERTION",
+      "evidence_references": ["raw:legacy-license", "raw:license-classifier", "raw:license-files"]
+    },
+    {
+      "evidence": "onnxruntime.evidence.v3.json",
+      "review_id": "code-c-linux-onnxruntime-1.29.0-qicr",
+      "reviewed_spdx_expression": "MIT",
+      "expected_review_outcome": "ACTIVE_POLICY_PASS",
+      "evidence_references": ["raw:legacy-license", "raw:license-classifier", "raw:license-files"]
+    },
+    {
+      "evidence": "opencv_python_headless.evidence.v3.json",
+      "review_id": "code-c-linux-opencv-python-headless-4.14.0.94-qicr",
+      "reviewed_spdx_expression": "Apache-2.0",
+      "expected_review_outcome": "ACTIVE_TOP_LEVEL_ASSERTION",
+      "evidence_references": ["raw:legacy-license", "raw:license-classifier", "raw:license-files"]
+    },
+    {
+      "evidence": "protobuf.evidence.v3.json",
+      "review_id": "code-c-linux-protobuf-7.36.0-qicr",
+      "reviewed_spdx_expression": "BSD-3-Clause",
+      "expected_review_outcome": "ACTIVE_POLICY_PASS",
+      "evidence_references": ["raw:legacy-license", "raw:license-files"]
+    },
+    {
+      "evidence": "pyinstaller_hooks_contrib.evidence.v3.json",
+      "review_id": "code-c-linux-pyinstaller-hooks-contrib-2026.7-qicr",
+      "reviewed_spdx_expression": "GPL-2.0-or-later AND Apache-2.0",
+      "expected_review_outcome": "ACTIVE_POLICY_FAIL_CLOSED",
+      "evidence_references": ["raw:license-classifier", "raw:license-files"]
+    },
+    {
+      "evidence": "sentencepiece.evidence.v3.json",
+      "review_id": "code-c-linux-sentencepiece-0.2.1-qicr",
+      "reviewed_spdx_expression": "Apache-2.0",
+      "expected_review_outcome": "EVIDENCE_INSUFFICIENT_FAIL_CLOSED",
+      "evidence_references": ["external-review-required:upstream-source-license"]
+    }
+  ]
+}

@@ -40,9 +40,10 @@ import {
   reconcilePackagingNativeEvidence,
   validatePackagingSelectionEvidence,
 } from './packaging-selection.mjs';
+import { loadArtifactLicenseReviews } from '../license-policy/artifact-review.mjs';
 
 function parseArguments(values) {
-  const options = { inventories: [], release: false };
+  const options = { inventories: [], artifactLicenseReviews: [], release: false };
   for (let index = 0; index < values.length; index += 1) {
     const value = values[index];
     if (value === '--inventory') options.inventories.push(values[++index]);
@@ -64,6 +65,8 @@ function parseArguments(values) {
     else if (value === '--build-provenance') options.buildProvenance = values[++index];
     else if (value === '--artifact-license-evidence')
       options.artifactLicenseEvidence = values[++index];
+    else if (value === '--artifact-license-review')
+      options.artifactLicenseReviews.push(values[++index]);
     else if (value === '--artifact-usage-binding') options.artifactUsageBinding = values[++index];
     else if (value === '--build-root') options.buildRoot = values[++index];
     else if (value === '--final-artifact') options.finalArtifact = values[++index];
@@ -74,6 +77,9 @@ function parseArguments(values) {
     else throw new Error(`unknown argument: ${value}`);
   }
   if (options.inventories.some((path) => !path)) throw new Error('--inventory requires a path');
+  if (options.artifactLicenseReviews.some((path) => !path)) {
+    throw new Error('--artifact-license-review requires a path');
+  }
   return options;
 }
 
@@ -246,10 +252,12 @@ async function license(options) {
     ? JSON.parse(readFileSync(resolve(options.previousLicenseReport), 'utf8'))
     : null;
   const usageEvaluations = options.artifactUsageBinding ? [artifactUsageEvaluation(options)] : [];
+  const licenseReviews = loadArtifactLicenseReviews(options.artifactLicenseReviews);
   const report = auditPythonLicenses(verified, {
     release: options.release,
     previousReport,
     usageEvaluations,
+    licenseReviews,
   });
   writeReport(options.output, report);
   console.log(

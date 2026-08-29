@@ -455,6 +455,7 @@ describe('Python SPDX expression parser and commercial policy', () => {
           sha256: '1'.repeat(64),
           package_name: 'conflicting-wheel',
           version: '1.0.0',
+          filename: 'conflicting-wheel-1.0.0-py3-none-any.whl',
           purl: 'pkg:pypi/conflicting-wheel@1.0.0',
           source: 'https://example.invalid/source',
           source_index: 'https://example.invalid/index',
@@ -466,7 +467,20 @@ describe('Python SPDX expression parser and commercial policy', () => {
           license_expression: 'MIT',
           license_files: [{ relative_path: 'LICENSE', sha256: '2'.repeat(64) }],
         },
-        inspected: { license_expression: 'Apache-2.0', legacy_license: null },
+        inspected: {
+          metadata_sha256: '3'.repeat(64),
+          license_expression: 'Apache-2.0',
+          legacy_license: null,
+          license_classifiers: [],
+          license_files: [
+            {
+              relative_path: 'LICENSE',
+              kind: 'LICENSE',
+              sha256: '2'.repeat(64),
+              size: 1,
+            },
+          ],
+        },
       },
     ]);
     expect(wheelEvidence.evidence_status).toBe('CONFLICT');
