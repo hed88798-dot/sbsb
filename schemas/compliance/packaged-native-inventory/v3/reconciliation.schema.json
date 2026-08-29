@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/packaged-native-inventory/v3/reconciliation.schema.json",
+  "title": "Native Reconciliation v3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "reconciliation_id",
+    "build_context_id",
+    "selection_evidence",
+    "approved_native_universe",
+    "approved_late_stage_native",
+    "materialized_native_entries",
+    "final_native_entries",
+    "legacy_missing_domain"
+  ],
+  "properties": {
+    "schema_version": { "const": "3" },
+    "reconciliation_id": { "$ref": "#/$defs/id" },
+    "build_context_id": { "$ref": "#/$defs/id" },
+    "selection_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "sha256"],
+      "properties": {
+        "evidence_id": { "$ref": "#/$defs/id" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "approved_native_universe": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/entry" }
+    },
+    "approved_late_stage_native": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/entry" }
+    },
+    "materialized_native_entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/entry" }
+    },
+    "final_native_entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/entry" }
+    },
+    "legacy_missing_domain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domain_name", "entries"],
+      "properties": {
+        "domain_name": { "const": "V2_EXPECTED_BUT_FINAL_MISSING" },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["entry_id", "classification"],
+            "properties": {
+              "entry_id": { "$ref": "#/$defs/id" },
+              "classification": {
+                "enum": [
+                  "APPROVED_NOT_SELECTED",
+                  "SELECTED_BUT_MISSING",
+                  "RELOCATED_OR_RENAMED",
+                  "GRAPH_ERROR",
+                  "UNRESOLVED"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{2,191}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "architecture", "python_version"],
+      "properties": {
+        "os": { "enum": ["windows", "linux", "macos"] },
+        "architecture": { "enum": ["x86_64", "arm64"] },
+        "python_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+      }
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entry_id",
+        "source_artifact_id",
+        "source_artifact_sha256",
+        "source_path",
+        "internal_path",
+        "payload_sha256",
+        "owner_kind",
+        "target",
+        "build_context_id"
+      ],
+      "properties": {
+        "entry_id": { "$ref": "#/$defs/id" },
+        "source_artifact_id": { "$ref": "#/$defs/id" },
+        "source_artifact_sha256": { "$ref": "#/$defs/sha256" },
+        "source_path": { "$ref": "#/$defs/relativePath" },
+        "internal_path": { "$ref": "#/$defs/relativePath" },
+        "payload_sha256": { "$ref": "#/$defs/sha256" },
+        "owner_kind": {
+          "enum": [
+            "WHEEL_OWNED_NATIVE",
+            "CPYTHON_TOOLCHAIN_NATIVE",
+            "SYSTEM_BUILD_RUNTIME_NATIVE",
+            "DERIVED_NATIVE"
+          ]
+        },
+        "target": { "$ref": "#/$defs/target" },
+        "build_context_id": { "$ref": "#/$defs/id" },
+        "approval_basis": { "type": "string", "minLength": 1 },
+        "selected_entry_id": { "$ref": "#/$defs/id" },
+        "materialized_entry_id": { "$ref": "#/$defs/id" },
+        "carchive_typecode": { "enum": ["b"] },
+        "transformation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "enum": ["NONE", "RELOCATED", "DERIVED"] },
+            "tool_id": { "type": "string", "minLength": 1 },
+            "tool_sha256": { "$ref": "#/$defs/sha256" },
+            "configuration_sha256": { "$ref": "#/$defs/sha256" }
+          }
+        }
+      }
+    }
+  }
+}

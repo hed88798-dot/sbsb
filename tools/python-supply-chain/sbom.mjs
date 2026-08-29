@@ -1,4 +1,5 @@
 import { pythonPurl } from './inventory.mjs';
+import { reconcilePackagingNativeEvidence } from './packaging-selection.mjs';
 
 function scopeProperties(inventory, artifact) {
   const properties = [
@@ -186,6 +187,31 @@ export function validatePythonSbomBinding(loaded, components) {
     }
   }
   if (failures.length > 0) throw new Error(failures.join('\n'));
+}
+
+export function buildRuntimeNativeSbomRecords(selection, reconciliation) {
+  reconcilePackagingNativeEvidence(selection, reconciliation);
+  return {
+    components: reconciliation.final_native_entries.map((entry) => ({
+      type: 'file',
+      'bom-ref': `urn:runtime-native:${reconciliation.build_context_id}:${entry.entry_id}`,
+      name: entry.internal_path.split('/').at(-1),
+      hashes: [{ alg: 'SHA-256', content: entry.payload_sha256 }],
+      properties: [
+        { name: 'com.company.native.scope', value: 'RUNTIME_FINAL_WORKER' },
+        { name: 'com.company.native.entry_id', value: entry.entry_id },
+        { name: 'com.company.native.internal_path', value: entry.internal_path },
+        { name: 'com.company.native.owner_kind', value: entry.owner_kind },
+        { name: 'com.company.native.source_artifact_id', value: entry.source_artifact_id },
+        {
+          name: 'com.company.native.source_artifact_sha256',
+          value: entry.source_artifact_sha256,
+        },
+        { name: 'com.company.native.build_context_id', value: entry.build_context_id },
+      ],
+    })),
+    dependencies: [],
+  };
 }
 
 export function buildBundledLicenseSbomRecords(scans = [], evaluations = []) {
