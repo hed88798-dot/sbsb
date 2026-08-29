@@ -13,6 +13,7 @@ import packaging
 from packaging.markers import default_environment
 from packaging.tags import sys_tags
 
+from locked_interpreter import attest_locked_interpreter, require_locked_python_environment
 from policy import sha256_file
 
 
@@ -59,6 +60,15 @@ def main() -> None:
         Path(sys.executable).resolve(),
         Path(getattr(sys, "_base_executable", sys.executable)).resolve(),
     }
+    try:
+        locked_python = require_locked_python_environment()
+        locked_interpreter = attest_locked_interpreter(
+            locked_python,
+            target=arguments.target,
+            target_descriptor=descriptor,
+        )
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
     tags = sorted({str(tag) for tag in sys_tags()})
     actual_target = "windows" if sys.platform == "win32" else "linux" if sys.platform.startswith("linux") else ""
     gil_api_value = sys._is_gil_enabled() if hasattr(sys, "_is_gil_enabled") else None
@@ -108,6 +118,7 @@ def main() -> None:
         installation.get("status") != "PASS"
         or installation.get("distribution", {}).get("sha256") != distribution["sha256"]
         or installation_executable not in interpreter_chain
+        or locked_python.resolve() != installation_executable
     ):
         failures.append("running interpreter is not bound to locked installation evidence")
 
@@ -140,6 +151,7 @@ def main() -> None:
             "soabi": soabi,
             "cache_tag": cache_tag,
         },
+        "locked_interpreter": locked_interpreter,
         "distribution": {
             "filename": arguments.distribution.name,
             "sha256": sha256_file(arguments.distribution),

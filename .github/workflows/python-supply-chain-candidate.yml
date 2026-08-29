@@ -46,8 +46,15 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           # Bootstrap only: this interpreter downloads/installs the locked distribution and is
-          # never used for graph resolution, installation, or the Worker build.
-          python-version: '3.12.13'
+          # only passed to the negative isolation regression after installation.
+          python-version: '3.12.10'
+      - name: Capture bootstrap Python identity for isolation regression
+        id: bootstrap-python
+        shell: bash
+        run: |
+          bootstrap_python="$(python -c 'import os, sys; print(os.path.abspath(sys.executable))')"
+          echo "python=$bootstrap_python" >> "$GITHUB_OUTPUT"
+          python --version
       - run: pnpm install --frozen-lockfile
       - run: >-
           python tools/code-c-python-supply-chain/download_toolchain_sources.py
@@ -94,6 +101,7 @@ jobs:
       - name: Attest standard-GIL cp313 interpreter and runner target
         shell: bash
         env:
+          PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
           PYTHONPATH: ${{ github.workspace }}/artifacts/python-compliance-tools/site-packages
           PYTHONNOUSERSITE: '1'
         run: >-
@@ -103,10 +111,24 @@ jobs:
           --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.distribution }}
           --installation-evidence artifacts/python-supply-chain/evidence/${{ matrix.target }}-cpython-installation.json
           --output artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json
+      - name: Verify locked Python binding isolation and path handling
+        shell: bash
+        env:
+          LOCKED_PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
+          BOOTSTRAP_PYTHON_EXECUTABLE: ${{ steps.bootstrap-python.outputs.python }}
+          CANDIDATE_PYTHON_EXECUTABLE: ${{ github.workspace }}/${{ matrix.venv_python }}
+        run: |
+          "$CANDIDATE_PYTHON_EXECUTABLE" tools/code-c-python-supply-chain/verify_interpreter_binding_regressions.py \
+            --target "${{ matrix.target }}" \
+            --target-descriptor "artifacts/python-supply-chain/target/${{ matrix.target }}.json" \
+            --locked-python "$LOCKED_PYTHON_EXECUTABLE" \
+            --bootstrap-python "$BOOTSTRAP_PYTHON_EXECUTABLE" \
+            --output "artifacts/python-supply-chain/evidence/${{ matrix.target }}-interpreter-binding-regressions.json"
       - name: Generate target graph from wheel metadata
         shell: bash
         env:
           PIP_CONFIG_FILE: ${{ github.workspace }}/sidecars/media-worker/supply-chain/pip-hermetic.conf
+          PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
           PYTHONNOUSERSITE: '1'
           PYTHONPATH: ${{ github.workspace }}/artifacts/python-compliance-tools/site-packages
         run: >-

@@ -67,6 +67,8 @@ def main() -> None:
     runtime_path = root / "candidates" / "code-c-windows-runtime.v2.json"
     worker_build_path = root / "candidates" / "code-c-windows-worker-build.v2.json"
     runtime_identity_path = root / "evidence" / "windows-runtime-identity.json"
+    graph_attestation_path = root / "evidence" / "windows-graph-interpreter-attestation.json"
+    binding_regressions_path = root / "evidence" / "windows-interpreter-binding-regressions.json"
     target_evidence_path = root / "evidence" / "windows-target-evidence.json"
     stage_a_path = root / "evidence" / "windows-stage-a-artifact-binding.json"
     inspection_path = root / "inspection" / "windows-worker-onefile.json"
@@ -82,6 +84,8 @@ def main() -> None:
     runtime = load(runtime_path)
     worker_build = load(worker_build_path)
     runtime_identity = load(runtime_identity_path)
+    graph_attestation = load(graph_attestation_path)
+    binding_regressions = load(binding_regressions_path)
     target_evidence = load(target_evidence_path)
     stage_a = load(stage_a_path)
     inspection = load(inspection_path)
@@ -107,6 +111,25 @@ def main() -> None:
         or interpreter.get("python_free_threaded") is not False  # type: ignore[union-attr]
     ):
         failures.append("runtime identity is not standard-GIL CPython 3.13.15/cp313")
+    locked_interpreter = runtime_identity.get("locked_interpreter", {})
+    if (
+        locked_interpreter.get("status") != "PASS"  # type: ignore[union-attr]
+        or graph_attestation.get("status") != "PASS"
+        or graph_attestation.get("executable_sha256")
+        != locked_interpreter.get("executable_sha256")  # type: ignore[union-attr]
+        or graph_attestation.get("runtime_library_sha256")
+        != locked_interpreter.get("runtime_library_sha256")  # type: ignore[union-attr]
+    ):
+        failures.append("graph interpreter attestation is not bound to locked runtime identity")
+    if (
+        binding_regressions.get("status") != "PASS"
+        or binding_regressions.get("python_executable_binding") != "PASS"
+        or binding_regressions.get("bootstrap_python_isolation") != "PASS"
+        or binding_regressions.get("missing_python_executable_fail_closed") != "PASS"
+        or binding_regressions.get("path_with_spaces_regression") != "PASS"
+        or binding_regressions.get("subprocess_shell") is not False
+    ):
+        failures.append("locked interpreter binding regressions are not PASS")
     for label, observed in (
         ("target evidence", target_evidence.get("final_artifact", {}).get("sha256")),  # type: ignore[union-attr]
         ("CArchive inspection", inspection.get("final_artifact", {}).get("sha256")),  # type: ignore[union-attr]
@@ -183,6 +206,10 @@ def main() -> None:
         "cpython_distribution_wrapper_sha256": runtime_identity.get("distribution", {}).get(  # type: ignore[union-attr]
             "sha256"
         ),
+        "locked_python_executable_sha256": locked_interpreter.get("executable_sha256"),  # type: ignore[union-attr]
+        "locked_python_runtime_dll_sha256": locked_interpreter.get(  # type: ignore[union-attr]
+            "runtime_library_sha256"
+        ),
         "wheel_graph_identity": canonical_sha256(wheel_graph),
         "toolchain_inventory_identity": canonical_sha256(toolchain_identity),
         "native_inventory_identity": canonical_sha256(native_identity),
@@ -218,6 +245,8 @@ def main() -> None:
                 runtime_path,
                 worker_build_path,
                 runtime_identity_path,
+                graph_attestation_path,
+                binding_regressions_path,
                 target_evidence_path,
                 stage_a_path,
                 inspection_path,
@@ -303,6 +332,10 @@ MAIN_QUALITY_BASELINE_SHA: `{arguments.main_quality_baseline}`
 CPYTHON_VERSION: `3.13.15`
 
 CPYTHON_ACTUAL_BUILD_ARTIFACT_SHA256: `{build_context['cpython_artifact_sha256']}`
+
+LOCKED_PYTHON_EXECUTABLE_SHA256: `{build_context['locked_python_executable_sha256']}`
+
+LOCKED_PYTHON_RUNTIME_DLL_SHA256: `{build_context['locked_python_runtime_dll_sha256']}`
 
 STAGE_A_CPYTHON_ARTIFACT_SHA256: `{stage_a.get('stage_a_cpython_sha256')}`
 

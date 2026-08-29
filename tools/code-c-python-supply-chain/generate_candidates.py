@@ -15,6 +15,7 @@ from packaging.requirements import Requirement
 from packaging.utils import canonicalize_name
 from packaging.version import Version
 
+from locked_interpreter import attest_locked_interpreter, require_locked_python_environment
 from policy import assert_standard_cp313_artifact, hermetic_environment, sha256_file
 
 
@@ -281,12 +282,57 @@ def main() -> None:
     parser.add_argument("--runtime-identity", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     arguments = parser.parse_args()
-    if packaging.__version__ != "25.0":
-        raise SystemExit(f"marker resolver requires locked packaging 25.0, got {packaging.__version__}")
     try:
+        locked_python = require_locked_python_environment()
         environment = hermetic_environment()
     except ValueError as error:
         raise SystemExit(str(error)) from error
+    if packaging.__version__ != "25.0":
+        raise SystemExit(f"marker resolver requires locked packaging 25.0, got {packaging.__version__}")
+    environment["PYTHON_EXECUTABLE"] = str(locked_python)
+    descriptor = json.loads(arguments.target_descriptor.read_text(encoding="utf-8"))
+    runtime_identity = json.loads(arguments.runtime_identity.read_text(encoding="utf-8"))
+    try:
+        graph_attestation = attest_locked_interpreter(
+            locked_python,
+            target=arguments.target,
+            target_descriptor=descriptor,
+            environment=environment,
+        )
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
+    recorded_locked_interpreter = runtime_identity.get("locked_interpreter", {})
+    if (
+        recorded_locked_interpreter.get("status") != "PASS"
+        or recorded_locked_interpreter.get("executable") != graph_attestation["executable"]
+        or recorded_locked_interpreter.get("executable_sha256")
+        != graph_attestation["executable_sha256"]
+        or recorded_locked_interpreter.get("runtime_library_sha256")
+        != graph_attestation["runtime_library_sha256"]
+    ):
+        raise SystemExit("candidate generation locked interpreter differs from runtime evidence")
+    arguments.output_root.mkdir(parents=True, exist_ok=True)
+    graph_attestation_path = (
+        arguments.output_root / "evidence" / f"{arguments.target}-graph-interpreter-attestation.json"
+    )
+    graph_attestation_path.parent.mkdir(parents=True, exist_ok=True)
+    graph_attestation_path.write_text(
+        canonical_json(
+            {
+                "schema_version": "1",
+                **graph_attestation,
+                "target_descriptor": {
+                    "path": str(arguments.target_descriptor),
+                    "sha256": sha256_file(arguments.target_descriptor),
+                },
+                "runtime_identity": {
+                    "path": str(arguments.runtime_identity),
+                    "sha256": sha256_file(arguments.runtime_identity),
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
     run(
         [
             "node",
@@ -300,7 +346,6 @@ def main() -> None:
     definitions = json.loads(DEFINITIONS_PATH.read_text(encoding="utf-8"))
     if definitions["python_version"] != "3.13.15":
         raise SystemExit("dependency definitions must bind approved CPython 3.13.15")
-    runtime_identity = json.loads(arguments.runtime_identity.read_text(encoding="utf-8"))
     if (
         runtime_identity.get("status") != "PASS"
         or runtime_identity.get("interpreter", {}).get("version") != "3.13.15"
@@ -310,7 +355,6 @@ def main() -> None:
         != sha256_file(arguments.target_descriptor)
     ):
         raise SystemExit("candidate generation requires matching standard-GIL cp313 runtime evidence")
-    arguments.output_root.mkdir(parents=True, exist_ok=True)
     for scope_name, scope in definitions["scopes"].items():
         if arguments.target not in scope["targets"]:
             continue
