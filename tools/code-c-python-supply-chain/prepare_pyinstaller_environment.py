@@ -192,6 +192,7 @@ def main() -> None:
     parser.add_argument("--distpath", type=Path, required=True)
     parser.add_argument("--cache-root", type=Path, required=True)
     parser.add_argument("--selected-evidence", type=Path, required=True)
+    parser.add_argument("--build-context", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
 
@@ -257,6 +258,7 @@ def main() -> None:
 
     manifest_path = arguments.output.resolve()
     selected_evidence_path = arguments.selected_evidence.resolve()
+    build_context_path = arguments.build_context.resolve()
     child_environment, environment_audit = build_child_environment(
         dict(os.environ),
         path_entries=path_entries,
@@ -429,6 +431,13 @@ def main() -> None:
             "spec": str(arguments.spec.resolve(strict=True)),
             "spec_sha256": sha256_file(arguments.spec),
             "selected_evidence": str(selected_evidence_path),
+            "build_context": str(build_context_path),
+            "msvc_runtime_evidence": str(
+                selected_evidence_path.parent / "msvc-runtime-dependency-request.v1.json"
+            ),
+            "msvc_runtime_approval_request": str(
+                selected_evidence_path.parent / "DEPENDENCY_APPROVAL_REQUEST_MSVC_RUNTIME_V1.md"
+            ),
         },
         "validations": {
             "required_os_env_validation": "PASS",

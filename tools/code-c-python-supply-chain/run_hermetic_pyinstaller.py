@@ -30,7 +30,8 @@ def main() -> None:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     verify_environment_manifest_identity(manifest)
     if arguments.build_context:
-        build_context = json.loads(arguments.build_context.read_text(encoding="utf-8"))
+        build_context_path = arguments.build_context.resolve(strict=True)
+        build_context = json.loads(build_context_path.read_text(encoding="utf-8"))
         binding = build_context.get("inputs", {}).get("build_environment_manifest")
         if (
             not binding
@@ -39,6 +40,10 @@ def main() -> None:
             != manifest["build_environment_manifest_id"]
         ):
             raise SystemExit("Build Context does not bind the exact Build Environment Manifest")
+        if normalized_realpath(manifest["pyinstaller"]["build_context"]) != normalized_realpath(
+            build_context_path
+        ):
+            raise SystemExit("Build Environment Manifest build-context pointer drift")
     python = Path(manifest["locked_python"]["executable"]).resolve(strict=True)
     if sha256_file(python) != manifest["locked_python"]["executable_sha256"]:
         raise SystemExit("locked PyInstaller executable hash drift")

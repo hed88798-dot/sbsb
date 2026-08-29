@@ -19,6 +19,7 @@ from hermetic_pyinstaller import (
     sha256_file,
 )
 from prepackage_selected_source_gate import validate_selected_sources
+from msvc_runtime_dependency import build_import_closure, normalize_runtime_name
 
 
 def expect_rejected(path: Path, digest: str, manifest: dict[str, object]) -> None:
@@ -45,6 +46,98 @@ def make_escape(link: Path, target: Path) -> None:
 
 
 def main() -> None:
+    synthetic_owner = {
+        "source_kind": "HASH_LOCKED_WHEEL_NATIVE",
+        "source_artifact_identity": {"artifact_sha256": "b" * 64},
+    }
+    synthetic_graph = build_import_closure(
+        [
+            {
+                "internal_path": "package/app.pyd",
+                "selected_source_path": "approved/package/app.pyd",
+                "sha256": "1" * 64,
+                "owner": synthetic_owner,
+                "pe": {"machine": "x86_64", "imports": ["core.dll"]},
+            },
+            {
+                "internal_path": "package/core.dll",
+                "selected_source_path": "approved/package/core.dll",
+                "sha256": "2" * 64,
+                "owner": synthetic_owner,
+                "pe": {
+                    "machine": "x86_64",
+                    "imports": ["MSVCP140.dll", "VCRUNTIME140_1.dll"],
+                },
+            },
+            {
+                "internal_path": "msvcp140.dll",
+                "selected_source_path": "unapproved/System32/msvcp140.dll",
+                "sha256": "3" * 64,
+                "owner": {
+                    "source_kind": "UNAPPROVED_SYSTEM_COPY",
+                    "source_artifact_identity": None,
+                },
+                "pe": {"machine": "x86_64", "imports": []},
+            },
+            {
+                "internal_path": "MSVCP140_1.dll",
+                "selected_source_path": "unapproved/System32/MSVCP140_1.dll",
+                "sha256": "4" * 64,
+                "owner": {
+                    "source_kind": "UNAPPROVED_SYSTEM_COPY",
+                    "source_artifact_identity": None,
+                },
+                "pe": {"machine": "x86_64", "imports": []},
+            },
+        ]
+    )
+    assert normalize_runtime_name("path/MSVCP140_2.DLL") == "msvcp140_2.dll"
+    assert (
+        normalize_runtime_name("path/msvcp140_atomic_wait.dll")
+        == "msvcp140_atomic_wait.dll"
+    )
+    assert normalize_runtime_name("kernel32.dll") is None
+    assert synthetic_graph["status"] == "PASS"
+    assert synthetic_graph["direct_importer_count"] == 1
+    assert synthetic_graph["transitive_importer_count"] == 1
+    assert synthetic_graph["pyinstaller_selected_msvc_dll_family"] == [
+        "msvcp140.dll",
+        "msvcp140_1.dll",
+    ]
+    assert synthetic_graph["pe_import_closure_required_msvc_dll_family"] == [
+        "msvcp140.dll",
+        "vcruntime140_1.dll",
+    ]
+    assert synthetic_graph["selected_but_not_import_closure_required"] == ["msvcp140_1.dll"]
+    assert synthetic_graph["required_but_not_pyinstaller_selected"] == ["vcruntime140_1.dll"]
+    ambiguous_graph = build_import_closure(
+        [
+            {
+                "internal_path": "app.pyd",
+                "selected_source_path": "approved/app.pyd",
+                "sha256": "5" * 64,
+                "owner": synthetic_owner,
+                "pe": {"machine": "x86_64", "imports": ["shared.dll"]},
+            },
+            {
+                "internal_path": "a/shared.dll",
+                "selected_source_path": "approved/a/shared.dll",
+                "sha256": "6" * 64,
+                "owner": synthetic_owner,
+                "pe": {"machine": "x86_64", "imports": ["msvcp140.dll"]},
+            },
+            {
+                "internal_path": "b/shared.dll",
+                "selected_source_path": "approved/b/shared.dll",
+                "sha256": "7" * 64,
+                "owner": synthetic_owner,
+                "pe": {"machine": "x86_64", "imports": ["msvcp140.dll"]},
+            },
+        ]
+    )
+    assert ambiguous_graph["status"] == "FAIL"
+    assert len(ambiguous_graph["ambiguous_selected_dependency_resolutions"]) == 1
+
     with tempfile.TemporaryDirectory(prefix="code-c-hermetic-pyinstaller-") as directory:
         root = Path(directory)
         approved = root / "approved worker"
@@ -167,6 +260,7 @@ def main() -> None:
                 "APPROVED_ROOT_REPARSE_ESCAPE_REGRESSION": "PASS",
                 "OPTIONAL_CPYTHON_STDLIB_ZIP_ATTESTATION": "PASS",
                 "ARBITRARY_MISSING_PYTHON_SEARCH_ROOT_FAIL_CLOSED": "PASS",
+                "MSVC_RUNTIME_IMPORT_CLOSURE_REGRESSION": "PASS",
             },
             sort_keys=True,
         )

@@ -10,6 +10,10 @@ from hermetic_pyinstaller import (
     sha256_file,
     verify_environment_manifest_identity,
 )
+from msvc_runtime_dependency import (
+    MsvcRuntimeEvidenceError,
+    capture_msvc_runtime_dependency_request,
+)
 
 
 def validate_selected_sources(
@@ -50,6 +54,7 @@ def validate_selected_sources(
         except (OSError, RuntimeError) as error:
             failures.append(f"{destination}: {error}")
     entries.sort(key=lambda entry: str(entry["internal_path"]))
+    msvc_request_binding = None
     document = {
         "schema_version": "code-c-prepackage-selected-native-provenance-v1",
         "build_environment_manifest_id": manifest["build_environment_manifest_id"],
@@ -61,6 +66,39 @@ def validate_selected_sources(
         "ambient_image_magick_selected_count": 0 if not failures else None,
         "other_unapproved_source_root_count": 0 if not failures else len(failures),
         "entries": entries,
+        "failures": failures,
+    }
+    if os.name == "nt":
+        try:
+            msvc_output = Path(manifest["pyinstaller"]["msvc_runtime_evidence"])
+            request = capture_msvc_runtime_dependency_request(
+                binaries,
+                manifest,
+                manifest_path,
+                msvc_output,
+                Path(manifest["pyinstaller"]["msvc_runtime_approval_request"]),
+            )
+            msvc_request_binding = {
+                "evidence_id": request["evidence_id"],
+                "status": request["status"],
+                "sha256": sha256_file(msvc_output),
+            }
+            print(
+                "msvc-runtime-dependency-request: "
+                f"{request['status']} ({request['evidence_id']})"
+            )
+            if request["status"] != "READY":
+                failures.append("MSVC Runtime dependency evidence is incomplete")
+        except (OSError, KeyError, ValueError, MsvcRuntimeEvidenceError) as error:
+            failures.append(f"MSVC Runtime dependency evidence capture failed: {error}")
+    document = {
+        **document,
+        "status": "PASS" if not failures else "FAIL",
+        "ambient_temurin_selected_count": 0 if not failures else None,
+        "ambient_bootstrap_python_selected_count": 0 if not failures else None,
+        "ambient_image_magick_selected_count": 0 if not failures else None,
+        "other_unapproved_source_root_count": 0 if not failures else len(failures),
+        "msvc_runtime_dependency_request": msvc_request_binding,
         "failures": failures,
     }
     write_canonical_json(output_path, document)

@@ -258,6 +258,7 @@ jobs:
           --distpath artifacts/python-supply-chain/pyinstaller-build/windows/dist
           --cache-root artifacts/python-supply-chain/pyinstaller-build/windows/cache
           --selected-evidence artifacts/python-supply-chain/pyinstaller-build/windows/parsed/prepackage-selected-native-provenance.json
+          --build-context artifacts/python-supply-chain/pyinstaller-build/windows/build-context.json
           --output artifacts/python-supply-chain/pyinstaller-build/windows/build-environment-manifest.json
       - name: Freeze exact build context before PyInstaller starts
         shell: bash
