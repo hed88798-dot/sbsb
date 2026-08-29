@@ -5,6 +5,7 @@ import ast
 import datetime as dt
 import hashlib
 import json
+import os
 import platform
 import shutil
 import subprocess
@@ -130,6 +131,36 @@ def dpkg_provenance(path: Path) -> dict[str, object]:
     return {"status": "UNRESOLVED"}
 
 
+def system_provenance(path: Path) -> dict[str, object]:
+    if sys.platform.startswith("linux"):
+        return dpkg_provenance(path)
+    if sys.platform == "win32":
+        system_root_value = os.environ.get("SystemRoot")
+        if not system_root_value:
+            return {"status": "UNRESOLVED", "reason": "SYSTEM_ROOT_NOT_AVAILABLE"}
+        try:
+            resolved = path.resolve(strict=True)
+            system_root = Path(system_root_value).resolve(strict=True)
+            relative = resolved.relative_to(system_root)
+        except (OSError, ValueError):
+            return {
+                "status": "UNRESOLVED",
+                "reason": "SELECTED_SOURCE_OUTSIDE_WINDOWS_SYSTEM_ROOT",
+                "query_path": str(path),
+            }
+        return {
+            "status": "RESOLVED",
+            "package": "windows-system-runtime",
+            "provider": "WINDOWS_SYSTEM_ROOT",
+            "source_namespace": system_root.name,
+            "relative_path": relative.as_posix(),
+            "query_path": str(resolved),
+            "runner_image_os": os.environ.get("ImageOS"),
+            "runner_image_version": os.environ.get("ImageVersion"),
+        }
+    return {"status": "UNRESOLVED", "reason": f"UNSUPPORTED_PLATFORM_{sys.platform}"}
+
+
 def source_owner(
     source_path: Path,
     source_sha256: str,
@@ -179,7 +210,7 @@ def source_owner(
     return {
         "resolution": "SOURCE_PROVENANCE_CAPTURED_APPROVAL_PENDING",
         "owner_kind": "SYSTEM_BUILD_RUNTIME_NATIVE",
-        "owner_reference": dpkg_provenance(source_path),
+        "owner_reference": system_provenance(source_path),
         "source_artifact_sha256": "NOT_AVAILABLE_FOR_SYSTEM_PACKAGE",
         "source_native_relative_path": str(source_path),
         "hash_owner_candidate_count": len(candidates),
@@ -233,7 +264,7 @@ def main() -> None:
                     "filename": native["filename"],
                 }
             )
-    cpython_distribution = build_context["inputs"]["cpython_distribution"]
+    cpython_distribution = build_context["inputs"]["cpython_artifact"]
     analysis_keys = {(destination, source, category) for destination, source, category in analysis_binaries}
     selected = []
     materialized = []

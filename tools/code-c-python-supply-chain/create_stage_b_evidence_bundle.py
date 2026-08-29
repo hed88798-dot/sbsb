@@ -72,6 +72,12 @@ def main() -> None:
     target_evidence_path = root / "evidence" / "windows-target-evidence.json"
     stage_a_path = root / "evidence" / "windows-stage-a-artifact-binding.json"
     inspection_path = root / "inspection" / "windows-worker-onefile.json"
+    pyinstaller_context_path = root / "pyinstaller-build" / "windows" / "build-context.json"
+    selection_path = root / "native-v3" / "windows" / "packaging-selection-evidence.v1.json"
+    reconciliation_path = root / "native-v3" / "windows" / "native-reconciliation.v3.json"
+    reconciliation_report_path = (
+        root / "native-v3" / "windows" / "native-reconciliation-report.v3.json"
+    )
     static_path = root / "stage-b" / "STATIC_REACHABILITY.json"
     negative_path = root / "stage-b" / "CANDIDATE_NEGATIVE_REACHABILITY.json"
     e2e_path = root / "stage-b" / "REAL_SIGLIP_ONNX_E2E.json"
@@ -89,6 +95,10 @@ def main() -> None:
     target_evidence = load(target_evidence_path)
     stage_a = load(stage_a_path)
     inspection = load(inspection_path)
+    pyinstaller_context = load(pyinstaller_context_path)
+    selection = load(selection_path)
+    reconciliation = load(reconciliation_path)
+    reconciliation_report = load(reconciliation_report_path)
     static = load(static_path)
     negative = load(negative_path)
     e2e = load(e2e_path)
@@ -103,6 +113,24 @@ def main() -> None:
     failures: list[str] = []
     if stage_a.get("status") != "PASS" or not stage_a.get("stage_a_cpython_artifact_match"):
         failures.append("Stage A CPython artifact binding is not PASS")
+    build_context_id = pyinstaller_context.get("build_context_id")
+    context_inputs = pyinstaller_context.get("inputs", {})
+    if (
+        pyinstaller_context.get("clean_isolated_buildpath") != "PASS"
+        or pyinstaller_context.get("evidence_capture_alters_build_inputs") != "NO"
+        or context_inputs.get("code_c_commit") != head  # type: ignore[union-attr]
+        or context_inputs.get("main_quality_baseline") != arguments.main_quality_baseline  # type: ignore[union-attr]
+        or context_inputs.get("cpython_artifact", {}).get("sha256")  # type: ignore[union-attr]
+        != stage_a.get("actual_build_cpython", {}).get("sha256")  # type: ignore[union-attr]
+    ):
+        failures.append("PyInstaller Build Context is not bound to current HEAD/baseline/Stage A artifact")
+    if (
+        selection.get("build_context", {}).get("build_context_id") != build_context_id  # type: ignore[union-attr]
+        or reconciliation.get("build_context_id") != build_context_id
+        or reconciliation_report.get("build_context_id") != build_context_id
+        or reconciliation_report.get("status") != "PASS"
+    ):
+        failures.append("Packaging Selection Evidence / Native Reconciliation v3 is not PASS")
     interpreter = runtime_identity.get("interpreter", {})
     if (
         runtime_identity.get("status") != "PASS"
@@ -160,6 +188,13 @@ def main() -> None:
         or core.get("code_head_sha") != head
     ):
         failures.append("Stage B source/core evidence is not bound to current Code C HEAD")
+    if (
+        static.get("source_import_graph_sha256")
+        != context_inputs.get("source_import_graph_sha256")  # type: ignore[union-attr]
+        or static.get("sidecar_command_surface_sha256")
+        != context_inputs.get("sidecar_command_surface_sha256")  # type: ignore[union-attr]
+    ):
+        failures.append("Stage B source/command graph differs from the pre-build Build Context")
     module_presence = inspection.get("python_module_inventory", {}).get(  # type: ignore[union-attr]
         "cve_relevant_module_presence", {}
     )
@@ -203,7 +238,7 @@ def main() -> None:
         "cpython_native_mapping": target_evidence.get("cpython_native_mapping"),
         "unknown_native_artifacts": target_evidence.get("unknown_native_artifacts"),
     }
-    build_context = {
+    stage_b_identity = {
         "code_head_sha": head,
         "candidate_worker_sha256": worker_sha256,
         "media_worker_spec_sha256": sha256_file(SPECIFICATION),
@@ -221,7 +256,6 @@ def main() -> None:
         "target_os": "windows",
         "target_architecture": "x86_64",
     }
-    build_context_id = f"code-c-stage-b-{canonical_sha256(build_context)[:32]}"
     bundle = {
         "report_kind": "CODE_C_CPYTHON_STAGE_B_EVIDENCE_BUNDLE",
         "schema_version": "1",
@@ -235,11 +269,12 @@ def main() -> None:
         },
         "risk_acceptance_worker_binding": "EXACT_SHA256",
         "build_context_id": build_context_id,
-        "build_context": build_context,
-        "wheel_graph_identity": build_context["wheel_graph_identity"],
+        "build_context": pyinstaller_context,
+        "stage_b_identity": stage_b_identity,
+        "wheel_graph_identity": context_inputs.get("wheel_graph_sha256"),  # type: ignore[union-attr]
         "wheel_graph": wheel_graph,
-        "toolchain_inventory_identity": build_context["toolchain_inventory_identity"],
-        "native_inventory_identity": build_context["native_inventory_identity"],
+        "toolchain_inventory_identity": stage_b_identity["toolchain_inventory_identity"],
+        "native_inventory_identity": stage_b_identity["native_inventory_identity"],
         "packaged_module_inventory_hash": canonical_sha256(
             inspection.get("python_module_inventory")
         ),
@@ -255,6 +290,10 @@ def main() -> None:
                 target_evidence_path,
                 stage_a_path,
                 inspection_path,
+                pyinstaller_context_path,
+                selection_path,
+                reconciliation_path,
+                reconciliation_report_path,
                 static_path,
                 negative_path,
                 e2e_path,
@@ -316,6 +355,8 @@ def main() -> None:
             if wheel_vulnerability.get("findings") == []
             else "FAIL",
             "wheel_sbom": "PASS" if wheel_sbom.get("bomFormat") == "CycloneDX" else "FAIL",
+            "packaging_selection_evidence": "PASS",
+            "native_reconciliation_v3": reconciliation_report.get("status"),
             "toolchain_vulnerability_disposition": "PENDING_CODE_F_STAGE_B",
             "notice_reconciliation": "PENDING_CODE_F_STAGE_B_TOOLCHAIN_DISPOSITION",
         },
@@ -336,11 +377,11 @@ MAIN_QUALITY_BASELINE_SHA: `{arguments.main_quality_baseline}`
 
 CPYTHON_VERSION: `3.13.15`
 
-CPYTHON_ACTUAL_BUILD_ARTIFACT_SHA256: `{build_context['cpython_artifact_sha256']}`
+CPYTHON_ACTUAL_BUILD_ARTIFACT_SHA256: `{stage_b_identity['cpython_artifact_sha256']}`
 
-LOCKED_PYTHON_EXECUTABLE_SHA256: `{build_context['locked_python_executable_sha256']}`
+LOCKED_PYTHON_EXECUTABLE_SHA256: `{stage_b_identity['locked_python_executable_sha256']}`
 
-LOCKED_PYTHON_RUNTIME_DLL_SHA256: `{build_context['locked_python_runtime_dll_sha256']}`
+LOCKED_PYTHON_RUNTIME_DLL_SHA256: `{stage_b_identity['locked_python_runtime_dll_sha256']}`
 
 STAGE_A_CPYTHON_ARTIFACT_SHA256: `{stage_a.get('stage_a_cpython_sha256')}`
 

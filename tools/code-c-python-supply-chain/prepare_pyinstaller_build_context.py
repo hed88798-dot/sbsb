@@ -11,9 +11,18 @@ from pathlib import Path
 
 import PyInstaller
 
+from collect_stage_b_static_evidence import collect_worker_source_evidence
+
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_PYINSTALLER_VERSION = "6.22.2"
+SOURCE_LOCK = (
+    REPOSITORY_ROOT
+    / "sidecars"
+    / "media-worker"
+    / "supply-chain"
+    / "toolchain-source-lock.json"
+)
 
 
 def canonical_bytes(value: object) -> bytes:
@@ -42,6 +51,17 @@ def git_head() -> str:
         capture_output=True,
         text=True,
     ).stdout.strip()
+
+
+def require_baseline(commit: str) -> None:
+    if subprocess.run(
+        ["git", "merge-base", "--is-ancestor", commit, "HEAD"],
+        cwd=REPOSITORY_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    ).returncode:
+        raise SystemExit(f"Code C HEAD does not contain required main quality baseline: {commit}")
 
 
 def fresh_directory(path: Path, label: str) -> None:
@@ -73,6 +93,7 @@ def main() -> None:
     parser.add_argument("--distribution", type=Path, required=True)
     parser.add_argument("--pip-wheel", type=Path, required=True)
     parser.add_argument("--pyinstaller-wheel", type=Path, required=True)
+    parser.add_argument("--main-quality-baseline", required=True)
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
 
@@ -80,11 +101,36 @@ def main() -> None:
         raise SystemExit(
             f"build context requires PyInstaller {EXPECTED_PYINSTALLER_VERSION}, got {PyInstaller.__version__}"
         )
+    require_baseline(arguments.main_quality_baseline)
     fresh_directory(arguments.workpath, "PyInstaller workpath")
     fresh_directory(arguments.distpath, "PyInstaller distpath")
 
+    source_lock = json.loads(SOURCE_LOCK.read_text(encoding="utf-8"))
+    target_lock = source_lock["targets"][arguments.target]
+    if (
+        sha256_file(arguments.distribution) != target_lock["cpython_distribution"]["sha256"]
+        or sha256_file(arguments.pip_wheel) != source_lock["pip"]["sha256"]
+        or sha256_file(arguments.pyinstaller_wheel) != target_lock["pyinstaller"]["sha256"]
+    ):
+        raise SystemExit("Build Context input bytes differ from the locked toolchain")
+    worker_build = json.loads(arguments.worker_build_inventory.read_text(encoding="utf-8"))
+    hooks = [
+        package
+        for package in worker_build["packages"]
+        if str(package["package_name"]).lower().replace("_", "-")
+        == "pyinstaller-hooks-contrib"
+    ]
+    if len(hooks) != 1:
+        raise SystemExit("worker-build inventory must contain one pyinstaller-hooks-contrib artifact")
+    wheel_inventories = [
+        identity(arguments.runtime_inventory),
+        identity(arguments.worker_build_inventory),
+    ]
+    source_graph = collect_worker_source_evidence()
+
     build_inputs = {
         "code_c_commit": git_head(),
+        "main_quality_baseline": arguments.main_quality_baseline,
         "target": {
             "os": arguments.target,
             "architecture": "x86_64",
@@ -95,6 +141,10 @@ def main() -> None:
             "filename": arguments.distribution.name,
             "sha256": sha256_file(arguments.distribution),
         },
+        "cpython_artifact": {
+            "filename": target_lock["cpython_distribution"]["interpreter_payload"],
+            "sha256": target_lock["cpython_distribution"]["interpreter_payload_sha256"],
+        },
         "pip_artifact": {
             "filename": arguments.pip_wheel.name,
             "sha256": sha256_file(arguments.pip_wheel),
@@ -104,9 +154,18 @@ def main() -> None:
             "sha256": sha256_file(arguments.pyinstaller_wheel),
             "version": PyInstaller.__version__,
         },
-        "wheel_inventories": [
-            identity(arguments.runtime_inventory),
-            identity(arguments.worker_build_inventory),
+        "pyinstaller_hooks_contrib_artifact": {
+            "package_name": hooks[0]["package_name"],
+            "version": hooks[0]["version"],
+            "filename": hooks[0]["filename"],
+            "sha256": hooks[0]["sha256"],
+            "purl": hooks[0]["purl"],
+        },
+        "wheel_inventories": wheel_inventories,
+        "wheel_graph_sha256": hashlib.sha256(canonical_bytes(wheel_inventories)).hexdigest(),
+        "source_import_graph_sha256": source_graph["source_import_graph_sha256"],
+        "sidecar_command_surface_sha256": source_graph[
+            "sidecar_command_surface_sha256"
         ],
         "runtime_identity": {
             "path": arguments.runtime_identity.resolve().relative_to(REPOSITORY_ROOT).as_posix(),

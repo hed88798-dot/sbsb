@@ -56,10 +56,7 @@ def git_head() -> str:
     ).stdout.strip()
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--output", type=Path, required=True)
-    arguments = parser.parse_args()
+def collect_worker_source_evidence() -> dict[str, object]:
     files = []
     imports: set[str] = set()
     calls: set[str] = set()
@@ -111,23 +108,11 @@ def main() -> None:
         or "zipfile.ZipFile" in name
     )
     exposed_methods = sorted(value for value in strings if value in EXPECTED_METHODS)
-    failures = []
-    if network_imports or network_calls:
-        failures.append("Worker source/import graph contains a network-capability path")
-    if credential_references:
-        failures.append("Worker source references HTTP credential manager/authentication APIs")
-    if archive_calls:
-        failures.append("Worker source calls an archive extraction API")
-    if set(exposed_methods) != EXPECTED_METHODS:
-        failures.append("Worker command surface differs from the frozen protocol")
-
     graph = {"files": files, "imports": sorted(imports), "calls": sorted(calls)}
     command_surface = {"protocol_version": "1.0", "methods": exposed_methods}
-    evidence = {
-        "report_kind": "CODE_C_CPYTHON_STAGE_B_STATIC_REACHABILITY",
-        "schema_version": "1",
-        "status": "PASS" if not failures else "FAIL",
-        "code_head_sha": git_head(),
+    return {
+        "graph": graph,
+        "command_surface": command_surface,
         "source_import_graph_sha256": hashlib.sha256(
             canonical_json(graph).encode("utf-8")
         ).hexdigest(),
@@ -141,6 +126,38 @@ def main() -> None:
         "http_credential_api_references": sorted(credential_references),
         "archive_extraction_calls": archive_calls,
         "protocol_methods": exposed_methods,
+    }
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output", type=Path, required=True)
+    arguments = parser.parse_args()
+    source = collect_worker_source_evidence()
+    failures = []
+    if source["network_imports"] or source["network_calls"]:
+        failures.append("Worker source/import graph contains a network-capability path")
+    if source["http_credential_api_references"]:
+        failures.append("Worker source references HTTP credential manager/authentication APIs")
+    if source["archive_extraction_calls"]:
+        failures.append("Worker source calls an archive extraction API")
+    if set(source["protocol_methods"]) != EXPECTED_METHODS:
+        failures.append("Worker command surface differs from the frozen protocol")
+
+    evidence = {
+        "report_kind": "CODE_C_CPYTHON_STAGE_B_STATIC_REACHABILITY",
+        "schema_version": "1",
+        "status": "PASS" if not failures else "FAIL",
+        "code_head_sha": git_head(),
+        "source_import_graph_sha256": source["source_import_graph_sha256"],
+        "sidecar_command_surface_sha256": source["sidecar_command_surface_sha256"],
+        "source_files": source["source_files"],
+        "imports": source["imports"],
+        "network_imports": source["network_imports"],
+        "network_calls": source["network_calls"],
+        "http_credential_api_references": source["http_credential_api_references"],
+        "archive_extraction_calls": source["archive_extraction_calls"],
+        "protocol_methods": source["protocol_methods"],
         "cve_2026_15806": {
             "protocol_exposed": "NO",
             "http_credential_path": "NO",
@@ -158,7 +175,7 @@ def main() -> None:
         raise SystemExit("Stage B static reachability failed:\n" + "\n".join(failures))
     print(
         "stage-b-static-reachability: PASS "
-        f"({len(files)} files; {len(imports)} imports; 3 protocol methods)"
+        f"({len(source['source_files'])} files; {len(source['imports'])} imports; 3 protocol methods)"
     )
 
 

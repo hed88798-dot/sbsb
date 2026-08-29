@@ -13,9 +13,54 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  stage-a-cpython-artifact-binding:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12.10'
+      - run: pnpm install --frozen-lockfile
+      - name: Download exact Windows CPython acquisition artifact
+        run: >-
+          python tools/code-c-python-supply-chain/download_toolchain_sources.py
+          --target windows
+          --output-root artifacts/python-supply-chain/toolchain
+      - name: Reconfirm Stage A policy and exact CPython artifact binding
+        shell: bash
+        run: |
+          node -e 'const fs=require("node:fs"); const path="compliance/vulnerability-reviews/cpython-3.13.15-windows-x64/stage-a-current-context.json"; const value=JSON.parse(fs.readFileSync(path,"utf8")); value.source_commit=process.env.GITHUB_SHA; fs.mkdirSync("artifacts/python-supply-chain/evidence",{recursive:true}); fs.writeFileSync("artifacts/python-supply-chain/evidence/windows-stage-a-current-context.json",JSON.stringify(value,null,2)+"\n");'
+          pnpm compliance:python:toolchain:vulnerability-disposition \
+            --vulnerability-review compliance/vulnerability-reviews/cpython-3.13.15-windows-x64/stage-a-review.json \
+            --current-context artifacts/python-supply-chain/evidence/windows-stage-a-current-context.json \
+            --output artifacts/python-supply-chain/evidence/windows-stage-a-disposition.json
+          python tools/code-c-python-supply-chain/verify_stage_a_cpython_artifact.py \
+            --distribution artifacts/python-supply-chain/toolchain/windows/python-3.13.15-win32-x64.zip \
+            --stage-a-review compliance/vulnerability-reviews/cpython-3.13.15-windows-x64/stage-a-review.json \
+            --output artifacts/python-supply-chain/evidence/windows-stage-a-artifact-binding.json
+      - name: Preserve Stage A binding evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: python-stage-a-cpython-binding-${{ github.sha }}
+          path: artifacts/python-supply-chain/evidence
+          if-no-files-found: error
+          retention-days: 30
+
   generate-target-candidate:
+    needs: stage-a-cpython-artifact-binding
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
           - target: linux
@@ -24,6 +69,12 @@ jobs:
             worker: artifacts/python-supply-chain/pyinstaller-build/linux/dist/media-worker
             distribution: python-3.13.15-linux-24.04-x64.tar.gz
             pyinstaller_wheel: pyinstaller-6.22.2-py3-none-manylinux2014_x86_64.whl
+          - target: windows
+            runner: windows-2022
+            venv_python: artifacts/candidate-venv/Scripts/python.exe
+            worker: artifacts/python-supply-chain/pyinstaller-build/windows/dist/media-worker.exe
+            distribution: python-3.13.15-win32-x64.zip
+            pyinstaller_wheel: pyinstaller-6.22.2-py3-none-win_amd64.whl
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 120
     steps:
@@ -176,6 +227,7 @@ jobs:
           pnpm exec vitest run \
             tests/contract/python-supply-chain-tooling.test.ts \
             tests/contract/packaged-native-toolchain-provenance.test.ts \
+            tests/contract/packaging-selected-native-contract.test.ts \
             tests/contract/toolchain-vulnerability-disposition.test.ts \
             --maxWorkers=1
       - name: Freeze exact build context before PyInstaller starts
@@ -192,6 +244,7 @@ jobs:
           --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.distribution }}
           --pip-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip-26.2.1-py3-none-any.whl
           --pyinstaller-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.pyinstaller_wheel }}
+          --main-quality-baseline 1bd82edb2e22e5038e29c2df63df779f86df2716
           --output artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
       - name: Build candidate one-file worker in clean isolated workpath
         shell: bash
@@ -231,6 +284,15 @@ jobs:
           --build-context artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
           --build-evidence artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/pyinstaller-build-evidence.json
           --final-artifact ${{ matrix.worker }}
+      - name: Validate Packaging Selection Evidence v1 and Native Reconciliation v3
+        shell: bash
+        run: |
+          node tools/python-supply-chain/cli.mjs packaging-selection-validate \
+            --selection-evidence artifacts/python-supply-chain/native-v3/${{ matrix.target }}/packaging-selection-evidence.v1.json
+          node tools/python-supply-chain/cli.mjs native-reconcile-v3 \
+            --selection-evidence artifacts/python-supply-chain/native-v3/${{ matrix.target }}/packaging-selection-evidence.v1.json \
+            --native-reconciliation artifacts/python-supply-chain/native-v3/${{ matrix.target }}/native-reconciliation.v3.json \
+            --output artifacts/python-supply-chain/native-v3/${{ matrix.target }}/native-reconciliation-report.v3.json
       - name: Approve exact wheel graph and execute Candidate compliance gates
         shell: bash
         run: |
@@ -260,6 +322,8 @@ jobs:
           done < <(find artifacts/python-supply-chain/approved-inventories/${{ matrix.target }} -maxdepth 1 -type f -name '*.v2.json' -print | sort)
           node tools/compliance/generate-sbom.mjs \
             --output artifacts/python-supply-chain/evidence/${{ matrix.target }}-candidate-wheel-SBOM.cdx.json \
+            --selection-evidence artifacts/python-supply-chain/native-v3/${{ matrix.target }}/packaging-selection-evidence.v1.json \
+            --native-reconciliation artifacts/python-supply-chain/native-v3/${{ matrix.target }}/native-reconciliation.v3.json \
             "${sbom_args[@]}"
       - name: Collect Stage B static reachability evidence
         if: matrix.target == 'windows'
@@ -318,7 +382,7 @@ jobs:
           ${{ matrix.venv_python }} tools/code-c-python-supply-chain/create_stage_b_evidence_bundle.py
           --worker '${{ matrix.worker }}'
           --bundle-root artifacts/python-supply-chain
-          --main-quality-baseline 565de2fd61f84fb5535275437f4f7450e2b580b7
+          --main-quality-baseline 1bd82edb2e22e5038e29c2df63df779f86df2716
           --output artifacts/python-supply-chain/stage-b/STAGE_B_EVIDENCE_BUNDLE.json
           --sha256-output artifacts/python-supply-chain/stage-b/STAGE_B_EVIDENCE_BUNDLE.sha256
           --handoff artifacts/python-supply-chain/stage-b/CODE_C_CPYTHON_STAGE_B_HANDOFF.md
@@ -331,6 +395,7 @@ jobs:
             artifacts/python-supply-chain/diagnostics/${{ matrix.target }}-native-reconciliation.json
             artifacts/python-supply-chain/evidence/${{ matrix.target }}-target-evidence.json
             artifacts/python-supply-chain/inspection/${{ matrix.target }}-worker-onefile.json
+            artifacts/python-supply-chain/native-v3/${{ matrix.target }}
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/pyinstaller-build-evidence.json
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/parsed
