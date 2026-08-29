@@ -160,6 +160,14 @@ jobs:
           --bundle artifacts/python-supply-chain
           --scope runtime
           --scope worker-build
+      - name: Run targeted CArchive symlink and native semantic regressions
+        env:
+          PYTHON_EXECUTABLE: ${{ github.workspace }}/${{ matrix.venv_python }}
+        run: >-
+          pnpm exec vitest run
+          tests/contract/packaged-native-toolchain-provenance.test.ts
+          -t 'uses CArchive typecode|fails closed for malformed CArchive symlink metadata'
+          --maxWorkers=1
       - name: Run Worker and supply-chain contract regressions on the exact candidate graph
         env:
           PYTHON_EXECUTABLE: ${{ github.workspace }}/${{ matrix.venv_python }}
