@@ -28,6 +28,7 @@ from synthetic_pyinstaller_evidence_fixture import (
     build_synthetic_pyinstaller_evidence_fixture,
     mutate_synthetic_fixture,
 )
+from machine_output import emit_json_result
 
 
 def expect_rejected(path: Path, digest: str, manifest: dict[str, object]) -> None:
@@ -268,27 +269,24 @@ def main() -> None:
             else:
                 raise AssertionError(f"synthetic PyInstaller mutation passed: {mutation}")
 
-    print(
-        json.dumps(
-            {
-                "HOSTILE_AMBIENT_PATH_REGRESSION": "PASS",
-                "SAME_BYTES_UNAPPROVED_SOURCE_FAIL_CLOSED": "PASS",
-                "APPROVED_ROOT_REPARSE_ESCAPE_REGRESSION": "PASS",
-                "OPTIONAL_CPYTHON_STDLIB_ZIP_ATTESTATION": "PASS",
-                "ARBITRARY_MISSING_PYTHON_SEARCH_ROOT_FAIL_CLOSED": "PASS",
-                "MSVC_RUNTIME_IMPORT_CLOSURE_REGRESSION": "PASS",
-                "SYNTHETIC_MANIFEST_SCHEMA": SYNTHETIC_MANIFEST_SCHEMA,
-                "SYNTHETIC_FIXTURE_SCHEMA_PARITY": "PASS",
-                "POSITIVE_FIXTURE_ROUNDTRIP": "PASS",
-                "SYNTHETIC_PYINSTALLER_EVIDENCE": "PASS",
-                "MISSING_POINTER_FAIL_CLOSED": "PASS",
-                "WRONG_HASH_FAIL_CLOSED": "PASS",
-                "WRONG_BUILD_CONTEXT_FAIL_CLOSED": "PASS",
-                "WRONG_ARTIFACT_REFERENCE_FAIL_CLOSED": "PASS",
-                "WRONG_USAGE_BINDING_FAIL_CLOSED": "PASS",
-            },
-            sort_keys=True,
-        )
+    emit_json_result(
+        {
+            "HOSTILE_AMBIENT_PATH_REGRESSION": "PASS",
+            "SAME_BYTES_UNAPPROVED_SOURCE_FAIL_CLOSED": "PASS",
+            "APPROVED_ROOT_REPARSE_ESCAPE_REGRESSION": "PASS",
+            "OPTIONAL_CPYTHON_STDLIB_ZIP_ATTESTATION": "PASS",
+            "ARBITRARY_MISSING_PYTHON_SEARCH_ROOT_FAIL_CLOSED": "PASS",
+            "MSVC_RUNTIME_IMPORT_CLOSURE_REGRESSION": "PASS",
+            "SYNTHETIC_MANIFEST_SCHEMA": SYNTHETIC_MANIFEST_SCHEMA,
+            "SYNTHETIC_FIXTURE_SCHEMA_PARITY": "PASS",
+            "POSITIVE_FIXTURE_ROUNDTRIP": "PASS",
+            "SYNTHETIC_PYINSTALLER_EVIDENCE": "PASS",
+            "MISSING_POINTER_FAIL_CLOSED": "PASS",
+            "WRONG_HASH_FAIL_CLOSED": "PASS",
+            "WRONG_BUILD_CONTEXT_FAIL_CLOSED": "PASS",
+            "WRONG_ARTIFACT_REFERENCE_FAIL_CLOSED": "PASS",
+            "WRONG_USAGE_BINDING_FAIL_CLOSED": "PASS",
+        }
     )
 
 

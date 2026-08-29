@@ -14,6 +14,7 @@ from msvc_runtime_dependency import (
     MsvcRuntimeEvidenceError,
     capture_msvc_runtime_dependency_request,
 )
+from machine_output import log_status
 
 
 def validate_selected_sources(
@@ -83,7 +84,7 @@ def validate_selected_sources(
                 "status": request["status"],
                 "sha256": sha256_file(msvc_output),
             }
-            print(
+            log_status(
                 "msvc-runtime-dependency-request: "
                 f"{request['status']} ({request['evidence_id']})"
             )
@@ -117,7 +118,7 @@ def validate_analysis_binaries(binaries: object) -> None:
             raise SystemExit("Windows PyInstaller build lacks hermetic provenance gate configuration")
         return
     document = validate_selected_sources(binaries, Path(manifest_value), Path(output_value))
-    print(
+    log_status(
         "pre-package-selected-source-provenance: PASS "
         f"({document['selected_native_count']} selected native sources)"
     )
