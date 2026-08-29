@@ -12,6 +12,11 @@
 
 必须通过：format、lint、typecheck、unit/contract/integration、migration、dependency direction、developer-path portability、workspace package resolution、source secret scan、npm license/vulnerability、Python artifact inventory/hash/license/vulnerability、golden manifest integrity、clean build、isolated clean checkout、Windows packaged native smoke。存在 production worker inventory 时，Windows Gate 还必须完成 packaged native reconciliation。
 
+Legacy/ambiguous Python wheel license facts may only pass through Artifact License Evidence v3 plus
+an ACTIVE, authorized Artifact License Review v1 bound to the exact wheel SHA-256 and evidence
+snapshot. Missing, conflicting, superseded-only, or revoked review state blocks release; CI machine
+suggestions and package-name mappings are never approvals.
+
 跨 IPC/DB/provider/sidecar/public domain contract 的破坏性变化需要 Architecture Question/ADR。依赖变化同时提交 provenance/license/NOTICE 影响说明。
 
 ## Beta gate

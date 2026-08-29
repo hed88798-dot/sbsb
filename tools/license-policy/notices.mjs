@@ -173,6 +173,34 @@ export function materializeThirdPartyNotices(path, bundle) {
   return { path, sha256: sha256(rendered), bytes: Buffer.byteLength(rendered) };
 }
 
+export function buildReviewedArtifactNoticeEntry(decision) {
+  const evidence = decision.exact_artifact_license_evidence;
+  const review = decision.reviewed_license_assertion;
+  if (
+    !evidence ||
+    !review ||
+    decision.review_resolution?.status !== 'ACTIVE' ||
+    decision.policy_result !== 'PASS' ||
+    review.evidence_snapshot_sha256 !== evidence.evidence_snapshot_sha256
+  ) {
+    throw new Error('NOTICE requires an ACTIVE exact-artifact reviewed SPDX decision');
+  }
+  return {
+    artifact_sha256: decision.artifact_sha256,
+    package: decision.package,
+    version: decision.version,
+    license_expression: review.reviewed_spdx_expression,
+    expression_source: 'AUTHORIZED_EXACT_ARTIFACT_REVIEW',
+    raw_reported_license_expression: evidence.raw_license_evidence.reported_license_expression,
+    raw_legacy_license_value: evidence.raw_license_evidence.legacy_license_value,
+    evidence_snapshot_sha256: evidence.evidence_snapshot_sha256,
+    review_id: review.review_id,
+    review_record_sha256: review.review_record_sha256,
+    obligations: decision.obligations,
+    license_files: evidence.raw_license_evidence.license_files,
+  };
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const value = (flag) => {
     const index = process.argv.indexOf(flag);

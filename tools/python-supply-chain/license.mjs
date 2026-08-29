@@ -2,6 +2,10 @@ import {
   compareLicenseDecisionReports,
   evaluateLicenseCollection,
 } from '../license-policy/evaluator.mjs';
+import {
+  createArtifactLicenseEvidenceV3,
+  resolveArtifactLicenseReview,
+} from '../license-policy/artifact-review.mjs';
 import { normalizePythonName } from './inventory.mjs';
 
 function assertApprovedBuildToolUsage(evaluation, evidence) {
@@ -30,21 +34,55 @@ function wheelRoles(scope) {
     : { artifactRole: 'PYTHON_BUILD_DEPENDENCY', distributionRole: 'BUILD_ONLY_USE' };
 }
 
-export function buildWheelLicenseEvidence(verifiedArtifacts) {
-  return verifiedArtifacts.map(({ inventory, artifact, inspected }) => {
+export function buildWheelArtifactLicenseEvidenceV3(verifiedArtifacts) {
+  return verifiedArtifacts.map(({ artifact, inspected }) => {
     const metadataExpression = inspected.license_expression?.trim() || null;
-    const legacyLicense = inspected.legacy_license?.trim() || null;
-    const { artifactRole, distributionRole } = wheelRoles(inventory.scope);
-    let evidenceStatus = 'PASS';
+    let evidenceStatus = metadataExpression ? 'PASS' : 'MANUAL_REVIEW';
     if (metadataExpression && metadataExpression !== artifact.license_expression) {
       evidenceStatus = 'CONFLICT';
-    } else if (!metadataExpression) {
-      evidenceStatus =
-        legacyLicense && legacyLicense === artifact.license_expression ? 'PASS' : 'MANUAL_REVIEW';
     }
-    if (artifact.license_files.length === 0 && evidenceStatus === 'PASS') {
-      evidenceStatus = 'MANUAL_REVIEW';
+    if (
+      !metadataExpression &&
+      !inspected.legacy_license?.trim() &&
+      (inspected.license_classifiers ?? []).length === 0 &&
+      inspected.license_files.length === 0
+    ) {
+      evidenceStatus = 'FAIL';
     }
+    return createArtifactLicenseEvidenceV3({
+      artifact: {
+        package: normalizePythonName(artifact.package_name),
+        version: artifact.version,
+        filename: artifact.filename,
+        sha256: artifact.sha256,
+        purl: artifact.purl,
+      },
+      inspected,
+      evidenceStatus,
+    });
+  });
+}
+
+export function buildWheelLicenseEvidence(verifiedArtifacts, { licenseReviews = [] } = {}) {
+  const snapshots = buildWheelArtifactLicenseEvidenceV3(verifiedArtifacts);
+  return verifiedArtifacts.map(({ inventory, artifact }, index) => {
+    const snapshot = snapshots[index];
+    const resolution = resolveArtifactLicenseReview(snapshot, licenseReviews);
+    const activeReview =
+      snapshot.evidence_status === 'MANUAL_REVIEW' ? resolution.active_review : null;
+    const { artifactRole, distributionRole } = wheelRoles(inventory.scope);
+    const rawExpression = snapshot.raw_license_evidence.reported_license_expression;
+    const rawLegacy = snapshot.raw_license_evidence.legacy_license_value;
+    const detectedExpression =
+      activeReview?.reviewed_spdx_expression ?? rawExpression ?? artifact.license_expression;
+    const reviewCanResolve =
+      snapshot.evidence_status === 'MANUAL_REVIEW' && resolution.status === 'ACTIVE';
+    const evidenceStatus =
+      resolution.status === 'REVOKED'
+        ? 'FAIL'
+        : reviewCanResolve
+          ? 'PASS'
+          : snapshot.evidence_status;
     return {
       artifact_sha256: artifact.sha256,
       package: normalizePythonName(artifact.package_name),
@@ -52,7 +90,7 @@ export function buildWheelLicenseEvidence(verifiedArtifacts) {
       artifact_type: 'PYTHON_WHEEL',
       artifact_role: artifactRole,
       distribution_role: distributionRole,
-      detected_license_expression: artifact.license_expression,
+      detected_license_expression: detectedExpression,
       evidence_status: evidenceStatus,
       source_provenance: {
         purl: artifact.purl,
@@ -64,15 +102,34 @@ export function buildWheelLicenseEvidence(verifiedArtifacts) {
       },
       evidence_sources: [
         {
-          evidence_type: metadataExpression ? 'METADATA_LICENSE_EXPRESSION' : 'METADATA_LICENSE',
-          value: metadataExpression ?? legacyLicense ?? 'MISSING',
+          evidence_type: rawExpression ? 'METADATA_LICENSE_EXPRESSION' : 'METADATA_LICENSE',
+          value: rawExpression ?? rawLegacy ?? 'MISSING',
+          metadata_sha256: snapshot.raw_license_evidence.metadata_sha256,
         },
-        ...artifact.license_files.map((entry) => ({
-          evidence_type: 'LICENSE_FILE',
+        ...snapshot.raw_license_evidence.license_files.map((entry) => ({
+          evidence_type: entry.kind,
           relative_path: entry.relative_path,
           sha256: entry.sha256,
         })),
       ],
+      exact_artifact_license_evidence: snapshot,
+      reviewed_license_assertion: activeReview
+        ? {
+            review_id: activeReview.review_id,
+            reviewed_spdx_expression: activeReview.reviewed_spdx_expression,
+            evidence_snapshot_sha256: activeReview.evidence_snapshot_sha256,
+            review_record_sha256: activeReview.review_record_sha256,
+            reviewer_identity: activeReview.reviewer.identity,
+            reviewer_authority_id: activeReview.reviewer.authority_id,
+            approval_method: activeReview.reviewer.approval_method,
+            approval_timestamp: activeReview.reviewer.approval_timestamp,
+          }
+        : null,
+      review_resolution: {
+        status: resolution.status,
+        review_states: resolution.review_states,
+        machine_suggestion_is_approval: false,
+      },
       exception_evidence: [],
     };
   });
@@ -80,10 +137,24 @@ export function buildWheelLicenseEvidence(verifiedArtifacts) {
 
 export function auditPythonLicenses(
   verifiedArtifacts,
-  { release = false, previousReport = null, usageEvaluations = [] } = {},
+  { release = false, previousReport = null, usageEvaluations = [], licenseReviews = [] } = {},
 ) {
-  const evidence = buildWheelLicenseEvidence(verifiedArtifacts);
+  const evidence = buildWheelLicenseEvidence(verifiedArtifacts, { licenseReviews });
   const report = evaluateLicenseCollection(evidence);
+  const evidenceByArtifact = new Map(evidence.map((entry) => [entry.artifact_sha256, entry]));
+  if (licenseReviews.length > 0) {
+    report.artifact_license_evidence_schema_version = '3';
+    report.artifact_license_review_schema_version = '1';
+  }
+  report.decisions = report.decisions.map((decision) => {
+    const source = evidenceByArtifact.get(decision.artifact_sha256);
+    return {
+      ...decision,
+      exact_artifact_license_evidence: source.exact_artifact_license_evidence,
+      reviewed_license_assertion: source.reviewed_license_assertion,
+      review_resolution: source.review_resolution,
+    };
+  });
   const usageByHash = new Map();
   for (const evaluation of usageEvaluations) {
     if (usageByHash.has(evaluation.artifact_sha256)) {

@@ -22,6 +22,13 @@ build/runtime/customer reachability. License Policy Evaluation v3 validates this
 never a permanent artifact allowlist. Artifact License Evidence v1 and Evaluation v2 retain their
 original meanings for historical replay.
 
+Artifact License Evidence v3 and Artifact License Review v1 add a generic path for wheels that do
+not report a valid SPDX `License-Expression`. V3 preserves raw METADATA/classifier/license-file
+facts and an immutable snapshot identity. Review v1 separately binds an authorized full SPDX
+assertion to that exact artifact and snapshot, with explicit supersession/revocation and a hashed
+approval record. CI is verify-only: a machine suggestion or package-name mapping is never an
+approval. See ADR-008.
+
 Exact PyInstaller 6.22.2 Windows/Linux scan records under `compliance/license-evidence/` preserve
 the package GPL-2.0-or-later with Bootloader exception, Apache-2.0 runtime hooks, and the dual-licensed
 isolated module. The scanner hashes every file in each declared scope and fails if the wheel hash,

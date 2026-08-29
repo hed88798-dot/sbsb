@@ -48,6 +48,8 @@ function scopeProperties(inventory, artifact) {
 function licensePolicyProperties(expression, decision) {
   const properties = [{ name: 'com.company.license.declared_expression', value: expression }];
   if (!decision) return properties;
+  const raw = decision.exact_artifact_license_evidence?.raw_license_evidence;
+  const reviewed = decision.reviewed_license_assertion;
   properties.push(
     { name: 'com.company.license.policy_result', value: decision.policy_result },
     { name: 'com.company.license.policy_version', value: decision.license_policy_version },
@@ -56,6 +58,39 @@ function licensePolicyProperties(expression, decision) {
       value: JSON.stringify(decision.acceptable_or_branches),
     },
   );
+  if (raw) {
+    properties.push(
+      {
+        name: 'com.company.license.raw.reported_license_expression',
+        value: raw.reported_license_expression ?? 'MISSING',
+      },
+      {
+        name: 'com.company.license.raw.legacy_license_value',
+        value: raw.legacy_license_value ?? 'MISSING',
+      },
+      {
+        name: 'com.company.license.evidence_snapshot_sha256',
+        value: decision.exact_artifact_license_evidence.evidence_snapshot_sha256,
+      },
+    );
+  }
+  if (reviewed) {
+    properties.push(
+      {
+        name: 'com.company.license.assertion.source',
+        value: 'AUTHORIZED_EXACT_ARTIFACT_REVIEW',
+      },
+      {
+        name: 'com.company.license.reviewed_spdx_expression',
+        value: reviewed.reviewed_spdx_expression,
+      },
+      { name: 'com.company.license.review_id', value: reviewed.review_id },
+      {
+        name: 'com.company.license.review_record_sha256',
+        value: reviewed.review_record_sha256,
+      },
+    );
+  }
   if (decision.selected_policy_branch) {
     properties.push({
       name: 'com.company.license.selected_policy_branch',
@@ -80,6 +115,10 @@ export function buildPythonSbomRecords(loaded, packagedInventories = [], license
     );
     for (const artifact of inventory.packages) {
       const artifactRef = refs.get(artifact.purl);
+      const licenseDecision = decisionsByHash.get(artifact.sha256);
+      const effectiveExpression =
+        licenseDecision?.reviewed_license_assertion?.reviewed_spdx_expression ??
+        artifact.license_expression;
       components.push({
         type: 'library',
         'bom-ref': artifactRef,
@@ -88,17 +127,14 @@ export function buildPythonSbomRecords(loaded, packagedInventories = [], license
         purl: artifact.purl,
         scope: inventory.scope === 'PRODUCTION_WORKER_RUNTIME' ? 'required' : 'optional',
         hashes: [{ alg: 'SHA-256', content: artifact.sha256 }],
-        licenses: [{ expression: artifact.license_expression }],
+        licenses: [{ expression: effectiveExpression }],
         externalReferences: [
           { type: 'distribution', url: artifact.provenance.download_url },
           { type: 'website', url: artifact.source },
         ],
         properties: [
           ...scopeProperties(inventory, artifact),
-          ...licensePolicyProperties(
-            artifact.license_expression,
-            decisionsByHash.get(artifact.sha256),
-          ),
+          ...licensePolicyProperties(artifact.license_expression, licenseDecision),
         ],
       });
       const dependencies = new Set(

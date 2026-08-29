@@ -46,7 +46,8 @@ def inspect(path: Path) -> dict[str, object]:
         ]
         if len(metadata_names) != 1:
             raise SystemExit(f"wheel must contain exactly one METADATA file: {path.name}")
-        metadata = BytesParser().parsebytes(wheel.read(metadata_names[0]))
+        metadata_bytes = wheel.read(metadata_names[0])
+        metadata = BytesParser().parsebytes(metadata_bytes)
         package_name = metadata.get("Name")
         version = metadata.get("Version")
         if not package_name or not version:
@@ -70,8 +71,23 @@ def inspect(path: Path) -> dict[str, object]:
             )
             if declared or conventional:
                 value = wheel.read(name)
+                basename = PurePosixPath(name).name.lower()
+                kind = (
+                    "NOTICE"
+                    if basename.startswith("notice")
+                    else "COPYING"
+                    if basename.startswith("copying")
+                    else "LICENSE"
+                    if basename.startswith(("license", "licence"))
+                    else "OTHER_LICENSE_EVIDENCE"
+                )
                 license_entries.append(
-                    {"relative_path": name, "sha256": sha256_bytes(value), "size": len(value)}
+                    {
+                        "relative_path": name,
+                        "kind": kind,
+                        "sha256": sha256_bytes(value),
+                        "size": len(value),
+                    }
                 )
         native_entries = []
         for name in names:
@@ -97,8 +113,14 @@ def inspect(path: Path) -> dict[str, object]:
             "filename": path.name,
             "package_name": package_name,
             "version": version,
+            "metadata_sha256": sha256_bytes(metadata_bytes),
             "license_expression": license_expression,
             "legacy_license": legacy_license,
+            "license_classifiers": sorted(
+                value
+                for value in metadata.get_all("Classifier", [])
+                if value.startswith("License ::")
+            ),
             "declared_license_files": declared_license_files,
             "license_files": sorted(license_entries, key=lambda item: item["relative_path"]),
             "native_artifacts": sorted(native_entries, key=lambda item: item["relative_path"]),

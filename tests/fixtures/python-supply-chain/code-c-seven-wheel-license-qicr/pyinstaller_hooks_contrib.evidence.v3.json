@@ -1,0 +1,36 @@
+{
+  "artifact": {
+    "artifact_type": "PYTHON_WHEEL",
+    "filename": "pyinstaller_hooks_contrib-2026.7-py3-none-any.whl",
+    "package": "pyinstaller-hooks-contrib",
+    "purl": "pkg:pypi/pyinstaller-hooks-contrib@2026.7",
+    "sha256": "24257a04c7a5a7a034cf28e39dcee20fbeeb9f043076729480f2e1b69904408a",
+    "version": "2026.7"
+  },
+  "evidence_snapshot_sha256": "310f601f26891483659113079645720e0c6e235e49fea43fc69bcf34c6b12608",
+  "evidence_status": "MANUAL_REVIEW",
+  "extractor": {
+    "name": "inspect-wheel.py",
+    "version": "2"
+  },
+  "machine_suggestion": null,
+  "raw_license_evidence": {
+    "bundled_license_evidence_identity_sha256": null,
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License",
+      "License :: OSI Approved :: GNU General Public License v2 (GPLv2)"
+    ],
+    "legacy_license_value": null,
+    "license_files": [
+      {
+        "kind": "LICENSE",
+        "relative_path": "pyinstaller_hooks_contrib-2026.7.dist-info/licenses/LICENSE",
+        "sha256": "91d0baaff00773038e72c0a1fc9d5d2d38706b7a2b9c04f34296608f931b9cd0",
+        "size": 27666
+      }
+    ],
+    "metadata_sha256": "66f4b89882a0f846cb3f3cd6379d74b85cbf096a88b73689a557438a7ccf431e",
+    "reported_license_expression": null
+  },
+  "schema_version": "3"
+}

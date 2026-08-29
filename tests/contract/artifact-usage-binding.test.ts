@@ -382,6 +382,7 @@ describe('PyInstaller artifact identity and worker-build usage binding', () => {
           sha256: artifact.sha256,
           package_name: artifact.package,
           version: artifact.version,
+          filename: artifact.filename,
           purl: `pkg:pypi/${artifact.package}@${artifact.version}`,
           source: 'https://github.com/pyinstaller/pyinstaller',
           source_index: 'https://pypi.org/simple',
@@ -399,9 +400,19 @@ describe('PyInstaller artifact identity and worker-build usage binding', () => {
             })),
         },
         inspected: {
+          metadata_sha256: 'f'.repeat(64),
           license_expression: null,
           legacy_license:
             'GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones)',
+          license_classifiers: [],
+          license_files: windowsEvidence.package_license.evidence_sources
+            .filter((entry: { evidence_type: string }) => entry.evidence_type === 'LICENSE_FILE')
+            .map((entry: { relative_path: string; sha256: string }) => ({
+              relative_path: entry.relative_path,
+              kind: 'LICENSE',
+              sha256: entry.sha256,
+              size: 1,
+            })),
         },
       },
     ];

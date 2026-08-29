@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/license-artifact-evidence/v3/evidence.schema.json",
+  "title": "Exact Artifact License Evidence v3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact",
+    "raw_license_evidence",
+    "extractor",
+    "evidence_status",
+    "evidence_snapshot_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": "3" },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["package", "version", "filename", "sha256", "purl", "artifact_type"],
+      "properties": {
+        "package": { "$ref": "#/$defs/nonEmpty" },
+        "version": { "$ref": "#/$defs/nonEmpty" },
+        "filename": { "$ref": "#/$defs/nonEmpty" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "purl": { "$ref": "#/$defs/nonEmpty" },
+        "artifact_type": { "const": "PYTHON_WHEEL" }
+      }
+    },
+    "raw_license_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metadata_sha256",
+        "reported_license_expression",
+        "legacy_license_value",
+        "classifiers",
+        "license_files",
+        "bundled_license_evidence_identity_sha256"
+      ],
+      "properties": {
+        "metadata_sha256": { "$ref": "#/$defs/sha256" },
+        "reported_license_expression": { "type": ["string", "null"], "minLength": 1 },
+        "legacy_license_value": { "type": ["string", "null"], "minLength": 1 },
+        "classifiers": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmpty" }
+        },
+        "license_files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["relative_path", "kind", "sha256", "size"],
+            "properties": {
+              "relative_path": { "$ref": "#/$defs/relativePath" },
+              "kind": { "enum": ["LICENSE", "COPYING", "NOTICE", "OTHER_LICENSE_EVIDENCE"] },
+              "sha256": { "$ref": "#/$defs/sha256" },
+              "size": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "bundled_license_evidence_identity_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "extractor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "const": "inspect-wheel.py" },
+        "version": { "const": "2" }
+      }
+    },
+    "machine_suggestion": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["status", "suggested_spdx_expression", "generator"],
+      "properties": {
+        "status": { "const": "UNAPPROVED_MACHINE_SUGGESTION" },
+        "suggested_spdx_expression": { "$ref": "#/$defs/nonEmpty" },
+        "generator": { "$ref": "#/$defs/nonEmpty" }
+      }
+    },
+    "evidence_status": { "enum": ["PASS", "MANUAL_REVIEW", "CONFLICT", "FAIL"] },
+    "evidence_snapshot_sha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "nonEmpty": { "type": "string", "minLength": 1 },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    }
+  }
+}
