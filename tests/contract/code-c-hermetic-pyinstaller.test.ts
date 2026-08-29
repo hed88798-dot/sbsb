@@ -22,11 +22,15 @@ describe('Code C hermetic PyInstaller source provenance', () => {
     expect(result.status, result.stderr || result.stdout).toBe(0);
     expect(JSON.parse(result.stdout.trim())).toEqual({
       ACTUAL_TEST_ASSERTIONS_EXECUTED: 'YES',
+      CHILD_FIXTURE_ENCODING_DEPENDENCY: 'NONE',
+      CHILD_FIXTURE_SHELL: 'DISABLED',
       CHILD_STDERR_CAPTURE_POLICY: 'PASS',
       CHILD_STDOUT_CAPTURE_POLICY: 'PASS',
       CHILD_STDOUT_INHERITANCE: 'NONE',
       CHILD_STDOUT_NOISE_ISOLATED: 'PASS',
+      CRLF_CHILD_NOISE_ISOLATION: 'PASS',
       MULTIPLE_JSON_DOCUMENTS_FAIL_CLOSED: 'PASS',
+      RAW_BYTE_CHILD_FIXTURE: 'PASS',
       STDERR_HUMAN_LOGGING: 'PASS',
       STDERR_INCLUDED_IN_EVIDENCE_HASH: 'NO',
       STDERR_LOG_SAFETY_POLICY: 'PASS',
