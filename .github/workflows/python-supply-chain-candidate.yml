@@ -345,7 +345,12 @@ jobs:
         with:
           name: python-native-diagnostic-${{ matrix.target }}-${{ github.sha }}
           path: |
+            ${{ matrix.worker }}
+            artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v2.json
+            artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v2.json
             artifacts/python-supply-chain/diagnostics/${{ matrix.target }}-native-reconciliation.json
+            artifacts/python-supply-chain/evidence/${{ matrix.target }}-cpython-installation.json
+            artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json
             artifacts/python-supply-chain/evidence/${{ matrix.target }}-target-evidence.json
             artifacts/python-supply-chain/inspection/${{ matrix.target }}-worker-onefile.json
             artifacts/python-supply-chain/native-v3/${{ matrix.target }}
@@ -353,7 +358,9 @@ jobs:
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/pyinstaller-build-evidence.json
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/parsed
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/raw
+            artifacts/python-supply-chain/target/${{ matrix.target }}.json
           if-no-files-found: error
+          compression-level: 0
           retention-days: 30
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
