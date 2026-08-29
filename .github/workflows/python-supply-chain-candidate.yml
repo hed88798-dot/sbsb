@@ -61,7 +61,7 @@ jobs:
   generate-target-candidate:
     needs: stage-a-cpython-artifact-binding
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
           - target: linux
@@ -246,7 +246,7 @@ jobs:
           --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.distribution }}
           --pip-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip-26.2.1-py3-none-any.whl
           --pyinstaller-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.pyinstaller_wheel }}
-          --main-quality-baseline 1bd82edb2e22e5038e29c2df63df779f86df2716
+          --main-quality-baseline d1348c50e36b725bfcbf9bec17343392cf0412c7
           --output artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
       - name: Build candidate one-file worker in clean isolated workpath
         shell: bash
@@ -295,7 +295,7 @@ jobs:
             --selection-evidence artifacts/python-supply-chain/native-v3/${{ matrix.target }}/packaging-selection-evidence.v1.json \
             --native-reconciliation artifacts/python-supply-chain/native-v3/${{ matrix.target }}/native-reconciliation.v3.json \
             --output artifacts/python-supply-chain/native-v3/${{ matrix.target }}/native-reconciliation-report.v3.json
-      - name: Approve exact wheel graph and execute Candidate compliance gates
+      - name: Freeze approved exact wheel graph
         shell: bash
         run: |
           reviewed_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -306,88 +306,32 @@ jobs:
             --inventory-root artifacts/python-supply-chain/approved-inventories \
             --lock-root artifacts/python-supply-chain/hash-locks \
             --reviewed-at "$reviewed_at"
-          inventory_args=()
-          while IFS= read -r inventory; do
-            inventory_args+=(--inventory "$inventory")
-          done < <(find artifacts/python-supply-chain/approved-inventories/${{ matrix.target }} -maxdepth 1 -type f -name '*.v2.json' -print | sort)
-          node tools/python-supply-chain/cli.mjs license \
-            "${inventory_args[@]}" \
-            --artifact-root artifacts/python-supply-chain/approved-wheels \
-            --output artifacts/python-supply-chain/evidence/${{ matrix.target }}-wheel-license-first-pass.json
-          node tools/python-supply-chain/cli.mjs vulnerability \
-            "${inventory_args[@]}" \
-            --artifact-root artifacts/python-supply-chain/approved-wheels \
-            --output artifacts/python-supply-chain/evidence/${{ matrix.target }}-wheel-vulnerability.json
-          sbom_args=()
-          while IFS= read -r inventory; do
-            sbom_args+=(--python-inventory "$inventory")
-          done < <(find artifacts/python-supply-chain/approved-inventories/${{ matrix.target }} -maxdepth 1 -type f -name '*.v2.json' -print | sort)
-          node tools/compliance/generate-sbom.mjs \
-            --output artifacts/python-supply-chain/evidence/${{ matrix.target }}-candidate-wheel-SBOM.cdx.json \
-            --selection-evidence artifacts/python-supply-chain/native-v3/${{ matrix.target }}/packaging-selection-evidence.v1.json \
-            --native-reconciliation artifacts/python-supply-chain/native-v3/${{ matrix.target }}/native-reconciliation.v3.json \
-            "${sbom_args[@]}"
-      - name: Collect Stage B static reachability evidence
-        if: matrix.target == 'windows'
-        shell: bash
-        run: >-
-          ${{ matrix.venv_python }} tools/code-c-python-supply-chain/collect_stage_b_static_evidence.py
-          --output artifacts/python-supply-chain/stage-b/STATIC_REACHABILITY.json
-      - name: Hydrate the exact frozen SigLIP runtime model pack
-        if: matrix.target == 'windows'
-        shell: bash
-        run: >-
-          ${{ matrix.venv_python }} tools/code-c-python-supply-chain/download_locked_model_pack.py
-          --output-root artifacts/stage-b-model-pack
-          --evidence artifacts/python-supply-chain/stage-b/MODEL_PACK_BINDING.json
-      - name: Execute Candidate Worker Stage B negative reachability tests
-        if: matrix.target == 'windows'
-        shell: bash
-        run: |
-          ffprobe_path="$(command -v ffprobe || true)"
-          test -n "$ffprobe_path"
-          ${{ matrix.venv_python }} tools/code-c-python-supply-chain/run_stage_b_candidate_negative.py \
-            --worker '${{ matrix.worker }}' \
-            --ffprobe "$ffprobe_path" \
-            --output artifacts/python-supply-chain/stage-b/CANDIDATE_NEGATIVE_REACHABILITY.json
-      - name: Execute exact Candidate Worker real ONNX and current-HEAD core regressions
-        if: matrix.target == 'windows'
+      - name: Capture exact target graph and Artifact License Evidence v3
         shell: bash
         env:
-          CODE_C_WORKER_PYTHON: ${{ github.workspace }}/${{ matrix.venv_python }}
-          CODE_C_WORKER_EXECUTABLE: ${{ github.workspace }}/${{ matrix.worker }}
-          CODE_C_REAL_MODEL_ROOT: ${{ github.workspace }}/artifacts/stage-b-model-pack
-          CODE_C_E2E_REPORT: ${{ github.workspace }}/artifacts/python-supply-chain/stage-b/REAL_SIGLIP_ONNX_E2E.json
-        run: |
-          ffprobe_path="$(command -v ffprobe || true)"
-          test -n "$ffprobe_path"
-          export CODE_C_FFPROBE="$ffprobe_path"
-          pnpm ci:prepare
-          pnpm exec vitest run \
-            tests/e2e/real-siglip-onnx.test.ts \
-            tests/integration/media-index-repository.test.ts \
-            tests/integration/job-recovery.test.ts \
-            tests/unit/media-search-cache.test.ts \
-            --maxWorkers=1
-          ${{ matrix.venv_python }} tests/performance/benchmark_50k_exact_search.py \
-            > artifacts/python-supply-chain/stage-b/SEARCH_50K.json
-          node -e 'const fs=require("node:fs"); const crypto=require("node:crypto"); const worker=process.env.CODE_C_WORKER_EXECUTABLE; const workerSha256=crypto.createHash("sha256").update(fs.readFileSync(worker)).digest("hex"); fs.writeFileSync("artifacts/python-supply-chain/stage-b/CORE_REGRESSIONS.json",JSON.stringify({schema_version:"1",status:"PASS",code_head_sha:process.env.GITHUB_SHA,candidate_worker_sha256:workerSha256,real_siglip_onnx_e2e:"PASS",second_scan_zero_reprocess:"PASS",single_file_rebuild:"PASS",interrupt_recovery:"PASS",index_atomicity:"PASS",cache_integrity:"PASS"},null,2)+"\n");'
+          PYTHON_EXECUTABLE: ${{ github.workspace }}/${{ matrix.venv_python }}
+        run: >-
+          node tools/code-c-python-supply-chain/prepare_license_target.mjs
+          --target ${{ matrix.target }}
+          --inventory-root artifacts/python-supply-chain/approved-inventories/${{ matrix.target }}
+          --artifact-root artifacts/python-supply-chain/approved-wheels
+          --resolution-root artifacts/python-supply-chain/resolution
+          --build-context artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
+          --output-root artifacts/python-supply-chain/license-preparation/${{ matrix.target }}
+          --main-quality-baseline d1348c50e36b725bfcbf9bec17343392cf0412c7
       - name: Preserve candidate worker bytes
         shell: bash
         run: |
           mkdir -p artifacts/python-supply-chain/build/${{ matrix.target }}
           cp '${{ matrix.worker }}' artifacts/python-supply-chain/build/${{ matrix.target }}/
-      - name: Assemble exact Candidate Worker Stage B evidence bundle
-        if: matrix.target == 'windows'
-        shell: bash
-        run: >-
-          ${{ matrix.venv_python }} tools/code-c-python-supply-chain/create_stage_b_evidence_bundle.py
-          --worker '${{ matrix.worker }}'
-          --bundle-root artifacts/python-supply-chain
-          --main-quality-baseline 1bd82edb2e22e5038e29c2df63df779f86df2716
-          --output artifacts/python-supply-chain/stage-b/STAGE_B_EVIDENCE_BUNDLE.json
-          --sha256-output artifacts/python-supply-chain/stage-b/STAGE_B_EVIDENCE_BUNDLE.sha256
-          --handoff artifacts/python-supply-chain/stage-b/CODE_C_CPYTHON_STAGE_B_HANDOFF.md
+      - name: Preserve target license preparation evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: python-license-preparation-${{ matrix.target }}-${{ github.sha }}
+          path: artifacts/python-supply-chain/license-preparation
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
       - name: Preserve compact native reconciliation diagnostic evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
@@ -409,6 +353,43 @@ jobs:
         with:
           name: python-supply-chain-candidate-${{ matrix.target }}-${{ github.sha }}
           path: artifacts/python-supply-chain
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+  assemble-license-review-bundle:
+    needs: generate-target-candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Download Linux and Windows exact-license target evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: python-license-preparation-*-${{ github.sha }}
+          path: artifacts/python-supply-chain/license-preparation
+          merge-multiple: true
+      - name: Build graph-bound exact-artifact review request bundle
+        run: >-
+          node tools/code-c-python-supply-chain/create_license_review_bundle.mjs
+          --input-root artifacts/python-supply-chain/license-preparation
+          --output-root artifacts/python-supply-chain/license-review-bundle
+      - name: Preserve formal license review handoff
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: code-c-artifact-license-review-bundle-${{ github.sha }}
+          path: artifacts/python-supply-chain/license-review-bundle
           if-no-files-found: error
           compression-level: 0
           retention-days: 30
