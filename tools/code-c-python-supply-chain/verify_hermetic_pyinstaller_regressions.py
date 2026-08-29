@@ -28,6 +28,7 @@ from prepackage_selected_source_gate import validate_selected_sources
 from msvc_runtime_dependency import (
     MsvcRuntimeEvidenceError,
     _preserve_analysis_toc,
+    audit_dynamic_load_surfaces,
     build_import_closure,
     normalize_runtime_name,
     validate_msvc_evidence_pointers,
@@ -251,6 +252,47 @@ def main() -> None:
             source_pe = Path(sys.executable)
         approved_file.write_bytes(source_pe.read_bytes())
         ambient_file.write_bytes(approved_file.read_bytes())
+        version_identity_fixture = root / "version-identity-runtime-literal.dll"
+        version_identity_fixture.write_bytes(b"header-msvcp140.dll-footer")
+        dynamic_owner = {
+            "source_kind": "HASH_LOCKED_WHEEL_NATIVE",
+            "source_artifact_identity": {
+                "filename": "synthetic-wheel.whl",
+                "artifact_sha256": "c" * 64,
+                "member_relative_path": version_identity_fixture.name,
+            },
+        }
+        dynamic_entry = {
+            "internal_path": "package/version-identity-runtime-literal.dll",
+            "selected_source_path": str(version_identity_fixture),
+            "sha256": sha256_file(version_identity_fixture),
+            "owner": dynamic_owner,
+            "pe": {
+                "machine": "x86_64",
+                "static_imports": [
+                    {"dll": "KERNEL32.dll", "symbols": ["GetProcAddress"]}
+                ],
+                "delay_imports": [],
+                "version_resource": {
+                    "internal_name": "msvcp140.dll",
+                    "original_filename": "msvcp140.dll",
+                },
+            },
+        }
+        version_identity_audit = audit_dynamic_load_surfaces(
+            [dynamic_entry], Path(__file__).resolve().parents[2]
+        )
+        assert version_identity_audit["status"] == "PASS"
+        assert version_identity_audit["msvc_related_unresolved_dynamic_load_count"] == 0
+        unresolved_entry = {
+            **dynamic_entry,
+            "pe": {**dynamic_entry["pe"], "version_resource": {}},
+        }
+        unresolved_audit = audit_dynamic_load_surfaces(
+            [unresolved_entry], Path(__file__).resolve().parents[2]
+        )
+        assert unresolved_audit["status"] == "INCOMPLETE"
+        assert unresolved_audit["msvc_related_unresolved_dynamic_load_count"] == 1
         digest = sha256_file(approved_file)
         fixture = build_synthetic_pyinstaller_evidence_fixture(root, approved, approved_file)
         manifest = fixture["manifest"]
@@ -485,6 +527,8 @@ def main() -> None:
             "MSVC_APPLICATION_REQUIREMENT_ROOT_PROVENANCE": "PASS",
             "UNAPPROVED_RUNTIME_ENDPOINT_EDGE_NOT_PROMOTED": "PASS",
             "STATIC_DELAY_IMPORT_SEPARATION_REGRESSION": "PASS",
+            "PE_VERSION_IDENTITY_METADATA_NOT_DYNAMIC_TARGET": "PASS",
+            "MSVC_DYNAMIC_LITERAL_WITHOUT_PROVENANCE_FAIL_CLOSED": "PASS",
             "SYNTHETIC_MANIFEST_SCHEMA": SYNTHETIC_MANIFEST_SCHEMA,
             "SYNTHETIC_FIXTURE_SCHEMA_PARITY": "PASS",
             "POSITIVE_FIXTURE_ROUNDTRIP": "PASS",

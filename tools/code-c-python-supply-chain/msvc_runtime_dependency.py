@@ -222,6 +222,8 @@ def _version_resources(pe: object) -> dict[str, str | None]:
         "company_name": values.get("CompanyName"),
         "file_description": values.get("FileDescription"),
         "file_version": values.get("FileVersion"),
+        "internal_name": values.get("InternalName"),
+        "original_filename": values.get("OriginalFilename"),
         "product_name": values.get("ProductName"),
         "product_version": values.get("ProductVersion"),
     }
@@ -761,7 +763,16 @@ def audit_dynamic_load_surfaces(
                 raw,
             )
         }
-        unresolved_runtime_names = sorted(embedded_runtime_names - statically_imported)
+        version_resource = entry["pe"].get("version_resource", {})
+        version_identity_runtime_names = {
+            runtime
+            for field in ("internal_name", "original_filename")
+            for runtime in [normalize_runtime_name(str(version_resource.get(field) or ""))]
+            if runtime
+        }
+        unresolved_runtime_names = sorted(
+            embedded_runtime_names - statically_imported - version_identity_runtime_names
+        )
         surfaces.append(
             {
                 "surface": api_names,
@@ -772,6 +783,9 @@ def audit_dynamic_load_surfaces(
                 "target_naming_rule": "NO_ADDITIONAL_MSVC_DLL_LITERAL_OBSERVED"
                 if not unresolved_runtime_names
                 else unresolved_runtime_names,
+                "excluded_pe_version_identity_metadata": sorted(
+                    embedded_runtime_names & version_identity_runtime_names
+                ),
                 "search_root": "NOT_RESOLVED_BY_STATIC_PE_EVIDENCE",
                 "user_controlled_input": "UNKNOWN",
                 "environment_controlled": "UNKNOWN",
