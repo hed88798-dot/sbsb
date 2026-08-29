@@ -6,18 +6,22 @@ import json
 import subprocess
 from pathlib import Path
 
+from canonical_evidence import write_canonical_json
+
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 PYTHON_CLI = REPOSITORY_ROOT / "tools" / "python-supply-chain" / "cli.mjs"
 
 
 def canonical_compact_hash(value: object) -> str:
-    payload = json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+    payload = json.dumps(
+        value,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+        allow_nan=False,
+    )
     return hashlib.sha256(payload.encode()).hexdigest()
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
 def normalized(value: str) -> str:
@@ -128,7 +132,7 @@ def main() -> None:
         },
     }
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
-    arguments.output.write_text(canonical_json(binding), encoding="utf-8")
+    write_canonical_json(arguments.output, binding)
     arguments.evaluation_output.parent.mkdir(parents=True, exist_ok=True)
     result = subprocess.run(
         [

@@ -6,6 +6,8 @@ import json
 import subprocess
 from pathlib import Path
 
+from canonical_evidence import canonical_sha256, write_canonical_json
+
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 SOURCE_LOCK = (
@@ -16,14 +18,6 @@ SOURCE_LOCK = (
     / "toolchain-source-lock.json"
 )
 SPECIFICATION = REPOSITORY_ROOT / "sidecars" / "media-worker" / "media-worker.spec"
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
-
-
-def canonical_sha256(value: object) -> str:
-    return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
 
 
 def sha256_file(path: Path) -> str:
@@ -366,7 +360,7 @@ def main() -> None:
         "failures": failures,
     }
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
-    arguments.output.write_text(canonical_json(bundle), encoding="utf-8")
+    write_canonical_json(arguments.output, bundle)
     bundle_sha256 = sha256_file(arguments.output)
     arguments.sha256_output.write_text(f"{bundle_sha256}  {arguments.output.name}\n", encoding="utf-8")
     handoff = f"""# Code C CPython Stage B Handoff

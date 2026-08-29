@@ -8,6 +8,8 @@ import urllib.request
 from pathlib import Path
 from urllib.parse import urlparse
 
+from canonical_evidence import write_canonical_json
+
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = (
@@ -24,10 +26,6 @@ RUNTIME_ARTIFACTS = (
     "tokenizer_config",
     "tokenizer_model",
 )
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
 def sha256_file(path: Path) -> str:
@@ -105,9 +103,7 @@ def main() -> None:
         }
         for key in RUNTIME_ARTIFACTS
     }
-    (arguments.output_root / "MODEL_MANIFEST.json").write_text(
-        canonical_json(runtime_manifest), encoding="utf-8"
-    )
+    write_canonical_json(arguments.output_root / "MODEL_MANIFEST.json", runtime_manifest)
     evidence = {
         "report_kind": "CODE_C_LOCKED_SIGLIP_RUNTIME_MODEL_PACK",
         "schema_version": "1",
@@ -119,7 +115,7 @@ def main() -> None:
         "runtime_manifest_sha256": sha256_file(arguments.output_root / "MODEL_MANIFEST.json"),
     }
     arguments.evidence.parent.mkdir(parents=True, exist_ok=True)
-    arguments.evidence.write_text(canonical_json(evidence), encoding="utf-8")
+    write_canonical_json(arguments.evidence, evidence)
     print(f"locked-model-pack: PASS ({len(artifacts)} exact runtime artifacts)")
 
 

@@ -6,6 +6,7 @@ import json
 import zipfile
 from pathlib import Path, PurePosixPath
 
+from canonical_evidence import write_canonical_json
 from policy import sha256_file
 
 
@@ -17,10 +18,6 @@ SOURCE_LOCK = (
     / "supply-chain"
     / "toolchain-source-lock.json"
 )
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
 def main() -> None:
@@ -110,7 +107,7 @@ def main() -> None:
         "failures": failures,
     }
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
-    arguments.output.write_text(canonical_json(evidence), encoding="utf-8")
+    write_canonical_json(arguments.output, evidence)
     if failures:
         raise SystemExit("Stage A CPython artifact binding failed:\n" + "\n".join(failures))
     print(

@@ -15,6 +15,7 @@ from pathlib import Path, PurePosixPath
 
 import PyInstaller
 
+from canonical_evidence import write_canonical_json
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_PYINSTALLER_VERSION = "6.22.2"
@@ -32,10 +33,6 @@ TOC_LAYOUT = {
     "PKG": {"minimum_length": 11, "toc": 2},
     "EXE": {"minimum_length": 22, "toc": 15, "strip": 17, "upx": 18},
 }
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
 def sha256_file(path: Path) -> str:
@@ -347,8 +344,8 @@ def main() -> None:
     }
     selected_path = parsed_root / "pyinstaller-selected-native-set.json"
     staged_path = parsed_root / "pyinstaller-materialized-native-set.json"
-    selected_path.write_text(canonical_json(selected_document), encoding="utf-8")
-    staged_path.write_text(canonical_json(staged_document), encoding="utf-8")
+    write_canonical_json(selected_path, selected_document)
+    write_canonical_json(staged_path, staged_document)
 
     ambiguous = sum(
         1 for item in selected if item["source_owner"]["resolution"] == "AMBIGUOUS"
@@ -399,7 +396,7 @@ def main() -> None:
         "ambiguous_hash_owner_resolution": "PASS" if ambiguous == 0 else "FAIL",
     }
     manifest_path = arguments.output_root / "pyinstaller-build-evidence.json"
-    manifest_path.write_text(canonical_json(manifest), encoding="utf-8")
+    write_canonical_json(manifest_path, manifest)
     print(
         f"pyinstaller-build-evidence: PASS ({build_context['build_context_id']}; "
         f"{len(selected)} selected/materialized; {len(symlink_plan)} symlinks)"

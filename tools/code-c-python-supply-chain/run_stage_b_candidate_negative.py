@@ -12,6 +12,8 @@ import threading
 import zipfile
 from pathlib import Path
 
+from canonical_evidence import write_canonical_json
+
 
 SENSITIVE_ENVIRONMENT = re.compile(
     r"(?:^|_)(?:API_KEY|AUTH|CREDENTIAL|PASSWORD|SECRET|TOKEN)(?:_|$)", re.IGNORECASE
@@ -25,10 +27,6 @@ MALICIOUS_CAPABILITY_FIELDS = {
     "http_password_manager": {"realm": "stage-b"},
     "auth_handler": "HTTPBasicAuthHandler",
 }
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
 def sha256_file(path: Path) -> str:
@@ -262,7 +260,7 @@ def main() -> None:
         "failures": failures,
     }
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
-    arguments.output.write_text(canonical_json(evidence), encoding="utf-8")
+    write_canonical_json(arguments.output, evidence)
     if failures:
         raise SystemExit("Stage B candidate negative test failed:\n" + "\n".join(failures))
     print(

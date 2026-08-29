@@ -8,6 +8,7 @@ import subprocess
 import zipfile
 from pathlib import Path, PurePosixPath
 
+from canonical_evidence import write_canonical_json
 from policy import hermetic_environment, sha256_file
 
 
@@ -27,10 +28,6 @@ PYINSTALLER_QUALITY_LOCK = (
     / "pyinstaller-archive-inspector-6.22.2.lock.json"
 )
 PYTHON_CLI = REPOSITORY_ROOT / "tools" / "python-supply-chain" / "cli.mjs"
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
 def copy_exact(source: Path, destination: Path, expected_hash: str) -> None:
@@ -343,7 +340,7 @@ def main() -> None:
     }
     output = REPOSITORY_ROOT / "compliance" / "python-toolchain" / f"{arguments.target}.v1.json"
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(canonical_json(inventory), encoding="utf-8")
+    write_canonical_json(output, inventory)
     result = subprocess.run(
         [
             "node",

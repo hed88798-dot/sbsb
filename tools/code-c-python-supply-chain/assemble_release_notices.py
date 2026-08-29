@@ -8,6 +8,8 @@ import tempfile
 import zipfile
 from pathlib import Path, PurePosixPath
 
+from canonical_evidence import write_canonical_json
+
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 PUBLIC_NOTICE_TOOL = REPOSITORY_ROOT / "tools" / "license-policy" / "notices.mjs"
@@ -23,10 +25,6 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: source.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
 def normalized(value: str) -> str:
@@ -350,7 +348,7 @@ def main() -> None:
         "notice_sha256": sha256_bytes(rendered.encode("utf-8")),
     }
     arguments.report.parent.mkdir(parents=True, exist_ok=True)
-    arguments.report.write_text(canonical_json(report), encoding="utf-8")
+    write_canonical_json(arguments.report, report)
     print(
         f"code-c-release-notices: PASS ({arguments.target}; "
         f"{len(reconciled)} exact notice components; {report['notice_sha256']})"

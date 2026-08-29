@@ -8,6 +8,8 @@ import re
 import subprocess
 from pathlib import Path
 
+from canonical_evidence import canonical_json, write_canonical_json
+
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 WORKER_SOURCE = REPOSITORY_ROOT / "sidecars" / "media-worker" / "src" / "media_worker"
@@ -27,10 +29,6 @@ CREDENTIAL_NAMES = {
     "HTTPPasswordMgrWithDefaultRealm",
     "HTTPPasswordMgrWithPriorAuth",
 }
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
 def sha256_file(path: Path) -> str:
@@ -170,7 +168,7 @@ def main() -> None:
         "failures": failures,
     }
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
-    arguments.output.write_text(canonical_json(evidence), encoding="utf-8")
+    write_canonical_json(arguments.output, evidence)
     if failures:
         raise SystemExit("Stage B static reachability failed:\n" + "\n".join(failures))
     print(

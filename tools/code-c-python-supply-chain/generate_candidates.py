@@ -15,6 +15,7 @@ from packaging.requirements import Requirement
 from packaging.utils import canonicalize_name
 from packaging.version import Version
 
+from canonical_evidence import write_canonical_json
 from locked_interpreter import attest_locked_interpreter, require_locked_python_environment
 from policy import assert_standard_cp313_artifact, hermetic_environment, sha256_file
 
@@ -30,10 +31,6 @@ DEFINITIONS_PATH = (
 INSPECT_WHEEL = REPOSITORY_ROOT / "tools" / "python-supply-chain" / "inspect-wheel.py"
 CANDIDATE_TOOL = REPOSITORY_ROOT / "tools" / "python-supply-chain" / "create-candidate.mjs"
 TARGET_TOOL = REPOSITORY_ROOT / "tools" / "python-supply-chain" / "target-descriptor.mjs"
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
 def run(arguments: list[str], *, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
@@ -242,7 +239,7 @@ def resolve_scope(
     }
     resolution_path = output_root / "resolution" / f"{target_name}-{scope_name}.json"
     resolution_path.parent.mkdir(parents=True, exist_ok=True)
-    resolution_path.write_text(canonical_json(resolution), encoding="utf-8")
+    write_canonical_json(resolution_path, resolution)
 
     candidate_path = output_root / "candidates" / f"code-c-{target_name}-{scope_name}.v2.json"
     candidate_path.parent.mkdir(parents=True, exist_ok=True)
@@ -316,22 +313,20 @@ def main() -> None:
         arguments.output_root / "evidence" / f"{arguments.target}-graph-interpreter-attestation.json"
     )
     graph_attestation_path.parent.mkdir(parents=True, exist_ok=True)
-    graph_attestation_path.write_text(
-        canonical_json(
-            {
-                "schema_version": "1",
-                **graph_attestation,
-                "target_descriptor": {
-                    "path": str(arguments.target_descriptor),
-                    "sha256": sha256_file(arguments.target_descriptor),
-                },
-                "runtime_identity": {
-                    "path": str(arguments.runtime_identity),
-                    "sha256": sha256_file(arguments.runtime_identity),
-                },
-            }
-        ),
-        encoding="utf-8",
+    write_canonical_json(
+        graph_attestation_path,
+        {
+            "schema_version": "1",
+            **graph_attestation,
+            "target_descriptor": {
+                "path": str(arguments.target_descriptor),
+                "sha256": sha256_file(arguments.target_descriptor),
+            },
+            "runtime_identity": {
+                "path": str(arguments.runtime_identity),
+                "sha256": sha256_file(arguments.runtime_identity),
+            },
+        },
     )
     run(
         [

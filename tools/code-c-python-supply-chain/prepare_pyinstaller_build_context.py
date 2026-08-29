@@ -9,6 +9,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from canonical_evidence import write_canonical_json
+
 import PyInstaller
 
 from collect_stage_b_static_evidence import collect_worker_source_evidence
@@ -26,13 +28,16 @@ SOURCE_LOCK = (
 
 
 def canonical_bytes(value: object) -> bytes:
-    return (json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode(
-        "utf-8"
-    )
-
-
-def canonical_pretty(value: object) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    return (
+        json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+        + "\n"
+    ).encode("utf-8")
 
 
 def sha256_file(path: Path) -> str:
@@ -196,7 +201,7 @@ def main() -> None:
         "inputs": build_inputs,
     }
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
-    arguments.output.write_text(canonical_pretty(document), encoding="utf-8")
+    write_canonical_json(arguments.output, document)
     print(f"pyinstaller-build-context: PASS ({build_context_id})")
 
 

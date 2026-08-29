@@ -8,6 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from canonical_evidence import write_canonical_json
 from policy import sha256_file
 
 
@@ -15,10 +16,6 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 INSPECT_ONEFILE = (
     REPOSITORY_ROOT / "tools" / "python-supply-chain" / "inspect-pyinstaller-onefile.py"
 )
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
 def git_head() -> str:
@@ -125,7 +122,7 @@ def main() -> None:
         "bit_for_bit_reproducible_build_required": False,
     }
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
-    arguments.output.write_text(canonical_json(provenance), encoding="utf-8")
+    write_canonical_json(arguments.output, provenance)
     print(
         f"build-provenance-create: PASS ({arguments.target}; "
         f"{inspection['final_artifact']['sha256']}; "

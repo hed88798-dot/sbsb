@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import platform
@@ -13,6 +12,7 @@ import packaging
 from packaging.markers import default_environment
 from packaging.tags import sys_tags
 
+from canonical_evidence import canonical_sha256, write_canonical_json
 from locked_interpreter import (
     attest_locked_interpreter,
     normalize_py_gil_disabled,
@@ -29,14 +29,6 @@ SOURCE_LOCK = (
     / "supply-chain"
     / "toolchain-source-lock.json"
 )
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
-
-
-def canonical_sha256(value: object) -> str:
-    return hashlib.sha256(canonical_json(value).encode()).hexdigest()
 
 
 def main() -> None:
@@ -186,7 +178,7 @@ def main() -> None:
         "failures": failures,
     }
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
-    arguments.output.write_text(canonical_json(evidence), encoding="utf-8")
+    write_canonical_json(arguments.output, evidence)
     if failures:
         raise SystemExit("runtime identity failed closed:\n" + "\n".join(failures))
     print(

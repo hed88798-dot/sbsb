@@ -7,6 +7,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+from canonical_evidence import write_canonical_json
+
 from packaging.utils import canonicalize_name
 
 from policy import assert_exact_wheel_url, hermetic_environment, sha256_file
@@ -24,10 +26,6 @@ PYTHON_CLI = REPOSITORY_ROOT / "tools" / "python-supply-chain" / "cli.mjs"
 REQUIRE_HASHES = (
     REPOSITORY_ROOT / "tools" / "python-supply-chain" / "generate-require-hashes.mjs"
 )
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
 def run(arguments: list[str], environment: dict[str, str]) -> None:
@@ -244,7 +242,7 @@ def approve_scope(
     approved = {**candidate, "graph_complete": True, "packages": approved_packages}
     output = inventory_root / target / f"{scope_name}.v2.json"
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(canonical_json(approved), encoding="utf-8")
+    write_canonical_json(output, approved)
     lock = lock_root / f"{target}-{scope_name}.requirements.txt"
     with tempfile.TemporaryDirectory(prefix=f"code-c-{target}-{scope_name}-") as directory:
         scope_artifact_root = Path(directory)

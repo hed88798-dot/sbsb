@@ -13,6 +13,7 @@ from pathlib import Path
 
 import PyInstaller
 
+from canonical_evidence import canonical_sha256, write_canonical_json
 from policy import sha256_file
 
 
@@ -27,10 +28,6 @@ SOURCE_LOCK = (
 INSPECT_ONEFILE = (
     REPOSITORY_ROOT / "tools" / "python-supply-chain" / "inspect-pyinstaller-onefile.py"
 )
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
 def native_type(path: Path) -> str | None:
@@ -123,10 +120,6 @@ def safe_relative_path(value: str) -> str:
     return "/".join(parts)
 
 
-def canonical_sha256(value: object) -> str:
-    return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
-
-
 def artifact_id(prefix: str, identity: str) -> str:
     return safe_id(f"{prefix}-{identity}")
 
@@ -203,7 +196,7 @@ def main() -> None:
     )
     inspection_path = arguments.bundle / "inspection" / f"{target}-worker-onefile.json"
     inspection_path.parent.mkdir(parents=True, exist_ok=True)
-    inspection_path.write_text(canonical_json(inspection), encoding="utf-8")
+    write_canonical_json(inspection_path, inspection)
 
     runtime = json.loads(
         (arguments.bundle / "candidates" / f"code-c-{target}-runtime.v2.json").read_text(
@@ -803,10 +796,23 @@ def main() -> None:
     formal_root.mkdir(parents=True, exist_ok=True)
     selection_path = formal_root / "packaging-selection-evidence.v1.json"
     reconciliation_path = formal_root / "native-reconciliation.v3.json"
-    selection_path.write_text(canonical_json(selection_document), encoding="utf-8")
-    reconciliation_path.write_text(canonical_json(reconciliation_document), encoding="utf-8")
+    selection_write = write_canonical_json(selection_path, selection_document)
+    write_canonical_json(reconciliation_path, reconciliation_document)
     if sha256_file(selection_path) != selection_sha256:
         raise SystemExit("packaging selection evidence canonical hash drift")
+    if not (
+        selection_write.canonical_payload_file_hash_equal
+        and selection_write.in_memory_file_byte_identity
+        and selection_write.temp_file_same_directory
+        and selection_write.atomic_replace
+    ):
+        raise SystemExit("packaging selection evidence exact-byte publication failed")
+    print(
+        "packaging-selection-canonical: PASS "
+        f"(canonical_payload_sha256={selection_write.canonical_payload_sha256}; "
+        f"canonical_file_sha256={selection_write.canonical_file_sha256}; "
+        "bytes_match=YES; temp_same_directory=YES; atomic_replace=YES)"
+    )
 
     bootloader = pyinstaller_bootloader(target)
     bootloader_copy = arguments.bundle / "toolchain" / target / "bootloader" / bootloader.name
@@ -898,7 +904,7 @@ def main() -> None:
     }
     evidence_path = arguments.bundle / "evidence" / f"{target}-target-evidence.json"
     evidence_path.parent.mkdir(parents=True, exist_ok=True)
-    evidence_path.write_text(canonical_json(evidence), encoding="utf-8")
+    write_canonical_json(evidence_path, evidence)
     diagnostic = {
         "schema_name": "NATIVE_RECONCILIATION_DIAGNOSTIC",
         "schema_version": "2",
@@ -968,7 +974,7 @@ def main() -> None:
     }
     diagnostic_path = arguments.bundle / "diagnostics" / f"{target}-native-reconciliation.json"
     diagnostic_path.parent.mkdir(parents=True, exist_ok=True)
-    diagnostic_path.write_text(canonical_json(diagnostic), encoding="utf-8")
+    write_canonical_json(diagnostic_path, diagnostic)
     print(
         "native v3 evidence capture: PASS "
         f"({build_context_id}; {len(formal_selected)} selected; "

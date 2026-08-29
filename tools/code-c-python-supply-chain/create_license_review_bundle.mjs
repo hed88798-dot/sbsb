@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { canonicalJson, sha256File } from '../python-supply-chain/inventory.mjs';
+import { sha256File } from '../python-supply-chain/inventory.mjs';
+import { writeCanonicalJson } from './canonical-evidence.mjs';
 import {
   loadLicensePolicy,
   evaluateLicenseEvidence,
@@ -352,7 +353,7 @@ async function main() {
         ),
       );
     }
-    writeFileSync(resolve(bundleEvidenceRoot, `${artifact.sha256}.json`), canonicalJson(evidence));
+    writeCanonicalJson(resolve(bundleEvidenceRoot, `${artifact.sha256}.json`), evidence);
   }
 
   const total = artifactsByHash.size;
@@ -416,7 +417,7 @@ async function main() {
   };
   mkdirSync(outputRoot, { recursive: true });
   const bundlePath = resolve(outputRoot, 'CODE_C_ARTIFACT_LICENSE_REVIEW_BUNDLE.json');
-  writeFileSync(bundlePath, canonicalJson(document));
+  writeCanonicalJson(bundlePath, document);
   const fileSha256 = await sha256File(bundlePath);
   writeFileSync(
     resolve(outputRoot, 'CODE_C_ARTIFACT_LICENSE_REVIEW_BUNDLE.sha256'),
@@ -434,10 +435,7 @@ async function main() {
     license_review_graph_reconciliation: document.license_review_graph_reconciliation,
     stage_b: document.stage_b,
   };
-  writeFileSync(
-    resolve(outputRoot, 'CODE_C_LICENSE_REVIEW_PREPARATION.json'),
-    canonicalJson(summary),
-  );
+  writeCanonicalJson(resolve(outputRoot, 'CODE_C_LICENSE_REVIEW_PREPARATION.json'), summary);
   console.log(
     `code-c-license-review-bundle: PASS (${document.license_review_bundle_id}; ${fileSha256}; ` +
       `${total} total, ${autoApproved.length} auto, ${requiredReview.length} review, ${hardBlocked.length} blocked)`,

@@ -1,14 +1,14 @@
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { basename, relative, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import {
-  canonicalJson,
   dependencyPaths,
   loadInventories,
   normalizePythonName,
   sha256File,
   verifyArtifactInventories,
 } from '../python-supply-chain/inventory.mjs';
+import { writeCanonicalJson } from './canonical-evidence.mjs';
 import {
   createArtifactLicenseEvidenceV3,
   validateArtifactLicenseEvidenceV3,
@@ -125,7 +125,7 @@ async function main() {
     });
     validateArtifactLicenseEvidenceV3(evidence);
     const evidencePath = resolve(evidenceDirectory, `${artifact.sha256}.json`);
-    writeFileSync(evidencePath, canonicalJson(evidence));
+    writeCanonicalJson(evidencePath, evidence);
     const uses = item.uses
       .map(({ inventory, artifact: usedArtifact }) => ({
         target,
@@ -267,7 +267,7 @@ async function main() {
   };
   mkdirSync(outputRoot, { recursive: true });
   const output = resolve(outputRoot, 'target-license-evidence.json');
-  writeFileSync(output, canonicalJson(document));
+  writeCanonicalJson(output, document);
   console.log(
     `code-c-license-target: PASS (${target}; ${document.graph_id}; ${artifacts.length} unique exact wheels)`,
   );

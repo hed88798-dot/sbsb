@@ -8,6 +8,7 @@ import tempfile
 from pathlib import Path
 from typing import Callable
 
+from canonical_evidence import write_canonical_json
 from locked_interpreter import (
     attest_locked_interpreter,
     normalize_py_gil_disabled,
@@ -15,10 +16,6 @@ from locked_interpreter import (
     require_standard_gil,
 )
 from policy import sha256_file
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
 def expect_rejected(action: Callable[[], object], expected: str) -> str:
@@ -191,7 +188,7 @@ def main() -> None:
         },
     }
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
-    arguments.output.write_text(canonical_json(evidence), encoding="utf-8")
+    write_canonical_json(arguments.output, evidence)
     print(
         f"locked-interpreter-binding-regressions: PASS ({arguments.target}; "
         "explicit/missing/bootstrap/path-with-spaces; shell=false)"
