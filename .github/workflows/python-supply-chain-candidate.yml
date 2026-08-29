@@ -322,6 +322,21 @@ jobs:
           --output artifacts/python-supply-chain/stage-b/STAGE_B_EVIDENCE_BUNDLE.json
           --sha256-output artifacts/python-supply-chain/stage-b/STAGE_B_EVIDENCE_BUNDLE.sha256
           --handoff artifacts/python-supply-chain/stage-b/CODE_C_CPYTHON_STAGE_B_HANDOFF.md
+      - name: Preserve compact native reconciliation diagnostic evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: python-native-diagnostic-${{ matrix.target }}-${{ github.sha }}
+          path: |
+            artifacts/python-supply-chain/diagnostics/${{ matrix.target }}-native-reconciliation.json
+            artifacts/python-supply-chain/evidence/${{ matrix.target }}-target-evidence.json
+            artifacts/python-supply-chain/inspection/${{ matrix.target }}-worker-onefile.json
+            artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
+            artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/pyinstaller-build-evidence.json
+            artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/parsed
+            artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/raw
+          if-no-files-found: error
+          retention-days: 30
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
