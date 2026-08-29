@@ -62,6 +62,24 @@ afterEach(() => {
 });
 
 describe('Code C exact-artifact license review preparation', () => {
+  it('binds the cross-platform current-HEAD regression command to Bash and rejects zero tests', () => {
+    const workflow = readFileSync(
+      join(repositoryRoot, '.github/workflows/python-supply-chain-candidate.yml'),
+      'utf8',
+    );
+    const step = workflow.match(
+      /- name: Run Worker and supply-chain contract regressions on the exact candidate graph[\s\S]*?(?=\n {6}- name: Freeze exact build context)/u,
+    )?.[0];
+    expect(step).toBeDefined();
+    expect(step).toMatch(/\n {8}shell: bash\n/u);
+    expect(step).toContain('--maxWorkers=1');
+    expect(step).toContain('--reporter=json');
+    expect(step).toContain('files<=0');
+    expect(step).toContain('tests<=0');
+    expect(step).not.toContain('$env:');
+    expect(step).not.toContain('|| true');
+  });
+
   it('classifies all regression evidence exclusively without creating an approval', () => {
     const root = mkdtempSync(join(tmpdir(), 'code-c-license-review-'));
     temporaryDirectories.push(root);

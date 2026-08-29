@@ -222,16 +222,22 @@ jobs:
           -t 'uses CArchive typecode|fails closed for malformed CArchive symlink metadata'
           --maxWorkers=1
       - name: Run Worker and supply-chain contract regressions on the exact candidate graph
+        shell: bash
         env:
           PYTHON_EXECUTABLE: ${{ github.workspace }}/${{ matrix.venv_python }}
         run: |
           pnpm media-worker:test
+          mkdir -p artifacts/python-supply-chain/evidence
           pnpm exec vitest run \
             tests/contract/python-supply-chain-tooling.test.ts \
             tests/contract/packaged-native-toolchain-provenance.test.ts \
             tests/contract/packaging-selected-native-contract.test.ts \
             tests/contract/toolchain-vulnerability-disposition.test.ts \
-            --maxWorkers=1
+            --maxWorkers=1 \
+            --reporter=default \
+            --reporter=json \
+            --outputFile=artifacts/python-supply-chain/evidence/${{ matrix.target }}-current-head-regressions.json
+          node -e 'const fs=require("node:fs"); const path="artifacts/python-supply-chain/evidence/${{ matrix.target }}-current-head-regressions.json"; const value=JSON.parse(fs.readFileSync(path,"utf8")); const files=value.testResults?.length; const tests=value.numTotalTests; if (!Number.isInteger(files)||files<=0||!Number.isInteger(tests)||tests<=0) throw new Error(`empty current-head regression execution: files=${files}, tests=${tests}`); console.log(`current-head-regression-evidence: PASS (shell=bash; files=${files}; tests=${tests}; assertions_executed=YES; exit_code=0)`);'
       - name: Freeze exact build context before PyInstaller starts
         shell: bash
         run: >-
