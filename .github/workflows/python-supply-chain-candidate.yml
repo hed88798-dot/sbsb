@@ -21,15 +21,9 @@ jobs:
           - target: linux
             runner: ubuntu-24.04
             venv_python: artifacts/candidate-venv/bin/python
-            worker: dist/media-worker
+            worker: artifacts/python-supply-chain/pyinstaller-build/linux/dist/media-worker
             distribution: python-3.13.15-linux-24.04-x64.tar.gz
             pyinstaller_wheel: pyinstaller-6.22.2-py3-none-manylinux2014_x86_64.whl
-          - target: windows
-            runner: windows-2022
-            venv_python: artifacts/candidate-venv/Scripts/python.exe
-            worker: dist/media-worker.exe
-            distribution: python-3.13.15-win32-x64.zip
-            pyinstaller_wheel: pyinstaller-6.22.2-py3-none-win_amd64.whl
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 120
     steps:
@@ -176,9 +170,45 @@ jobs:
             tests/contract/packaged-native-toolchain-provenance.test.ts \
             tests/contract/toolchain-vulnerability-disposition.test.ts \
             --maxWorkers=1
-      - name: Build candidate one-file worker
+      - name: Freeze exact build context before PyInstaller starts
         shell: bash
-        run: ${{ matrix.venv_python }} -I -m PyInstaller --clean --noconfirm sidecars/media-worker/media-worker.spec
+        run: >-
+          ${{ matrix.venv_python }} tools/code-c-python-supply-chain/prepare_pyinstaller_build_context.py
+          --target ${{ matrix.target }}
+          --workpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/work
+          --distpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/dist
+          --spec sidecars/media-worker/media-worker.spec
+          --runtime-inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v2.json
+          --worker-build-inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v2.json
+          --runtime-identity artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json
+          --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.distribution }}
+          --pip-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip-26.2.1-py3-none-any.whl
+          --pyinstaller-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.pyinstaller_wheel }}
+          --output artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
+      - name: Build candidate one-file worker in clean isolated workpath
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/raw
+          ${{ matrix.venv_python }} -I -m PyInstaller \
+            --clean \
+            --noconfirm \
+            --workpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/work \
+            --distpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/dist \
+            sidecars/media-worker/media-worker.spec \
+            2>&1 | tee artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/raw/pyinstaller-build.log
+      - name: Capture raw PyInstaller Analysis, TOC and materialized evidence
+        shell: bash
+        run: >-
+          ${{ matrix.venv_python }} tools/code-c-python-supply-chain/capture_pyinstaller_build_evidence.py
+          --target ${{ matrix.target }}
+          --workpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/work
+          --distpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/dist
+          --build-log artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/raw/pyinstaller-build.log
+          --spec sidecars/media-worker/media-worker.spec
+          --build-context artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
+          --runtime-inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v2.json
+          --output-root artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}
       - name: Capture actual toolchain and CArchive evidence
         shell: bash
         env:
@@ -190,6 +220,8 @@ jobs:
           --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.distribution }}
           --pip-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip-26.2.1-py3-none-any.whl
           --pyinstaller-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.pyinstaller_wheel }}
+          --build-context artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
+          --build-evidence artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/pyinstaller-build-evidence.json
           --final-artifact ${{ matrix.worker }}
       - name: Approve exact wheel graph and execute Candidate compliance gates
         shell: bash

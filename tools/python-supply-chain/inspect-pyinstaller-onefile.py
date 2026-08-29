@@ -31,6 +31,22 @@ def native_type(path: str) -> str | None:
     return None
 
 
+def decode_symlink_target(internal_path: str, payload: bytes) -> str:
+    if not payload.endswith(b"\0") or payload.count(b"\0") != 1:
+        raise ValueError(
+            f"CArchive symlink entry has malformed NUL-terminated payload: {internal_path}"
+        )
+    try:
+        target = payload[:-1].decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError(
+            f"CArchive symlink entry target is not valid UTF-8: {internal_path}"
+        ) from error
+    if not target:
+        raise ValueError(f"CArchive symlink entry has an empty target: {internal_path}")
+    return target
+
+
 def inspect(path: Path) -> dict[str, object]:
     if PyInstaller.__version__ != EXPECTED_PYINSTALLER_VERSION:
         raise SystemExit(
@@ -49,26 +65,70 @@ def inspect(path: Path) -> dict[str, object]:
         raise SystemExit("CArchive bytes were not located after a distinct bootloader layer")
     bootloader_bytes = final_bytes[:archive_start]
     trailing_bytes = final_bytes[archive_start + len(archive_bytes) :]
-    entries = []
+    archive_entries = []
+    native_entries = []
+    symlink_entries = []
     for internal_path in sorted(reader.toc):
-        kind = native_type(internal_path)
-        if kind is None:
-            continue
+        entry_offset, data_length, uncompressed_length, compression_flag, typecode = reader.toc[
+            internal_path
+        ]
         try:
             value = reader.extract(internal_path)
         except Exception as error:
             raise SystemExit(f"failed to extract CArchive entry {internal_path}: {error}") from error
         if not isinstance(value, bytes):
-            raise SystemExit(f"CArchive native entry is not byte content: {internal_path}")
-        entries.append(
-            {
-                "filename": PurePosixPath(internal_path.replace("\\", "/")).name,
-                "internal_path": internal_path.replace("\\", "/"),
-                "sha256": sha256(value),
-                "size": len(value),
-                "type": kind,
-            }
-        )
+            raise SystemExit(f"CArchive entry is not byte content: {internal_path}")
+        normalized_path = internal_path.replace("\\", "/")
+        filename = PurePosixPath(normalized_path).name
+        storage = {
+            "entry_offset": entry_offset,
+            "compressed_size": data_length,
+            "uncompressed_size": uncompressed_length,
+            "compression_flag": compression_flag,
+            "typecode": typecode,
+        }
+        entry = {
+            "filename": filename,
+            "internal_path": normalized_path,
+            "payload_sha256": sha256(value),
+            "payload_size": len(value),
+            "storage": storage,
+        }
+        if typecode == "n":
+            try:
+                target = decode_symlink_target(normalized_path, value)
+            except ValueError as error:
+                raise SystemExit(str(error)) from error
+            entry.update(
+                {
+                    "classification": "SYMLINK_METADATA",
+                    "symlink_target": target.replace("\\", "/"),
+                }
+            )
+            symlink_entries.append(entry)
+        else:
+            kind = native_type(normalized_path) if typecode == "b" else None
+            if kind is not None:
+                entry.update(
+                    {
+                        "classification": "EMBEDDED_NATIVE",
+                        "type": kind,
+                    }
+                )
+                # Keep this compatibility view schema-safe for the shared packaged-native v2
+                # inventory. Full CArchive metadata remains in archive_entries.
+                native_entries.append(
+                    {
+                        "filename": filename,
+                        "internal_path": normalized_path,
+                        "sha256": entry["payload_sha256"],
+                        "size": entry["payload_size"],
+                        "type": kind,
+                    }
+                )
+            else:
+                entry["classification"] = "NON_NATIVE_ARCHIVE_ENTRY"
+        archive_entries.append(entry)
     pyz_modules: list[str] = []
     if "PYZ.pyz" in reader.toc:
         try:
@@ -98,7 +158,7 @@ def inspect(path: Path) -> dict[str, object]:
             raise SystemExit(f"failed to inventory base_library.zip modules: {error}") from error
     if len(reader.toc) == 0:
         raise SystemExit("CArchive parsed zero entries")
-    if len(entries) == 0:
+    if len(native_entries) == 0:
         raise SystemExit("CArchive parsed zero native entries; fail closed")
     return {
         "engine": "pyinstaller",
@@ -106,7 +166,8 @@ def inspect(path: Path) -> dict[str, object]:
         "reader": "PyInstaller.archive.readers.CArchiveReader",
         "status": "PARSED",
         "archive_entry_count": len(reader.toc),
-        "native_entry_count": len(entries),
+        "native_entry_count": len(native_entries),
+        "symlink_metadata_count": len(symlink_entries),
         "python_module_inventory": {
             "pyz_module_count": len(pyz_modules),
             "pyz_modules": pyz_modules,
@@ -132,7 +193,9 @@ def inspect(path: Path) -> dict[str, object]:
             "size": len(archive_bytes),
             "trailing_data_size": len(trailing_bytes),
         },
-        "native_artifacts": entries,
+        "archive_entries": archive_entries,
+        "native_artifacts": native_entries,
+        "symlink_metadata": symlink_entries,
     }
 
 

@@ -493,6 +493,91 @@ describe('packaged native / Python toolchain provenance v2', () => {
     expect(inspected.stderr).toContain('zero native entries');
   });
 
+  it('uses CArchive typecode to separate symlink metadata from real native payloads', () => {
+    writeFileSync(join(buildRoot, 'libfoo.so'), Buffer.from([0x7f, 0x45, 0x4c, 0x46, 1, 2, 3, 4]));
+    const finalPath = join(buildRoot, 'symlink-and-native.exe');
+    const built = spawnSync(
+      python,
+      [
+        onefileBuilder,
+        '--output',
+        finalPath,
+        '--bootloader',
+        join(toolchainRoot, 'bootloader.bin'),
+        '--entry',
+        `package/libfoo.so=${join(buildRoot, 'libfoo.so')}`,
+        '--symlink',
+        'libfoo.so=package/libfoo.so',
+      ],
+      { encoding: 'utf8', shell: false, env: pythonEnvironment() },
+    );
+    expect(built.status, built.stderr).toBe(0);
+    const inspected = spawnSync(python, [onefileInspector, finalPath], {
+      encoding: 'utf8',
+      shell: false,
+      env: pythonEnvironment(),
+    });
+    expect(inspected.status, inspected.stderr).toBe(0);
+    const value = JSON.parse(inspected.stdout) as {
+      native_entry_count: number;
+      symlink_metadata_count: number;
+      native_artifacts: Array<{ internal_path: string }>;
+      archive_entries: Array<{
+        internal_path: string;
+        classification: string;
+        storage: { typecode: string };
+      }>;
+      symlink_metadata: Array<{
+        internal_path: string;
+        symlink_target: string;
+        storage: { typecode: string };
+      }>;
+    };
+    expect(value.native_entry_count).toBe(1);
+    expect(value.symlink_metadata_count).toBe(1);
+    expect(value.native_artifacts[0]).toMatchObject({ internal_path: 'package/libfoo.so' });
+    expect(value.archive_entries).toContainEqual(
+      expect.objectContaining({
+        internal_path: 'package/libfoo.so',
+        classification: 'EMBEDDED_NATIVE',
+        storage: { typecode: 'b' },
+      }),
+    );
+    expect(value.symlink_metadata[0]).toMatchObject({
+      internal_path: 'libfoo.so',
+      symlink_target: 'package/libfoo.so',
+      storage: { typecode: 'n' },
+    });
+  });
+
+  it('fails closed for malformed CArchive symlink metadata', () => {
+    writeFileSync(join(buildRoot, 'libfoo.so'), Buffer.from([0x7f, 0x45, 0x4c, 0x46]));
+    const finalPath = join(buildRoot, 'malformed-symlink.exe');
+    const built = spawnSync(
+      python,
+      [
+        onefileBuilder,
+        '--output',
+        finalPath,
+        '--bootloader',
+        join(toolchainRoot, 'bootloader.bin'),
+        '--entry',
+        `package/libfoo.so=${join(buildRoot, 'libfoo.so')}`,
+        '--malformed-symlink',
+        'libfoo.so=package/libfoo.so',
+      ],
+      { encoding: 'utf8', shell: false, env: pythonEnvironment() },
+    );
+    expect(built.status, built.stderr).toBe(0);
+    const inspected = spawnSync(python, [onefileInspector, finalPath], {
+      encoding: 'utf8',
+      shell: false,
+      env: pythonEnvironment(),
+    });
+    expect(inspected.status).toBe(1);
+    expect(inspected.stderr).toContain('malformed NUL-terminated payload');
+  });
+
   it('keeps SBOM, license and vulnerability evidence separated by owner and scope', () => {
     const inventoried = runNode([
       cli,
