@@ -137,7 +137,11 @@ export function validateExternalRuntimePrerequisite(prerequisite) {
   return prerequisite;
 }
 
-export function validateWindowsRuntimeProviderProbe(probe, prerequisiteValue) {
+export function validateWindowsRuntimeProviderProbe(
+  probe,
+  prerequisiteValue,
+  { requireRecorded = false } = {},
+) {
   const prerequisite = validateExternalRuntimePrerequisite(prerequisiteValue);
   if (!validateProbeSchema(probe)) {
     throw new Error(
@@ -157,7 +161,10 @@ export function validateWindowsRuntimeProviderProbe(probe, prerequisiteValue) {
     throw new Error(`${probe.evidence_id}: provider probe identity binding mismatch`);
   }
   const recordedProbe = prerequisite.provider.installation_probe;
-  if (recordedProbe.status === 'PASS') {
+  if (requireRecorded) {
+    if (recordedProbe.status !== 'PASS') {
+      throw new Error(`${probe.evidence_id}: prerequisite has no approved probe record`);
+    }
     if (
       probe.evidence_id !== recordedProbe.evidence_id ||
       probe.runner.workflow_run_id !== recordedProbe.workflow_run_id ||

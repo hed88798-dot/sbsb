@@ -19,7 +19,7 @@ const providerProbe = JSON.parse(
 const requireApproved = process.argv.includes('--require-approved');
 
 try {
-  validateWindowsRuntimeProviderProbe(providerProbe, prerequisite);
+  validateWindowsRuntimeProviderProbe(providerProbe, prerequisite, { requireRecorded: true });
   const report = evaluateExternalRuntimePrerequisite(requirement, prerequisite, {
     requireApproved,
   });

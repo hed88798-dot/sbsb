@@ -192,21 +192,25 @@ describe('External Runtime Prerequisite v1', () => {
       probe_sha256: probe.probe_sha256,
     };
     boundPrerequisite.manifest_sha256 = externalRuntimePrerequisiteHash(boundPrerequisite);
-    expect(validateWindowsRuntimeProviderProbe(probe, boundPrerequisite)).toBe(probe);
+    expect(
+      validateWindowsRuntimeProviderProbe(probe, boundPrerequisite, { requireRecorded: true }),
+    ).toBe(probe);
 
     const reviewUpdate = structuredClone(boundPrerequisite);
     reviewUpdate.approval.reviewed_at = '2026-08-31T00:00:00Z';
     reviewUpdate.manifest_sha256 = externalRuntimePrerequisiteHash(reviewUpdate);
-    expect(validateWindowsRuntimeProviderProbe(probe, reviewUpdate)).toBe(probe);
+    expect(
+      validateWindowsRuntimeProviderProbe(probe, reviewUpdate, { requireRecorded: true }),
+    ).toBe(probe);
 
     const providerChange = structuredClone(boundPrerequisite);
     providerChange.provider.version = '14.52.40000.0';
     providerChange.provider.bootstrap_artifact.version = '14.52.40000.0';
     providerChange.provider_identity_sha256 = externalRuntimeProviderIdentityHash(providerChange);
     providerChange.manifest_sha256 = externalRuntimePrerequisiteHash(providerChange);
-    expect(() => validateWindowsRuntimeProviderProbe(probe, providerChange)).toThrow(
-      /provider probe identity binding mismatch/u,
-    );
+    expect(() =>
+      validateWindowsRuntimeProviderProbe(probe, providerChange, { requireRecorded: true }),
+    ).toThrow(/provider probe identity binding mismatch/u);
   });
 
   it('fails closed on requirement, manifest, build-context, and Analysis TOC drift', () => {
