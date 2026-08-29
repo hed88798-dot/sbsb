@@ -9,7 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from canonical_evidence import write_canonical_json
+from canonical_evidence import canonical_sha256, write_canonical_json
 
 import PyInstaller
 
@@ -98,6 +98,7 @@ def main() -> None:
     parser.add_argument("--distribution", type=Path, required=True)
     parser.add_argument("--pip-wheel", type=Path, required=True)
     parser.add_argument("--pyinstaller-wheel", type=Path, required=True)
+    parser.add_argument("--build-environment-manifest", type=Path)
     parser.add_argument("--main-quality-baseline", required=True)
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
@@ -132,6 +133,58 @@ def main() -> None:
         identity(arguments.worker_build_inventory),
     ]
     source_graph = collect_worker_source_evidence()
+
+    build_environment = None
+    if arguments.build_environment_manifest:
+        environment_path = arguments.build_environment_manifest.resolve()
+        environment_document = json.loads(environment_path.read_text(encoding="utf-8"))
+        environment_identity = {
+            key: value
+            for key, value in environment_document.items()
+            if key
+            not in {
+                "build_environment_manifest_id",
+                "build_environment_identity_sha256",
+                "created_at",
+                "summary",
+            }
+        }
+        expected_identity_sha256 = canonical_sha256(environment_identity)
+        if (
+            arguments.target != "windows"
+            or environment_document.get("target")
+            != {"os": "windows", "architecture": "x86_64"}
+            or not str(environment_document.get("build_environment_manifest_id", "")).startswith(
+                "code-c-build-environment-"
+            )
+            or environment_document.get("validations", {}).get("unapproved_search_root_count") != 0
+            or environment_document.get("build_environment_identity_sha256")
+            != expected_identity_sha256
+            or environment_document.get("build_environment_manifest_id")
+            != f"code-c-build-environment-{expected_identity_sha256[:32]}"
+            or Path(environment_document.get("locked_python", {}).get("executable", "")).resolve()
+            != Path(sys.executable).resolve()
+            or environment_document.get("locked_python", {}).get("executable_sha256")
+            != sha256_file(Path(sys.executable))
+            or Path(environment_document.get("pyinstaller", {}).get("spec", "")).resolve()
+            != arguments.spec.resolve()
+            or environment_document.get("pyinstaller", {}).get("spec_sha256")
+            != sha256_file(arguments.spec)
+            or Path(environment_document.get("pyinstaller", {}).get("workpath", "")).resolve()
+            != arguments.workpath.resolve()
+            or Path(environment_document.get("pyinstaller", {}).get("distpath", "")).resolve()
+            != arguments.distpath.resolve()
+        ):
+            raise SystemExit("Build Environment Manifest is not an approved Windows x64 environment")
+        build_environment = {
+            "path": environment_path.relative_to(REPOSITORY_ROOT).as_posix(),
+            "sha256": sha256_file(environment_path),
+            "build_environment_manifest_id": environment_document[
+                "build_environment_manifest_id"
+            ],
+        }
+    elif arguments.target == "windows":
+        raise SystemExit("Windows Build Context requires a Build Environment Manifest")
 
     build_inputs = {
         "code_c_commit": git_head(),
@@ -180,6 +233,7 @@ def main() -> None:
             "path": arguments.spec.resolve().relative_to(REPOSITORY_ROOT).as_posix(),
             "sha256": sha256_file(arguments.spec),
         },
+        "build_environment_manifest": build_environment,
         "build_settings": {
             "clean": True,
             "noconfirm": True,

@@ -151,9 +151,33 @@ jobs:
           PYTHON_EXECUTABLE: ${{ github.workspace }}\artifacts\worker-venv\Scripts\python.exe
         run: |
           pnpm media-worker:test
-          pnpm exec vitest run tests/contract/python-supply-chain-tooling.test.ts tests/contract/packaged-native-toolchain-provenance.test.ts --maxWorkers=1
-      - name: Build actual one-file Worker
-        run: artifacts\worker-venv\Scripts\python.exe -I -m PyInstaller --clean --noconfirm sidecars/media-worker/media-worker.spec
+          pnpm exec vitest run tests/contract/python-supply-chain-tooling.test.ts tests/contract/packaged-native-toolchain-provenance.test.ts tests/contract/code-c-hermetic-pyinstaller.test.ts --maxWorkers=1
+      - name: Freeze hermetic PyInstaller environment and file provenance
+        shell: bash
+        run: >-
+          artifacts/worker-venv/Scripts/python.exe -I
+          tools/code-c-python-supply-chain/prepare_pyinstaller_environment.py
+          --target windows
+          --runtime-inventory compliance/python-artifacts/windows/runtime.v2.json
+          --worker-build-inventory compliance/python-artifacts/windows/worker-build.v2.json
+          --cpython-distribution artifacts/python-approved/toolchain/windows/cpython/python-3.13.15-win32-x64.zip
+          --pip-wheel artifacts/python-approved/toolchain/windows/pip/pip-26.2.1-py3-none-any.whl
+          --pyinstaller-wheel artifacts/python-approved/toolchain/windows/pyinstaller/pyinstaller-6.22.2-py3-none-win_amd64.whl
+          --cpython-installation artifacts/compliance/windows/CPYTHON_INSTALLATION.json
+          --runtime-identity artifacts/compliance/windows/RUNTIME_IDENTITY.json
+          --spec sidecars/media-worker/media-worker.spec
+          --workpath artifacts/pyinstaller-build/windows/work
+          --distpath dist
+          --cache-root artifacts/pyinstaller-build/windows/cache
+          --selected-evidence artifacts/pyinstaller-build/windows/prepackage-selected-native-provenance.json
+          --output artifacts/compliance/windows/BUILD_ENVIRONMENT_MANIFEST.json
+      - name: Build actual one-file Worker in hermetic child environment
+        shell: bash
+        run: >-
+          artifacts/worker-venv/Scripts/python.exe -I
+          tools/code-c-python-supply-chain/run_hermetic_pyinstaller.py
+          --manifest artifacts/compliance/windows/BUILD_ENVIRONMENT_MANIFEST.json
+          --build-log artifacts/pyinstaller-build/windows/pyinstaller-build.log
       - name: Create build provenance and PyInstaller usage binding
         shell: bash
         env:

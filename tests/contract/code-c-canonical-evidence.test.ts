@@ -99,6 +99,8 @@ describe('Code C canonical evidence bytes', () => {
       'collect_stage_b_static_evidence.py',
       'create_stage_b_evidence_bundle.py',
       'prepare_pyinstaller_build_context.py',
+      'prepare_pyinstaller_environment.py',
+      'prepackage_selected_source_gate.py',
       'run_stage_b_candidate_negative.py',
     ];
     for (const name of files) {

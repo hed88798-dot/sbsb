@@ -231,6 +231,7 @@ jobs:
           pnpm exec vitest run \
             tests/contract/python-supply-chain-tooling.test.ts \
             tests/contract/code-c-canonical-evidence.test.ts \
+            tests/contract/code-c-hermetic-pyinstaller.test.ts \
             tests/contract/packaged-native-toolchain-provenance.test.ts \
             tests/contract/packaging-selected-native-contract.test.ts \
             tests/contract/toolchain-vulnerability-disposition.test.ts \
@@ -239,23 +240,51 @@ jobs:
             --reporter=json \
             --outputFile=artifacts/python-supply-chain/evidence/${{ matrix.target }}-current-head-regressions.json
           node -e 'const fs=require("node:fs"); const path="artifacts/python-supply-chain/evidence/${{ matrix.target }}-current-head-regressions.json"; const value=JSON.parse(fs.readFileSync(path,"utf8")); const files=value.testResults?.length; const tests=value.numTotalTests; if (!Number.isInteger(files)||files<=0||!Number.isInteger(tests)||tests<=0) throw new Error(`empty current-head regression execution: files=${files}, tests=${tests}`); console.log(`current-head-regression-evidence: PASS (shell=bash; files=${files}; tests=${tests}; assertions_executed=YES; exit_code=0)`);'
-      - name: Freeze exact build context before PyInstaller starts
+      - name: Freeze hermetic Windows PyInstaller environment and file provenance
+        if: matrix.target == 'windows'
         shell: bash
         run: >-
-          ${{ matrix.venv_python }} tools/code-c-python-supply-chain/prepare_pyinstaller_build_context.py
-          --target ${{ matrix.target }}
-          --workpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/work
-          --distpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/dist
+          ${{ matrix.venv_python }} -I tools/code-c-python-supply-chain/prepare_pyinstaller_environment.py
+          --target windows
+          --runtime-inventory artifacts/python-supply-chain/candidates/code-c-windows-runtime.v2.json
+          --worker-build-inventory artifacts/python-supply-chain/candidates/code-c-windows-worker-build.v2.json
+          --cpython-distribution artifacts/python-supply-chain/toolchain/windows/${{ matrix.distribution }}
+          --pip-wheel artifacts/python-supply-chain/toolchain/windows/pip-26.2.1-py3-none-any.whl
+          --pyinstaller-wheel artifacts/python-supply-chain/toolchain/windows/${{ matrix.pyinstaller_wheel }}
+          --cpython-installation artifacts/python-supply-chain/evidence/windows-cpython-installation.json
+          --runtime-identity artifacts/python-supply-chain/evidence/windows-runtime-identity.json
           --spec sidecars/media-worker/media-worker.spec
-          --runtime-inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v2.json
-          --worker-build-inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v2.json
-          --runtime-identity artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json
-          --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.distribution }}
-          --pip-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip-26.2.1-py3-none-any.whl
-          --pyinstaller-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.pyinstaller_wheel }}
-          --main-quality-baseline d1348c50e36b725bfcbf9bec17343392cf0412c7
-          --output artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
-      - name: Build candidate one-file worker in clean isolated workpath
+          --workpath artifacts/python-supply-chain/pyinstaller-build/windows/work
+          --distpath artifacts/python-supply-chain/pyinstaller-build/windows/dist
+          --cache-root artifacts/python-supply-chain/pyinstaller-build/windows/cache
+          --selected-evidence artifacts/python-supply-chain/pyinstaller-build/windows/parsed/prepackage-selected-native-provenance.json
+          --output artifacts/python-supply-chain/pyinstaller-build/windows/build-environment-manifest.json
+      - name: Freeze exact build context before PyInstaller starts
+        shell: bash
+        run: |
+          environment_args=()
+          if [[ '${{ matrix.target }}' == 'windows' ]]; then
+            environment_args+=(
+              --build-environment-manifest
+              artifacts/python-supply-chain/pyinstaller-build/windows/build-environment-manifest.json
+            )
+          fi
+          ${{ matrix.venv_python }} tools/code-c-python-supply-chain/prepare_pyinstaller_build_context.py \
+            --target ${{ matrix.target }} \
+            --workpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/work \
+            --distpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/dist \
+            --spec sidecars/media-worker/media-worker.spec \
+            --runtime-inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v2.json \
+            --worker-build-inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v2.json \
+            --runtime-identity artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json \
+            --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.distribution }} \
+            --pip-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip-26.2.1-py3-none-any.whl \
+            --pyinstaller-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.pyinstaller_wheel }} \
+            --main-quality-baseline d1348c50e36b725bfcbf9bec17343392cf0412c7 \
+            "${environment_args[@]}" \
+            --output artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
+      - name: Build Linux candidate one-file worker in clean isolated workpath
+        if: matrix.target == 'linux'
         shell: bash
         run: |
           set -o pipefail
@@ -267,6 +296,14 @@ jobs:
             --distpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/dist \
             sidecars/media-worker/media-worker.spec \
             2>&1 | tee artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/raw/pyinstaller-build.log
+      - name: Build Windows candidate one-file worker in hermetic child environment
+        if: matrix.target == 'windows'
+        shell: bash
+        run: >-
+          ${{ matrix.venv_python }} -I tools/code-c-python-supply-chain/run_hermetic_pyinstaller.py
+          --manifest artifacts/python-supply-chain/pyinstaller-build/windows/build-environment-manifest.json
+          --build-context artifacts/python-supply-chain/pyinstaller-build/windows/build-context.json
+          --build-log artifacts/python-supply-chain/pyinstaller-build/windows/raw/pyinstaller-build.log
       - name: Capture raw PyInstaller Analysis, TOC and materialized evidence
         shell: bash
         run: >-
@@ -355,6 +392,7 @@ jobs:
             artifacts/python-supply-chain/inspection/${{ matrix.target }}-worker-onefile.json
             artifacts/python-supply-chain/native-v3/${{ matrix.target }}
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
+            artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-environment-manifest.json
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/pyinstaller-build-evidence.json
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/parsed
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/raw
