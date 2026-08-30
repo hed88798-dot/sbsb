@@ -113,7 +113,7 @@ describe('External Runtime Prerequisite v1', () => {
     });
   });
 
-  it('records the current exact provider but blocks release until license entitlement exists', () => {
+  it('approves runtime capability validation while redistribution remains blocked', () => {
     const value = validateExternalRuntimePrerequisite(prerequisiteFixture);
     expect(value.provider.bootstrap_artifact).toMatchObject({
       filename: 'VC_redist.x64.exe',
@@ -122,9 +122,27 @@ describe('External Runtime Prerequisite v1', () => {
       size: 18731856,
       source_status: 'PASS',
     });
+    expect(value).toMatchObject({
+      target_disposition: 'EXTERNAL_PREREQUISITE',
+      provider: {
+        bootstrap_artifact: { signature_status: 'PASS' },
+        installation_probe: { status: 'PASS', artifact_bound: true },
+      },
+      license_evidence: {
+        status: 'BLOCKED_PENDING_LICENSED_VISUAL_STUDIO_USER_ATTESTATION',
+      },
+      approval: { status: 'BLOCKED' },
+    });
     expect(
       evaluateExternalRuntimePrerequisite(requirementFixture, prerequisiteFixture),
-    ).toMatchObject({ status: 'BLOCKED' });
+    ).toMatchObject({
+      status: 'BLOCKED',
+      target_disposition: 'EXTERNAL_PREREQUISITE',
+      provider_covers_required_dll_family: true,
+      external_entries_not_materialized: true,
+      external_entries_not_final: true,
+      blockers: ['redistribution license evidence incomplete', 'prerequisite approval blocked'],
+    });
     expect(() =>
       evaluateExternalRuntimePrerequisite(requirementFixture, prerequisiteFixture, {
         requireApproved: true,

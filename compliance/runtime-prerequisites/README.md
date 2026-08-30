@@ -24,3 +24,8 @@ manifest without creating a self-referential hash.
 The current MSVC record deliberately remains blocked until repository evidence identifies the
 licensed Visual Studio user/product, applicable terms, and commercial redistribution entity. Public
 download availability is not distribution approval.
+
+That release blocker is independent from worker engineering validation. The MSVC validation-only
+disposition permits Code C to rely on a compatible runtime that pre-existed its validation action,
+provided the candidate records compatibility and proves that Code C did not download, bundle, or
+install the redistributable. It does not authorize installer or customer distribution.
