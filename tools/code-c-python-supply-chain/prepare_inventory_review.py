@@ -83,11 +83,13 @@ def inventory_v3_contract_identity() -> dict[str, str]:
     schema = load_json(INVENTORY_V3_SCHEMA_PATH)
     if schema.get("$id") != INVENTORY_V3_SCHEMA_ID:
         raise SystemExit("Inventory v3 schema identity does not match the approved contract")
+    schema_bytes = INVENTORY_V3_SCHEMA_PATH.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
     return {
         "schema_id": INVENTORY_V3_SCHEMA_ID,
-        "schema_sha256": sha256_file(INVENTORY_V3_SCHEMA_PATH),
+        "schema_sha256": hashlib.sha256(schema_bytes).hexdigest(),
         "validator_id": INVENTORY_V3_VALIDATOR_ID,
         "contract_source": "MAIN_QUALITY_BASELINE",
+        "schema_hash_canonicalization": "UTF8_LF_V1",
     }
 
 
