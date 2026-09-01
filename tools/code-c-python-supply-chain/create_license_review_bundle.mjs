@@ -294,13 +294,13 @@ function sameCoverageArtifact(left, right) {
   );
 }
 
-function loadCoverageRevalidation(coverageRoot, artifactsByHash) {
-  const fixtureNames = [
+function loadCoverageRevalidation(coverageRoot, artifactsByHash, fixtureNames = null) {
+  const names = fixtureNames ?? [
     'sentencepiece-linux',
     'sentencepiece-windows',
     'pyinstaller-hooks-contrib',
   ];
-  const fixtures = fixtureNames.map((name) => {
+  const fixtures = names.map((name) => {
     const fixtureRoot = resolve(coverageRoot, name);
     const manifestPath = resolve(fixtureRoot, 'manifest.json');
     const artifactPath = resolve(fixtureRoot, 'artifact.json');
@@ -310,8 +310,19 @@ function loadCoverageRevalidation(coverageRoot, artifactsByHash) {
       throw new Error(`${name}: incomplete License Coverage v1 fixture`);
     }
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-    if (manifest.fixture_scope !== 'REGRESSION_ONLY_NOT_RELEASE_APPROVAL') {
-      throw new Error(`${name}: fixture is not explicitly regression-only`);
+    const coverageRecordOrigin =
+      manifest.coverage_record_origin ??
+      (manifest.fixture_scope === 'REGRESSION_ONLY_NOT_RELEASE_APPROVAL'
+        ? 'REGRESSION_FIXTURE'
+        : 'UNKNOWN');
+    if (!['PRODUCTION_EVIDENCE', 'REGRESSION_FIXTURE'].includes(coverageRecordOrigin)) {
+      throw new Error(`${name}: coverage record origin is not declared`);
+    }
+    if (
+      coverageRecordOrigin === 'REGRESSION_FIXTURE' &&
+      manifest.fixture_scope !== 'REGRESSION_ONLY_NOT_RELEASE_APPROVAL'
+    ) {
+      throw new Error(`${name}: regression fixture is not explicitly non-approval evidence`);
     }
     const artifact = JSON.parse(readFileSync(artifactPath, 'utf8'));
     const members = JSON.parse(readFileSync(membersPath, 'utf8'));
@@ -356,6 +367,7 @@ function loadCoverageRevalidation(coverageRoot, artifactsByHash) {
       fixture_id: manifest.fixture_id,
       fixture_name: name,
       fixture_scope: manifest.fixture_scope,
+      coverage_record_origin: coverageRecordOrigin,
       artifact,
       production_identity: productionIdentity,
       exact_artifact_match: exactArtifactMatch,
@@ -388,6 +400,9 @@ function loadCoverageRevalidation(coverageRoot, artifactsByHash) {
   return {
     contract_status: fixtures.every((fixture) => fixture.status === 'PASS') ? 'PASS' : 'FAIL',
     production_approval_used: false,
+    production_evidence_consumed: fixtures.some(
+      (fixture) => fixture.coverage_record_origin === 'PRODUCTION_EVIDENCE',
+    ),
     fixtures,
   };
 }
@@ -452,6 +467,10 @@ async function main() {
   const outputRoot = resolve(argument('--output-root'));
   const coverageRootArgument = optionalArgument('--coverage-root');
   const coverageRoot = coverageRootArgument ? resolve(coverageRootArgument) : null;
+  const productionCoverageRootArgument = optionalArgument('--production-coverage-root');
+  const productionCoverageRoot = productionCoverageRootArgument
+    ? resolve(productionCoverageRootArgument)
+    : null;
   const requestedBaseline = optionalArgument('--current-main-quality-baseline');
   const requestedEvaluatorHead = optionalArgument('--current-license-evaluator-head');
   const targets = ['linux', 'windows'].map((target) =>
@@ -533,13 +552,28 @@ async function main() {
   const requiredReview = [];
   const hardBlocked = [];
   const usageEvaluations = [];
-  const coverageRevalidation = coverageRoot
+  const regressionCoverage = coverageRoot
     ? loadCoverageRevalidation(coverageRoot, artifactsByHash)
-    : {
-        contract_status: 'NOT_RUN',
-        production_approval_used: false,
-        fixtures: [],
-      };
+    : null;
+  const productionCoverage = productionCoverageRoot
+    ? loadCoverageRevalidation(productionCoverageRoot, artifactsByHash, [
+        'sentencepiece-linux',
+        'sentencepiece-windows',
+      ])
+    : null;
+  const coverageRevalidation = {
+    contract_status:
+      [regressionCoverage, productionCoverage].filter(Boolean).length === 0
+        ? 'NOT_RUN'
+        : [regressionCoverage, productionCoverage]
+              .filter(Boolean)
+              .every((result) => result.contract_status === 'PASS')
+          ? 'PASS'
+          : 'FAIL',
+    production_approval_used: false,
+    production_evidence_consumed: Boolean(productionCoverage?.production_evidence_consumed),
+    fixtures: [...(regressionCoverage?.fixtures ?? []), ...(productionCoverage?.fixtures ?? [])],
+  };
   const bundleEvidenceRoot = resolve(outputRoot, 'evidence-v3');
   mkdirSync(bundleEvidenceRoot, { recursive: true });
   for (const entry of [...artifactsByHash.values()].sort((left, right) =>
@@ -759,10 +793,17 @@ async function main() {
       const coverage = coverageRevalidation.fixtures.find(
         (fixture) =>
           fixture.artifact.sha256 === blocked.sha256 &&
+          fixture.coverage_record_origin === 'PRODUCTION_EVIDENCE' &&
           fixture.fixture_name ===
             (blocked.targets.includes('windows') ? 'sentencepiece-windows' : 'sentencepiece-linux'),
       );
-      if (!coverage || coverage.status !== 'PASS') continue;
+      if (
+        !coverage ||
+        coverage.status !== 'PASS' ||
+        coverage.coverage_record_origin !== 'PRODUCTION_EVIDENCE'
+      ) {
+        continue;
+      }
       if (!coverage.exact_artifact_match) {
         blocked.block_reason = 'LICENSE_COVERAGE_NOT_BOUND_TO_CURRENT_EXACT_ARTIFACT';
         blocked.required_next_action =
