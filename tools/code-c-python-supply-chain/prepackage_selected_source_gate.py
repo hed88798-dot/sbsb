@@ -4,7 +4,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 
-from canonical_evidence import write_canonical_json
+from canonical_evidence import canonical_sha256, write_canonical_json
 from evidence_paths import EvidencePathError, runtime_repository_root
 from hermetic_pyinstaller import (
     approved_source_entry,
