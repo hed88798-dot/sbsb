@@ -14,8 +14,11 @@ import {
   validateArtifactLicenseEvidenceV3,
 } from '../license-policy/artifact-review.mjs';
 import { evaluateLicenseEvidence, licenseIdentityHash } from '../license-policy/evaluator.mjs';
-
-const REQUIRED_BASELINE = 'd1348c50e36b725bfcbf9bec17343392cf0412c7';
+import {
+  assertLicenseBaselineBinding,
+  assertWorkerArtifactBinding,
+  MINIMUM_REQUIRED_LICENSE_CONTRACT_BASELINE,
+} from './license-baseline.mjs';
 
 function argument(name, { required = true } = {}) {
   const index = process.argv.indexOf(name);
@@ -75,11 +78,11 @@ async function main() {
   const buildContextPath = resolve(argument('--build-context'));
   const outputRoot = resolve(argument('--output-root'));
   const mainBaseline = argument('--main-quality-baseline');
-  if (mainBaseline !== REQUIRED_BASELINE) {
-    throw new Error(`main quality baseline must be ${REQUIRED_BASELINE}`);
-  }
-  git('merge-base', '--is-ancestor', mainBaseline, 'HEAD');
-  const head = git('rev-parse', 'HEAD');
+  const evaluatorHead = git('rev-parse', 'HEAD');
+  const baselineBinding = assertLicenseBaselineBinding({
+    currentMainBaseline: mainBaseline,
+    validationHead: evaluatorHead,
+  });
   // Avoid shell globbing so paths with spaces behave the same on both targets.
   const paths = readdirSync(inventoryRoot)
     .filter((name) => name.endsWith('.v2.json'))
@@ -174,11 +177,14 @@ async function main() {
   }));
   const artifactSetSha256 = licenseIdentityHash(artifactSet);
   const buildContext = JSON.parse(readFileSync(buildContextPath, 'utf8'));
-  if (
-    buildContext.inputs.code_c_commit !== head ||
-    buildContext.inputs.main_quality_baseline !== mainBaseline ||
-    buildContext.inputs.target.os !== target
-  ) {
+  const workerArtifactHead = buildContext.inputs.code_c_commit;
+  assertWorkerArtifactBinding({
+    workerArtifactHead,
+    evaluatorHead,
+    workerBuildBaseline: buildContext.inputs.main_quality_baseline,
+    currentMainBaseline: mainBaseline,
+  });
+  if (buildContext.inputs.target.os !== target) {
     throw new Error(
       `${target}: PyInstaller Build Context is not bound to this graph HEAD/baseline`,
     );
@@ -233,8 +239,10 @@ async function main() {
   });
   const graphIdentityInput = {
     target,
-    code_c_head_sha: head,
+    code_c_head_sha: evaluatorHead,
+    worker_artifact_head_sha: workerArtifactHead,
     main_quality_baseline_sha: mainBaseline,
+    minimum_required_license_contract_baseline: MINIMUM_REQUIRED_LICENSE_CONTRACT_BASELINE,
     inventories,
     artifact_set_sha256: artifactSetSha256,
     artifacts: graphArtifacts,
@@ -244,8 +252,15 @@ async function main() {
     schema_version: '1',
     document_type: 'CODE_C_EXACT_WHEEL_LICENSE_TARGET_EVIDENCE',
     target,
-    code_c_head_sha: head,
+    code_c_head_sha: evaluatorHead,
+    worker_artifact_head_sha: workerArtifactHead,
     main_quality_baseline_sha: mainBaseline,
+    minimum_required_license_contract_baseline: MINIMUM_REQUIRED_LICENSE_CONTRACT_BASELINE,
+    baseline_semantics: baselineBinding.semantics,
+    license_evaluator: {
+      head_sha: evaluatorHead,
+      binding: 'PASS',
+    },
     graph_id: `code-c-license-graph-${target}-${graphSha256.slice(0, 24)}`,
     graph_sha256: graphSha256,
     artifact_set_sha256: artifactSetSha256,
@@ -255,6 +270,7 @@ async function main() {
       status: 'PASS',
       build_context_id: buildContext.build_context_id,
       build_context_sha256: await sha256File(buildContextPath),
+      worker_artifact_head_sha: workerArtifactHead,
       artifact_sha256: pyinstallerArtifact.sha256,
       exact_artifact_evidence_v2_path: relativeRepositoryPath(specializedPath),
       exact_artifact_evidence_v2_sha256: await sha256File(specializedPath),

@@ -1,4 +1,5 @@
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
 import { sha256File } from '../python-supply-chain/inventory.mjs';
 import { writeCanonicalJson } from './canonical-evidence.mjs';
@@ -8,8 +9,11 @@ import {
   licenseIdentityHash,
 } from '../license-policy/evaluator.mjs';
 import { validateArtifactLicenseEvidenceV3 } from '../license-policy/artifact-review.mjs';
+import {
+  assertLicenseBaselineBinding,
+  MINIMUM_REQUIRED_LICENSE_CONTRACT_BASELINE,
+} from './license-baseline.mjs';
 
-const REQUIRED_BASELINE = 'd1348c50e36b725bfcbf9bec17343392cf0412c7';
 const CLASSIFIER_EXPRESSIONS = new Map([
   ['License :: OSI Approved :: Apache Software License', 'Apache-2.0'],
   ['License :: OSI Approved :: MIT License', 'MIT'],
@@ -17,6 +21,13 @@ const CLASSIFIER_EXPRESSIONS = new Map([
   ['License :: OSI Approved :: ISC License (ISCL)', 'ISC'],
   ['License :: OSI Approved :: Python Software Foundation License', 'PSF-2.0'],
 ]);
+
+function currentValidationHead() {
+  return execFileSync('git', ['rev-parse', 'HEAD'], {
+    encoding: 'utf8',
+    shell: false,
+  }).trim();
+}
 
 function argument(name) {
   const index = process.argv.indexOf(name);
@@ -185,10 +196,17 @@ async function main() {
   const headSet = new Set(targets.map((target) => target.code_c_head_sha));
   if (headSet.size !== 1) throw new Error('target graphs were not produced from one Code C HEAD');
   const head = [...headSet][0];
+  const baselineSet = new Set(targets.map((target) => target.main_quality_baseline_sha));
+  if (baselineSet.size !== 1) {
+    throw new Error('target graphs were not produced from one current main quality baseline');
+  }
+  const mainBaseline = [...baselineSet][0];
+  assertLicenseBaselineBinding({
+    minimumBaseline: MINIMUM_REQUIRED_LICENSE_CONTRACT_BASELINE,
+    currentMainBaseline: mainBaseline,
+    validationHead: currentValidationHead(),
+  });
   for (const target of targets) {
-    if (target.main_quality_baseline_sha !== REQUIRED_BASELINE) {
-      throw new Error(`${target.target}: required main quality baseline is not bound`);
-    }
     if (target.pyinstaller_worker_build_license?.status !== 'PASS') {
       throw new Error(`${target.target}: PyInstaller Worker-Build License was not revalidated`);
     }
@@ -362,7 +380,9 @@ async function main() {
   }
   const graphBinding = {
     code_c_head_sha: head,
-    main_quality_baseline_sha: REQUIRED_BASELINE,
+    main_quality_baseline_sha: mainBaseline,
+    minimum_required_license_contract_baseline: MINIMUM_REQUIRED_LICENSE_CONTRACT_BASELINE,
+    baseline_semantics: 'MINIMUM_CAPABILITY_FLOOR',
     windows_graph_id: targets.find((target) => target.target === 'windows').graph_id,
     linux_graph_id: targets.find((target) => target.target === 'linux').graph_id,
     windows_artifact_set_sha256: targets.find((target) => target.target === 'windows')
