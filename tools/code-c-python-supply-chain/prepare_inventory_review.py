@@ -1057,6 +1057,7 @@ def prepare_target(arguments: argparse.Namespace) -> None:
         "inventory_v3_schema_sha256": inventory_v3_identity["schema_sha256"],
         "inventory_v3_validator_id": inventory_v3_identity["validator_id"],
         "inventory_v3_contract_source": inventory_v3_identity["contract_source"],
+        "inventory_v3_schema_validation": "PASS",
         "raw_v3_schema_validation": "PASS",
         "factual_graph_completeness": "PASS",
         "v2_to_v3_factual_semantic_equivalence": "PASS",
