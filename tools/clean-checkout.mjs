@@ -83,6 +83,7 @@ try {
   );
   for (const args of [
     ['compliance:artifact-license:verify'],
+    ['compliance:runtime-prerequisite:verify'],
     ['compliance:python:tooling:install'],
     ['ci:prepare'],
     ['package:resolution'],

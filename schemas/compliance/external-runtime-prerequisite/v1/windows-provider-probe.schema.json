@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/external-runtime-prerequisite/v1/windows-provider-probe.schema.json",
+  "title": "Windows Runtime Provider Installation Probe v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_id",
+    "prerequisite_id",
+    "provider_identity_sha256",
+    "captured_at",
+    "runner",
+    "bootstrap_artifact",
+    "installation",
+    "installed_runtime",
+    "provider_installed_required_capabilities",
+    "runtime_provider_closure",
+    "provider_installation_artifact_bound",
+    "probe_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "evidence_id": { "$ref": "#/$defs/nonEmpty" },
+    "prerequisite_id": { "$ref": "#/$defs/nonEmpty" },
+    "provider_identity_sha256": { "$ref": "#/$defs/sha256" },
+    "captured_at": { "type": "string", "format": "date-time" },
+    "runner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "architecture", "image", "workflow_run_id", "workflow_run_attempt"],
+      "properties": {
+        "os": { "const": "Windows" },
+        "architecture": { "const": "X64" },
+        "image": { "$ref": "#/$defs/nonEmpty" },
+        "workflow_run_id": { "type": "integer", "minimum": 1 },
+        "workflow_run_attempt": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "bootstrap_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "filename",
+        "version",
+        "sha256",
+        "size",
+        "source",
+        "authenticode_status",
+        "signer_subject",
+        "signer_certificate_sha256"
+      ],
+      "properties": {
+        "filename": { "$ref": "#/$defs/nonEmpty" },
+        "version": { "$ref": "#/$defs/version" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "size": { "type": "integer", "minimum": 1 },
+        "source": { "type": "string", "format": "uri" },
+        "authenticode_status": { "const": "Valid" },
+        "signer_subject": { "$ref": "#/$defs/nonEmpty" },
+        "signer_certificate_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "installation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pre_probe_version", "uninstall_exit_code", "install_exit_code", "mode"],
+      "properties": {
+        "pre_probe_version": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9]+(?:\\.[0-9]+){2,3}$"
+        },
+        "uninstall_exit_code": { "type": "integer", "minimum": 0 },
+        "install_exit_code": { "type": "integer", "minimum": 0 },
+        "mode": { "const": "EXACT_BOOTSTRAP_UNINSTALL_THEN_INSTALL" }
+      }
+    },
+    "installed_runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["registry_key", "installed", "version", "minimum_version_satisfied"],
+      "properties": {
+        "registry_key": { "$ref": "#/$defs/nonEmpty" },
+        "installed": { "const": 1 },
+        "version": { "$ref": "#/$defs/version" },
+        "minimum_version_satisfied": { "const": true }
+      }
+    },
+    "provider_installed_required_capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["capability", "installed_path", "file_version", "sha256"],
+        "properties": {
+          "capability": { "type": "string", "pattern": "^[a-z0-9._-]+$" },
+          "installed_path": { "type": "string", "pattern": "^%WINDIR%/System32/" },
+          "file_version": { "$ref": "#/$defs/version" },
+          "sha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "runtime_provider_closure": { "const": "PASS" },
+    "provider_installation_artifact_bound": { "const": true },
+    "probe_sha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "nonEmpty": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "pattern": "^[0-9]+(?:\\.[0-9]+){2,3}$" }
+  }
+}

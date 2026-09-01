@@ -1,0 +1,52 @@
+name: Windows runtime provider smoke
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/windows-runtime-provider-smoke.yml'
+      - 'compliance/runtime-prerequisites/**'
+      - 'schemas/compliance/external-runtime-prerequisite/**'
+      - 'schemas/compliance/runtime-consumer-requirement/**'
+      - 'tools/runtime-prerequisite/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-runtime-provider-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exact-provider-installation:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Download, authenticate and install exact provider
+        shell: pwsh
+        run: |
+          ./tools/runtime-prerequisite/windows-provider-probe.ps1 `
+            -Manifest compliance/runtime-prerequisites/msvc-v14-x64/external-prerequisite.v1.json `
+            -Output artifacts/runtime-prerequisite/WINDOWS_PROVIDER_PROBE.raw.json
+          node tools/runtime-prerequisite/finalize-windows-provider-probe.mjs `
+            --input artifacts/runtime-prerequisite/WINDOWS_PROVIDER_PROBE.raw.json `
+            --prerequisite compliance/runtime-prerequisites/msvc-v14-x64/external-prerequisite.v1.json `
+            --output artifacts/runtime-prerequisite/WINDOWS_PROVIDER_PROBE.json
+          Remove-Item artifacts/runtime-prerequisite/WINDOWS_PROVIDER_PROBE.raw.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-runtime-provider-${{ github.sha }}
+          path: artifacts/runtime-prerequisite/WINDOWS_PROVIDER_PROBE.json
+          if-no-files-found: error
+          retention-days: 90
