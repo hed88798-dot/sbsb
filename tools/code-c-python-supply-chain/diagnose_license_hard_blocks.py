@@ -590,16 +590,16 @@ def main() -> None:
     build_evidence = {target: load_json(path) for target, path in build_evidence_paths.items()}
     head = git_head()
     bundle_head = bundle.get("graph_binding", {}).get("code_c_head_sha")
-    if bundle_head != head:
-        raise DiagnosticError(f"bundle Code C HEAD is not current ({bundle_head} != {head})")
+    if not isinstance(bundle_head, str) or not re.fullmatch(r"[0-9a-f]{40}", bundle_head):
+        raise DiagnosticError("bundle does not contain a valid frozen Code C HEAD")
     worker_heads = {
         evidence.get("worker_artifact_head_sha") for evidence in target_evidence.values()
     }
     if len(worker_heads) != 1 or None in worker_heads:
         raise DiagnosticError("target evidence does not have one shared worker artifact head")
     worker_head = next(iter(worker_heads))
-    if any(evidence.get("code_c_head_sha") != head for evidence in target_evidence.values()):
-        raise DiagnosticError("target license evidence is not bound to the current Code C HEAD")
+    if any(evidence.get("code_c_head_sha") != bundle_head for evidence in target_evidence.values()):
+        raise DiagnosticError("target license evidence is not bound to the frozen Code C HEAD")
     worker_identity_unchanged = all(
         evidence.get("worker_artifact_identity_unchanged") == "PASS"
         and evidence.get("worker_build_input_drift") == "NONE"
@@ -654,7 +654,8 @@ def main() -> None:
         "schema_version": "1",
         "document_type": "CODE_C_LICENSE_HARD_BLOCK_CLOSURE",
         "status": "BLOCKED" if final_closure != "PASS" else "PASS",
-        "validation_head_sha": head,
+        "validation_head_sha": bundle_head,
+        "diagnostic_tool_head_sha": head,
         "worker_artifact_identity_unchanged": "PASS" if worker_identity_unchanged else "FAIL",
         "worker_artifact_head_sha": worker_head,
         "worker_build_input_drift": "NONE" if worker_identity_unchanged else "PRESENT",
@@ -729,6 +730,7 @@ def main() -> None:
                 target: sha256_file(path) for target, path in build_log_paths.items()
             },
             "hooks_wheel_sha256": sha256_file(arguments.hooks_wheel.resolve(strict=True)),
+            "diagnostic_tool_sha256": sha256_file(Path(__file__).resolve()),
         },
     }
     output = arguments.output.resolve()
