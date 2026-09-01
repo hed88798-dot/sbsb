@@ -16,6 +16,7 @@ from packaging.utils import canonicalize_name
 from packaging.version import Version
 
 from canonical_evidence import write_canonical_json
+from inventory_candidate_serialization import serialize_candidate_from_resolution
 from locked_interpreter import attest_locked_interpreter, require_locked_python_environment
 from policy import assert_standard_cp313_artifact, hermetic_environment, sha256_file
 
@@ -269,6 +270,9 @@ def resolve_scope(
         arguments.extend(["--direct", package])
     arguments.extend(["--output", str(candidate_path)])
     run(arguments, env=environment)
+    candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+    serialized = serialize_candidate_from_resolution(candidate, resolution)
+    write_canonical_json(candidate_path, serialized)
     print(f"generated {target_name}/{scope_name}: {len(resolved)} wheels")
 
 

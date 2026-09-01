@@ -1,14 +1,24 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
+import os
 import shutil
 import subprocess
+import sys
+import tempfile
 import zipfile
 from pathlib import Path, PurePosixPath
 
 from canonical_evidence import canonical_sha256, write_canonical_json
+from inventory_candidate_serialization import (
+    CandidateSerializationError,
+    normalize_python_name,
+    python_purl,
+    validate_resolution_serialization,
+)
 from policy import sha256_file
 
 
@@ -34,6 +44,14 @@ PREREQUISITE = (
     / "msvc-v14-x64"
     / "external-prerequisite.v1.json"
 )
+REJECTED_CANDIDATE_BASELINE = (
+    REPOSITORY_ROOT
+    / "tools"
+    / "code-c-python-supply-chain"
+    / "fixtures"
+    / "rejected_inventory_candidates_f57ecb7.json"
+)
+PYTHON_INVENTORY_CLI = REPOSITORY_ROOT / "tools" / "python-supply-chain" / "cli.mjs"
 ROLE_BY_SCOPE = {
     "runtime": "RUNTIME",
     "worker-build": "WORKER_BUILD",
@@ -162,7 +180,7 @@ def exact_toolchain_evidence(
 
 def compare_candidate_to_resolution(
     candidate: dict[str, object], resolution: dict[str, object], target: str, scope: str
-) -> list[dict[str, object]]:
+) -> tuple[list[dict[str, object]], dict[str, int | str]]:
     expected_scope = "PRODUCTION_WORKER_RUNTIME" if scope == "runtime" else "WORKER_BUILD"
     if candidate.get("schema_version") != "2" or candidate.get("scope") != expected_scope:
         raise SystemExit(f"{target}/{scope}: candidate schema or scope mismatch")
@@ -171,14 +189,12 @@ def compare_candidate_to_resolution(
     candidate_packages = {
         str(package["purl"]): package for package in candidate.get("packages", [])
     }
+    try:
+        validation = validate_resolution_serialization(candidate, resolution)
+    except CandidateSerializationError as error:
+        raise SystemExit(f"{target}/{scope}: {error}") from error
     resolution_packages = {
-        f"pkg:pypi/{str(package['name']).lower().replace('_', '-').replace('.', '-')}@{package['version']}": package
-        for package in resolution.get("packages", [])
-    }
-    # PEP 503 normalization also folds repeated separators. Resolve through exact package/version pairs
-    # when the simple spelling above differs.
-    by_name_version = {
-        (str(package["name"]).lower().replace("_", "-").replace(".", "-"), str(package["version"])): package
+        python_purl(str(package["name"]), str(package["version"])): package
         for package in resolution.get("packages", [])
     }
     if len(candidate_packages) != len(resolution.get("packages", [])):
@@ -188,7 +204,7 @@ def compare_candidate_to_resolution(
         name_version = purl.removeprefix("pkg:pypi/").rsplit("@", 1)
         if len(name_version) != 2:
             raise SystemExit(f"{target}/{scope}: invalid candidate purl {purl}")
-        resolved = resolution_packages.get(purl) or by_name_version.get(tuple(name_version))
+        resolved = resolution_packages.get(purl)
         if not resolved:
             raise SystemExit(f"{target}/{scope}: candidate package absent from resolution: {purl}")
         provenance = resolved["provenance"]
@@ -225,7 +241,128 @@ def compare_candidate_to_resolution(
                 "license_files": package["license_files"],
             }
         )
-    return exact_artifacts
+    return exact_artifacts, validation
+
+
+def validate_candidate_against_shared_inventory_v2(
+    candidate: dict[str, object], wheel_root: Path, target: str, scope: str
+) -> dict[str, object]:
+    """Run the shared v2 schema/semantic verifier without persisting an approval claim.
+
+    Inventory v2 currently hard-codes approval in two fields. Code C may not set those fields in a
+    candidate, so this uses a temporary, non-uploaded projection for those two constants only. The
+    known approval-provenance contract gap remains pending with Code F.
+    """
+
+    if candidate.get("graph_complete") is not False:
+        raise SystemExit(f"{target}/{scope}: candidate graph_complete must remain false")
+    projected = copy.deepcopy(candidate)
+    projected["graph_complete"] = True
+    for package in projected.get("packages", []):
+        if package.get("provenance", {}).get("review_status") != "PENDING":
+            raise SystemExit(f"{target}/{scope}: candidate provenance must remain pending")
+        package["provenance"]["review_status"] = "APPROVED"
+    with tempfile.TemporaryDirectory(prefix="code-c-inventory-v2-validation-") as directory:
+        projection_path = Path(directory) / f"{target}-{scope}.v2.json"
+        write_canonical_json(projection_path, projected)
+        environment = os.environ.copy()
+        environment["PYTHON_EXECUTABLE"] = sys.executable
+        environment["PYTHONNOUSERSITE"] = "1"
+        result = subprocess.run(
+            [
+                "node",
+                str(PYTHON_INVENTORY_CLI),
+                "verify",
+                "--inventory",
+                str(projection_path),
+                "--artifact-root",
+                str(wheel_root),
+            ],
+            cwd=REPOSITORY_ROOT,
+            env=environment,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode:
+            raise SystemExit(
+                f"{target}/{scope}: shared Inventory v2 validation failed: "
+                f"{result.stderr.strip() or result.stdout.strip()}"
+            )
+    return {
+        "inventory_v2_schema_validation": "PASS",
+        "dependency_graph_validation": "PASS",
+        "validation_engine": "SHARED_PYTHON_ARTIFACT_INVENTORY_V2_SCHEMA_AND_VERIFIER",
+        "candidate_approval_projection": "IN_MEMORY_TEMPORARY_ONLY",
+        "projected_contract_constants": [
+            "graph_complete=true",
+            "packages[*].provenance.review_status=APPROVED",
+        ],
+        "projection_persisted_or_uploaded": "NO",
+        "candidate_review_status": "PENDING_CODE_F_REVIEW",
+        "known_approval_provenance_qicr": "YES",
+    }
+
+
+def rejected_candidate_drift(
+    candidate: dict[str, object], resolution: dict[str, object], target: str, scope: str
+) -> dict[str, object]:
+    baseline = load_json(REJECTED_CANDIDATE_BASELINE)["candidates"][f"{target}/{scope}"]
+    exact_artifacts = sorted(
+        (
+            {
+                "purl": package["purl"],
+                "filename": package["filename"],
+                "sha256": package["sha256"],
+            }
+            for package in candidate["packages"]
+        ),
+        key=lambda item: str(item["purl"]),
+    )
+    purls = {
+        normalize_python_name(str(package["name"])): python_purl(
+            str(package["name"]), str(package["version"])
+        )
+        for package in resolution["packages"]
+    }
+    graph = sorted(
+        (
+            {
+                "source": python_purl(str(package["name"]), str(package["version"])),
+                "dependency": purls[str(dependency)],
+            }
+            for package in resolution["packages"]
+            for dependency in package["dependencies"]
+        ),
+        key=lambda item: (str(item["source"]), str(item["dependency"])),
+    )
+    artifact_identity = canonical_sha256(exact_artifacts)
+    graph_identity = canonical_sha256(graph)
+    artifact_drift = (
+        "NONE" if artifact_identity == baseline["exact_artifact_set_sha256"] else "PRESENT"
+    )
+    semantic_drift = (
+        "EXPECTED_INVALID_EDGE_REMOVAL_ONLY"
+        if graph_identity == baseline["resolver_dependency_graph_sha256"]
+        else "PRESENT"
+    )
+    if artifact_drift != "NONE" or semantic_drift == "PRESENT":
+        raise SystemExit(f"{target}/{scope}: candidate drift exceeded the serialization fix")
+    return {
+        "rejected_candidate_sha256": baseline["candidate_sha256"],
+        "exact_artifact_set_sha256": artifact_identity,
+        "exact_artifact_set_drift_from_rejected_candidate": artifact_drift,
+        "semantic_dependency_graph_sha256": graph_identity,
+        "semantic_dependency_graph_drift": semantic_drift,
+        "removed_rejected_review_required_edges": baseline[
+            "invalid_review_required_dependency_entries"
+        ],
+        "repaired_rejected_missing_purl_fields": baseline["missing_required_purl_fields"],
+        "drift_explanation": (
+            "Wheel identities are unchanged. Formal edges now equal resolver truth; only "
+            "metadata-derived edges not authorized by resolver disposition were removed."
+        ),
+    }
 
 
 def historical_drift(
@@ -358,7 +495,13 @@ def prepare_target(arguments: argparse.Namespace) -> None:
             != descriptor_sha
         ):
             raise SystemExit(f"{target}/{scope}: resolution runtime binding drift")
-        exact_artifacts = compare_candidate_to_resolution(candidate, resolution, target, scope)
+        exact_artifacts, consistency = compare_candidate_to_resolution(
+            candidate, resolution, target, scope
+        )
+        schema_validation = validate_candidate_against_shared_inventory_v2(
+            candidate, arguments.wheel_root / scope, target, scope
+        )
+        rejected_drift = rejected_candidate_drift(candidate, resolution, target, scope)
         candidate_destination = output_root / "candidates" / candidate_path.name
         resolution_destination = output_root / "resolution" / resolution_path.name
         copy_json(candidate_path, candidate_destination)
@@ -381,6 +524,35 @@ def prepare_target(arguments: argparse.Namespace) -> None:
                     int(entry["native_member_count"]) for entry in exact_artifacts
                 ),
                 "graph_complete_evidence": "PASS",
+                "inventory_v2_schema_validation": schema_validation[
+                    "inventory_v2_schema_validation"
+                ],
+                "dependency_graph_validation": consistency["dependency_graph_validation"],
+                "resolution_serialization_consistency": consistency[
+                    "resolution_serialization_consistency"
+                ],
+                "resolution_state_conflict_count": consistency[
+                    "resolution_state_conflict_count"
+                ],
+                "resolved_not_applicable_emitted_as_formal_dependency_count": consistency[
+                    "resolved_not_applicable_emitted_as_formal_dependency_count"
+                ],
+                "invalid_review_required_dependency_entries": consistency[
+                    "invalid_review_required_dependency_entries"
+                ],
+                "invalid_pseudo_purl_count": consistency["invalid_pseudo_purl_count"],
+                "missing_required_purl_field_count": consistency[
+                    "missing_required_purl_field_count"
+                ],
+                "invalid_purl_format_count": consistency["invalid_purl_format_count"],
+                "pseudo_purl_in_formal_dependencies": consistency[
+                    "pseudo_purl_in_formal_dependencies"
+                ],
+                "resolution_state_conflict_fail_closed": consistency[
+                    "resolution_state_conflict_fail_closed"
+                ],
+                "schema_validation_details": schema_validation,
+                "rejected_candidate_drift": rejected_drift,
                 "approval_status": "PENDING_CODE_F_REVIEW",
                 "approval_owner": "CODE_F",
                 "exact_artifacts": exact_artifacts,
@@ -405,6 +577,10 @@ def prepare_target(arguments: argparse.Namespace) -> None:
     toolchain = exact_toolchain_evidence(target, arguments.toolchain_root, runtime_identity)
     toolchain_path = output_root / "toolchain-intake-evidence.json"
     write_canonical_json(toolchain_path, toolchain)
+    rejected_baseline = load_json(REJECTED_CANDIDATE_BASELINE)
+    expected_toolchain_sha = rejected_baseline["toolchain_evidence_sha256"][target]
+    if sha256_file(toolchain_path) != expected_toolchain_sha:
+        raise SystemExit(f"{target}: toolchain evidence identity changed without toolchain drift")
 
     runtime_prerequisite = None
     if target == "windows":
@@ -494,6 +670,41 @@ def prepare_target(arguments: argparse.Namespace) -> None:
             "toolchain_inventory_present": formal_toolchain.is_file(),
         },
         "inventory_candidates": inventories,
+        "rejected_candidate_baseline_sha256": sha256_file(REJECTED_CANDIDATE_BASELINE),
+        "inventory_v2_schema_validation": "PASS",
+        "dependency_graph_validation": "PASS",
+        "resolution_serialization_consistency": "PASS",
+        "resolution_state_conflict_count": sum(
+            int(item["resolution_state_conflict_count"]) for item in inventories
+        ),
+        "resolved_not_applicable_emitted_as_formal_dependency_count": sum(
+            int(item["resolved_not_applicable_emitted_as_formal_dependency_count"])
+            for item in inventories
+        ),
+        "invalid_review_required_dependency_entries": sum(
+            int(item["invalid_review_required_dependency_entries"]) for item in inventories
+        ),
+        "invalid_pseudo_purl_count": sum(
+            int(item["invalid_pseudo_purl_count"]) for item in inventories
+        ),
+        "missing_required_purl_field_count": sum(
+            int(item["missing_required_purl_field_count"]) for item in inventories
+        ),
+        "invalid_purl_format_count": sum(
+            int(item["invalid_purl_format_count"]) for item in inventories
+        ),
+        "pseudo_purl_in_formal_dependencies": sum(
+            int(item["pseudo_purl_in_formal_dependencies"]) for item in inventories
+        ),
+        "resolution_state_conflict_fail_closed": "PASS",
+        "target_descriptor_binding": "PASS",
+        "cp313_standard_gil_binding": "PASS",
+        "exact_artifact_set_drift_from_rejected_candidate": "NONE",
+        "semantic_dependency_graph_drift": "EXPECTED_INVALID_EDGE_REMOVAL_ONLY",
+        "artifact_set_drift_explanation": (
+            "Exact wheel artifacts are unchanged; only dependency edges not authorized by the "
+            "resolver disposition were removed."
+        ),
         "inventory_graph_completeness": "PASS",
         "dependency_definitions_sha256": canonical_sha256(load_json(DEFINITIONS)),
         "dependency_graph_set_sha256": canonical_sha256(
@@ -506,6 +717,17 @@ def prepare_target(arguments: argparse.Namespace) -> None:
         "new_approval_required_count": len(inventories) + (0 if formal_toolchain.is_file() else 1),
         "toolchain_intake_evidence_path": toolchain_path.relative_to(output_root).as_posix(),
         "toolchain_intake_evidence_sha256": sha256_file(toolchain_path),
+        "toolchain_evidence": "PRESERVED",
+        "toolchain_artifact_identity": "UNCHANGED",
+        "toolchain_evidence_change_reason": (
+            "Exact CPython, pip, PyInstaller, bootloader, target, and role bindings are unchanged."
+        ),
+        "toolchain_approval": "PENDING_CODE_F",
+        "known_approval_provenance_qicr": "YES",
+        "qicr_status": "KNOWN_PENDING_AFTER_VALID_CANDIDATE",
+        "qicr_implemented_by_code_c": "NO",
+        "cve_stage_a_reuse": "REBIND_REQUIRED",
+        "cve_stage_a_rebind_executed": "NO",
         "runtime_prerequisite_attestation": runtime_prerequisite,
         "actions_artifact_containment": {
             "status": "PASS",
@@ -517,7 +739,7 @@ def prepare_target(arguments: argparse.Namespace) -> None:
             "python_environment_upload": "FORBIDDEN",
         },
         "approval_owner": "CODE_F_INVENTORY_REVIEW",
-        "python_inventory_gate": "BLOCKED_PENDING_CODE_F_APPROVAL",
+        "python_inventory_gate": "BLOCKED_PENDING_CODE_F_REVIEW",
         "downstream": {
             "one_file_worker_build": "BLOCKED_NOT_RERUN",
             "windows_native_reconciliation": "BLOCKED_NOT_RERUN",
@@ -547,6 +769,35 @@ def assemble(arguments: argparse.Namespace) -> None:
     if len(heads) != 1 or any(report.get("status") != "PASS" for _, report in loaded):
         raise SystemExit("target inventory reports do not share one passing current HEAD")
     head = heads.pop()
+    required_pass_fields = (
+        "inventory_v2_schema_validation",
+        "dependency_graph_validation",
+        "resolution_serialization_consistency",
+        "resolution_state_conflict_fail_closed",
+        "target_descriptor_binding",
+        "cp313_standard_gil_binding",
+    )
+    required_zero_fields = (
+        "resolution_state_conflict_count",
+        "resolved_not_applicable_emitted_as_formal_dependency_count",
+        "invalid_review_required_dependency_entries",
+        "invalid_pseudo_purl_count",
+        "missing_required_purl_field_count",
+        "invalid_purl_format_count",
+        "pseudo_purl_in_formal_dependencies",
+    )
+    for _, report in loaded:
+        if any(report.get(field) != "PASS" for field in required_pass_fields):
+            raise SystemExit("review bundle assembly blocked by failed candidate validation")
+        if any(report.get(field) != 0 for field in required_zero_fields):
+            raise SystemExit("review bundle assembly blocked by non-zero candidate defects")
+        if report.get("exact_artifact_set_drift_from_rejected_candidate") != "NONE":
+            raise SystemExit("review bundle assembly blocked by exact artifact set drift")
+        if (
+            report.get("semantic_dependency_graph_drift")
+            != "EXPECTED_INVALID_EDGE_REMOVAL_ONLY"
+        ):
+            raise SystemExit("review bundle assembly blocked by unexpected semantic graph drift")
     dependency_definition_ids = {
         report["dependency_definitions_sha256"] for _, report in loaded
     }
@@ -604,6 +855,21 @@ def assemble(arguments: argparse.Namespace) -> None:
                     destination / "toolchain-intake-evidence.json"
                 )["source_lock_sha256"],
                 "inventory_drift": report["inventory_drift"],
+                "inventory_v2_schema_validation": report[
+                    "inventory_v2_schema_validation"
+                ],
+                "dependency_graph_validation": report["dependency_graph_validation"],
+                "resolution_serialization_consistency": report[
+                    "resolution_serialization_consistency"
+                ],
+                "exact_artifact_set_drift_from_rejected_candidate": report[
+                    "exact_artifact_set_drift_from_rejected_candidate"
+                ],
+                "semantic_dependency_graph_drift": report[
+                    "semantic_dependency_graph_drift"
+                ],
+                "toolchain_evidence": report["toolchain_evidence"],
+                "toolchain_artifact_identity": report["toolchain_artifact_identity"],
             }
         )
     identity = {
@@ -622,12 +888,35 @@ def assemble(arguments: argparse.Namespace) -> None:
         "bundle_semantics": "BATCH_CONTAINER_ONLY",
         "status": "READY_FOR_CODE_F_REVIEW",
         "validation_phase": "PYTHON_INVENTORY_ONLY",
+        "code_c_python_inventory_regeneration": "PASS",
         "inventory_review_head_sha": head,
         "main_quality_baseline": identity["main_quality_baseline"],
         "required_code_c_containment_sha": identity["required_code_c_containment_sha"],
         "bundle_identity_payload_sha256": canonical_sha256(identity),
         "target_summaries": target_summaries,
         "inventory_approval_requests": inventory_requests,
+        "pre_assembly_validation": {
+            "inventory_v2_schema_validation": "PASS",
+            "dependency_graph_validation": "PASS",
+            "resolution_serialization_consistency": "PASS",
+            "resolution_state_conflict_count": 0,
+            "resolved_not_applicable_emitted_as_formal_dependency_count": 0,
+            "invalid_review_required_dependency_entries": 0,
+            "invalid_pseudo_purl_count": 0,
+            "missing_required_purl_fields": 0,
+            "missing_required_purl_field_count": 0,
+            "invalid_purl_format_count": 0,
+            "pseudo_purl_in_formal_dependencies": 0,
+            "resolution_state_conflict_fail_closed": "PASS",
+            "target_descriptor_binding": "PASS",
+            "cp313_standard_gil_binding": "PASS",
+            "exact_artifact_set_drift_from_rejected_candidate": "NONE",
+            "semantic_dependency_graph_drift": "EXPECTED_INVALID_EDGE_REMOVAL_ONLY",
+            "candidate_validation_mode": (
+                "SHARED_V2_SCHEMA_AND_SEMANTICS_WITH_NON_PERSISTED_APPROVAL_PROJECTION"
+            ),
+            "approval_projection_persisted_or_uploaded": "NO",
+        },
         "toolchain_approval_requests": [
             {
                 "target": target,
@@ -647,8 +936,21 @@ def assemble(arguments: argparse.Namespace) -> None:
         "new_inventory_approval_required_count": len(inventory_requests),
         "approval_registry_schema_version": None,
         "approval_model": "INLINE_PYTHON_ARTIFACT_INVENTORY_V2_PROVENANCE",
-        "python_inventory_gate": "BLOCKED_PENDING_CODE_F_APPROVAL",
+        "python_inventory_gate": "BLOCKED_PENDING_CODE_F_REVIEW",
         "approval_reconciliation": "NOT_REQUIRED_YET",
+        "known_approval_provenance_qicr": "YES",
+        "qicr_status": "KNOWN_PENDING_AFTER_VALID_CANDIDATE",
+        "qicr_implemented_by_code_c": "NO",
+        "cve_stage_a_reuse": "REBIND_REQUIRED",
+        "cve_stage_a_rebind_executed": "NO",
+        "downstream": {
+            "worker_build": "BLOCKED_NOT_RERUN",
+            "native_reconciliation": "BLOCKED_NOT_RERUN",
+            "python_license_gate": "BLOCKED_NOT_RERUN",
+            "stage_b": "BLOCKED_NOT_RERUN",
+            "real_siglip_onnx_e2e": "BLOCKED_NOT_RERUN",
+            "index_regression": "BLOCKED_NOT_RERUN",
+        },
         "artifact_containment": {
             "status": "PASS",
             "large_candidate_actions_upload": "FORBIDDEN",
@@ -665,6 +967,7 @@ def assemble(arguments: argparse.Namespace) -> None:
             "inventory role changes",
             "shared inventory schema or generator semantics change",
         ],
+        "review_bundle_assembly": "PASS",
         "owner_of_next_fix": "CODE_F_INVENTORY_REVIEW",
         "pr_8_updated": "NO",
     }
@@ -678,7 +981,7 @@ def assemble(arguments: argparse.Namespace) -> None:
         "- Inventory requests: 4 (Linux/Windows runtime and worker-build)\n"
         "- Toolchain evidence requests: 2 (Linux and Windows)\n"
         "- Approval owner: Code F\n"
-        "- Python Inventory Gate: `BLOCKED_PENDING_CODE_F_APPROVAL`\n"
+        "- Python Inventory Gate: `BLOCKED_PENDING_CODE_F_REVIEW`\n"
         "- Worker, Native, License, Stage B, SigLIP and Index gates: `BLOCKED_NOT_RERUN`\n\n"
         "Each inventory/role requires an independent approval decision. Acceptance of this bundle does not "
         "approve any contained inventory.\n"
@@ -705,6 +1008,7 @@ def main() -> None:
     target_parser.add_argument("--graph-attestation", type=Path, required=True)
     target_parser.add_argument("--candidate-root", type=Path, required=True)
     target_parser.add_argument("--resolution-root", type=Path, required=True)
+    target_parser.add_argument("--wheel-root", type=Path, required=True)
     target_parser.add_argument("--toolchain-root", type=Path, required=True)
     target_parser.add_argument("--runtime-prerequisite-attestation", type=Path)
     target_parser.add_argument("--output-root", type=Path, required=True)

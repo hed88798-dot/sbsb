@@ -149,6 +149,7 @@ jobs:
             --graph-attestation artifacts/python-supply-chain/evidence/${{ matrix.target }}-graph-interpreter-attestation.json \
             --candidate-root artifacts/python-supply-chain/candidates \
             --resolution-root artifacts/python-supply-chain/resolution \
+            --wheel-root artifacts/python-supply-chain/wheels \
             --toolchain-root artifacts/python-supply-chain/toolchain \
             "${prerequisite_args[@]}" \
             --output-root artifacts/python-inventory-review/${{ matrix.target }}

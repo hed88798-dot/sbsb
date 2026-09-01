@@ -1,0 +1,39 @@
+{
+  "schema_version": "1",
+  "rejected_bundle_id": "code-c-python-inventory-review-f57ecb7ca533-d591ef5d747c4bf2",
+  "rejected_head_sha": "f57ecb7ca53339ec19718598dc906cc716028d4d",
+  "candidates": {
+    "linux/runtime": {
+      "candidate_sha256": "a28fe73aa08731415bee1b6ee3c30c541d63d4c4221f26222baf9a92823730c0",
+      "exact_artifact_set_sha256": "5c26544540d86379ecd9585dc8350d8eaaeadb385bb954dbeeeb79733245908e",
+      "resolver_dependency_graph_sha256": "bd871dd539e40bf7e92f9966b248f63e13b48a6fcd30bf69c54a95991bbf9747",
+      "invalid_review_required_dependency_entries": 31,
+      "missing_required_purl_fields": 38
+    },
+    "linux/worker-build": {
+      "candidate_sha256": "e302b9a628357b14e0eb1de5cedf3c7ffaeb4160b36df696359a3777ac8686ff",
+      "exact_artifact_set_sha256": "099befa598b9f432a2de49f8c28daba64c5bcc59fd4ea21eb4f0d274e72b3f49",
+      "resolver_dependency_graph_sha256": "4cba1dd6f87b1a8ae487c351ccd06feb37f4f61cc690e8765f8d64ccbe0057db",
+      "invalid_review_required_dependency_entries": 52,
+      "missing_required_purl_fields": 57
+    },
+    "windows/runtime": {
+      "candidate_sha256": "d4004df884a60e1ffdf4ed103c462475d17bd602a7eb3ccc69e34f6258888349",
+      "exact_artifact_set_sha256": "678bb2d806ccab6ebc9d6ec939f2fd81ebdbb70026b8edf0e6b0007c3f8bade8",
+      "resolver_dependency_graph_sha256": "728b3d0246e17a912393fd06101a6f864c75a5c6b30c554547cb521fda23fcd5",
+      "invalid_review_required_dependency_entries": 30,
+      "missing_required_purl_fields": 37
+    },
+    "windows/worker-build": {
+      "candidate_sha256": "473a3b7e18bc1d3d54f30bd5c1edc0bf78f883e712b76f7b7c562e552593a2ad",
+      "exact_artifact_set_sha256": "803e7e1544d98a89eb676acf90c25f1b8cc8090c2132b9d350f5b29d21a5f6c7",
+      "resolver_dependency_graph_sha256": "bcf2773a464bd08b25b327ee7a1e711a378e6761612498ef2afba00f96d6afb0",
+      "invalid_review_required_dependency_entries": 50,
+      "missing_required_purl_fields": 55
+    }
+  },
+  "toolchain_evidence_sha256": {
+    "linux": "4e6a5e8a7b5ef245124ff188f8c2a74cba61a4ce37cfc8e4b2a6079f6fd4f95f",
+    "windows": "f19a6ef7a06bcfe2f804afb0f61c2f04fa4bc8638d5af61e8262f8e7c4fa5f88"
+  }
+}

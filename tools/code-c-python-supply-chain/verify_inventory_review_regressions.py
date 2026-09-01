@@ -8,6 +8,11 @@ import tempfile
 from pathlib import Path
 
 from canonical_evidence import write_canonical_json
+from inventory_candidate_serialization import (
+    CandidateSerializationError,
+    serialize_candidate_from_resolution,
+    validate_resolution_serialization,
+)
 from prepare_inventory_review import assemble, safe_archive_member
 
 
@@ -33,6 +38,23 @@ def target_report(target: str) -> dict[str, object]:
         "dependency_graph_set_sha256": ("5" if target == "linux" else "6") * 64,
         "dependency_definitions_sha256": "e" * 64,
         "inventory_drift": "PRESENT",
+        "inventory_v2_schema_validation": "PASS",
+        "dependency_graph_validation": "PASS",
+        "resolution_serialization_consistency": "PASS",
+        "resolution_state_conflict_count": 0,
+        "resolved_not_applicable_emitted_as_formal_dependency_count": 0,
+        "invalid_review_required_dependency_entries": 0,
+        "invalid_pseudo_purl_count": 0,
+        "missing_required_purl_field_count": 0,
+        "invalid_purl_format_count": 0,
+        "pseudo_purl_in_formal_dependencies": 0,
+        "resolution_state_conflict_fail_closed": "PASS",
+        "target_descriptor_binding": "PASS",
+        "cp313_standard_gil_binding": "PASS",
+        "exact_artifact_set_drift_from_rejected_candidate": "NONE",
+        "semantic_dependency_graph_drift": "EXPECTED_INVALID_EDGE_REMOVAL_ONLY",
+        "toolchain_evidence": "PRESERVED",
+        "toolchain_artifact_identity": "UNCHANGED",
         "inventory_candidates": [
             {
                 "inventory_id": f"code-c-{target}-{scope}-py31315",
@@ -69,6 +91,110 @@ def main() -> None:
         assertions += 1
     else:
         raise SystemExit("unsafe archive member was accepted")
+
+    resolution = {
+        "packages": [
+            {
+                "name": "Root_Package",
+                "version": "1.0.0",
+                "dependencies": ["included-package"],
+                "dependency_declarations": [
+                    {
+                        "requirement": "included-package==2.0.0",
+                        "package_name": "included-package",
+                        "disposition": "INCLUDED",
+                        "dependency": "included-package",
+                        "reason": "",
+                    },
+                    {
+                        "requirement": "optional-package; sys_platform == 'never'",
+                        "package_name": "optional-package",
+                        "disposition": "NOT_APPLICABLE",
+                        "dependency": None,
+                        "reason": "Marker evaluated false for the approved target.",
+                    },
+                ],
+            },
+            {
+                "name": "included-package",
+                "version": "2.0.0",
+                "dependencies": [],
+                "dependency_declarations": [],
+            },
+        ]
+    }
+    candidate = {
+        "packages": [
+            {
+                "package_name": "Root_Package",
+                "version": "1.0.0",
+                "dependencies": ["REVIEW_REQUIRED:optional-package"],
+                "dependency_declarations": [],
+            },
+            {
+                "package_name": "included-package",
+                "version": "2.0.0",
+                "dependencies": [],
+                "dependency_declarations": [],
+            },
+        ]
+    }
+    serialized = serialize_candidate_from_resolution(candidate, resolution)
+    root_package = serialized["packages"][0]
+    if root_package["dependencies"] != ["pkg:pypi/included-package@2.0.0"]:
+        raise SystemExit("resolved dependency was not serialized as a formal purl")
+    assertions += 1
+    not_applicable = root_package["dependency_declarations"][1]
+    if not_applicable["purl"] is not None or not_applicable["disposition"] != "NOT_APPLICABLE":
+        raise SystemExit("not-applicable resolution evidence was serialized incorrectly")
+    assertions += 1
+    validate_resolution_serialization(serialized, resolution)
+    assertions += 1
+
+    for pseudo_value in (
+        "REVIEW_REQUIRED:forbidden",
+        "NOT_APPLICABLE:forbidden",
+        "UNKNOWN:forbidden",
+        "UNRESOLVED:forbidden",
+    ):
+        pseudo = json.loads(json.dumps(serialized))
+        pseudo["packages"][0]["dependencies"].append(pseudo_value)
+        try:
+            validate_resolution_serialization(pseudo, resolution)
+        except CandidateSerializationError:
+            assertions += 1
+        else:
+            raise SystemExit(f"pseudo purl was accepted in formal dependencies: {pseudo_value}")
+
+    missing_purl = json.loads(json.dumps(serialized))
+    del missing_purl["packages"][0]["dependency_declarations"][1]["purl"]
+    try:
+        validate_resolution_serialization(missing_purl, resolution)
+    except CandidateSerializationError:
+        assertions += 1
+    else:
+        raise SystemExit("missing required purl:null was accepted")
+
+    conflict = json.loads(json.dumps(serialized))
+    conflict["packages"][0]["dependency_declarations"][1]["disposition"] = "INCLUDED"
+    try:
+        validate_resolution_serialization(conflict, resolution)
+    except CandidateSerializationError:
+        assertions += 1
+    else:
+        raise SystemExit("resolver/serializer disposition conflict was accepted")
+
+    for disposition in ("REVIEW_REQUIRED", "UNKNOWN", "UNRESOLVED", "INVALID_INTERNAL_STATE"):
+        unsupported_resolution = json.loads(json.dumps(resolution))
+        unsupported_resolution["packages"][0]["dependency_declarations"][1][
+            "disposition"
+        ] = disposition
+        try:
+            serialize_candidate_from_resolution(candidate, unsupported_resolution)
+        except CandidateSerializationError:
+            assertions += 1
+        else:
+            raise SystemExit(f"unsupported resolver disposition was serialized: {disposition}")
 
     with tempfile.TemporaryDirectory(prefix="code-c-inventory-review-regression-") as directory:
         root = Path(directory)
@@ -123,6 +249,12 @@ def main() -> None:
                 "FOUR_ROLE_SCOPED_APPROVALS": "PASS",
                 "INVENTORY_ONLY_ARTIFACT_BUDGET": "PASS",
                 "NO_CODE_C_SELF_APPROVAL": "PASS",
+                "RESOLVED_DEPENDENCY_PURL_SERIALIZATION": "PASS",
+                "NOT_APPLICABLE_PURL_NULL": "PASS",
+                "PSEUDO_PURL_FAIL_CLOSED": "PASS",
+                "MISSING_PURL_FIELD_FAIL_CLOSED": "PASS",
+                "RESOLUTION_STATE_CONFLICT_FAIL_CLOSED": "PASS",
+                "UNKNOWN_DISPOSITION_FAIL_CLOSED": "PASS",
                 "UNSAFE_ARCHIVE_MEMBER_FAIL_CLOSED": "PASS",
             },
             sort_keys=True,
