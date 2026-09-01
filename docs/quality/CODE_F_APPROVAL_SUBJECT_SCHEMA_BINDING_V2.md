@@ -1,0 +1,82 @@
+# Code F Approval Subject Schema Binding v2 QICR Report
+
+```text
+QICR_STATUS: PASS (pending PR merge)
+BRANCH: code-f/approval-subject-schema-binding-v2
+OLD_MAIN_QUALITY_BASELINE: 849e386862c042619357d284b71f9c6d2b27c130
+REVIEWED_CODE_C_HEAD: ce5590e262a522e1ebff6039c6acae7423a3e778
+REVIEW_BUNDLE_ID: code-c-python-inventory-review-ce5590e262a5-a809279fe384ac9b
+REVIEW_BUNDLE_SHA256: a809279fe384ac9b2360faf31c9978d035583467c21e480748316b3b4b5d8b8a
+```
+
+## Contract result
+
+```text
+APPROVAL_PROVENANCE_SCHEMA_VERSION: 2
+SUBJECT_SCHEMA_SHA256_REQUIRED: YES
+SUBJECT_SCHEMA_BINDING_MODEL: SINGLE_SELF_CONTAINED_SCHEMA
+TRUSTED_SCHEMA_IDENTITY_SOURCE: SHARED_MAIN_CONTRACT
+APPROVAL_CANONICALIZATION: json-utf8-lf-v1
+REVOCATION_SCHEMA_MIGRATION_REQUIRED: NO
+```
+
+The root schema bytes were independently re-hashed from the frozen main
+checkout:
+
+```text
+INVENTORY_V3_SCHEMA_SHA256: 7a4999d4e31c83f3691ad69be6dc49822c4d0eebd77330964401ae349ae64e0e
+INVENTORY_V3_SCHEMA_SHA_RECOMPUTED: PASS
+TOOLCHAIN_SUBJECT_SCHEMA_ID: https://local.app/schemas/compliance/python-toolchain-inventory/v1/inventory.schema.json
+TOOLCHAIN_SUBJECT_SCHEMA_VERSION: 1
+TOOLCHAIN_SUBJECT_SCHEMA_SHA256: b5e1035ccde3adcdffc1dbf1d73418c1585d0e292669020622b9b42acb3e9bd2
+TOOLCHAIN_SCHEMA_SHA_BINDING: PASS
+```
+
+Both schemas contain only internal `#/$defs` references, so a root raw-byte
+SHA is the complete contract identity. No subject-side contract drift was
+introduced:
+
+```text
+INVENTORY_V3_SCHEMA_IDENTITY_UNCHANGED: PASS
+INVENTORY_SUBJECT_CONTRACT_DRIFT: NONE
+TOOLCHAIN_SUBJECT_CONTRACT_DRIFT: NONE
+CODE_C_SUBJECT_REGENERATION_REQUIRED: NO
+```
+
+## Verifier and regression evidence
+
+The verifier recomputes the trusted schema file hash and checks `$id`, schema
+version, exact Approval fields, exact Snapshot fields and exact subject bytes.
+The contract test file passes 10 tests, including v1 historical replay and
+Inventory/Toolchain v2 positive cases.
+
+```text
+VERIFIER_USES_TRUSTED_ACTUAL_SCHEMA_IDENTITY: PASS
+SUBJECT_SELF_ASSERTED_SCHEMA_IDENTITY_IS_NOT_AUTHORITY: PASS
+APPROVAL_SELF_ASSERTED_SCHEMA_IDENTITY_IS_NOT_AUTHORITY: PASS
+SAME_VERSION_DIFFERENT_SCHEMA_BYTES_FAIL_CLOSED: PASS
+SAME_SCHEMA_ID_DIFFERENT_BYTES_FAIL_CLOSED: PASS
+WRONG_SUBJECT_SCHEMA_SHA_FAIL_CLOSED: PASS
+MISSING_SUBJECT_SCHEMA_SHA_FAIL_CLOSED: PASS
+TRANSITIVE_SCHEMA_REF_DRIFT_FAIL_CLOSED: NOT_APPLICABLE
+SUBJECT_SHA_BINDING: PASS
+TARGET_BINDING: PASS
+REVIEWER_AUTHORITY_BINDING: PASS
+SCOPE_MISMATCH_FAIL_CLOSED: PASS
+APPROVAL_V1_NEW_ISSUANCE: FORBIDDEN
+APPROVAL_V1_HISTORICAL_REPLAY: PASS
+APPROVAL_V1_REUSE_FOR_CURRENT_4_PLUS_2: FORBIDDEN
+```
+
+## Approval scope
+
+```text
+CURRENT_INVENTORY_APPROVAL_COUNT: 0
+CURRENT_TOOLCHAIN_APPROVAL_COUNT: 0
+CURRENT_4_PLUS_2_APPROVALS_CREATED: NO
+CODE_C_NOTIFICATION: NOT_SENT
+```
+
+The separate Approval PR will consume this v2 contract only after it has been
+merged to `main`; it will bind the frozen Review Bundle and all six exact
+subjects to the new Approval Contract identity.

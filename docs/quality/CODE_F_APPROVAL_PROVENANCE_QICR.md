@@ -3,13 +3,21 @@
 This document records the verify-only quality boundary for Python artifact and
 toolchain provenance reviews.
 
+The original Approval Provenance v1 contract remains available for historical
+replay only. New issuance uses the versioned v2 contract in
+`schemas/compliance/artifact-approval-provenance/v2/`; v1 records are not
+rewritten in place and cannot be reused for the current Inventory v3 or
+Toolchain v1 subjects.
+
 ## Required invariants
 
 - Raw candidate validation is performed on exact immutable subject bytes. The
   input SHA must equal the subject SHA; no approval projection or field
   injection is allowed.
-- Approval records bind the exact subject, schema identity, target descriptor,
-  frozen review snapshot, authority policy and explicit scope.
+- Approval v2 records bind the exact subject, trusted schema ID/version/raw-byte
+  SHA-256, target descriptor, frozen review snapshot, authority policy and
+  explicit scope. The schema identity is part of canonical approval bytes and
+  the exact-subject equality key.
 - Historical approvals are immutable. Revocation and supersession use new
   records; effective state is calculated by the verifier.
 - Unknown authority or scope mismatch fails closed. Provenance approval never
@@ -39,3 +47,9 @@ Run the contract smoke check with:
 ```text
 pnpm compliance:approval:verify
 ```
+
+The verifier resolves subject schema identity from the shared main-contract
+mapping and recomputes raw schema bytes. Subject- or approval-self-asserted
+schema hashes are never authoritative. Inventory v3 and Toolchain v1 are both
+currently classified as `SINGLE_SELF_CONTAINED_SCHEMA`; their exact trusted
+hashes are checked before an Approval v2 record can verify.
