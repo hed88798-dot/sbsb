@@ -1,5 +1,5 @@
 import { mkdirSync, readFileSync } from 'node:fs';
-import { relative, resolve } from 'node:path';
+import { relative, resolve, sep } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import {
   dependencyPaths,
@@ -117,12 +117,21 @@ async function main() {
     approvalContractPath,
     authorityPolicyPath,
   });
-  if (!inventoryRoot) throw new Error('inventory root is required');
   const targetInventorySubjects = approved.inventory.filter((entry) => entry.target.os === target);
   if (targetInventorySubjects.length !== 2) {
     throw new Error(
       `${target}: active exact approvals did not resolve runtime and worker-build inventories`,
     );
+  }
+  for (const entry of targetInventorySubjects) {
+    const relativeSubjectPath = relative(inventoryRoot, entry.subject_path);
+    if (
+      relativeSubjectPath === '..' ||
+      relativeSubjectPath.startsWith(`..${sep}`) ||
+      relativeSubjectPath.length === 0
+    ) {
+      throw new Error(`${target}: approved subject is not materialized under inventory root`);
+    }
   }
   const paths = targetInventorySubjects.map((entry) => entry.subject_path);
   const loaded = loadInventories(paths);
