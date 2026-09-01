@@ -378,6 +378,22 @@ async function main() {
   if (autoApproved.length + requiredReview.length + hardBlocked.length !== total) {
     throw new Error('license classification is not complete and exclusive');
   }
+  const currentSubjectSets = targets.map((target) => target.license_target_subject_set);
+  if (currentSubjectSets.every(Boolean)) {
+    for (const [index, subjectSet] of currentSubjectSets.entries()) {
+      if (
+        subjectSet.discovery_model !== 'ACTIVE_EXACT_SUBJECT_APPROVALS' ||
+        subjectSet.filesystem_filename_is_subject_authority !== false ||
+        subjectSet.approval_discovery_index_is_authority !== false ||
+        subjectSet.inventories?.length !== 4 ||
+        subjectSet.toolchains?.length !== 2
+      ) {
+        throw new Error(
+          `${targets[index].target}: current License Target subject set binding is invalid`,
+        );
+      }
+    }
+  }
   const graphBinding = {
     code_c_head_sha: head,
     main_quality_baseline_sha: mainBaseline,
@@ -390,6 +406,17 @@ async function main() {
     linux_artifact_set_sha256: targets.find((target) => target.target === 'linux')
       .artifact_set_sha256,
   };
+  if (currentSubjectSets.every(Boolean)) {
+    graphBinding.license_target_subject_sets = targets.map((target) => ({
+      target: target.target,
+      subject_set_sha256: target.license_target_subject_set.subject_set_sha256,
+      approval_subject_set_sha256: target.license_target_subject_set.approval_subject_set_sha256,
+      inventories: target.license_target_subject_set.inventories,
+      toolchains: target.license_target_subject_set.toolchains,
+      worker_build_context_sha256: target.license_target_subject_set.worker_build_context_sha256,
+      license_evaluator: target.license_target_subject_set.license_evaluator,
+    }));
+  }
   const identity = licenseIdentityHash({
     graph_binding: graphBinding,
     auto_approved_artifacts: autoApproved,
