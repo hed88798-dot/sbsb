@@ -816,6 +816,7 @@ async function main() {
           'REISSUE_OR_BIND_COVERAGE_TO_CURRENT_EXACT_ARTIFACT_IDENTITY';
         blocked.coverage_evidence = {
           fixture_id: coverage.fixture_id,
+          coverage_record_id: coverage.coverage_record_id,
           coverage_status: coverage.status,
           exact_artifact_match: coverage.exact_artifact_match,
           identity_mismatch_fields: coverage.identity_mismatch_fields,
