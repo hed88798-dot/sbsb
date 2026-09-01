@@ -21,6 +21,13 @@ from msvc_runtime_dependency import (
 from machine_output import log_status
 
 
+def external_prerequisite_manifest_sha256(manifest: dict[str, object]) -> str:
+    """Return the canonical identity hash excluding the self-referential field."""
+    return canonical_sha256(
+        {key: value for key, value in manifest.items() if key != "manifest_sha256"}
+    )
+
+
 def validate_selected_sources(
     binaries: object,
     manifest_path: Path,
@@ -49,7 +56,7 @@ def validate_selected_sources(
             external_manifest = json.loads(external_manifest_path.read_text(encoding="utf-8"))
             if (
                 external_manifest.get("prerequisite_id") != "microsoft-vc-v14-x64-14.51.36247.0"
-            or canonical_sha256(external_manifest)
+            or external_prerequisite_manifest_sha256(external_manifest)
                 != "c3dd16982ee2c406aa3795aabc2e18ba3870125f861fea7a06f75111449ebe3b"
                 or external_manifest.get("target_disposition") != "EXTERNAL_PREREQUISITE"
             ):
@@ -138,7 +145,9 @@ def validate_selected_sources(
                         "source_artifact_identity": None,
                         "external_prerequisite": {
                             "prerequisite_id": external_manifest["prerequisite_id"],
-                            "manifest_sha256": canonical_sha256(external_manifest),
+                            "manifest_sha256": external_prerequisite_manifest_sha256(
+                                external_manifest
+                            ),
                             "provider_id": external_manifest["provider"]["provider_id"],
                             "capability": runtime_name,
                             "materialized": False,

@@ -30,6 +30,13 @@ INSPECT_ONEFILE = (
 )
 
 
+def external_prerequisite_manifest_sha256(manifest: dict[str, object]) -> str:
+    """Return the canonical identity hash excluding the self-referential field."""
+    return canonical_sha256(
+        {key: value for key, value in manifest.items() if key != "manifest_sha256"}
+    )
+
+
 def native_type(path: Path) -> str | None:
     lower = path.name.lower()
     if lower.endswith(".pyd"):
@@ -268,7 +275,7 @@ def main() -> None:
         external_manifest = json.loads(arguments.external_prerequisite.read_text(encoding="utf-8"))
         if (
             external_manifest.get("prerequisite_id") != "microsoft-vc-v14-x64-14.51.36247.0"
-            or canonical_sha256(external_manifest)
+            or external_prerequisite_manifest_sha256(external_manifest)
             != "c3dd16982ee2c406aa3795aabc2e18ba3870125f861fea7a06f75111449ebe3b"
         ):
             raise SystemExit("external prerequisite manifest identity mismatch")
@@ -658,7 +665,7 @@ def main() -> None:
             record["required_in_final"] = False
             record["external_prerequisite"] = item.get("external_prerequisite") or {
                 "prerequisite_id": external_manifest["prerequisite_id"],
-                "manifest_sha256": canonical_sha256(external_manifest),
+                "manifest_sha256": external_prerequisite_manifest_sha256(external_manifest),
                 "provider_id": external_manifest["provider"]["provider_id"],
                 "capability": PurePosixPath(str(item["internal_path"])).name.lower(),
             }
