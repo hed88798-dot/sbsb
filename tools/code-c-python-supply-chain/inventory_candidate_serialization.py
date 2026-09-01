@@ -63,6 +63,24 @@ def serialize_candidate_from_resolution(
         resolved = resolved_packages[normalized]
         if str(package.get("version")) != str(resolved["version"]):
             raise CandidateSerializationError(f"candidate version differs from resolver: {normalized}")
+        resolver_provenance = resolved.get("provenance")
+        if resolver_provenance:
+            for key in ("filename", "sha256", "download_url", "source", "source_index"):
+                if not resolver_provenance.get(key):
+                    raise CandidateSerializationError(
+                        f"resolver provenance is incomplete for {normalized}: {key}"
+                    )
+            if package.get("filename") != resolver_provenance["filename"]:
+                raise CandidateSerializationError(
+                    f"candidate filename differs from resolver: {normalized}"
+                )
+            if package.get("sha256") != resolver_provenance["sha256"]:
+                raise CandidateSerializationError(
+                    f"candidate artifact hash differs from resolver: {normalized}"
+                )
+            package["source"] = resolver_provenance["source"]
+            package["source_index"] = resolver_provenance["source_index"]
+            package["provenance"]["download_url"] = resolver_provenance["download_url"]
         package["dependencies"] = [purls[dependency] for dependency in resolved["dependencies"]]
         declarations: list[dict[str, object]] = []
         for raw_declaration in resolved["dependency_declarations"]:

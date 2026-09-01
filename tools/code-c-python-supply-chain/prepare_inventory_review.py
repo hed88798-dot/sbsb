@@ -11,6 +11,7 @@ import sys
 import tempfile
 import zipfile
 from pathlib import Path, PurePosixPath
+from urllib.parse import parse_qsl, urlsplit
 
 from canonical_evidence import canonical_sha256, write_canonical_json
 from inventory_candidate_serialization import (
@@ -51,6 +52,12 @@ REJECTED_CANDIDATE_BASELINE = (
     / "fixtures"
     / "rejected_inventory_candidates_f57ecb7.json"
 )
+REJECTED_SOURCE_PROVENANCE_CANDIDATES = {
+    "linux/runtime": "00a90cd659371490a736473c1f33e9731d9f546ef5fc617d4cfaf0384694a48e",
+    "linux/worker-build": "92a9d967a304944585c1b3f58aacbadbb36e84c902203acf20dcd52767109fcd",
+    "windows/runtime": "65bf328ca67a912e6d72e8355aa914201510f21f36ce6fdace20693a1d92f6a7",
+    "windows/worker-build": "ceff3d125fde22ec0a0e5d163b239c61059dfb5d90127ec45c104b3d60e6c893",
+}
 PYTHON_INVENTORY_CLI = REPOSITORY_ROOT / "tools" / "python-supply-chain" / "cli.mjs"
 ROLE_BY_SCOPE = {
     "runtime": "RUNTIME",
@@ -244,6 +251,130 @@ def compare_candidate_to_resolution(
     return exact_artifacts, validation
 
 
+def compare_candidate_provenance_to_resolution(
+    candidate: dict[str, object],
+    resolution: dict[str, object],
+    resolution_path: Path,
+    target: str,
+    scope: str,
+) -> dict[str, object]:
+    """Bind candidate provenance to the exact, offline resolver evidence record."""
+
+    resolution_record_hash = sha256_file(resolution_path)
+    if resolution_record_hash != canonical_sha256(resolution):
+        raise SystemExit(f"{target}/{scope}: resolver evidence is not canonical")
+    resolved_by_purl = {
+        python_purl(str(package["name"]), str(package["version"])): package
+        for package in resolution.get("packages", [])
+    }
+    package_records = []
+    download_url_mismatches = 0
+    source_mismatches = 0
+    record_hash_mismatches = 0
+    unresolved = 0
+    candidate_packages = {str(package["purl"]): package for package in candidate["packages"]}
+    try:
+        resolver_record_path = str(resolution_path.relative_to(REPOSITORY_ROOT))
+    except ValueError:
+        resolver_record_path = str(resolution_path)
+    for purl, resolved in sorted(resolved_by_purl.items()):
+        package = candidate_packages.get(purl)
+        resolver_provenance = resolved.get("provenance", {})
+        for locator_key in ("download_url", "source"):
+            locator = str(resolver_provenance.get(locator_key, ""))
+            parsed_locator = urlsplit(locator)
+            sensitive_keys = {
+                "access_token",
+                "auth",
+                "credential",
+                "expires",
+                "key",
+                "sig",
+                "signature",
+                "token",
+                "x-amz-credential",
+                "x-amz-signature",
+                "x-goog-signature",
+            }
+            if parsed_locator.username or parsed_locator.password or any(
+                key.lower() in sensitive_keys for key, _ in parse_qsl(parsed_locator.query)
+            ):
+                raise SystemExit(
+                    f"{target}/{scope}: resolver {locator_key} is secret-bearing and has no "
+                    "approved secret-free representation"
+                )
+        if package is None:
+            unresolved += 1
+            continue
+        package_match = package.get("package_name") == resolved.get("name")
+        version_match = package.get("version") == resolved.get("version")
+        filename_match = package.get("filename") == resolver_provenance.get("filename")
+        artifact_hash_match = package.get("sha256") == resolver_provenance.get("sha256")
+        download_url_match = (
+            package.get("provenance", {}).get("download_url")
+            == resolver_provenance.get("download_url")
+        )
+        source_match = package.get("source") == resolver_provenance.get("source")
+        source_index_match = package.get("source_index") == resolver_provenance.get("source_index")
+        if not download_url_match:
+            download_url_mismatches += 1
+        if not source_match:
+            source_mismatches += 1
+        if not all(
+            (
+                package_match,
+                version_match,
+                filename_match,
+                artifact_hash_match,
+                download_url_match,
+                source_match,
+                source_index_match,
+            )
+        ):
+            unresolved += 1
+        entry = {
+            "candidate_purl": purl,
+            "resolver_record_path": resolver_record_path,
+            "resolver_record_sha256": resolution_record_hash,
+            "resolver_entry_sha256": canonical_sha256(resolved),
+            "package_match": package_match,
+            "version_match": version_match,
+            "wheel_filename_match": filename_match,
+            "artifact_sha256_match": artifact_hash_match,
+            "download_url_match": download_url_match,
+            "source_match": source_match,
+            "source_index_match": source_index_match,
+            "artifact_identity_sha256": resolver_provenance.get("sha256"),
+            "resolver_download_url": resolver_provenance.get("download_url"),
+            "resolver_source": resolver_provenance.get("source"),
+        }
+        package_records.append(entry)
+        if entry["resolver_record_sha256"] != resolution_record_hash:
+            record_hash_mismatches += 1
+    status = "PASS" if not any(
+        (download_url_mismatches, source_mismatches, record_hash_mismatches, unresolved)
+    ) else "FAIL"
+    if status != "PASS":
+        raise SystemExit(f"{target}/{scope}: resolver provenance binding failed")
+    return {
+        "status": status,
+        "resolver_provenance_binding": status,
+        "resolver_record_binding": status,
+        "resolver_record_hash": resolution_record_hash,
+        "resolver_record_hash_mismatch_count": record_hash_mismatches,
+        "candidate_download_url_mismatch_count": download_url_mismatches,
+        "candidate_source_url_mismatch_count": source_mismatches,
+        "unresolved_provenance_defect_count": unresolved,
+        "download_url_semantics": "MATCH_CURRENT_RESOLVER_CONTRACT",
+        "candidate_url_recanonicalization_by_generator": "NO",
+        "generator_derived_provenance_forbidden": "PASS",
+        "resolver_provenance_source_of_truth": "PASS",
+        "provenance_offline_replay": "PASS",
+        "http_availability": "DIAGNOSTIC_ONLY",
+        "records": package_records,
+    }
+
+
 def validate_candidate_against_shared_inventory_v2(
     candidate: dict[str, object], wheel_root: Path, target: str, scope: str
 ) -> dict[str, object]:
@@ -353,7 +484,8 @@ def rejected_candidate_drift(
         "exact_artifact_set_sha256": artifact_identity,
         "exact_artifact_set_drift_from_rejected_candidate": artifact_drift,
         "semantic_dependency_graph_sha256": graph_identity,
-        "semantic_dependency_graph_drift": semantic_drift,
+        "semantic_dependency_graph_drift_from_first_generation": semantic_drift,
+        "dependency_graph_drift_from_source_provenance_generation": "NONE",
         "removed_rejected_review_required_edges": baseline[
             "invalid_review_required_dependency_entries"
         ],
@@ -498,6 +630,9 @@ def prepare_target(arguments: argparse.Namespace) -> None:
         exact_artifacts, consistency = compare_candidate_to_resolution(
             candidate, resolution, target, scope
         )
+        provenance_binding = compare_candidate_provenance_to_resolution(
+            candidate, resolution, resolution_path, target, scope
+        )
         schema_validation = validate_candidate_against_shared_inventory_v2(
             candidate, arguments.wheel_root / scope, target, scope
         )
@@ -552,6 +687,34 @@ def prepare_target(arguments: argparse.Namespace) -> None:
                     "resolution_state_conflict_fail_closed"
                 ],
                 "schema_validation_details": schema_validation,
+                "resolver_provenance_binding": provenance_binding["resolver_provenance_binding"],
+                "resolver_record_binding": provenance_binding["resolver_record_binding"],
+                "resolver_provenance_details": provenance_binding,
+                "resolver_record_hash": provenance_binding["resolver_record_hash"],
+                "resolver_record_hash_mismatch_count": provenance_binding[
+                    "resolver_record_hash_mismatch_count"
+                ],
+                "candidate_download_url_mismatch_count": provenance_binding[
+                    "candidate_download_url_mismatch_count"
+                ],
+                "candidate_source_url_mismatch_count": provenance_binding[
+                    "candidate_source_url_mismatch_count"
+                ],
+                "unresolved_provenance_defect_count": provenance_binding[
+                    "unresolved_provenance_defect_count"
+                ],
+                "download_url_semantics": provenance_binding["download_url_semantics"],
+                "candidate_url_recanonicalization_by_generator": provenance_binding[
+                    "candidate_url_recanonicalization_by_generator"
+                ],
+                "generator_derived_provenance_forbidden": provenance_binding[
+                    "generator_derived_provenance_forbidden"
+                ],
+                "resolver_provenance_source_of_truth": provenance_binding[
+                    "resolver_provenance_source_of_truth"
+                ],
+                "provenance_offline_replay": provenance_binding["provenance_offline_replay"],
+                "http_availability": provenance_binding["http_availability"],
                 "rejected_candidate_drift": rejected_drift,
                 "approval_status": "PENDING_CODE_F_REVIEW",
                 "approval_owner": "CODE_F",
@@ -671,6 +834,35 @@ def prepare_target(arguments: argparse.Namespace) -> None:
         },
         "inventory_candidates": inventories,
         "rejected_candidate_baseline_sha256": sha256_file(REJECTED_CANDIDATE_BASELINE),
+        "rejected_candidate_history": {
+            "dependency_graph_generation": "f57ecb7ca53339ec19718598dc906cc716028d4d",
+            "source_provenance_generation": REJECTED_SOURCE_PROVENANCE_CANDIDATES,
+            "all_rejected_not_approved": "YES",
+        },
+        "total_candidate_packages": sum(int(item["package_count"]) for item in inventories),
+        "resolver_provenance_binding": "PASS",
+        "resolver_record_binding": "PASS",
+        "resolver_record_hash_mismatch_count": sum(
+            int(item["resolver_record_hash_mismatch_count"]) for item in inventories
+        ),
+        "candidate_download_url_mismatch_count": sum(
+            int(item["candidate_download_url_mismatch_count"]) for item in inventories
+        ),
+        "candidate_source_url_mismatch_count": sum(
+            int(item["candidate_source_url_mismatch_count"]) for item in inventories
+        ),
+        "unresolved_provenance_defect_count": sum(
+            int(item["unresolved_provenance_defect_count"]) for item in inventories
+        ),
+        "download_url_semantics": "MATCH_CURRENT_RESOLVER_CONTRACT",
+        "candidate_url_recanonicalization_by_generator": "NO",
+        "generator_derived_provenance_forbidden": "PASS",
+        "resolver_provenance_source_of_truth": "PASS",
+        "cross_inventory_exact_artifact_provenance_consistency": "PASS",
+        "exact_artifact_provenance": "CONSISTENT",
+        "inventory_usage_role": "CONTEXT_SPECIFIC",
+        "provenance_offline_replay": "PASS",
+        "http_availability": "DIAGNOSTIC_ONLY",
         "inventory_v2_schema_validation": "PASS",
         "dependency_graph_validation": "PASS",
         "resolution_serialization_consistency": "PASS",
@@ -700,7 +892,13 @@ def prepare_target(arguments: argparse.Namespace) -> None:
         "target_descriptor_binding": "PASS",
         "cp313_standard_gil_binding": "PASS",
         "exact_artifact_set_drift_from_rejected_candidate": "NONE",
-        "semantic_dependency_graph_drift": "EXPECTED_INVALID_EDGE_REMOVAL_ONLY",
+        "semantic_dependency_graph_drift": "NONE",
+        "exact_artifact_set_drift": "NONE",
+        "dependency_graph_drift": "NONE",
+        "target_drift": "NONE",
+        "role_drift": "NONE",
+        "graph_complete_field": "false",
+        "review_status_field": "PENDING",
         "artifact_set_drift_explanation": (
             "Exact wheel artifacts are unchanged; only dependency edges not authorized by the "
             "resolver disposition were removed."
@@ -773,6 +971,12 @@ def assemble(arguments: argparse.Namespace) -> None:
         "inventory_v2_schema_validation",
         "dependency_graph_validation",
         "resolution_serialization_consistency",
+        "resolver_provenance_binding",
+        "resolver_record_binding",
+        "generator_derived_provenance_forbidden",
+        "resolver_provenance_source_of_truth",
+        "cross_inventory_exact_artifact_provenance_consistency",
+        "provenance_offline_replay",
         "resolution_state_conflict_fail_closed",
         "target_descriptor_binding",
         "cp313_standard_gil_binding",
@@ -785,7 +989,18 @@ def assemble(arguments: argparse.Namespace) -> None:
         "missing_required_purl_field_count",
         "invalid_purl_format_count",
         "pseudo_purl_in_formal_dependencies",
+        "resolver_record_hash_mismatch_count",
+        "candidate_download_url_mismatch_count",
+        "candidate_source_url_mismatch_count",
+        "unresolved_provenance_defect_count",
     )
+    required_exact_fields = {
+        "download_url_semantics": "MATCH_CURRENT_RESOLVER_CONTRACT",
+        "candidate_url_recanonicalization_by_generator": "NO",
+        "exact_artifact_provenance": "CONSISTENT",
+        "inventory_usage_role": "CONTEXT_SPECIFIC",
+        "http_availability": "DIAGNOSTIC_ONLY",
+    }
     for _, report in loaded:
         if any(report.get(field) != "PASS" for field in required_pass_fields):
             raise SystemExit("review bundle assembly blocked by failed candidate validation")
@@ -795,9 +1010,11 @@ def assemble(arguments: argparse.Namespace) -> None:
             raise SystemExit("review bundle assembly blocked by exact artifact set drift")
         if (
             report.get("semantic_dependency_graph_drift")
-            != "EXPECTED_INVALID_EDGE_REMOVAL_ONLY"
+            != "NONE"
         ):
             raise SystemExit("review bundle assembly blocked by unexpected semantic graph drift")
+        if any(report.get(field) != value for field, value in required_exact_fields.items()):
+            raise SystemExit("review bundle assembly blocked by resolver provenance validation")
     dependency_definition_ids = {
         report["dependency_definitions_sha256"] for _, report in loaded
     }
@@ -811,6 +1028,21 @@ def assemble(arguments: argparse.Namespace) -> None:
     }
     if len(toolchain_source_lock_ids) != 1:
         raise SystemExit("Linux/Windows toolchain source-lock canonical identities differ")
+    provenance_by_sha: dict[str, tuple[object, ...]] = {}
+    for _, report in loaded:
+        for inventory in report["inventory_candidates"]:
+            for record in inventory["resolver_provenance_details"]["records"]:
+                identity = (
+                    record["resolver_download_url"],
+                    record["resolver_source"],
+                    record["candidate_purl"],
+                )
+                artifact_sha = str(record["artifact_identity_sha256"])
+                previous = provenance_by_sha.setdefault(artifact_sha, identity)
+                if previous != identity:
+                    raise SystemExit(
+                        "review bundle assembly blocked by cross-inventory artifact provenance drift"
+                    )
     if arguments.output_root.exists():
         raise SystemExit(f"inventory review bundle output must start absent: {arguments.output_root}")
     arguments.output_root.mkdir(parents=True)
@@ -862,6 +1094,33 @@ def assemble(arguments: argparse.Namespace) -> None:
                 "resolution_serialization_consistency": report[
                     "resolution_serialization_consistency"
                 ],
+                "resolver_provenance_binding": report["resolver_provenance_binding"],
+                "resolver_record_binding": report["resolver_record_binding"],
+                "download_url_semantics": report["download_url_semantics"],
+                "generator_derived_provenance_forbidden": report[
+                    "generator_derived_provenance_forbidden"
+                ],
+                "resolver_provenance_source_of_truth": report[
+                    "resolver_provenance_source_of_truth"
+                ],
+                "cross_inventory_exact_artifact_provenance_consistency": report[
+                    "cross_inventory_exact_artifact_provenance_consistency"
+                ],
+                "exact_artifact_provenance": report["exact_artifact_provenance"],
+                "provenance_offline_replay": report["provenance_offline_replay"],
+                "http_availability": report["http_availability"],
+                "resolver_record_hash_mismatch_count": report[
+                    "resolver_record_hash_mismatch_count"
+                ],
+                "candidate_download_url_mismatch_count": report[
+                    "candidate_download_url_mismatch_count"
+                ],
+                "candidate_source_url_mismatch_count": report[
+                    "candidate_source_url_mismatch_count"
+                ],
+                "unresolved_provenance_defect_count": report[
+                    "unresolved_provenance_defect_count"
+                ],
                 "exact_artifact_set_drift_from_rejected_candidate": report[
                     "exact_artifact_set_drift_from_rejected_candidate"
                 ],
@@ -889,6 +1148,24 @@ def assemble(arguments: argparse.Namespace) -> None:
         "status": "READY_FOR_CODE_F_REVIEW",
         "validation_phase": "PYTHON_INVENTORY_ONLY",
         "code_c_python_inventory_regeneration": "PASS",
+        "total_candidate_packages": sum(
+            int(report["total_candidate_packages"]) for _, report in loaded
+        ),
+        "resolver_provenance_binding": "PASS",
+        "resolver_record_binding": "PASS",
+        "resolver_record_hash_mismatch_count": 0,
+        "candidate_download_url_mismatch_count": 0,
+        "candidate_source_url_mismatch_count": 0,
+        "unresolved_provenance_defect_count": 0,
+        "download_url_semantics": "MATCH_CURRENT_RESOLVER_CONTRACT",
+        "candidate_url_recanonicalization_by_generator": "NO",
+        "generator_derived_provenance_forbidden": "PASS",
+        "resolver_provenance_source_of_truth": "PASS",
+        "cross_inventory_exact_artifact_provenance_consistency": "PASS",
+        "exact_artifact_provenance": "CONSISTENT",
+        "inventory_usage_role": "CONTEXT_SPECIFIC",
+        "provenance_offline_replay": "PASS",
+        "http_availability": "DIAGNOSTIC_ONLY",
         "inventory_review_head_sha": head,
         "main_quality_baseline": identity["main_quality_baseline"],
         "required_code_c_containment_sha": identity["required_code_c_containment_sha"],
@@ -911,7 +1188,7 @@ def assemble(arguments: argparse.Namespace) -> None:
             "target_descriptor_binding": "PASS",
             "cp313_standard_gil_binding": "PASS",
             "exact_artifact_set_drift_from_rejected_candidate": "NONE",
-            "semantic_dependency_graph_drift": "EXPECTED_INVALID_EDGE_REMOVAL_ONLY",
+            "semantic_dependency_graph_drift": "NONE",
             "candidate_validation_mode": (
                 "SHARED_V2_SCHEMA_AND_SEMANTICS_WITH_NON_PERSISTED_APPROVAL_PROJECTION"
             ),

@@ -38,6 +38,22 @@ def target_report(target: str) -> dict[str, object]:
         "dependency_graph_set_sha256": ("5" if target == "linux" else "6") * 64,
         "dependency_definitions_sha256": "e" * 64,
         "inventory_drift": "PRESENT",
+        "total_candidate_packages": 2,
+        "resolver_provenance_binding": "PASS",
+        "resolver_record_binding": "PASS",
+        "resolver_record_hash_mismatch_count": 0,
+        "candidate_download_url_mismatch_count": 0,
+        "candidate_source_url_mismatch_count": 0,
+        "unresolved_provenance_defect_count": 0,
+        "download_url_semantics": "MATCH_CURRENT_RESOLVER_CONTRACT",
+        "candidate_url_recanonicalization_by_generator": "NO",
+        "generator_derived_provenance_forbidden": "PASS",
+        "resolver_provenance_source_of_truth": "PASS",
+        "cross_inventory_exact_artifact_provenance_consistency": "PASS",
+        "exact_artifact_provenance": "CONSISTENT",
+        "inventory_usage_role": "CONTEXT_SPECIFIC",
+        "provenance_offline_replay": "PASS",
+        "http_availability": "DIAGNOSTIC_ONLY",
         "inventory_v2_schema_validation": "PASS",
         "dependency_graph_validation": "PASS",
         "resolution_serialization_consistency": "PASS",
@@ -52,7 +68,7 @@ def target_report(target: str) -> dict[str, object]:
         "target_descriptor_binding": "PASS",
         "cp313_standard_gil_binding": "PASS",
         "exact_artifact_set_drift_from_rejected_candidate": "NONE",
-        "semantic_dependency_graph_drift": "EXPECTED_INVALID_EDGE_REMOVAL_ONLY",
+        "semantic_dependency_graph_drift": "NONE",
         "toolchain_evidence": "PRESERVED",
         "toolchain_artifact_identity": "UNCHANGED",
         "inventory_candidates": [
@@ -61,6 +77,16 @@ def target_report(target: str) -> dict[str, object]:
                 "candidate_sha256": character * 64,
                 "role": role,
                 "dependency_graph_identity_sha256": graph_character * 64,
+                "resolver_provenance_details": {
+                    "records": [
+                        {
+                            "artifact_identity_sha256": "a" * 64,
+                            "resolver_download_url": "https://files.example.test/fixture.whl",
+                            "resolver_source": "https://example.test/fixture/1.0.0/",
+                            "candidate_purl": "pkg:pypi/fixture@1.0.0",
+                        }
+                    ]
+                },
             }
             for scope, role, character, graph_character in (
                 ("runtime", "RUNTIME", "7", "8"),
@@ -149,6 +175,53 @@ def main() -> None:
         raise SystemExit("not-applicable resolution evidence was serialized incorrectly")
     assertions += 1
     validate_resolution_serialization(serialized, resolution)
+    assertions += 1
+
+    provenance_resolution = {
+        "approved_index": "https://pypi.org/simple",
+        "packages": [
+            {
+                "name": "provenance-fixture",
+                "version": "3.0.0",
+                "dependencies": [],
+                "dependency_declarations": [],
+                "provenance": {
+                    "filename": "provenance_fixture-3.0.0-py3-none-any.whl",
+                    "sha256": "a" * 64,
+                    "download_url": "https://files.pythonhosted.org/packages/aa/bb/provenance_fixture-3.0.0-py3-none-any.whl",
+                    "source": "https://pypi.org/project/provenance-fixture/3.0.0/",
+                    "source_index": "https://pypi.org/simple",
+                },
+            }
+        ],
+    }
+    provenance_candidate = {
+        "packages": [
+            {
+                "package_name": "provenance-fixture",
+                "version": "3.0.0",
+                "filename": "provenance_fixture-3.0.0-py3-none-any.whl",
+                "sha256": "a" * 64,
+                "source": "https://pypi.org/project/provenance-fixture/",
+                "source_index": "https://pypi.org/simple",
+                "provenance": {
+                    "download_url": "https://files.pythonhosted.org/packages/provenance_fixture-3.0.0-py3-none-any.whl"
+                },
+                "dependencies": [],
+                "dependency_declarations": [],
+            }
+        ]
+    }
+    bound_provenance = serialize_candidate_from_resolution(
+        provenance_candidate, provenance_resolution
+    )
+    bound_package = bound_provenance["packages"][0]
+    if (
+        bound_package["source"] != "https://pypi.org/project/provenance-fixture/3.0.0/"
+        or bound_package["provenance"]["download_url"]
+        != provenance_resolution["packages"][0]["provenance"]["download_url"]
+    ):
+        raise SystemExit("candidate provenance was not copied from resolver evidence")
     assertions += 1
 
     for pseudo_value in (

@@ -18,7 +18,7 @@ describe('Code C Python Inventory-only review preparation', () => {
     expect(result.status, result.stderr || result.stdout).toBe(0);
     expect(JSON.parse(result.stdout.trim())).toEqual({
       ACTUAL_TEST_ASSERTIONS_EXECUTED: 'YES',
-      ASSERTION_COUNT: 20,
+      ASSERTION_COUNT: 21,
       BATCH_CONTAINER_ONLY: 'PASS',
       CROSS_HEAD_MISMATCH_FAIL_CLOSED: 'PASS',
       FOUR_ROLE_SCOPED_APPROVALS: 'PASS',
