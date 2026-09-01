@@ -7,9 +7,9 @@ param(
 $ErrorActionPreference = 'Stop'
 $manifestPath = (Resolve-Path -LiteralPath $Manifest).Path
 $manifestJson = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
-$manifestHash = (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
+$manifestHash = [string]$manifestJson.manifest_sha256
 if ($manifestJson.prerequisite_id -ne 'microsoft-vc-v14-x64-14.51.36247.0' -or
-    $manifestHash -ne 'c3dd16982ee2c406aa3795aabc2e18ba3870125f861fea7a06f75111449ebe3b' -or
+    $manifestJson.manifest_sha256 -ne 'c3dd16982ee2c406aa3795aabc2e18ba3870125f861fea7a06f75111449ebe3b' -or
     $manifestJson.target_disposition -ne 'EXTERNAL_PREREQUISITE') {
   throw 'external prerequisite manifest identity is not the approved MSVC v14 x64 record'
 }

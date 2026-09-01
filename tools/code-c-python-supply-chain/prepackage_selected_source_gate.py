@@ -49,7 +49,7 @@ def validate_selected_sources(
             external_manifest = json.loads(external_manifest_path.read_text(encoding="utf-8"))
             if (
                 external_manifest.get("prerequisite_id") != "microsoft-vc-v14-x64-14.51.36247.0"
-                or sha256_file(external_manifest_path)
+            or canonical_sha256(external_manifest)
                 != "c3dd16982ee2c406aa3795aabc2e18ba3870125f861fea7a06f75111449ebe3b"
                 or external_manifest.get("target_disposition") != "EXTERNAL_PREREQUISITE"
             ):
@@ -138,7 +138,7 @@ def validate_selected_sources(
                         "source_artifact_identity": None,
                         "external_prerequisite": {
                             "prerequisite_id": external_manifest["prerequisite_id"],
-                            "manifest_sha256": sha256_file(external_manifest_path),
+                            "manifest_sha256": canonical_sha256(external_manifest),
                             "provider_id": external_manifest["provider"]["provider_id"],
                             "capability": runtime_name,
                             "materialized": False,

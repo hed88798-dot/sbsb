@@ -3,7 +3,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import sys
 from pathlib import Path
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPOSITORY_ROOT / "tools" / "code-c-python-supply-chain"))
+
+from canonical_evidence import canonical_sha256
 
 
 REQUIRED = {
@@ -35,7 +41,7 @@ def main() -> None:
     arguments = parser.parse_args()
     manifest = json.loads(arguments.manifest.read_text(encoding="utf-8"))
     attestation = json.loads(arguments.attestation.read_text(encoding="utf-8"))
-    if arguments.manifest.read_bytes() and file_sha(arguments.manifest) != MANIFEST_SHA:
+    if canonical_sha256(manifest) != MANIFEST_SHA:
         raise SystemExit("external prerequisite manifest hash mismatch")
     if manifest.get("prerequisite_id") != MANIFEST_ID:
         raise SystemExit("external prerequisite manifest ID mismatch")
