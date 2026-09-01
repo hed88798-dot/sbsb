@@ -327,6 +327,9 @@ function loadCoverageRevalidation(coverageRoot, artifactsByHash, fixtureNames = 
     const artifact = JSON.parse(readFileSync(artifactPath, 'utf8'));
     const members = JSON.parse(readFileSync(membersPath, 'utf8'));
     const records = JSON.parse(readFileSync(coveragePath, 'utf8'));
+    const coverageRecordId =
+      manifest.coverage_record_id ?? manifest.fixture_id ?? records[0]?.coverage_id ?? null;
+    if (!coverageRecordId) throw new Error(`${name}: coverage record id is not declared`);
     const bindingPath = resolve(fixtureRoot, 'upstream-binding.json');
     const usageBindingPath = resolve(fixtureRoot, 'usage-binding.json');
     const upstreamBinding = existsSync(bindingPath)
@@ -364,7 +367,8 @@ function loadCoverageRevalidation(coverageRoot, artifactsByHash, fixtureNames = 
         }
       : null;
     return {
-      fixture_id: manifest.fixture_id,
+      fixture_id: manifest.fixture_id ?? null,
+      coverage_record_id: coverageRecordId,
       fixture_name: name,
       fixture_scope: manifest.fixture_scope,
       coverage_record_origin: coverageRecordOrigin,
@@ -409,7 +413,7 @@ function loadCoverageRevalidation(coverageRoot, artifactsByHash, fixtureNames = 
 
 function coverageRequiredReviewRecord({ artifact, uses, coverage }) {
   const coverageIdentity = licenseIdentityHash({
-    fixture_id: coverage.fixture_id,
+    coverage_record_id: coverage.coverage_record_id,
     coverage_record_sha256: coverage.coverage_record_sha256,
     upstream_binding_id: coverage.upstream_binding_id,
     upstream_binding_record_sha256: coverage.upstream_binding_record_sha256,
@@ -443,7 +447,9 @@ function coverageRequiredReviewRecord({ artifact, uses, coverage }) {
       'Whole-artifact License Coverage v1 and Upstream Release Binding v1 account for the exact artifact; commercial-policy approval remains pending.',
     suggestion_status: 'MACHINE_SUGGESTION_NOT_APPROVAL',
     evidence_references: [
-      `license-coverage-fixture:${coverage.fixture_id}`,
+      `license-coverage-${
+        coverage.coverage_record_origin === 'PRODUCTION_EVIDENCE' ? 'production' : 'fixture'
+      }:${coverage.coverage_record_id}`,
       ...coverage.coverage_record_sha256.map((sha256) => `coverage-record:${sha256}`),
       ...(coverage.upstream_binding_id ? [`upstream-binding:${coverage.upstream_binding_id}`] : []),
     ],
