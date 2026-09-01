@@ -1155,6 +1155,7 @@ def assemble(arguments: argparse.Namespace) -> None:
         "dependency_graph_validation": "PASS",
         "resolution_serialization_consistency": "PASS",
         "invalid_review_required_dependency_entries": 0,
+        "invalid_pseudo_purl_count": 0,
         "missing_required_purl_fields": 0,
         "missing_required_purl_field_count": 0,
         "pseudo_purl_in_formal_dependencies": 0,
@@ -1182,9 +1183,18 @@ def assemble(arguments: argparse.Namespace) -> None:
         "semantic_dependency_graph_drift": "NONE",
         "target_drift": "NONE",
         "role_drift": "NONE",
+        "target_descriptor_binding": "PASS",
+        "target_descriptor_drift": "NONE",
+        "role_binding_drift": "NONE",
+        "graph_complete": False,
+        "review_status": "PENDING",
         "graph_complete_field": "false",
         "review_status_field": "PENDING",
         "toolchain_evidence": "PRESERVED",
+        "toolchain_artifact_identity": "UNCHANGED",
+        "toolchain_evidence_change_reason": (
+            "Exact CPython, pip, PyInstaller, bootloader, target, and role bindings are unchanged."
+        ),
         "toolchain_approval": "PENDING_CODE_F",
         "inventory_review_head_sha": head,
         "main_quality_baseline": identity["main_quality_baseline"],
@@ -1236,6 +1246,7 @@ def assemble(arguments: argparse.Namespace) -> None:
         "python_inventory_gate": "BLOCKED_PENDING_CODE_F_REVIEW",
         "approval_reconciliation": "NOT_REQUIRED_YET",
         "known_approval_provenance_qicr": "YES",
+        "qicr_required": "YES",
         "qicr_status": "KNOWN_PENDING_AFTER_VALID_CANDIDATE",
         "qicr_implemented_by_code_c": "NO",
         "cve_stage_a_reuse": "REBIND_REQUIRED",
@@ -1255,9 +1266,22 @@ def assemble(arguments: argparse.Namespace) -> None:
             "final_bundle_budget_bytes": 12 * 1024 * 1024,
             "declared_total_run_budget_bytes": 20 * 1024 * 1024,
         },
+        "actions_artifact_containment": {
+            "status": "PASS",
+            "large_candidate_actions_upload": "FORBIDDEN",
+            "max_single_actions_artifact_bytes": 20 * 1024 * 1024,
+            "declared_total_run_budget_bytes": 20 * 1024 * 1024,
+            "candidate_worker_binary": "NOT_GENERATED",
+            "pyinstaller_workpath": "NOT_GENERATED",
+            "python_environment_upload": "FORBIDDEN",
+        },
         "candidate_worker_generated": "NO",
         "pyinstaller_workpath_generated": "NO",
         "large_candidate_actions_upload": "FORBIDDEN",
+        "candidate_inventory_sha256s": {
+            f"{request['target']}/{request['role']}": request["inventory_sha256"]
+            for request in inventory_requests
+        },
         "staleness_triggers": [
             "target descriptor changes",
             "CPython artifact changes",
