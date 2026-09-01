@@ -1,0 +1,32 @@
+{
+  "schema_version": "1",
+  "binding_id": "sentencepiece-linux-release-v0.2.1",
+  "covered_subject": {
+    "package": "sentencepiece",
+    "version": "0.2.1",
+    "filename": "sentencepiece-0.2.1-cp313-cp313-manylinux_2_28_x86_64.whl",
+    "sha256": "c7f0fd2f2693309e6628aeeb2e2faf6edd221134dfccac3308ca0de01f8dab47",
+    "artifact_type": "PYTHON_WHEEL"
+  },
+  "upstream_release": {
+    "repository": "https://github.com/google/sentencepiece",
+    "release_tag": "v0.2.1",
+    "release_commit": "31646a467d2051eb904e0b45de3a73e91fe1c1e3",
+    "commit_signature": "VERIFIED",
+    "release_asset_filename": "sentencepiece-0.2.1-cp313-cp313-manylinux_2_28_x86_64.whl",
+    "release_asset_sha256": "c7f0fd2f2693309e6628aeeb2e2faf6edd221134dfccac3308ca0de01f8dab47",
+    "release_membership": "PASS",
+    "release_membership_evidence_sha256": "7ab32aab368ea0164c7577b8196cca0463f2d38d3acd8805d15845beb2a2af94",
+    "source_archive_sha256": "8138cec27c2f2282f4a34d9a016e3374cd40e5c6e9cb335063db66a0a3b71fad",
+    "license_path": "sentencepiece-0.2.1/sentencepiece/LICENSE",
+    "license_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  "binding_method": "BUILD_PROVENANCE_ATTESTATION",
+  "binding_assurance": "BUILD_PROVENANCE_VERIFIED",
+  "attestation": {
+    "integrity": "PASS",
+    "subject_membership": "PRESENT",
+    "provenance_sha256": "be40ea1220e99c8a853738a35db7bd779d6d5cbaca792a97b8734aaadb3ac9a8"
+  },
+  "binding_record_sha256": "d26f9df42d558025574620c02a908a9e09a87bdbbaca117edc03264f621c4688"
+}

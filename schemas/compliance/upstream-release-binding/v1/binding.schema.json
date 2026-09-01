@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/upstream-release-binding/v1/binding.schema.json",
+  "title": "Upstream Release Binding v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "binding_id",
+    "covered_subject",
+    "upstream_release",
+    "binding_method",
+    "binding_assurance",
+    "attestation",
+    "binding_record_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "binding_id": { "$ref": "#/$defs/nonEmpty" },
+    "covered_subject": { "$ref": "#/$defs/artifact" },
+    "upstream_release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "release_tag",
+        "release_commit",
+        "commit_signature",
+        "release_asset_filename",
+        "release_asset_sha256",
+        "release_membership",
+        "release_membership_evidence_sha256",
+        "source_archive_sha256",
+        "license_path",
+        "license_sha256"
+      ],
+      "properties": {
+        "repository": { "type": "string", "format": "uri" },
+        "release_tag": { "$ref": "#/$defs/nonEmpty" },
+        "release_commit": { "$ref": "#/$defs/sha256_or_commit" },
+        "commit_signature": { "enum": ["VERIFIED", "UNVERIFIED", "MISSING"] },
+        "release_asset_filename": { "$ref": "#/$defs/nonEmpty" },
+        "release_asset_sha256": { "$ref": "#/$defs/sha256" },
+        "release_membership": { "enum": ["PASS", "FAIL"] },
+        "release_membership_evidence_sha256": { "$ref": "#/$defs/sha256" },
+        "source_archive_sha256": { "$ref": "#/$defs/sha256" },
+        "license_path": { "$ref": "#/$defs/relativePath" },
+        "license_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "binding_method": {
+      "enum": [
+        "BUILD_PROVENANCE_ATTESTATION",
+        "OFFICIAL_RELEASE_ASSET_BYTE_IDENTITY",
+        "OTHER_APPROVED_METHOD"
+      ]
+    },
+    "binding_assurance": {
+      "enum": ["BUILD_PROVENANCE_VERIFIED", "OFFICIAL_PUBLICATION_EXACT_BYTES", "OTHER_APPROVED"]
+    },
+    "attestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["integrity", "subject_membership", "provenance_sha256"],
+      "properties": {
+        "integrity": { "enum": ["PASS", "FAIL", "NOT_APPLICABLE"] },
+        "subject_membership": { "enum": ["PRESENT", "ABSENT", "NOT_APPLICABLE"] },
+        "provenance_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "binding_record_sha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["package", "version", "filename", "sha256", "artifact_type"],
+      "properties": {
+        "package": { "$ref": "#/$defs/nonEmpty" },
+        "version": { "$ref": "#/$defs/nonEmpty" },
+        "filename": { "$ref": "#/$defs/nonEmpty" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "artifact_type": { "const": "PYTHON_WHEEL" }
+      }
+    },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "sha256_or_commit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40,64}$"
+    },
+    "nonEmpty": { "type": "string", "minLength": 1 },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    }
+  }
+}

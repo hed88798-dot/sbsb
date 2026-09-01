@@ -1,0 +1,45 @@
+[
+  {
+    "schema_version": "1",
+    "coverage_id": "sentencepiece-windows-upstream-license-whole-artifact",
+    "covered_subject": {
+      "package": "sentencepiece",
+      "version": "0.2.1",
+      "filename": "sentencepiece-0.2.1-cp313-cp313-win_amd64.whl",
+      "sha256": "10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b",
+      "artifact_type": "PYTHON_WHEEL"
+    },
+    "evidence_source": {
+      "source_type": "UPSTREAM_RELEASE_LICENSE",
+      "evidence_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "upstream_binding_id": "sentencepiece-windows-release-v0.2.1",
+      "source_archive_sha256": "8138cec27c2f2282f4a34d9a016e3374cd40e5c6e9cb335063db66a0a3b71fad",
+      "license_path": "sentencepiece-0.2.1/sentencepiece/LICENSE",
+      "license_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    "coverage_selector": {
+      "semantics_version": "1",
+      "selector_type": "ENTIRE_ARTIFACT",
+      "include": ["*"],
+      "exclude": [],
+      "explicit_member_paths": []
+    },
+    "license_assertion": {
+      "relationship": "WHOLE_ARTIFACT",
+      "spdx_expression": "Apache-2.0"
+    },
+    "coverage_assertion": {
+      "assertion_type": "WHOLE_ARTIFACT_COVERAGE_ASSERTION",
+      "member_manifest_sha256": "152bcfd564a49f34343b0e2a1650019a4c05d6aeb833f021518625bdc219f3a7",
+      "member_count": 4,
+      "unaccounted_license_relevant_member_count": 0
+    },
+    "review_provenance": {
+      "review_status": "REQUIRES_REVIEW",
+      "authority": "code-f-quality-release-compliance",
+      "review_reference": "QICR-sentencepiece-windows-v0.2.1"
+    },
+    "coverage_decision": "COVERS_ENTIRE_ARTIFACT",
+    "coverage_record_sha256": "eca543d314de2e7680bd839d2996349937b72bfab5db916dcc9e008a4cca872f"
+  }
+]

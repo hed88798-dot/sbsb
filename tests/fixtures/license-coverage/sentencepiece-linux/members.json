@@ -1,0 +1,26 @@
+[
+  {
+    "path": "sentencepiece-0.2.1/sentencepiece/__init__.py",
+    "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "usage": "DISTRIBUTED",
+    "distribution_role": "RUNTIME"
+  },
+  {
+    "path": "sentencepiece-0.2.1/sentencepiece/_sentencepiece.so",
+    "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+    "usage": "DISTRIBUTED",
+    "distribution_role": "RUNTIME"
+  },
+  {
+    "path": "sentencepiece-0.2.1/sentencepiece/LICENSE",
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "usage": "LICENSE_EVIDENCE",
+    "distribution_role": "RUNTIME"
+  },
+  {
+    "path": "sentencepiece-0.2.1/sentencepiece-0.2.1.dist-info/METADATA",
+    "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+    "usage": "DISTRIBUTED",
+    "distribution_role": "RUNTIME"
+  }
+]

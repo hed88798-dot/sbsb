@@ -1,0 +1,6 @@
+{
+  "fixture_scope": "REGRESSION_ONLY_NOT_RELEASE_APPROVAL",
+  "fixture_id": "pyinstaller-hooks-contrib-2026.7-component-path-coverage",
+  "artifact_role": "PYTHON_BUILD_DEPENDENCY",
+  "notes": "Synthetic member manifest preserves path-level license relationship without committing a wheel binary."
+}
