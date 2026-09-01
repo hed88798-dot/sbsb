@@ -79,6 +79,31 @@ export function deriveLicenseMachineSuggestion(inspected) {
         rationale: 'A deterministic generic alias normalized the exact legacy metadata value.',
       };
     }
+    const lower = legacy.toLowerCase();
+    if (
+      lower.includes('redistribution and use in source and binary forms') &&
+      lower.includes('neither the name') &&
+      lower.includes('all rights reserved')
+    ) {
+      return {
+        expression: 'BSD-3-Clause',
+        source: 'STANDARD_LICENSE_TEXT_SIGNATURE',
+        rationale:
+          'The exact artifact METADATA contains the standard three-clause BSD grant and non-endorsement clause.',
+      };
+    }
+    if (
+      lower.includes('gplv2-or-later') &&
+      lower.includes('special exception') &&
+      lower.includes('pyinstaller')
+    ) {
+      return {
+        expression: 'GPL-2.0-or-later WITH Bootloader-exception',
+        source: 'LEGACY_METADATA_EXCEPTION_SIGNATURE',
+        rationale:
+          'The exact artifact METADATA describes GPL v2-or-later plus the named bootloader distribution exception.',
+      };
+    }
   }
 
   const signatures = [
