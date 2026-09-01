@@ -1,0 +1,6 @@
+{
+  "artifact_role": "PYTHON_BUILD_DEPENDENCY",
+  "distribution_role": "BUILD_ONLY_USE",
+  "distributed_in_final_worker": false,
+  "gpl_component_used_in_current_build": true
+}

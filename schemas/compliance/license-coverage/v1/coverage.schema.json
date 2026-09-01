@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/license-coverage/v1/coverage.schema.json",
+  "title": "Artifact License Coverage v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "coverage_id",
+    "covered_subject",
+    "evidence_source",
+    "coverage_selector",
+    "license_assertion",
+    "coverage_assertion",
+    "review_provenance",
+    "coverage_decision",
+    "coverage_record_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "coverage_id": { "$ref": "#/$defs/nonEmpty" },
+    "covered_subject": { "$ref": "#/$defs/artifact" },
+    "evidence_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_type", "evidence_sha256"],
+      "properties": {
+        "source_type": {
+          "enum": [
+            "ARTIFACT_LOCAL_LICENSE_FILE",
+            "UPSTREAM_RELEASE_LICENSE",
+            "UPSTREAM_RELEASE_MEMBERSHIP",
+            "OTHER_APPROVED_SOURCE"
+          ]
+        },
+        "evidence_sha256": { "$ref": "#/$defs/sha256" },
+        "upstream_binding_id": { "type": ["string", "null"], "minLength": 1 },
+        "source_archive_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "license_path": {
+          "anyOf": [{ "$ref": "#/$defs/relativePath" }, { "type": "null" }]
+        },
+        "license_sha256": {
+          "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
+        }
+      }
+    },
+    "coverage_selector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "semantics_version",
+        "selector_type",
+        "include",
+        "exclude",
+        "explicit_member_paths"
+      ],
+      "properties": {
+        "semantics_version": { "const": "1" },
+        "selector_type": {
+          "enum": [
+            "ENTIRE_ARTIFACT",
+            "EXACT_PATH",
+            "PATH_PREFIX",
+            "VERSIONED_GLOB",
+            "EXPLICIT_MEMBER_LIST"
+          ]
+        },
+        "include": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/relativePath" }
+        },
+        "exclude": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relativePath" }
+        },
+        "explicit_member_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relativePath" }
+        }
+      }
+    },
+    "license_assertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relationship", "spdx_expression"],
+      "properties": {
+        "relationship": { "enum": ["WHOLE_ARTIFACT", "PER_COMPONENT"] },
+        "spdx_expression": { "$ref": "#/$defs/nonEmpty" }
+      }
+    },
+    "coverage_assertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assertion_type",
+        "member_manifest_sha256",
+        "member_count",
+        "unaccounted_license_relevant_member_count"
+      ],
+      "properties": {
+        "assertion_type": {
+          "enum": ["WHOLE_ARTIFACT_COVERAGE_ASSERTION", "COMPONENT_PATH_COVERAGE_ASSERTION"]
+        },
+        "member_manifest_sha256": { "$ref": "#/$defs/sha256" },
+        "member_count": { "type": "integer", "minimum": 0 },
+        "unaccounted_license_relevant_member_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "review_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["review_status", "authority", "review_reference"],
+      "properties": {
+        "review_status": { "enum": ["REGRESSION_APPROVED", "REQUIRES_REVIEW", "BLOCKED"] },
+        "authority": { "$ref": "#/$defs/nonEmpty" },
+        "review_reference": { "$ref": "#/$defs/nonEmpty" }
+      }
+    },
+    "coverage_decision": {
+      "enum": ["COVERS_ENTIRE_ARTIFACT", "COVERS_COMPONENT_SET", "DOES_NOT_COVER", "INSUFFICIENT"]
+    },
+    "coverage_record_sha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["package", "version", "filename", "sha256", "artifact_type"],
+      "properties": {
+        "package": { "$ref": "#/$defs/nonEmpty" },
+        "version": { "$ref": "#/$defs/nonEmpty" },
+        "filename": { "$ref": "#/$defs/nonEmpty" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "artifact_type": { "const": "PYTHON_WHEEL" }
+      }
+    },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "nonEmpty": { "type": "string", "minLength": 1 },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    }
+  }
+}
