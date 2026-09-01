@@ -62,6 +62,12 @@ yet contain an approved attestation identifying that entitlement and commercial 
 Therefore bootstrap distribution approval and stable release remain blocked until Legal Review records
 that evidence. No System32 or CPython DLL acquires a distribution role through this decision.
 
+Runtime capability approval and bootstrap redistribution approval are independent gates. The external
+architecture and Code C worker validation against a compatible runtime that pre-existed the validation
+action are approved. Code C may not download, bundle, install, copy, or deliver the frozen bootstrap.
+The scoped decision and required candidate attestation are recorded in
+`compliance/runtime-prerequisites/msvc-v14-x64/VALIDATION_DISPOSITION.md`.
+
 ## Consequences
 
 - QICR is required and owned by Code F.

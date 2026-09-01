@@ -72,6 +72,8 @@ P0 包括 Provider Key 泄漏、产品错绑、DB/用户文件破坏、任意代
 
 External runtime 的公开可下载状态不是再分发许可。缺少适用产品许可、分发主体或授权证明时，
 prerequisite manifest 可以通过结构验证，但 `--require-approved` 必须失败并阻止 beta/stable。
+Worker engineering validation 可以在预装兼容 Runtime 上继续，但必须证明该 Runtime 在验证动作前已存在，
+且业务分支未下载、携带或安装 bootstrap；该 scoped authorization 不改变 Installer/Release blocker。
 
 ## v0.1 gate
 
