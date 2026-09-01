@@ -1,0 +1,14 @@
+{
+  "fixture_scope": "REGRESSION_ONLY_NOT_RELEASE_APPROVAL",
+  "fixture_id": "sentencepiece-windows-v0.2.1-license-coverage",
+  "artifact_role": "PYTHON_RUNTIME_ARTIFACT",
+  "notes": "Synthetic member manifest preserves exact evidence identities without committing a wheel binary.",
+  "expected_upstream_release": {
+    "repository": "https://github.com/google/sentencepiece",
+    "release_tag": "v0.2.1",
+    "release_commit": "31646a467d2051eb904e0b45de3a73e91fe1c1e3",
+    "release_asset_filename": "sentencepiece-0.2.1-cp313-cp313-win_amd64.whl",
+    "release_asset_sha256": "10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b",
+    "release_membership": "PASS"
+  }
+}

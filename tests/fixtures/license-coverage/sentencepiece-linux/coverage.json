@@ -1,0 +1,45 @@
+[
+  {
+    "schema_version": "1",
+    "coverage_id": "sentencepiece-linux-upstream-license-whole-artifact",
+    "covered_subject": {
+      "package": "sentencepiece",
+      "version": "0.2.1",
+      "filename": "sentencepiece-0.2.1-cp313-cp313-manylinux_2_28_x86_64.whl",
+      "sha256": "c7f0fd2f2693309e6628aeeb2e2faf6edd221134dfccac3308ca0de01f8dab47",
+      "artifact_type": "PYTHON_WHEEL"
+    },
+    "evidence_source": {
+      "source_type": "UPSTREAM_RELEASE_LICENSE",
+      "evidence_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "upstream_binding_id": "sentencepiece-linux-release-v0.2.1",
+      "source_archive_sha256": "8138cec27c2f2282f4a34d9a016e3374cd40e5c6e9cb335063db66a0a3b71fad",
+      "license_path": "sentencepiece-0.2.1/sentencepiece/LICENSE",
+      "license_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    "coverage_selector": {
+      "semantics_version": "1",
+      "selector_type": "ENTIRE_ARTIFACT",
+      "include": ["*"],
+      "exclude": [],
+      "explicit_member_paths": []
+    },
+    "license_assertion": {
+      "relationship": "WHOLE_ARTIFACT",
+      "spdx_expression": "Apache-2.0"
+    },
+    "coverage_assertion": {
+      "assertion_type": "WHOLE_ARTIFACT_COVERAGE_ASSERTION",
+      "member_manifest_sha256": "1f16dd1c8aff72f32874ed96d6c235d6e8561b22fdad77c19a0f01a66a949c22",
+      "member_count": 4,
+      "unaccounted_license_relevant_member_count": 0
+    },
+    "review_provenance": {
+      "review_status": "REQUIRES_REVIEW",
+      "authority": "code-f-quality-release-compliance",
+      "review_reference": "QICR-sentencepiece-linux-v0.2.1"
+    },
+    "coverage_decision": "COVERS_ENTIRE_ARTIFACT",
+    "coverage_record_sha256": "e41ea83ebd0e286345a1a654f46cb8ef7f548911638cd48f6d3ec21256bbb39f"
+  }
+]

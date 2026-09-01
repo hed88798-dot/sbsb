@@ -1,0 +1,88 @@
+[
+  {
+    "schema_version": "1",
+    "coverage_id": "pyinstaller-hooks-contrib-gpl-component",
+    "covered_subject": {
+      "package": "pyinstaller-hooks-contrib",
+      "version": "2026.7",
+      "filename": "pyinstaller_hooks_contrib-2026.7-py3-none-any.whl",
+      "sha256": "24257a04c7a5a7a034cf28e39dcee20fbeeb9f043076729480f2e1b69904408a",
+      "artifact_type": "PYTHON_WHEEL"
+    },
+    "evidence_source": {
+      "source_type": "ARTIFACT_LOCAL_LICENSE_FILE",
+      "evidence_sha256": "91d0baaff00773038e72c0a1fc9d5d2d38706b7a2b9c04f34296608f931b9cd0",
+      "upstream_binding_id": null,
+      "source_archive_sha256": null,
+      "license_path": null,
+      "license_sha256": null
+    },
+    "coverage_selector": {
+      "semantics_version": "1",
+      "selector_type": "VERSIONED_GLOB",
+      "include": ["_pyinstaller_hooks_contrib/**"],
+      "exclude": ["_pyinstaller_hooks_contrib/rthooks/**"],
+      "explicit_member_paths": []
+    },
+    "license_assertion": {
+      "relationship": "PER_COMPONENT",
+      "spdx_expression": "GPL-2.0-or-later"
+    },
+    "coverage_assertion": {
+      "assertion_type": "COMPONENT_PATH_COVERAGE_ASSERTION",
+      "member_manifest_sha256": "13fef783caf9912321a26909c4ca15bcb137f5b3002f6cdaeb2a4b80d6d3c190",
+      "member_count": 4,
+      "unaccounted_license_relevant_member_count": 0
+    },
+    "review_provenance": {
+      "review_status": "REGRESSION_APPROVED",
+      "authority": "code-f-quality-release-compliance",
+      "review_reference": "QICR-pyinstaller-hooks-contrib-2026.7-gpl"
+    },
+    "coverage_decision": "COVERS_COMPONENT_SET",
+    "coverage_record_sha256": "32e258ea64c193573aa2a7423f26d76511a5ad09cdef9c73ec671abab0f4c328"
+  },
+  {
+    "schema_version": "1",
+    "coverage_id": "pyinstaller-hooks-contrib-apache-rthooks-component",
+    "covered_subject": {
+      "package": "pyinstaller-hooks-contrib",
+      "version": "2026.7",
+      "filename": "pyinstaller_hooks_contrib-2026.7-py3-none-any.whl",
+      "sha256": "24257a04c7a5a7a034cf28e39dcee20fbeeb9f043076729480f2e1b69904408a",
+      "artifact_type": "PYTHON_WHEEL"
+    },
+    "evidence_source": {
+      "source_type": "ARTIFACT_LOCAL_LICENSE_FILE",
+      "evidence_sha256": "91d0baaff00773038e72c0a1fc9d5d2d38706b7a2b9c04f34296608f931b9cd0",
+      "upstream_binding_id": null,
+      "source_archive_sha256": null,
+      "license_path": null,
+      "license_sha256": null
+    },
+    "coverage_selector": {
+      "semantics_version": "1",
+      "selector_type": "VERSIONED_GLOB",
+      "include": ["_pyinstaller_hooks_contrib/rthooks/**"],
+      "exclude": [],
+      "explicit_member_paths": []
+    },
+    "license_assertion": {
+      "relationship": "PER_COMPONENT",
+      "spdx_expression": "Apache-2.0"
+    },
+    "coverage_assertion": {
+      "assertion_type": "COMPONENT_PATH_COVERAGE_ASSERTION",
+      "member_manifest_sha256": "13fef783caf9912321a26909c4ca15bcb137f5b3002f6cdaeb2a4b80d6d3c190",
+      "member_count": 4,
+      "unaccounted_license_relevant_member_count": 0
+    },
+    "review_provenance": {
+      "review_status": "REGRESSION_APPROVED",
+      "authority": "code-f-quality-release-compliance",
+      "review_reference": "QICR-pyinstaller-hooks-contrib-2026.7-apache"
+    },
+    "coverage_decision": "COVERS_COMPONENT_SET",
+    "coverage_record_sha256": "60e9c880331dc07d60ebd5fa76efe18ebe2f74fd7005df42164b5a28d48e1f81"
+  }
+]

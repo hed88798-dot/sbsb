@@ -1,0 +1,32 @@
+{
+  "schema_version": "1",
+  "binding_id": "sentencepiece-windows-release-v0.2.1",
+  "covered_subject": {
+    "package": "sentencepiece",
+    "version": "0.2.1",
+    "filename": "sentencepiece-0.2.1-cp313-cp313-win_amd64.whl",
+    "sha256": "10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b",
+    "artifact_type": "PYTHON_WHEEL"
+  },
+  "upstream_release": {
+    "repository": "https://github.com/google/sentencepiece",
+    "release_tag": "v0.2.1",
+    "release_commit": "31646a467d2051eb904e0b45de3a73e91fe1c1e3",
+    "commit_signature": "VERIFIED",
+    "release_asset_filename": "sentencepiece-0.2.1-cp313-cp313-win_amd64.whl",
+    "release_asset_sha256": "10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b",
+    "release_membership": "PASS",
+    "release_membership_evidence_sha256": "8187de6f0011ec82346a57500aa7c5dac769f520abeafbee98738571a8db04b2",
+    "source_archive_sha256": "8138cec27c2f2282f4a34d9a016e3374cd40e5c6e9cb335063db66a0a3b71fad",
+    "license_path": "sentencepiece-0.2.1/sentencepiece/LICENSE",
+    "license_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  "binding_method": "OFFICIAL_RELEASE_ASSET_BYTE_IDENTITY",
+  "binding_assurance": "OFFICIAL_PUBLICATION_EXACT_BYTES",
+  "attestation": {
+    "integrity": "PASS",
+    "subject_membership": "ABSENT",
+    "provenance_sha256": null
+  },
+  "binding_record_sha256": "84ccb938f7b90f63fda565298bf09892fcce20a39300efabf798c49060ae1b85"
+}
