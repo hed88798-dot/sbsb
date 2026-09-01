@@ -434,6 +434,12 @@ def main() -> None:
     source_evidence["provenance_subject_match"] = (
         "PASS" if source_evidence["sha256"] in subjects else "FAIL"
     )
+    source_evidence["source_release_identity"] = {
+        "repository": REPOSITORY,
+        "tag": TAG,
+        "commit": COMMIT,
+        "identity_sha256": release_identity["identity_sha256"],
+    }
     resolver_records = {target: resolver_check(resolvers[target], target) for target in EXPECTED_WHEELS}
     wheel_records: dict[str, dict[str, Any]] = {}
     for target, wheel_path in wheels.items():
@@ -527,6 +533,8 @@ def main() -> None:
         "upstream_license_evidence": source_evidence,
         "upstream_license_evidence_artifact_id": source_evidence["artifact_id"],
         "upstream_license_evidence_artifact_sha256": source_evidence["sha256"],
+        "upstream_evidence_artifact_id": source_evidence["artifact_id"],
+        "upstream_evidence_artifact_sha256": source_evidence["sha256"],
         "upstream_license_file_path": source_evidence["project_license"]["path"],
         "upstream_license_file_sha256": source_evidence["project_license"]["sha256"],
         "upstream_release_license_coverage": source_evidence["coverage_to_exact_wheel"],
