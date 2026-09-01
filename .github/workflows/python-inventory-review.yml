@@ -136,6 +136,9 @@ jobs:
           Remove-Item artifacts/runtime-prerequisite/WINDOWS_PROVIDER_PROBE.raw.json
       - name: Freeze target inventory review evidence
         shell: bash
+        env:
+          PYTHONPATH: ${{ github.workspace }}/artifacts/python-compliance-tools/site-packages
+          PYTHONNOUSERSITE: '1'
         run: |
           prerequisite_args=()
           if [[ '${{ matrix.target }}' == 'windows' ]]; then
