@@ -17,6 +17,10 @@ export const inventoryV2SchemaPath = resolve(
   repositoryRoot,
   'schemas/compliance/python-artifact-inventory/v2/inventory.schema.json',
 );
+export const inventoryV3SchemaPath = resolve(
+  repositoryRoot,
+  'schemas/compliance/python-artifact-inventory/v3/inventory.schema.json',
+);
 export const packagedSchemaPath = resolve(
   repositoryRoot,
   'schemas/compliance/python-artifact-inventory/v1/packaged-native-inventory.schema.json',
@@ -76,6 +80,7 @@ function validatorFor(path) {
 
 const validateInventoryV1Schema = validatorFor(inventorySchemaPath);
 const validateInventoryV2Schema = validatorFor(inventoryV2SchemaPath);
+const validateInventoryV3Schema = validatorFor(inventoryV3SchemaPath);
 const validatePackagedV1Schema = validatorFor(packagedSchemaPath);
 const validatePackagedV2Schema = validatorFor(packagedV2SchemaPath);
 
@@ -298,7 +303,9 @@ export function loadInventories(paths = discoverInventoryPaths()) {
         ? validateInventoryV1Schema
         : document.schema_version === '2'
           ? validateInventoryV2Schema
-          : null;
+          : document.schema_version === '3'
+            ? validateInventoryV3Schema
+            : null;
     if (!validator) throw new Error(`${path}: unsupported inventory schema_version`);
     if (!validator(document)) {
       throw new Error(`${path}: inventory schema invalid: ${schemaErrors(validator)}`);

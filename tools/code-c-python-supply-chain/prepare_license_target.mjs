@@ -1,5 +1,5 @@
-import { mkdirSync, readFileSync, readdirSync } from 'node:fs';
-import { basename, relative, resolve } from 'node:path';
+import { mkdirSync, readFileSync } from 'node:fs';
+import { relative, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import {
   dependencyPaths,
@@ -19,12 +19,28 @@ import {
   assertWorkerArtifactBinding,
   MINIMUM_REQUIRED_LICENSE_CONTRACT_BASELINE,
 } from './license-baseline.mjs';
+import { resolveActiveApprovedSubjects } from './approved-subject-resolver.mjs';
 
 function argument(name, { required = true } = {}) {
   const index = process.argv.indexOf(name);
   const value = index >= 0 ? process.argv[index + 1] : null;
   if (required && !value) throw new Error(`${name} is required`);
   return value;
+}
+
+function repeatedArgument(name, expectedCount) {
+  const values = [];
+  for (let index = 0; index < process.argv.length; index += 1) {
+    if (process.argv[index] !== name) continue;
+    const value = process.argv[index + 1];
+    if (!value || value.startsWith('--')) throw new Error(`${name} requires a value`);
+    values.push(value);
+    index += 1;
+  }
+  if (values.length !== expectedCount) {
+    throw new Error(`expected ${expectedCount} ${name} values, got ${values.length}`);
+  }
+  return values;
 }
 
 function git(...args) {
@@ -41,10 +57,10 @@ function relativeRepositoryPath(path) {
   return relative(process.cwd(), path).replaceAll('\\', '/');
 }
 
-function inventoryScopeName(path) {
-  const name = basename(path);
-  if (!name.endsWith('.v2.json')) throw new Error(`unexpected inventory filename: ${name}`);
-  return name.slice(0, -'.v2.json'.length);
+function inventoryScopeName(document) {
+  if (document.scope === 'PRODUCTION_WORKER_RUNTIME') return 'runtime';
+  if (document.scope === 'WORKER_BUILD') return 'worker-build';
+  throw new Error(`unsupported License Target inventory scope: ${document.scope}`);
 }
 
 function evidenceStatus(inspected) {
@@ -72,23 +88,50 @@ function canonicalArtifact(artifact) {
 async function main() {
   const target = argument('--target');
   if (!['linux', 'windows'].includes(target)) throw new Error(`unsupported target: ${target}`);
+  // Kept as a required input for callers that materialize approved subjects
+  // per target; discovery itself is never derived from this directory.
   const inventoryRoot = resolve(argument('--inventory-root'));
   const artifactRoot = resolve(argument('--artifact-root'));
   const resolutionRoot = resolve(argument('--resolution-root'));
   const buildContextPath = resolve(argument('--build-context'));
   const outputRoot = resolve(argument('--output-root'));
   const mainBaseline = argument('--main-quality-baseline');
+  const reviewSnapshotPath = resolve(argument('--review-snapshot'));
+  const approvalContractPath = resolve(argument('--approval-contract'));
+  const authorityPolicyPath = resolve(argument('--authority-policy'));
+  const subjectPaths = repeatedArgument('--subject', 6).map((path) => resolve(path));
+  const targetDescriptorPaths = repeatedArgument('--target-descriptor', 2).map((path) =>
+    resolve(path),
+  );
+  const approvalPaths = repeatedArgument('--approval-record', 6).map((path) => resolve(path));
   const evaluatorHead = git('rev-parse', 'HEAD');
   const baselineBinding = assertLicenseBaselineBinding({
     currentMainBaseline: mainBaseline,
     validationHead: evaluatorHead,
   });
-  // Avoid shell globbing so paths with spaces behave the same on both targets.
-  const paths = readdirSync(inventoryRoot)
-    .filter((name) => name.endsWith('.v2.json'))
-    .map((name) => resolve(inventoryRoot, name));
-  paths.sort();
+  const approved = resolveActiveApprovedSubjects({
+    approvalPaths,
+    subjectPaths,
+    targetDescriptorPaths,
+    reviewSnapshotPath,
+    approvalContractPath,
+    authorityPolicyPath,
+  });
+  if (!inventoryRoot) throw new Error('inventory root is required');
+  const targetInventorySubjects = approved.inventory.filter((entry) => entry.target.os === target);
+  if (targetInventorySubjects.length !== 2) {
+    throw new Error(
+      `${target}: active exact approvals did not resolve runtime and worker-build inventories`,
+    );
+  }
+  const paths = targetInventorySubjects.map((entry) => entry.subject_path);
   const loaded = loadInventories(paths);
+  if (loaded.some(({ document }) => document.schema_version !== '3')) {
+    throw new Error(`${target}: current License Target selected a non-v3 inventory subject`);
+  }
+  if (loaded.some(({ document }) => document.target.os !== target)) {
+    throw new Error(`${target}: exact approved inventory target binding mismatch`);
+  }
   const verified = await verifyArtifactInventories(loaded, artifactRoot);
   const byHash = new Map();
   for (const item of verified) {
@@ -153,7 +196,7 @@ async function main() {
 
   const inventories = [];
   for (const item of loaded) {
-    const scopeName = inventoryScopeName(item.path);
+    const scopeName = inventoryScopeName(item.document);
     const resolutionPath = resolve(resolutionRoot, `${target}-${scopeName}.json`);
     const resolution = JSON.parse(readFileSync(resolutionPath, 'utf8'));
     if (resolution.target !== target || resolution.scope !== scopeName) {
@@ -198,6 +241,16 @@ async function main() {
   if (!pyinstallerArtifact) {
     throw new Error(`${target}: Build Context PyInstaller artifact is absent from the exact graph`);
   }
+  const licenseTargetSubjectSet = {
+    ...approved.subject_set,
+    approval_subject_set_sha256: approved.subject_set_sha256,
+    worker_build_context_sha256: await sha256File(buildContextPath),
+    license_evaluator: {
+      head_sha: evaluatorHead,
+      identity: 'CODE_C_CURRENT_CHECKOUT_HEAD',
+    },
+  };
+  const licenseTargetSubjectSetSha256 = licenseIdentityHash(licenseTargetSubjectSet);
   const pyinstallerEvidenceV3 = validateArtifactLicenseEvidenceV3(
     JSON.parse(readFileSync(resolve(pyinstallerArtifact.evidence_path), 'utf8')),
   );
@@ -246,6 +299,7 @@ async function main() {
     inventories,
     artifact_set_sha256: artifactSetSha256,
     artifacts: graphArtifacts,
+    license_target_subject_set_sha256: licenseTargetSubjectSetSha256,
   };
   const graphSha256 = licenseIdentityHash(graphIdentityInput);
   const document = {
@@ -266,6 +320,22 @@ async function main() {
     artifact_set_sha256: artifactSetSha256,
     inventories,
     artifacts,
+    license_target_subject_set: {
+      discovery_model: approved.current_inventory_discovery_model,
+      filesystem_filename_is_subject_authority: approved.filesystem_filename_is_subject_authority,
+      approval_discovery_index_is_authority: approved.approval_discovery_index_is_authority,
+      subject_set_sha256: licenseTargetSubjectSetSha256,
+      approval_subject_set_sha256: approved.subject_set_sha256,
+      inventories: approved.subject_set.inventories,
+      toolchains: approved.subject_set.toolchains,
+      worker_build_context_sha256: licenseTargetSubjectSet.worker_build_context_sha256,
+      license_evaluator: licenseTargetSubjectSet.license_evaluator,
+      approval_contract_sha256: approved.approval_contract_sha256,
+      authority_policy_sha256: approved.authority_policy_sha256,
+      review_snapshot_sha256: approved.review_snapshot_sha256,
+      inventory_schema_identity: approved.inventory_schema_identity,
+      toolchain_schema_identity: approved.toolchain_schema_identity,
+    },
     pyinstaller_worker_build_license: {
       status: 'PASS',
       build_context_id: buildContext.build_context_id,
@@ -279,6 +349,30 @@ async function main() {
     },
     evidence_contract: 'Artifact License Evidence v3',
     review_contract: 'Artifact License Review v1',
+    current_inventory_discovery_model: approved.current_inventory_discovery_model,
+    license_consumer_uses_shared_approval_verifier:
+      approved.license_consumer_uses_shared_approval_verifier,
+    license_target_approval_effective_state_revalidation: 'PASS',
+    active_inventory_approvals: approved.active_inventory_approvals,
+    active_toolchain_provenance_approvals: approved.active_toolchain_provenance_approvals,
+    license_target_active_inventory_count: approved.inventory.length,
+    required_inventory_slot_coverage: 'PASS',
+    missing_required_inventory_slot_count: 0,
+    duplicate_active_inventory_slot_count: 0,
+    target_role_cross_binding_count: 0,
+    inventory_v3_schema_binding: 'PASS',
+    toolchain_v1_schema_binding: 'PASS',
+    filesystem_filename_is_subject_authority: approved.filesystem_filename_is_subject_authority,
+    approval_discovery_index_is_authority: approved.approval_discovery_index_is_authority,
+    old_v2_subject_selected_for_current_evaluation: false,
+    stale_current_inventory_v2_assumption_count: 0,
+    mixed_active_subject_conflict_count: 0,
+    unsupported_subject_schema_count: 0,
+    license_target_subject_set_binding: 'PASS',
+    total_license_subject_count: approved.all.length,
+    worker_build_input_drift: 'NONE',
+    worker_artifact_identity_unchanged: 'PASS',
+    worker_rebuild_required: 'NO',
     regression_fixture_used_as_production_approval: false,
   };
   mkdirSync(outputRoot, { recursive: true });
