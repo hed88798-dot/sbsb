@@ -54,12 +54,23 @@ jobs:
       - run: pnpm golden:verify
       - run: pnpm build
       - run: pnpm sbom:generate
+      - name: Enforce PR compliance evidence upload budget
+        shell: bash
+        run: >-
+          node tools/actions-artifact-budget.mjs
+          --name pr-compliance-${{ github.sha }}
+          --path artifacts/compliance
+          --inventory artifacts/compliance/ARTIFACT_UPLOAD_INVENTORY.json
+          --retention-days 3
+          --purpose pr-compliance-evidence
+          --classification transient
+          --max-bytes 5242880
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pr-compliance-${{ github.sha }}
           path: artifacts/compliance
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 3
 
   python-worker-supply-chain:
     runs-on: ubuntu-24.04
@@ -250,15 +261,24 @@ jobs:
         run: |
           dist/media-worker --runtime-smoke > artifacts/compliance/linux/WORKER_RUNTIME_SMOKE.json
           artifacts/worker-venv/bin/python -c 'import json; value=json.load(open("artifacts/compliance/linux/WORKER_RUNTIME_SMOKE.json")); assert value["status"] == "PASS" and value["onnxruntime"] == "1.29.0" and "CPUExecutionProvider" in value["providers"] and not value["contains_torch"] and not value["contains_transformers"]'
+      - name: Enforce Linux Worker evidence upload budget
+        shell: bash
+        run: >-
+          node tools/actions-artifact-budget.mjs
+          --name linux-worker-supply-chain-${{ github.sha }}
+          --path artifacts/compliance/linux
+          --inventory artifacts/compliance/linux/ARTIFACT_UPLOAD_INVENTORY.json
+          --retention-days 3
+          --purpose linux-worker-supply-chain-evidence
+          --classification transient
+          --max-bytes 10485760
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: linux-worker-supply-chain-${{ github.sha }}
-          path: |
-            artifacts/compliance/linux
-            dist/media-worker
+          path: artifacts/compliance/linux
           if-no-files-found: error
           compression-level: 0
-          retention-days: 30
+          retention-days: 3
 
   isolated-clean-checkout:
     runs-on: ubuntu-24.04
