@@ -133,7 +133,7 @@ jobs:
       - name: Bootstrap the pinned pip into a clean Worker environment
         shell: bash
         run: >-
-          python tools/code-c-python-supply-chain/bootstrap_pinned_pip.py
+          '${{ steps.locked-python.outputs.python }}' tools/code-c-python-supply-chain/bootstrap_pinned_pip.py
           --wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip/pip-26.2.1-py3-none-any.whl
           --venv artifacts/candidate-venv
 
