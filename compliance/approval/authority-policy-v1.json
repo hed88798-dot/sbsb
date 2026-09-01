@@ -1,0 +1,15 @@
+{
+  "authorities": [
+    {
+      "reviewer": "Code F",
+      "reviewer_authority": "CODE_F_QUALITY_RELEASE_COMPLIANCE_OWNER",
+      "reviewer_role": "Quality, Release & Compliance Continuous Owner",
+      "scopes": ["PYTHON_ARTIFACT_INVENTORY_PROVENANCE", "TOOLCHAIN_PROVENANCE_APPROVAL"]
+    }
+  ],
+  "canonicalization_version": "json-utf8-lf-v1",
+  "policy_id": "code-f-approval-authority-policy",
+  "policy_notes": "This policy authorizes provenance review only. It does not authorize license, vulnerability, native reconciliation, or distribution approval.",
+  "policy_version": "1",
+  "schema_version": "1"
+}
