@@ -142,6 +142,7 @@ export function resolveActiveApprovedSubjects({
   approvalContractPath = approvalSchemaV2Path,
   authorityPolicyPath,
   revocationPaths = [],
+  triggeredRecheckTriggers = [],
   now = new Date().toISOString(),
 }) {
   if (!Array.isArray(approvalPaths) || approvalPaths.length < 6) {
@@ -223,6 +224,7 @@ export function resolveActiveApprovedSubjects({
         sha256: candidate.approval_sha256,
       })),
       revocations,
+      triggeredRecheckTriggers,
       now,
     }),
   );

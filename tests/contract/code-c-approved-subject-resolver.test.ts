@@ -316,6 +316,21 @@ describe('Code C current Inventory v3 License Target subject resolver', () => {
     );
   });
 
+  it('blocks an approval when a declared recheck trigger is active', () => {
+    const fixture = makeFixture();
+    expect(() =>
+      resolveActiveApprovedSubjects({
+        approvalContractPath: approvalSchemaV2Path,
+        approvalPaths: fixture.approvals,
+        authorityPolicyPath: join(repositoryRoot, 'compliance/approval/authority-policy-v1.json'),
+        reviewSnapshotPath: fixture.snapshotPath,
+        subjectPaths: fixture.subjects,
+        targetDescriptorPaths: fixture.targetDescriptors,
+        triggeredRecheckTriggers: ['SCHEMA_CHANGED'],
+      }),
+    ).toThrow(/not ACTIVE: RECHECK_REQUIRED/);
+  });
+
   it('blocks conflicting active approvals for one exact subject', () => {
     const fixture = makeFixture();
     const duplicate = JSON.parse(readFileSync(fixture.approvals[0], 'utf8'));
