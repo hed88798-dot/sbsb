@@ -13,21 +13,31 @@ from inventory_candidate_serialization import (
     serialize_candidate_from_resolution,
     validate_resolution_serialization,
 )
-from prepare_inventory_review import assemble, safe_archive_member
+from prepare_inventory_review import (
+    REQUIRED_MAIN_BASELINE,
+    REQUIRED_PREVIOUS_CODE_C_HEAD,
+    assemble,
+    inventory_v3_contract_identity,
+    safe_archive_member,
+)
 
 
 HEAD = "a" * 40
-BASELINE = "b" * 40
 CONTAINMENT = "c" * 40
 
 
 def target_report(target: str) -> dict[str, object]:
+    v3 = inventory_v3_contract_identity()
     return {
         "schema_version": "1",
         "status": "PASS",
         "code_c_head_sha": HEAD,
-        "main_quality_baseline": BASELINE,
+        "main_quality_baseline": REQUIRED_MAIN_BASELINE,
+        "contains_required_main_baseline": "PASS",
+        "required_previous_code_c_head": REQUIRED_PREVIOUS_CODE_C_HEAD,
+        "contains_required_previous_c_head": "PASS",
         "required_code_c_containment_sha": CONTAINMENT,
+        "contains_required_containment_sha": "PASS",
         "target": {
             "os": target,
             "descriptor_sha256": ("1" if target == "linux" else "2") * 64,
@@ -54,7 +64,15 @@ def target_report(target: str) -> dict[str, object]:
         "inventory_usage_role": "CONTEXT_SPECIFIC",
         "provenance_offline_replay": "PASS",
         "http_availability": "DIAGNOSTIC_ONLY",
-        "inventory_v2_schema_validation": "PASS",
+        "inventory_schema_version": "3",
+        "inventory_v3_schema_id": v3["schema_id"],
+        "inventory_v3_schema_sha256": v3["schema_sha256"],
+        "inventory_v3_validator_id": v3["validator_id"],
+        "inventory_v3_contract_source": v3["contract_source"],
+        "inventory_v3_schema_validation": "PASS",
+        "raw_v3_schema_validation": "PASS",
+        "factual_graph_completeness": "PASS",
+        "v2_to_v3_factual_semantic_equivalence": "PASS",
         "dependency_graph_validation": "PASS",
         "resolution_serialization_consistency": "PASS",
         "resolution_state_conflict_count": 0,
@@ -71,12 +89,22 @@ def target_report(target: str) -> dict[str, object]:
         "semantic_dependency_graph_drift": "NONE",
         "toolchain_evidence": "PRESERVED",
         "toolchain_artifact_identity": "UNCHANGED",
+        "toolchain_evidence_identity_unchanged": "PASS",
+        "toolchain_intake_evidence_sha256": "a" * 64,
+        "artifact_graph_semantic_digest": "b" * 64,
+        "dependency_graph_semantic_digest": "c" * 64,
+        "resolver_provenance_semantic_digest": "d" * 64,
+        "target_semantic_digest": "e" * 64,
+        "role_semantic_digest": "f" * 64,
         "inventory_candidates": [
             {
                 "inventory_id": f"code-c-{target}-{scope}-py31315",
                 "candidate_sha256": character * 64,
                 "role": role,
                 "dependency_graph_identity_sha256": graph_character * 64,
+                "inventory_v3_schema_id": v3["schema_id"],
+                "inventory_v3_schema_sha256": v3["schema_sha256"],
+                "inventory_v3_validator_id": v3["validator_id"],
                 "resolver_provenance_details": {
                     "records": [
                         {
@@ -289,7 +317,7 @@ def main() -> None:
         if len(requests) != 4 or len({item["inventory_id"] for item in requests}) != 4:
             raise SystemExit("bundle did not preserve four independent inventory approvals")
         assertions += 1
-        if any(item["approval_status"] != "PENDING_CODE_F_REVIEW" for item in requests):
+        if any(item["approval_status"] != "PENDING_CODE_F_APPROVAL" for item in requests):
             raise SystemExit("Code C self-approved a candidate inventory")
         assertions += 1
         if bundle["artifact_containment"]["declared_total_run_budget_bytes"] > 25 * 1024 * 1024:

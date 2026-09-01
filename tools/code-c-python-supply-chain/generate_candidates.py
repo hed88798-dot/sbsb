@@ -16,7 +16,10 @@ from packaging.utils import canonicalize_name
 from packaging.version import Version
 
 from canonical_evidence import write_canonical_json
-from inventory_candidate_serialization import serialize_candidate_from_resolution
+from inventory_candidate_serialization import (
+    serialize_candidate_from_resolution,
+    serialize_v3_candidate_from_resolution,
+)
 from locked_interpreter import attest_locked_interpreter, require_locked_python_environment
 from policy import assert_standard_cp313_artifact, hermetic_environment, sha256_file
 
@@ -106,6 +109,7 @@ def resolve_scope(
     runtime_identity: dict[str, object],
     output_root: Path,
     environment: dict[str, str],
+    schema_version: str,
 ) -> None:
     wheel_root = output_root / "wheels" / scope_name
     download_root = output_root / "downloads" / scope_name
@@ -242,37 +246,48 @@ def resolve_scope(
     resolution_path.parent.mkdir(parents=True, exist_ok=True)
     write_canonical_json(resolution_path, resolution)
 
-    candidate_path = output_root / "candidates" / f"code-c-{target_name}-{scope_name}.v2.json"
+    candidate_suffix = "v3" if schema_version == "3" else "v2"
+    candidate_path = output_root / "candidates" / f"code-c-{target_name}-{scope_name}.{candidate_suffix}.json"
     candidate_path.parent.mkdir(parents=True, exist_ok=True)
-    arguments = [
-        "node",
-        str(CANDIDATE_TOOL),
-        "--artifact-root",
-        str(wheel_root),
-        "--scope",
-        scope["inventory_scope"],
-        "--schema-version",
-        "2",
-        "--target-descriptor",
-        str(target_descriptor),
-        "--inventory-id",
-        f"code-c-{target_name}-{scope_name}-py31315",
-        "--source-index",
-        definitions["approved_index"],
-        "--source-base",
-        "https://pypi.org/project",
-        "--download-base",
-        "https://files.pythonhosted.org/packages",
-        "--supplier",
-        "Python Package Index upstream project maintainers",
-    ]
-    for package in direct:
-        arguments.extend(["--direct", package])
-    arguments.extend(["--output", str(candidate_path)])
-    run(arguments, env=environment)
-    candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
-    serialized = serialize_candidate_from_resolution(candidate, resolution)
-    write_canonical_json(candidate_path, serialized)
+    if schema_version == "3":
+        serialized = serialize_v3_candidate_from_resolution(
+            resolution,
+            json.loads(target_descriptor.read_text(encoding="utf-8")),
+            wheel_root,
+            f"code-c-{target_name}-{scope_name}-py31315",
+            scope_name,
+        )
+        write_canonical_json(candidate_path, serialized)
+    else:
+        arguments = [
+            "node",
+            str(CANDIDATE_TOOL),
+            "--artifact-root",
+            str(wheel_root),
+            "--scope",
+            scope["inventory_scope"],
+            "--schema-version",
+            "2",
+            "--target-descriptor",
+            str(target_descriptor),
+            "--inventory-id",
+            f"code-c-{target_name}-{scope_name}-py31315",
+            "--source-index",
+            definitions["approved_index"],
+            "--source-base",
+            "https://pypi.org/project",
+            "--download-base",
+            "https://files.pythonhosted.org/packages",
+            "--supplier",
+            "Python Package Index upstream project maintainers",
+        ]
+        for package in direct:
+            arguments.extend(["--direct", package])
+        arguments.extend(["--output", str(candidate_path)])
+        run(arguments, env=environment)
+        candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+        serialized = serialize_candidate_from_resolution(candidate, resolution)
+        write_canonical_json(candidate_path, serialized)
     print(f"generated {target_name}/{scope_name}: {len(resolved)} wheels")
 
 
@@ -289,6 +304,7 @@ def main() -> None:
     parser.add_argument("--target-descriptor", type=Path, required=True)
     parser.add_argument("--runtime-identity", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument("--schema-version", choices=["2", "3"], default="3")
     arguments = parser.parse_args()
     try:
         locked_python = require_locked_python_environment()
@@ -377,6 +393,7 @@ def main() -> None:
             runtime_identity,
             arguments.output_root,
             environment,
+            arguments.schema_version,
         )
 
 

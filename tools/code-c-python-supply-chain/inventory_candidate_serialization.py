@@ -3,7 +3,6 @@ from __future__ import annotations
 import copy
 import re
 
-
 PURL_PATTERN = re.compile(r"^pkg:pypi/[a-z0-9._-]+@[^?/#]+$")
 PSEUDO_PURL_PREFIXES = (
     "REVIEW_REQUIRED:",
@@ -122,6 +121,155 @@ def serialize_candidate_from_resolution(
 
     validate_resolution_serialization(serialized, resolution)
     return serialized
+
+
+def serialize_v3_candidate_from_resolution(
+    resolution: dict[str, object],
+    target_descriptor: dict[str, object],
+    wheel_root,
+    inventory_id: str,
+    scope: str,
+) -> dict[str, object]:
+    """Create an Inventory v3 factual subject directly from resolver evidence.
+
+    This intentionally does not read or mutate a v2 candidate.  The resolver record and
+    the exact wheel bytes are the only sources for package identity, dependency edges and
+    provenance; v3's approval lifecycle is external to this subject.
+    """
+    # Keep the v2 regression verifier independent of the target toolchain's packaging
+    # module; the v3 path is only exercised by the locked Python inventory generator.
+    from packaging.utils import parse_wheel_filename
+
+    resolved_packages, purls = _resolution_packages(resolution)
+    scope_by_resolution = {
+        "runtime": "PRODUCTION_WORKER_RUNTIME",
+        "worker-build": "WORKER_BUILD",
+        "model-export": "MODEL_EXPORT",
+        "model-evaluation": "MODEL_EVALUATION",
+    }
+    if scope not in scope_by_resolution:
+        raise CandidateSerializationError(f"unsupported resolver scope: {scope}")
+    descriptor_target = {
+        key: target_descriptor[key]
+        for key in (
+            "target_descriptor_version",
+            "implementation",
+            "python_version",
+            "os",
+            "architecture",
+            "compatibility",
+        )
+    }
+    compatibility_tags = set(target_descriptor["compatibility"]["compatible_tags"])
+    packages: list[dict[str, object]] = []
+    for normalized, resolved in sorted(resolved_packages.items()):
+        metadata = dict(resolved["metadata"])
+        provenance = dict(resolved["provenance"])
+        filename = str(provenance["filename"])
+        wheel_path = wheel_root / filename
+        if not wheel_path.is_file():
+            raise CandidateSerializationError(f"resolver wheel is missing: {wheel_path}")
+        from hashlib import sha256
+
+        actual_hash = sha256(wheel_path.read_bytes()).hexdigest()
+        if actual_hash != provenance["sha256"]:
+            raise CandidateSerializationError(f"resolver wheel hash changed: {filename}")
+        parsed_name, parsed_version, _, parsed_tags = parse_wheel_filename(filename)
+        if normalize_python_name(str(parsed_name)) != normalized:
+            raise CandidateSerializationError(f"wheel filename package mismatch: {filename}")
+        wheel_tags = sorted(str(tag) for tag in parsed_tags)
+        matched_tags = sorted(set(wheel_tags) & compatibility_tags)
+        if not matched_tags:
+            raise CandidateSerializationError(f"wheel is not compatible with target: {filename}")
+        declarations: list[dict[str, object]] = []
+        for raw_declaration in resolved["dependency_declarations"]:
+            declaration = dict(raw_declaration)
+            disposition = str(declaration.get("disposition"))
+            if disposition not in SUPPORTED_DISPOSITIONS:
+                raise CandidateSerializationError(
+                    f"unsupported resolver disposition for {normalized}: {disposition}"
+                )
+            dependency = declaration.get("dependency")
+            if disposition == "INCLUDED":
+                if not isinstance(dependency, str) or dependency not in purls:
+                    raise CandidateSerializationError(
+                        f"included resolver dependency has no exact identity: {normalized}"
+                    )
+                declaration_purl: str | None = purls[dependency]
+                reason = ""
+            else:
+                if dependency is not None:
+                    raise CandidateSerializationError(
+                        f"not-applicable resolver dependency has an identity: {normalized}"
+                    )
+                declaration_purl = None
+                reason = str(declaration.get("reason", ""))
+                if not reason.strip():
+                    raise CandidateSerializationError(
+                        f"not-applicable resolver dependency lacks evidence: {normalized}"
+                    )
+            declarations.append(
+                {
+                    "requirement": str(declaration["requirement"]),
+                    "package_name": str(declaration["package_name"]),
+                    "disposition": disposition,
+                    "purl": declaration_purl,
+                    "reason": reason,
+                }
+            )
+        license_expression = metadata.get("license_expression") or metadata.get("legacy_license")
+        if not license_expression:
+            license_expression = "UNKNOWN"
+        packages.append(
+            {
+                "package_name": str(resolved["name"]),
+                "version": str(resolved["version"]),
+                "artifact_type": "wheel",
+                "filename": filename,
+                "artifact_path": filename,
+                "sha256": str(provenance["sha256"]),
+                "source": str(provenance["source"]),
+                "source_index": str(provenance["source_index"]),
+                "purl": purls[normalized],
+                "wheel_tags": wheel_tags,
+                "compatibility": {"status": "COMPATIBLE", "matched_tags": matched_tags},
+                "license_expression": str(license_expression),
+                "license_files": [
+                    {"relative_path": item["relative_path"], "sha256": item["sha256"]}
+                    for item in metadata.get("license_files", [])
+                ],
+                "native_artifacts": [
+                    {
+                        "filename": item["filename"],
+                        "relative_path": item["relative_path"],
+                        "packaged_relative_path": f"REVIEW_REQUIRED/{item['filename']}",
+                        "sha256": item["sha256"],
+                        "type": item["type"],
+                        "source_package": str(resolved["name"]),
+                    }
+                    for item in metadata.get("native_artifacts", [])
+                ],
+                "provenance": {
+                    "supplier": "Python Package Index upstream project maintainers",
+                    "download_url": str(provenance["download_url"]),
+                    "upstream_signature": None,
+                },
+                "direct": bool(resolved["direct"]),
+                "dependencies": [purls[dependency] for dependency in resolved["dependencies"]],
+                "dependency_declarations": declarations,
+            }
+        )
+        if str(parsed_version) != str(resolved["version"]):
+            raise CandidateSerializationError(f"wheel filename version mismatch: {filename}")
+    return {
+        "schema_version": "3",
+        "inventory_id": inventory_id,
+        "scope": scope_by_resolution[scope],
+        "subject_state": "CANDIDATE",
+        "target": descriptor_target,
+        "graph_complete": True,
+        "packages": packages,
+    }
 
 
 def validate_resolution_serialization(

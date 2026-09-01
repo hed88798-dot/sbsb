@@ -36,7 +36,8 @@ jobs:
       - name: Verify required baseline and artifact containment ancestry
         shell: bash
         run: |
-          git merge-base --is-ancestor 7a034a6b0244d1dbff0eae839a5d6ea837a0efe3 HEAD
+          git merge-base --is-ancestor 849e386862c042619357d284b71f9c6d2b27c130 HEAD
+          git merge-base --is-ancestor 5bd956b5eae2c8730144acc962ad085719ea250f HEAD
           git merge-base --is-ancestor c7578576a6c5be47bdc3b0f65e7651c3bfa799a0 HEAD
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
         with:
@@ -119,6 +120,7 @@ jobs:
           --scope worker-build
           --target-descriptor artifacts/python-supply-chain/target/${{ matrix.target }}.json
           --runtime-identity artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json
+          --schema-version 3
           --output-root artifacts/python-supply-chain
       - name: Attest preinstalled compatible Windows runtime without installation
         if: matrix.target == 'windows'
@@ -141,7 +143,8 @@ jobs:
           fi
           ${{ matrix.venv_python }} tools/code-c-python-supply-chain/prepare_inventory_review.py target \
             --target '${{ matrix.target }}' \
-            --main-baseline 7a034a6b0244d1dbff0eae839a5d6ea837a0efe3 \
+            --main-baseline 849e386862c042619357d284b71f9c6d2b27c130 \
+            --previous-code-c-head 5bd956b5eae2c8730144acc962ad085719ea250f \
             --containment-sha c7578576a6c5be47bdc3b0f65e7651c3bfa799a0 \
             --target-descriptor artifacts/python-supply-chain/target/${{ matrix.target }}.json \
             --runtime-identity artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json \
