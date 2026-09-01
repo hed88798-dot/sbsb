@@ -28,10 +28,11 @@ jobs:
           cache: pnpm
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: '3.12.10'
+          python-version: '3.13.15'
       - run: pnpm install --frozen-lockfile
       - run: pnpm compliance:python:tooling:install
       - run: pnpm compliance:artifact-license:verify
+      - run: pnpm compliance:runtime-prerequisite:verify
       - run: pnpm compliance:python:target -- describe-current --output artifacts/compliance/CURRENT_TARGET.json
       - run: pnpm compliance:python:target -- verify-current --target artifacts/compliance/CURRENT_TARGET.json
       - run: pnpm ci:prepare
@@ -68,7 +69,7 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           # Bootstrap only. The Worker graph/build consume the locked distribution below.
-          python-version: '3.12.13'
+          python-version: '3.12.10'
       - run: pnpm install --frozen-lockfile
       - name: Hydrate only approved Python and toolchain artifacts
         run: >-
@@ -297,12 +298,21 @@ jobs:
           $hello = $helloRequest | & .\dist\media-worker.exe | ConvertFrom-Json
           if ($hello.type -ne 'hello') { throw 'Packaged worker hello failed' }
           if ($hello.protocol_version -ne '1.0') { throw 'Sidecar protocol changed' }
+      - name: Enforce Windows Worker evidence upload budget
+        shell: bash
+        run: >-
+          node tools/actions-artifact-budget.mjs
+          --name windows-worker-supply-chain-${{ github.sha }}
+          --path artifacts/compliance/windows
+          --inventory artifacts/compliance/windows/ARTIFACT_UPLOAD_INVENTORY.json
+          --retention-days 3
+          --purpose windows-worker-supply-chain-evidence
+          --classification transient
+          --max-bytes 10485760
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: windows-worker-supply-chain-${{ github.sha }}
-          path: |
-            artifacts/compliance/windows
-            dist/media-worker.exe
+          path: artifacts/compliance/windows
           if-no-files-found: error
           compression-level: 0
-          retention-days: 30
+          retention-days: 3

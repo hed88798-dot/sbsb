@@ -9,6 +9,11 @@ SHA-256、platform/Python ABI、license 和 provenance；它仍不足以解除 s
 
 stable 候选必须从解包后的真实 installer 重新盘点 Electron app、asar、Python wheels、native DLL、模型、字体、FFmpeg/whisper 和其他二进制，并将完整结果与 artifact SHA-256 一起归档。
 
+External runtime prerequisite 使用 `runtime-prerequisites/` 中的 O/Q/I/E Contract。PR/clean-checkout
+验证允许诚实的 `BLOCKED` 审批记录存在；release 验证要求 exact provider 的签名、安装 closure、许可与
+未过期审批全部 PASS。External disposition 不批准 raw System32/CPython DLL，也不允许这些 external
+capabilities 进入最终 Worker。
+
 Build-only 工具与 runtime 组件使用独立 reachability。Artifact Usage Binding v1 要求 PyInstaller
 build wheel 进入 Build SBOM 与内部合规证据；只有真实进入发布 runtime 的组件才进入 Runtime SBOM
 和 customer-facing notices。Build dependency 身份本身不构成 runtime reachability。

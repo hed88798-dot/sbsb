@@ -1,0 +1,78 @@
+{
+  "schema_version": "1",
+  "requirement_id": "code-c-msvc-v14-x64-5ead2a1",
+  "runtime_family": "Microsoft Visual C++ v14 x64 Runtime",
+  "architecture": "x86_64",
+  "required_capabilities": [
+    "msvcp140.dll",
+    "msvcp140_1.dll",
+    "vcruntime140.dll",
+    "vcruntime140_1.dll"
+  ],
+  "application_closure": {
+    "status": "PASS",
+    "evidence_id": "code-c-msvc-runtime-e73af85748214427db7ebbffa8d0862b",
+    "evidence_sha256": "6a47f86bd93e08a706cf0e9ceb8a0fe6d1cea924d680231e9139f4d5e20ae755",
+    "code_commit_sha": "5ead2a171f57213de59ee5f1d416875a724d7418",
+    "build_context_id": "code-c-pyinstaller-3222e456c74b30b8383350a13ebc5491",
+    "build_context_sha256": "cf4a51739e73fb5d7d3d01df8864298408cd13ae0b737a3b6abc29cae95b4f65",
+    "analysis_toc_sha256": "9cfe8b2c9d6507872ed76e6a6d3bbb34873a9e0e85293d8cda2ec449ecaba5b8",
+    "selected_native_manifest_sha256": "4285c7025b88362652ff28c8cc276b91c05ede5e5986ce3e8932b8e7cdbd36db",
+    "static_import_audit": "PASS",
+    "static_import_edge_count": 429,
+    "static_msvc_importer_count": 45,
+    "delay_import_audit": "PASS",
+    "delay_import_edge_count": 3,
+    "msvc_runtime_delay_importer_count": 0,
+    "dynamic_load_surface_audit": "PASS",
+    "unbounded_dynamic_load_count": 0,
+    "msvc_related_unresolved_dynamic_load_count": 0,
+    "product_importer_provenance": "PASS",
+    "unapproved_product_importer_count": 0
+  },
+  "raw_observations": [
+    {
+      "observation_id": "system32-msvcp140-7c26614e",
+      "capability": "msvcp140.dll",
+      "selected_source_path": "C:\\Windows\\System32\\msvcp140.dll",
+      "selected_source_sha256": "7c26614e1d733892c2deac7e245ce115504b1d80592dd0a01b08e3e5a55f89ca",
+      "source_provenance": "UNAPPROVED_SYSTEM_COPY",
+      "packaging_source": "REJECTED",
+      "distribution_artifact": false,
+      "distribution_role_approval": "NONE"
+    },
+    {
+      "observation_id": "system32-msvcp140-1-206c931b",
+      "capability": "msvcp140_1.dll",
+      "selected_source_path": "C:\\Windows\\System32\\MSVCP140_1.dll",
+      "selected_source_sha256": "206c931bf90fdad8816de3b5e2ef80b2bcaa9406c89ecc05fe6fddffe251e982",
+      "source_provenance": "UNAPPROVED_SYSTEM_COPY",
+      "packaging_source": "REJECTED",
+      "distribution_artifact": false,
+      "distribution_role_approval": "NONE"
+    },
+    {
+      "observation_id": "cpython-vcruntime140-d1f4225d",
+      "capability": "vcruntime140.dll",
+      "selected_source_path": "CPYTHON_ARTIFACT/vcruntime140.dll",
+      "selected_source_sha256": "d1f4225df2cd877dbf130d5668a021dce3f94118455ff5ec952061c30afc9ce7",
+      "source_provenance": "LOCKED_ARTIFACT_IDENTITY_ROLE_NOT_APPROVED",
+      "packaging_source": "ARTIFACT_IDENTITY_APPROVED_ROLE_NOT_APPROVED",
+      "distribution_artifact": false,
+      "distribution_role_approval": "NONE"
+    },
+    {
+      "observation_id": "cpython-vcruntime140-1-a7146c08",
+      "capability": "vcruntime140_1.dll",
+      "selected_source_path": "CPYTHON_ARTIFACT/vcruntime140_1.dll",
+      "selected_source_sha256": "a7146c08f89fe5b04541ab507cdb59ff7b44534d4ba3c668a426c6450a03434e",
+      "source_provenance": "LOCKED_ARTIFACT_IDENTITY_ROLE_NOT_APPROVED",
+      "packaging_source": "ARTIFACT_IDENTITY_APPROVED_ROLE_NOT_APPROVED",
+      "distribution_artifact": false,
+      "distribution_role_approval": "NONE"
+    }
+  ],
+  "raw_selection_preserved": true,
+  "raw_source_approval": "NOT_IMPLIED_BY_PROVIDER_DISPOSITION",
+  "requirement_sha256": "8d7e5bb272e1af494b887cbe4ce84c2f98a7f4fbe3078154aeeb8005d8faf292"
+}

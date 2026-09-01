@@ -49,14 +49,27 @@ jobs:
             --distribution artifacts/python-supply-chain/toolchain/windows/python-3.13.15-win32-x64.zip \
             --stage-a-review compliance/vulnerability-reviews/cpython-3.13.15-windows-x64/stage-a-review.json \
             --output artifacts/python-supply-chain/evidence/windows-stage-a-artifact-binding.json
+      - name: Enforce Stage A evidence upload budget
+        id: stage-a-upload-budget
+        if: always()
+        shell: bash
+        run: >-
+          node tools/actions-artifact-budget.mjs
+          --name python-stage-a-cpython-binding-${{ github.sha }}
+          --path artifacts/python-supply-chain/evidence
+          --inventory artifacts/python-supply-chain/evidence/ARTIFACT_UPLOAD_INVENTORY.json
+          --retention-days 3
+          --purpose stage-a-cpython-binding-evidence
+          --classification transient
+          --max-bytes 1048576
       - name: Preserve Stage A binding evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: always()
+        if: ${{ always() && steps.stage-a-upload-budget.outcome == 'success' }}
         with:
           name: python-stage-a-cpython-binding-${{ github.sha }}
           path: artifacts/python-supply-chain/evidence
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 3
 
   generate-target-candidate:
     needs: stage-a-cpython-artifact-binding
@@ -371,6 +384,17 @@ jobs:
         run: |
           mkdir -p artifacts/python-supply-chain/build/${{ matrix.target }}
           cp '${{ matrix.worker }}' artifacts/python-supply-chain/build/${{ matrix.target }}/
+      - name: Enforce target license evidence upload budget
+        shell: bash
+        run: >-
+          node tools/actions-artifact-budget.mjs
+          --name python-license-preparation-${{ matrix.target }}-${{ github.sha }}
+          --path artifacts/python-supply-chain/license-preparation
+          --inventory artifacts/python-supply-chain/license-preparation/ARTIFACT_UPLOAD_INVENTORY.json
+          --retention-days 3
+          --purpose exact-artifact-license-review-evidence
+          --classification transient
+          --max-bytes 2097152
       - name: Preserve target license preparation evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -378,18 +402,42 @@ jobs:
           path: artifacts/python-supply-chain/license-preparation
           if-no-files-found: error
           compression-level: 0
-          retention-days: 30
+          retention-days: 3
+      - name: Enforce compact native diagnostic upload budget
+        id: native-diagnostic-upload-budget
+        if: always()
+        shell: bash
+        run: >-
+          node tools/actions-artifact-budget.mjs
+          --name python-native-diagnostic-${{ matrix.target }}-${{ github.sha }}
+          --path artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v2.json
+          --path artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v2.json
+          --path artifacts/python-supply-chain/diagnostics/${{ matrix.target }}-native-reconciliation.json
+          --path artifacts/python-supply-chain/evidence/${{ matrix.target }}-cpython-installation.json
+          --path artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json
+          --path artifacts/python-supply-chain/evidence/${{ matrix.target }}-target-evidence.json
+          --path artifacts/python-supply-chain/inspection/${{ matrix.target }}-worker-onefile.json
+          --path artifacts/python-supply-chain/native-v3/${{ matrix.target }}
+          --path artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
+          --path artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-environment-manifest.json
+          --path artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/pyinstaller-build-evidence.json
+          --path artifacts/python-supply-chain/target/${{ matrix.target }}.json
+          --inventory artifacts/python-supply-chain/evidence/${{ matrix.target }}-ARTIFACT_UPLOAD_INVENTORY.json
+          --retention-days 1
+          --purpose compact-native-reconciliation-diagnostic
+          --classification transient
+          --max-bytes 8388608
       - name: Preserve compact native reconciliation diagnostic evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: always()
+        if: ${{ always() && steps.native-diagnostic-upload-budget.outcome == 'success' }}
         with:
           name: python-native-diagnostic-${{ matrix.target }}-${{ github.sha }}
           path: |
-            ${{ matrix.worker }}
             artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v2.json
             artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v2.json
             artifacts/python-supply-chain/diagnostics/${{ matrix.target }}-native-reconciliation.json
             artifacts/python-supply-chain/evidence/${{ matrix.target }}-cpython-installation.json
+            artifacts/python-supply-chain/evidence/${{ matrix.target }}-ARTIFACT_UPLOAD_INVENTORY.json
             artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json
             artifacts/python-supply-chain/evidence/${{ matrix.target }}-target-evidence.json
             artifacts/python-supply-chain/inspection/${{ matrix.target }}-worker-onefile.json
@@ -397,20 +445,10 @@ jobs:
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-environment-manifest.json
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/pyinstaller-build-evidence.json
-            artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/parsed
-            artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/raw
             artifacts/python-supply-chain/target/${{ matrix.target }}.json
           if-no-files-found: error
           compression-level: 0
-          retention-days: 30
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: always()
-        with:
-          name: python-supply-chain-candidate-${{ matrix.target }}-${{ github.sha }}
-          path: artifacts/python-supply-chain
-          if-no-files-found: error
-          compression-level: 0
-          retention-days: 30
+          retention-days: 1
 
   assemble-license-review-bundle:
     needs: generate-target-candidate
@@ -440,6 +478,17 @@ jobs:
           node tools/code-c-python-supply-chain/create_license_review_bundle.mjs
           --input-root artifacts/python-supply-chain/license-preparation
           --output-root artifacts/python-supply-chain/license-review-bundle
+      - name: Enforce formal license handoff upload budget
+        shell: bash
+        run: >-
+          node tools/actions-artifact-budget.mjs
+          --name code-c-artifact-license-review-bundle-${{ github.sha }}
+          --path artifacts/python-supply-chain/license-review-bundle
+          --inventory artifacts/python-supply-chain/license-review-bundle/ARTIFACT_UPLOAD_INVENTORY.json
+          --retention-days 7
+          --purpose authoritative-license-review-handoff
+          --classification authoritative
+          --max-bytes 4194304
       - name: Preserve formal license review handoff
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -447,7 +496,7 @@ jobs:
           path: artifacts/python-supply-chain/license-review-bundle
           if-no-files-found: error
           compression-level: 0
-          retention-days: 30
+          retention-days: 7
 
   report-license-preparation-status:
     if: always()

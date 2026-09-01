@@ -1,0 +1,121 @@
+{
+  "schema_version": "1",
+  "prerequisite_id": "microsoft-vc-v14-x64-14.51.36247.0",
+  "consumer_requirement_id": "code-c-msvc-v14-x64-5ead2a1",
+  "target_disposition": "EXTERNAL_PREREQUISITE",
+  "provider": {
+    "provider_id": "microsoft-vc-redist-x64-14.51.36247.0",
+    "official_product": "Microsoft Visual C++ v14 Redistributable (x64)",
+    "version": "14.51.36247.0",
+    "architecture": "x86_64",
+    "publisher": "Microsoft Corporation",
+    "deployment_mode": "CENTRAL_INSTALLER_PREREQUISITE",
+    "provided_capabilities": [
+      "msvcp140.dll",
+      "msvcp140_1.dll",
+      "vcruntime140.dll",
+      "vcruntime140_1.dll"
+    ],
+    "bootstrap_artifact": {
+      "filename": "VC_redist.x64.exe",
+      "version": "14.51.36247.0",
+      "sha256": "843068991daaa1f73ad9f6239bce4d0f6a07a51f18c37ea2a867e9beca71295c",
+      "size": 18731856,
+      "canonical_source": "https://download.visualstudio.microsoft.com/download/pr/ebdab8e5-1d7b-4d9f-a11b-cbb1720c3b12/843068991DAAA1F73AD9F6239BCE4D0F6A07A51F18C37EA2A867E9BECA71295C/VC_redist.x64.exe",
+      "latest_alias_not_identity": "https://aka.ms/vc14/vc_redist.x64.exe",
+      "source_status": "PASS",
+      "signature_status": "PASS",
+      "expected_signer_subject": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "expected_signer_certificate_sha256": "c30b441672c82883d92eddac6d24cb57e9960bda4486c7fb5865e74157f35850"
+    },
+    "installation_probe": {
+      "status": "PASS",
+      "evidence_id": "msvc-provider-33270823951-1",
+      "workflow_run_id": 33270823951,
+      "installed_provider_version": "14.51.36247.0",
+      "artifact_bound": true,
+      "probe_sha256": "1db2f448d9ac2f44f058333e4af800a7a8d8c2b805be65a9a55c508979dfc347"
+    }
+  },
+  "compatibility_policy": {
+    "policy_id": "msvc-v14-x64-installed-runtime-compatibility",
+    "version": "2026.08.30.1",
+    "runtime_family": "Microsoft Visual C++ v14 x64 Runtime",
+    "architecture": "x86_64",
+    "minimum_accepted_version": "14.51.36247.0",
+    "newer_compatible_runtime_accepted": true,
+    "detection_mechanism": "WINDOWS_REGISTRY_VC_RUNTIME_X64_PLUS_DLL_FAMILY_PROBE",
+    "required_registry_values": ["Installed=1", "Version>=14.51.36247.0"],
+    "upgrade_behavior": "INSTALL_EXACT_BOOTSTRAP_WHEN_MISSING_OR_OLDER",
+    "downgrade_behavior": "NEVER_DOWNGRADE_NEWER_COMPATIBLE_RUNTIME",
+    "review_triggers": [
+      "bootstrap artifact SHA-256 changes",
+      "minimum runtime version changes",
+      "required capability family changes",
+      "Microsoft compatibility guidance changes",
+      "provider is revoked or unsupported"
+    ],
+    "evidence": [
+      "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170",
+      "https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files?view=msvc-170",
+      "https://learn.microsoft.com/en-us/cpp/windows/determining-which-dlls-to-redistribute?view=msvc-170"
+    ]
+  },
+  "license_evidence": {
+    "evidence_id": "microsoft-vc-redist-license-review-2026-08-30",
+    "status": "BLOCKED_PENDING_LICENSED_VISUAL_STUDIO_USER_ATTESTATION",
+    "basis": "Microsoft lists the unmodified Visual C++ Redistributable package as distributable subject to the applicable Visual Studio license terms and limits redistribution to licensed Visual Studio users.",
+    "official_evidence": [
+      "https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files?view=msvc-170",
+      "https://learn.microsoft.com/en-us/visualstudio/releases/2026/redistribution",
+      "https://visualstudio.microsoft.com/license-terms/"
+    ],
+    "missing_evidence": "Repository has no approved legal attestation identifying the licensed Visual Studio product/terms and the commercial redistribution entity."
+  },
+  "provider_binding": {
+    "consumer_requirement_sha256": "8d7e5bb272e1af494b887cbe4ce84c2f98a7f4fbe3078154aeeb8005d8faf292",
+    "build_context_id": "code-c-pyinstaller-3222e456c74b30b8383350a13ebc5491",
+    "build_context_sha256": "cf4a51739e73fb5d7d3d01df8864298408cd13ae0b737a3b6abc29cae95b4f65",
+    "analysis_toc_sha256": "9cfe8b2c9d6507872ed76e6a6d3bbb34873a9e0e85293d8cda2ec449ecaba5b8",
+    "capability_dispositions": [
+      {
+        "capability": "msvcp140.dll",
+        "disposition": "EXTERNAL_PROVIDER",
+        "provider_id": "microsoft-vc-redist-x64-14.51.36247.0"
+      },
+      {
+        "capability": "msvcp140_1.dll",
+        "disposition": "EXTERNAL_PROVIDER",
+        "provider_id": "microsoft-vc-redist-x64-14.51.36247.0"
+      },
+      {
+        "capability": "vcruntime140.dll",
+        "disposition": "EXTERNAL_PROVIDER",
+        "provider_id": "microsoft-vc-redist-x64-14.51.36247.0"
+      },
+      {
+        "capability": "vcruntime140_1.dll",
+        "disposition": "EXTERNAL_PROVIDER",
+        "provider_id": "microsoft-vc-redist-x64-14.51.36247.0"
+      }
+    ],
+    "provider_partition": "Q_EQUALS_I_UNION_E_AND_I_INTERSECTION_E_EMPTY",
+    "internal_provider": false,
+    "external_provider": true,
+    "raw_source_approval_not_implied": true,
+    "external_entries_must_not_materialize": true,
+    "external_entries_must_not_appear_in_final": true
+  },
+  "approval": {
+    "status": "BLOCKED",
+    "reviewer": "Code F / Quality, Release & Compliance",
+    "reviewed_at": "2026-08-30T00:00:00Z",
+    "expires_at": "2026-11-30T00:00:00Z",
+    "revoked": false,
+    "blocking_reasons": [
+      "Licensed Visual Studio user and applicable license terms attestation missing"
+    ]
+  },
+  "provider_identity_sha256": "648806da208e60fe36b91b3fd0c6eb4d35bdd15cc8ceccbc6d2437f87d418dc9",
+  "manifest_sha256": "c3dd16982ee2c406aa3795aabc2e18ba3870125f861fea7a06f75111449ebe3b"
+}

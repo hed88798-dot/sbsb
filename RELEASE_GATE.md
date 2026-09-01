@@ -7,6 +7,8 @@
 3. 未解决 P0/P1、未知 license/model/binary、Provider Key 泄漏或不可恢复 migration 直接阻止发布。
 4. 不可信 PR 不能取得 Provider Key、正式签名材料或生产环境权限。
 5. Golden test split 在正式评测前保持只读；算法作者不能单人改标签迎合结果。
+6. External runtime requirement 必须绑定获准 prerequisite provider；raw System32/开发机副本不因
+   external disposition 获得分发批准。
 
 ## PR merge gate
 
@@ -24,6 +26,7 @@ suggestions and package-name mappings are never approvals.
 全部条件为真才可进入 beta：
 
 - candidate 来自 clean `main`，metadata 含 commit、run ID、timestamp、固定 Node/pnpm/Electron、DB/IPC/sidecar/model/native versions；
+- External Runtime Prerequisite 的 exact bootstrap、Authenticode、真实安装 closure、兼容策略、许可与未过期审批全部 PASS；release job 必须执行 `compliance:runtime-prerequisite:release`；
 - installer SHA-256 已生成并验证，Authenticode 有效；
 - Windows 10/11 clean VM 的 install/launch/product/copywriting/update/relaunch/data retention/uninstall 通过；
 - migration 使用当前 stable DB fixture，升级前备份，失败可恢复；
@@ -66,6 +69,11 @@ stable 只能 promote 已通过 beta 的同一 artifact：
 P0 包括 Provider Key 泄漏、产品错绑、DB/用户文件破坏、任意代码执行、重复大额计费、不可恢复升级。P1 包括已知物种硬错配、成片核心路径不可用、更新失败不可恢复、授权绕过、Digital Human 耦合 Auto Edit。存在任何未解决 P0/P1：`RELEASE_BLOCKED`，业务 owner 无权口头放行。
 
 以下合规项同样硬阻塞：未知/未批准 GPL/AGPL、未知 model weight rights、未登记 native binary/font/codec、Python wheel 无 hash/来源/platform/ABI、Python transitive graph 不完整、packaged worker 出现未知或 hash 不匹配 native binary、错误 FFmpeg build、缺失必需 NOTICE、无法确认来源/hash、Provider legal status 未批准。
+
+External runtime 的公开可下载状态不是再分发许可。缺少适用产品许可、分发主体或授权证明时，
+prerequisite manifest 可以通过结构验证，但 `--require-approved` 必须失败并阻止 beta/stable。
+Worker engineering validation 可以在预装兼容 Runtime 上继续，但必须证明该 Runtime 在验证动作前已存在，
+且业务分支未下载、携带或安装 bootstrap；该 scoped authorization 不改变 Installer/Release blocker。
 
 ## v0.1 gate
 
