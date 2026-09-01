@@ -150,9 +150,6 @@ def validate_selected_sources(
                             ),
                             "provider_id": external_manifest["provider"]["provider_id"],
                             "capability": runtime_name,
-                            "materialized": False,
-                            "final": False,
-                            "raw_source_approval_implied": False,
                         },
                     }
                 )
