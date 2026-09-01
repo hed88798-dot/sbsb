@@ -792,7 +792,7 @@ async function main() {
   // only when the v1 record binds to the exact production artifact identity.
   // Regression fixtures with a filename or other identity mismatch stay hard
   // blocked; no basename or SHA-only inference is allowed here.
-  if (coverageRoot) {
+  if (coverageRoot || productionCoverageRoot) {
     for (let index = hardBlocked.length - 1; index >= 0; index -= 1) {
       const blocked = hardBlocked[index];
       if (blocked.package !== 'sentencepiece') continue;
