@@ -141,7 +141,7 @@ def exact_toolchain_evidence(
         "target": target,
         "inventory_schema": "python-toolchain-inventory/v1",
         "formal_inventory_status": "MISSING_PENDING_CODE_F_REVIEW",
-        "source_lock_sha256": sha256_file(SOURCE_LOCK),
+        "source_lock_sha256": canonical_sha256(lock),
         "python": {
             "implementation": "CPython",
             "version": lock["python_version"],
@@ -279,6 +279,12 @@ def copy_json(source: Path, destination: Path) -> None:
     shutil.copyfile(source, destination)
 
 
+def copy_canonical_json(source: Path, destination: Path) -> None:
+    if not source.is_file() or source.suffix.lower() != ".json":
+        raise SystemExit(f"canonical review evidence must be an existing JSON file: {source}")
+    write_canonical_json(destination, load_json(source))
+
+
 def prepare_target(arguments: argparse.Namespace) -> None:
     head = git("rev-parse", "HEAD")
     require_ancestor(arguments.main_baseline, head, "main quality baseline")
@@ -326,10 +332,13 @@ def prepare_target(arguments: argparse.Namespace) -> None:
         (arguments.runtime_identity, copied["runtime_identity"]),
         (arguments.installation_evidence, copied["installation_evidence"]),
         (arguments.graph_attestation, copied["graph_interpreter_attestation"]),
+    ):
+        copy_json(source, destination)
+    for source, destination in (
         (DEFINITIONS, copied["dependency_definitions"]),
         (SOURCE_LOCK, copied["toolchain_source_lock"]),
     ):
-        copy_json(source, destination)
+        copy_canonical_json(source, destination)
 
     inventories = []
     drift_entries = []
@@ -413,12 +422,12 @@ def prepare_target(arguments: argparse.Namespace) -> None:
         probe_destination = output_root / "windows-runtime-prerequisite-attestation.json"
         copy_json(arguments.runtime_prerequisite_attestation, probe_destination)
         prerequisite_destination = output_root / "external-prerequisite.snapshot.json"
-        copy_json(PREREQUISITE, prerequisite_destination)
+        copy_canonical_json(PREREQUISITE, prerequisite_destination)
         runtime_prerequisite = {
             "status": "PASS",
             "validation_mode": "PREINSTALLED_COMPATIBLE_RUNTIME_ONLY",
             "manifest_id": prerequisite["prerequisite_id"],
-            "manifest_sha256": sha256_file(PREREQUISITE),
+            "manifest_sha256": prerequisite["manifest_sha256"],
             "attestation_path": probe_destination.relative_to(output_root).as_posix(),
             "attestation_sha256": sha256_file(probe_destination),
             "installed_runtime_version": installed["version"],
@@ -486,7 +495,7 @@ def prepare_target(arguments: argparse.Namespace) -> None:
         },
         "inventory_candidates": inventories,
         "inventory_graph_completeness": "PASS",
-        "dependency_definitions_sha256": sha256_file(DEFINITIONS),
+        "dependency_definitions_sha256": canonical_sha256(load_json(DEFINITIONS)),
         "dependency_graph_set_sha256": canonical_sha256(
             [entry["dependency_graph_identity_sha256"] for entry in inventories]
         ),
@@ -538,6 +547,19 @@ def assemble(arguments: argparse.Namespace) -> None:
     if len(heads) != 1 or any(report.get("status") != "PASS" for _, report in loaded):
         raise SystemExit("target inventory reports do not share one passing current HEAD")
     head = heads.pop()
+    dependency_definition_ids = {
+        report["dependency_definitions_sha256"] for _, report in loaded
+    }
+    if len(dependency_definition_ids) != 1:
+        raise SystemExit("Linux/Windows dependency definition canonical identities differ")
+    toolchain_source_lock_ids = {
+        load_json(path.parent / report["toolchain_intake_evidence_path"])[
+            "source_lock_sha256"
+        ]
+        for path, report in loaded
+    }
+    if len(toolchain_source_lock_ids) != 1:
+        raise SystemExit("Linux/Windows toolchain source-lock canonical identities differ")
     if arguments.output_root.exists():
         raise SystemExit(f"inventory review bundle output must start absent: {arguments.output_root}")
     arguments.output_root.mkdir(parents=True)
@@ -575,6 +597,12 @@ def assemble(arguments: argparse.Namespace) -> None:
                     "distribution_sha256"
                 ],
                 "dependency_graph_set_sha256": report["dependency_graph_set_sha256"],
+                "dependency_definitions_sha256": report[
+                    "dependency_definitions_sha256"
+                ],
+                "toolchain_source_lock_sha256": load_json(
+                    destination / "toolchain-intake-evidence.json"
+                )["source_lock_sha256"],
                 "inventory_drift": report["inventory_drift"],
             }
         )

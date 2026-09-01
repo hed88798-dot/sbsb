@@ -31,6 +31,7 @@ def target_report(target: str) -> dict[str, object]:
             "distribution_sha256": ("3" if target == "linux" else "4") * 64,
         },
         "dependency_graph_set_sha256": ("5" if target == "linux" else "6") * 64,
+        "dependency_definitions_sha256": "e" * 64,
         "inventory_drift": "PRESENT",
         "inventory_candidates": [
             {
@@ -44,6 +45,7 @@ def target_report(target: str) -> dict[str, object]:
                 ("worker-build", "WORKER_BUILD", "9", "d"),
             )
         ],
+        "toolchain_intake_evidence_path": "toolchain-intake-evidence.json",
     }
 
 
@@ -53,7 +55,7 @@ def write_target(root: Path, target: str) -> None:
     write_canonical_json(target_root / "target-report.json", target_report(target))
     write_canonical_json(
         target_root / "toolchain-intake-evidence.json",
-        {"schema_version": "1", "target": target},
+        {"schema_version": "1", "target": target, "source_lock_sha256": "f" * 64},
     )
 
 
