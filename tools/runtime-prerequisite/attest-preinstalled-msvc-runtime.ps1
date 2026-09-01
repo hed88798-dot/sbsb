@@ -14,9 +14,18 @@ if ($manifestJson.prerequisite_id -ne 'microsoft-vc-v14-x64-14.51.36247.0' -or
   throw 'external prerequisite manifest identity is not the approved MSVC v14 x64 record'
 }
 
-$minimum = [version]$manifestJson.compatibility_policy.minimum_accepted_version
+function Convert-RuntimeVersion {
+  param([Parameter(Mandatory = $true)][string]$Value)
+  $normalized = $Value.Trim() -replace '^[vV]', ''
+  return ([version]$normalized)
+}
+
+$minimum = Convert-RuntimeVersion ([string]$manifestJson.compatibility_policy.minimum_accepted_version)
 $registry = Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64' -ErrorAction SilentlyContinue
-if ($null -eq $registry -or [int]$registry.Installed -ne 1 -or [version]$registry.Version -lt $minimum) {
+$registryVersion = if ($null -eq $registry) { $null } else {
+  Convert-RuntimeVersion ([string]$registry.Version)
+}
+if ($null -eq $registry -or [int]$registry.Installed -ne 1 -or $registryVersion -lt $minimum) {
   throw 'BLOCKED_VALIDATION_ENVIRONMENT_PREREQUISITE_MISSING: compatible preinstalled MSVC runtime was not found'
 }
 
@@ -28,13 +37,14 @@ foreach ($capability in $manifestJson.provider.provided_capabilities) {
   $path = Join-Path (Join-Path $windir 'System32') $name
   if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "missing preinstalled runtime capability: $name" }
   $file = Get-Item -LiteralPath $path
-  $version = $file.VersionInfo.FileVersion
-  if ([string]::IsNullOrWhiteSpace($version)) { throw "runtime capability has no file version: $name" }
-  if ([version]$version -lt $minimum) { throw "runtime capability is older than minimum: $name" }
+  $versionText = [string]$file.VersionInfo.FileVersion
+  if ([string]::IsNullOrWhiteSpace($versionText)) { throw "runtime capability has no file version: $name" }
+  $version = Convert-RuntimeVersion $versionText
+  if ($version -lt $minimum) { throw "runtime capability is older than minimum: $name" }
   $capabilities += [ordered]@{
     capability = $name.ToLowerInvariant()
     installed_path = ('%WINDIR%/System32/' + $name)
-    file_version = ([version]$version).ToString()
+    file_version = $version.ToString()
     sha256 = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
   }
 }
@@ -50,9 +60,9 @@ $document = [ordered]@{
   registry = [ordered]@{
     path = 'HKLM:\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64'
     Installed = [int]$registry.Installed
-    Version = ([version]$registry.Version).ToString()
+    Version = $registryVersion.ToString()
   }
-  installed_runtime_version = ([version]$registry.Version).ToString()
+  installed_runtime_version = $registryVersion.ToString()
   capabilities = $capabilities
   VC_REDIST_DOWNLOADED_BY_CODE_C = 'NO'
   VC_REDIST_BUNDLED_BY_CODE_C = 'NO'
