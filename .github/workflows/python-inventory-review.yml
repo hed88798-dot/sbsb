@@ -2,8 +2,6 @@ name: Python inventory review preparation
 
 on:
   workflow_dispatch:
-  push:
-    branches: [code-c/stage-b-validation-candidate]
 
 permissions:
   contents: read

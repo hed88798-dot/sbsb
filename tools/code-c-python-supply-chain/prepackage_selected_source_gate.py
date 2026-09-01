@@ -13,7 +13,10 @@ from hermetic_pyinstaller import (
 )
 from msvc_runtime_dependency import (
     MsvcRuntimeEvidenceError,
+    build_import_closure,
     capture_msvc_runtime_dependency_request,
+    normalize_runtime_name,
+    read_pe_facts,
 )
 from machine_output import log_status
 
@@ -36,6 +39,65 @@ def validate_selected_sources(
         raise SystemExit(str(error)) from error
     entries = []
     failures = []
+    closure_inputs = []
+    external_manifest = None
+    external_capabilities: set[str] = set()
+    external_manifest_path_value = os.environ.get("CODE_C_EXTERNAL_PREREQUISITE_MANIFEST")
+    if external_manifest_path_value:
+        try:
+            external_manifest_path = Path(external_manifest_path_value).resolve(strict=True)
+            external_manifest = json.loads(external_manifest_path.read_text(encoding="utf-8"))
+            if (
+                external_manifest.get("prerequisite_id") != "microsoft-vc-v14-x64-14.51.36247.0"
+                or sha256_file(external_manifest_path)
+                != "c3dd16982ee2c406aa3795aabc2e18ba3870125f861fea7a06f75111449ebe3b"
+                or external_manifest.get("target_disposition") != "EXTERNAL_PREREQUISITE"
+            ):
+                raise ValueError("external prerequisite manifest identity is not approved")
+            external_capabilities = {
+                str(name).lower()
+                for name in external_manifest["provider"]["provided_capabilities"]
+            }
+        except (OSError, ValueError, KeyError, json.JSONDecodeError) as error:
+            failures.append(f"external prerequisite manifest validation failed: {error}")
+    if external_manifest is not None:
+        for item in binaries:
+            if not isinstance(item, (tuple, list)) or len(item) != 3:
+                continue
+            destination, source, category = item
+            if category not in {"BINARY", "EXTENSION"} or not isinstance(source, str):
+                continue
+            source_path = Path(source)
+            try:
+                digest = sha256_file(source_path)
+                try:
+                    approved = approved_source_entry(source_path, digest, manifest)
+                    owner = {
+                        "source_kind": approved["source_kind"],
+                        "source_artifact_identity": approved["source_artifact_identity"],
+                    }
+                except RuntimeError:
+                    owner = {"source_kind": "UNAPPROVED_SYSTEM_COPY", "source_artifact_identity": None}
+                closure_inputs.append(
+                    {
+                        "internal_path": str(destination).replace("\\", "/"),
+                        "selected_source_path": str(source_path),
+                        "sha256": digest,
+                        "owner": owner,
+                        "pe": read_pe_facts(source_path),
+                    }
+                )
+            except (OSError, MsvcRuntimeEvidenceError) as error:
+                failures.append(f"{destination}: cannot establish MSVC disposition evidence: {error}")
+    required_external_capabilities: set[str] = set()
+    if closure_inputs:
+        try:
+            required_external_capabilities = {
+                str(name).lower()
+                for name in build_import_closure(closure_inputs)["application_required_msvc_dll_family"]
+            }
+        except MsvcRuntimeEvidenceError as error:
+            failures.append(f"MSVC import closure failed before packaging selection: {error}")
     for index, item in enumerate(binaries):
         if not isinstance(item, (tuple, list)) or len(item) != 3:
             failures.append(f"Analysis.binaries[{index}] is not a three-field entry")
@@ -56,6 +118,36 @@ def validate_selected_sources(
                 "selected_source_path": str(source_path),
                 "selected_source_sha256": digest,
             }
+            runtime_name = normalize_runtime_name(destination)
+            # The approved deployment decision is based on the complete PE
+            # import closure, not on whether this particular copy happens to
+            # match a CPython/toolchain manifest entry.  This keeps the raw
+            # Analysis selection intact while partitioning every required
+            # MSVC runtime DLL into the external-prerequisite layer.
+            if (
+                external_manifest is not None
+                and runtime_name in required_external_capabilities
+                and runtime_name in external_capabilities
+            ):
+                entries.append(
+                    {
+                        **entry,
+                        "selected_source_realpath": str(source_path.resolve(strict=True)),
+                        "source_provenance_status": "EXTERNAL_PREREQUISITE",
+                        "source_kind": "EXTERNAL_PREREQUISITE_RUNTIME_OBSERVATION",
+                        "source_artifact_identity": None,
+                        "external_prerequisite": {
+                            "prerequisite_id": external_manifest["prerequisite_id"],
+                            "manifest_sha256": sha256_file(external_manifest_path),
+                            "provider_id": external_manifest["provider"]["provider_id"],
+                            "capability": runtime_name,
+                            "materialized": False,
+                            "final": False,
+                            "raw_source_approval_implied": False,
+                        },
+                    }
+                )
+                continue
             try:
                 approved = approved_source_entry(source_path, digest, manifest)
                 entries.append(

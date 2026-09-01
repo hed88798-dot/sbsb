@@ -115,6 +115,8 @@ def main() -> None:
     parser.add_argument("--distribution", type=Path, required=True)
     parser.add_argument("--pip-wheel", type=Path, required=True)
     parser.add_argument("--pyinstaller-wheel", type=Path, required=True)
+    parser.add_argument("--approval-binding", type=Path, required=True)
+    parser.add_argument("--build-input-closure", type=Path, required=True)
     parser.add_argument("--build-environment-manifest", type=Path)
     parser.add_argument("--main-quality-baseline", required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -136,6 +138,8 @@ def main() -> None:
             "distribution",
             "pip_wheel",
             "pyinstaller_wheel",
+            "approval_binding",
+            "build_input_closure",
         )
         if arguments.build_environment_manifest:
             existing_inputs += ("build_environment_manifest",)
@@ -169,6 +173,34 @@ def main() -> None:
             f"build context requires PyInstaller {EXPECTED_PYINSTALLER_VERSION}, got {PyInstaller.__version__}"
         )
     require_baseline(arguments.main_quality_baseline, repository_root)
+    approval_binding = json.loads(arguments.approval_binding.read_text(encoding="utf-8"))
+    if (
+        approval_binding.get("status") != "PASS"
+        or approval_binding.get("binding_kind") != "CODE_C_BUILD_TIME_APPROVAL_BINDING"
+        or approval_binding.get("code_c_head_sha") != git_head(repository_root)
+        or approval_binding.get("main_quality_baseline") != arguments.main_quality_baseline
+        or approval_binding.get("counts") != {
+            "inventory_subjects": 4,
+            "active_inventory_approvals": 4,
+            "toolchain_subjects": 2,
+            "active_toolchain_approvals": 2,
+        }
+        or any(value != 0 for value in approval_binding.get("mismatch_counts", {}).values())
+    ):
+        raise SystemExit("Build Context requires a PASS binding for the current 4+2 approvals")
+    if len(approval_binding.get("approvals", [])) != 6 or any(
+        entry.get("state") != "ACTIVE" for entry in approval_binding["approvals"]
+    ):
+        raise SystemExit("Build Context approval binding contains a non-active or incomplete approval set")
+    build_input_closure = json.loads(arguments.build_input_closure.read_text(encoding="utf-8"))
+    if (
+        build_input_closure.get("status") != "PASS"
+        or build_input_closure.get("target", {}).get("os") != arguments.target
+        or build_input_closure.get("target", {}).get("python_version") != "3.13.15"
+        or build_input_closure.get("dependency_reresolution_during_build") != "NO"
+        or build_input_closure.get("sdist_or_source_build_used") != "NO"
+    ):
+        raise SystemExit("Build Context requires a PASS exact build-input inventory closure")
     fresh_directory(arguments.workpath, "PyInstaller workpath", repository_root)
     fresh_directory(arguments.distpath, "PyInstaller distpath", repository_root)
     try:
@@ -306,6 +338,26 @@ def main() -> None:
         },
         "wheel_inventories": wheel_inventories,
         "wheel_graph_sha256": hashlib.sha256(canonical_bytes(wheel_inventories)).hexdigest(),
+        "approval_binding": {
+            "path": repository_relative_identity(
+                arguments.approval_binding,
+                repository_root=repository_root,
+                field="build_context.inputs.approval_binding.path",
+            ),
+            "sha256": sha256_file(arguments.approval_binding),
+            "review_snapshot_sha256": approval_binding["review_snapshot"]["sha256"],
+            "approval_contract_sha256": approval_binding["approval_contract"]["sha256"],
+            "active_inventory_approval_count": approval_binding["counts"]["active_inventory_approvals"],
+            "active_toolchain_approval_count": approval_binding["counts"]["active_toolchain_approvals"],
+        },
+        "build_input_closure": {
+            "path": repository_relative_identity(
+                arguments.build_input_closure,
+                repository_root=repository_root,
+                field="build_context.inputs.build_input_closure.path",
+            ),
+            "sha256": sha256_file(arguments.build_input_closure),
+        },
         "source_import_graph_sha256": source_graph["source_import_graph_sha256"],
         "sidecar_command_surface_sha256": source_graph[
             "sidecar_command_surface_sha256"

@@ -138,6 +138,8 @@ def main() -> None:
     parser.add_argument("--pyinstaller-wheel", type=Path, required=True)
     parser.add_argument("--build-context", type=Path, required=True)
     parser.add_argument("--build-evidence", type=Path, required=True)
+    parser.add_argument("--prepackage-selected-evidence", type=Path)
+    parser.add_argument("--external-prerequisite", type=Path)
     parser.add_argument("--final-artifact", type=Path, required=True)
     arguments = parser.parse_args()
     target, architecture = actual_target()
@@ -160,6 +162,11 @@ def main() -> None:
     materialized_path = build_root / build_evidence["materialized_native_set"]["path"]
     selected_document = json.loads(selected_path.read_text(encoding="utf-8"))
     materialized_document = json.loads(materialized_path.read_text(encoding="utf-8"))
+    prepackage_document = None
+    if arguments.prepackage_selected_evidence:
+        prepackage_document = json.loads(
+            arguments.prepackage_selected_evidence.read_text(encoding="utf-8")
+        )
     context_ids = {
         build_context["build_context_id"],
         build_evidence["build_context_id"],
@@ -198,21 +205,24 @@ def main() -> None:
     inspection_path.parent.mkdir(parents=True, exist_ok=True)
     write_canonical_json(inspection_path, inspection)
 
-    runtime = json.loads(
-        (arguments.bundle / "candidates" / f"code-c-{target}-runtime.v2.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    worker_build = json.loads(
-        (arguments.bundle / "candidates" / f"code-c-{target}-worker-build.v2.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    worker_build_resolution = json.loads(
-        (arguments.bundle / "resolution" / f"{target}-worker-build.json").read_text(
-            encoding="utf-8"
-        )
-    )
+    def candidate_path(scope: str) -> Path:
+        for suffix in ("v3", "v2"):
+            path = arguments.bundle / "candidates" / f"code-c-{target}-{scope}.{suffix}.json"
+            if path.is_file():
+                return path
+        raise SystemExit(f"approved candidate is missing: {target}/{scope}")
+
+    runtime = json.loads(candidate_path("runtime").read_text(encoding="utf-8"))
+    worker_build = json.loads(candidate_path("worker-build").read_text(encoding="utf-8"))
+    resolution_candidates = [
+        arguments.bundle / "resolution" / f"{target}-worker-build.json",
+        arguments.bundle / "targets" / target / "resolution" / f"{target}-worker-build.json",
+    ]
+    resolution_path = next((path for path in resolution_candidates if path.is_file()), None)
+    if resolution_path is None:
+        worker_build_resolution = {"packages": []}
+    else:
+        worker_build_resolution = json.loads(resolution_path.read_text(encoding="utf-8"))
     hooks_candidates = [
         package
         for package in worker_build["packages"]
@@ -250,7 +260,67 @@ def main() -> None:
                 }
             )
     installed = installed_native_files()
-    selected = selected_document["entries"]
+    selected = list(selected_document["entries"])
+    selected_paths = {str(item["internal_path"]) for item in selected}
+    external_manifest = None
+    external_capabilities: set[str] = set()
+    if arguments.external_prerequisite:
+        external_manifest = json.loads(arguments.external_prerequisite.read_text(encoding="utf-8"))
+        if (
+            external_manifest.get("prerequisite_id") != "microsoft-vc-v14-x64-14.51.36247.0"
+            or sha256_file(arguments.external_prerequisite)
+            != "c3dd16982ee2c406aa3795aabc2e18ba3870125f861fea7a06f75111449ebe3b"
+        ):
+            raise SystemExit("external prerequisite manifest identity mismatch")
+        external_capabilities = {
+            str(value).lower() for value in external_manifest["provider"]["provided_capabilities"]
+        }
+    if prepackage_document:
+        request_path = arguments.prepackage_selected_evidence.parent / "msvc-runtime-dependency-request.v1.json"
+        required_capabilities = set()
+        if request_path.is_file():
+            request = json.loads(request_path.read_text(encoding="utf-8"))
+            required_capabilities = {
+                str(value).lower()
+                for value in request.get("pe_import_closure", {}).get(
+                    "application_required_msvc_dll_family", []
+                )
+            }
+        for raw in prepackage_document.get("entries", []):
+            if raw.get("source_provenance_status") != "EXTERNAL_PREREQUISITE":
+                continue
+            path = str(raw["internal_path"])
+            runtime_name = PurePosixPath(path).name.lower()
+            if path in selected_paths:
+                continue
+            if runtime_name not in required_capabilities or runtime_name not in external_capabilities:
+                raise SystemExit(f"external selection is not covered by current import closure: {path}")
+            selected.append(
+                {
+                    "internal_path": path,
+                    "filename": raw["filename"],
+                    "source_path": raw["selected_source_path"],
+                    "source_sha256": raw["selected_source_sha256"],
+                    "source_size": raw.get("source_size", 0),
+                    "pyinstaller_category": raw["category"],
+                    "pyinstaller_stage": "ANALYSIS_TOC",
+                    "present_in_analysis_binaries": True,
+                    "source_owner": {
+                        "resolution": "RESOLVED_EXTERNAL_PREREQUISITE",
+                        "owner_kind": "SYSTEM_BUILD_RUNTIME_NATIVE",
+                        "owner_reference": {
+                            "status": "EXTERNAL_PREREQUISITE",
+                            "prerequisite_id": external_manifest["prerequisite_id"],
+                            "provider_id": external_manifest["provider"]["provider_id"],
+                        },
+                        "source_artifact_sha256": raw["selected_source_sha256"],
+                        "source_native_relative_path": raw["selected_source_path"],
+                        "resolution_basis": "CURRENT_PE_IMPORT_CLOSURE_AND_EXTERNAL_PREREQUISITE_MANIFEST",
+                    },
+                    "external_prerequisite": raw.get("external_prerequisite"),
+                }
+            )
+        selected.sort(key=lambda item: str(item["internal_path"]))
     materialized = materialized_document["entries"]
     selected_by_path = {str(item["internal_path"]): item for item in selected}
     materialized_by_path = {str(item["internal_path"]): item for item in materialized}
@@ -258,6 +328,12 @@ def main() -> None:
     final_by_sha: dict[str, list[dict[str, object]]] = {}
     for item in inspection["native_artifacts"]:
         final_by_sha.setdefault(str(item["sha256"]), []).append(item)
+    external_selected_paths = {
+        str(item["internal_path"])
+        for item in selected
+        if item.get("source_owner", {}).get("resolution") == "RESOLVED_EXTERNAL_PREREQUISITE"
+    }
+    external_final_paths = external_selected_paths & set(final_by_path)
 
     if len(selected_by_path) != len(selected) or len(materialized_by_path) != len(materialized):
         raise SystemExit("selected/materialized native set contains duplicate internal paths")
@@ -272,8 +348,13 @@ def main() -> None:
     hash_match_recovered = 0
     for selected_item in selected:
         internal_path = str(selected_item["internal_path"])
+        is_external = selected_item.get("source_owner", {}).get("resolution") == "RESOLVED_EXTERNAL_PREREQUISITE"
         staged = materialized_by_path.get(internal_path)
         final = final_by_path.get(internal_path)
+        if is_external:
+            if staged is not None or final is not None:
+                selected_missing_paths.add(internal_path)
+            continue
         if staged is None:
             raise SystemExit(f"selected native lacks materialized evidence: {internal_path}")
         owner = selected_item["source_owner"]
@@ -483,8 +564,10 @@ def main() -> None:
         and unknown_counts["UNRESOLVED"] == 0
         and build_evidence["ambiguous_hash_owner_count"] == 0
         and selected_final_identity_complete
+        and not external_final_paths
         and symlink_capture_matches
-        and len(selected) == len(materialized) == len(inspection["native_artifacts"])
+        and len([item for item in selected if item.get("source_owner", {}).get("resolution") != "RESOLVED_EXTERNAL_PREREQUISITE"])
+        == len(materialized) == len(inspection["native_artifacts"])
     )
     diagnostic_status = "PASS" if classification_complete else "INCOMPLETE"
 
@@ -515,6 +598,19 @@ def main() -> None:
             source_path = safe_relative_path(str(owner["source_native_relative_path"]))
         elif kind == "SYSTEM_BUILD_RUNTIME_NATIVE":
             system = owner["owner_reference"]
+            if isinstance(system, dict) and system.get("status") == "EXTERNAL_PREREQUISITE":
+                return {
+                    "source_artifact_id": artifact_id(
+                        "external-observation", str(item["source_sha256"])
+                    ),
+                    "source_artifact_sha256": str(item["source_sha256"]),
+                    "source_path": safe_relative_path(str(item["source_path"])),
+                    "internal_path": safe_relative_path(str(item["internal_path"])),
+                    "payload_sha256": str(item["source_sha256"]),
+                    "owner_kind": kind,
+                    "target": formal_target,
+                    "build_context_id": build_context_id,
+                }
             package = (
                 str(system.get("package"))
                 if isinstance(system, dict) and system.get("package")
@@ -557,6 +653,15 @@ def main() -> None:
             "required_in_final": True,
             "resolution_basis": str(item["source_owner"]["resolution_basis"]),
         }
+        if item.get("source_owner", {}).get("resolution") == "RESOLVED_EXTERNAL_PREREQUISITE":
+            record["disposition"] = "EXTERNAL_PREREQUISITE"
+            record["required_in_final"] = False
+            record["external_prerequisite"] = item.get("external_prerequisite") or {
+                "prerequisite_id": external_manifest["prerequisite_id"],
+                "manifest_sha256": sha256_file(arguments.external_prerequisite),
+                "provider_id": external_manifest["provider"]["provider_id"],
+                "capability": PurePosixPath(str(item["internal_path"])).name.lower(),
+            }
         formal_selected.append(record)
         selected_ids_by_path[str(item["internal_path"])] = identifier
         selected_provenance_by_path[str(item["internal_path"])] = provenance
@@ -909,7 +1014,9 @@ def main() -> None:
         "schema_name": "NATIVE_RECONCILIATION_DIAGNOSTIC",
         "schema_version": "2",
         "status": diagnostic_status,
-        "mandatory_stop": "DELEGATED_TO_SHARED_V3_VERIFIER",
+        "mandatory_stop": (
+            "PHASE_STOP_AFTER_NATIVE" if diagnostic_status == "PASS" else "ACTIVE"
+        ),
         "build_context_id": build_context["build_context_id"],
         "code_c_head_sha": build_context["inputs"]["code_c_commit"],
         "candidate_worker": inspection["final_artifact"],
@@ -928,7 +1035,7 @@ def main() -> None:
         "pyinstaller_toc_capture": build_evidence["toc_capture"],
         "pyinstaller_selected_set_capture": build_evidence["selected_set_capture"],
         "pyinstaller_staging_capture": build_evidence["staging_capture"],
-        "final_carchive_capture": "PASS" if symlink_capture_matches else "FAIL",
+        "final_carchive_capture": "PASS" if symlink_capture_matches and not external_final_paths else "FAIL",
         "raw_evidence": build_evidence["raw_evidence"],
         "selected_native_set": build_evidence["selected_native_set"],
         "materialized_native_set": build_evidence["materialized_native_set"],
@@ -942,6 +1049,11 @@ def main() -> None:
         "pyinstaller_materialized_native_count": len(materialized),
         "final_embedded_native_count": len(inspection["native_artifacts"]),
         "symlink_metadata_count": len(inspection["symlink_metadata"]),
+        "external_prerequisite_selected_count": len(external_selected_paths),
+        "external_prerequisite_materialized_count": len(
+            external_selected_paths & set(materialized_by_path)
+        ),
+        "external_prerequisite_final_count": len(external_final_paths),
         "missing_approved_native_count": len(missing),
         "missing_classification": missing_counts,
         "unknown_embedded_count": len(unknown),
@@ -955,7 +1067,9 @@ def main() -> None:
         "symlink_plan_final_match": symlink_capture_matches,
         "classification_complete_and_exclusive": "PASS" if classification_complete else "FAIL",
         "superseded_gate_semantics": "ADR-007_PACKAGING_SELECTED_NATIVE_CONTRACT",
-        "formal_contract_status": "PENDING_SHARED_V3_VERIFIER",
+        "formal_contract_status": (
+            "READY_FOR_NATIVE_V3_VERIFIER" if diagnostic_status == "PASS" else "INCOMPLETE"
+        ),
         "packaging_selection_evidence": {
             "path": selection_path.relative_to(arguments.bundle).as_posix(),
             "sha256": selection_sha256,
@@ -967,10 +1081,10 @@ def main() -> None:
         "current_shared_contract_can_express_reality": "YES",
         "m1_proves_selected_set_required": "SUPERSEDED_BY_ADR_007",
         "qicr_required": "NO",
-        "owner_of_next_fix": "SHARED_V3_VERIFIER",
+        "owner_of_next_fix": "CODE_C_NEXT_PHASE" if diagnostic_status == "PASS" else "CODE_C",
         "missing_items": missing,
         "unknown_items": unknown,
-        "downstream_gate_status": "PENDING_SHARED_V3_VERIFIER",
+        "downstream_gate_status": "BLOCKED_NOT_RERUN",
     }
     diagnostic_path = arguments.bundle / "diagnostics" / f"{target}-native-reconciliation.json"
     diagnostic_path.parent.mkdir(parents=True, exist_ok=True)

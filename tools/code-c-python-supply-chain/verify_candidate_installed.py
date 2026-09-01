@@ -13,6 +13,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", choices=["windows", "linux"], required=True)
     parser.add_argument("--bundle", type=Path, required=True)
+    parser.add_argument("--candidate", type=Path, action="append")
     parser.add_argument(
         "--scope",
         choices=["runtime", "worker-build", "model-export", "model-evaluation"],
@@ -22,16 +23,26 @@ def main() -> None:
     arguments = parser.parse_args()
 
     expected: dict[str, dict[str, object]] = {}
-    for scope in arguments.scope:
-        candidate = json.loads(
-            (
-                arguments.bundle
-                / "candidates"
-                / f"code-c-{arguments.target}-{scope}.v2.json"
-            ).read_text(encoding="utf-8")
-        )
-        if candidate.get("graph_complete") is not False:
-            raise SystemExit("candidate installation verifier accepts PENDING candidates only")
+    candidate_paths = arguments.candidate
+    if candidate_paths is None:
+        candidate_paths = []
+        for scope in arguments.scope:
+            candidates = sorted(
+                (arguments.bundle / "candidates").glob(
+                    f"code-c-{arguments.target}-{scope}.v[23].json"
+                )
+            )
+            if len(candidates) != 1:
+                raise SystemExit(
+                    f"expected one complete candidate for {arguments.target}/{scope}, got {len(candidates)}"
+                )
+            candidate_paths.append(candidates[0])
+    if len(candidate_paths) != len(arguments.scope):
+        raise SystemExit("--candidate count must equal --scope count")
+    for candidate_path in candidate_paths:
+        candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+        if candidate.get("schema_version") not in {"2", "3"} or candidate.get("graph_complete") is not True:
+            raise SystemExit("candidate installation verifier requires a complete Inventory v2/v3 candidate")
         for package in candidate["packages"]:
             name = canonicalize_name(str(package["package_name"]))
             previous = expected.get(name)

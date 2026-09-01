@@ -1,5 +1,7 @@
 # PyInstaller 6.22.2 build recipe. Invoke from this directory on the target OS.
 import importlib.util
+import json
+import os
 from pathlib import Path
 import sys
 
@@ -35,6 +37,27 @@ try:
 finally:
     sys.path.pop(0)
 gate.validate_analysis_binaries(analysis.binaries)
+
+# Preserve the raw Analysis selection in the pre-package evidence, then
+# exclude only the entries that the current build's approved external-runtime
+# partition explicitly marks as installer-provided.  This is intentionally
+# evidence-driven (destination + current import closure), never a basename
+# ignore list or an implicit System32 allowlist.
+selected_evidence_value = os.environ.get("CODE_C_PREPACKAGE_SELECTED_EVIDENCE")
+if selected_evidence_value:
+    selected_evidence_path = Path(selected_evidence_value).resolve(strict=True)
+    selected_evidence = json.loads(selected_evidence_path.read_text(encoding="utf-8"))
+    external_paths = {
+        str(entry["internal_path"]).replace("\\", "/")
+        for entry in selected_evidence.get("entries", [])
+        if entry.get("source_provenance_status") == "EXTERNAL_PREREQUISITE"
+    }
+    if external_paths:
+        analysis.binaries = [
+            entry
+            for entry in analysis.binaries
+            if str(entry[0]).replace("\\", "/") not in external_paths
+        ]
 
 pyz = PYZ(analysis.pure)
 executable = EXE(

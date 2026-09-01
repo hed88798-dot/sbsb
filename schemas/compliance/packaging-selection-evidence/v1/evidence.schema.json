@@ -142,7 +142,9 @@
         "pyinstaller_stage": { "enum": ["ANALYSIS_TOC", "PKG_TOC", "EXE_TOC"] },
         "pyinstaller_category": { "enum": ["BINARY", "EXTENSION"] },
         "required_in_final": { "type": "boolean" },
-        "resolution_basis": { "type": "string", "minLength": 1 }
+        "resolution_basis": { "type": "string", "minLength": 1 },
+        "disposition": { "enum": ["INTERNAL", "EXTERNAL_PREREQUISITE"] },
+        "external_prerequisite": { "$ref": "#/$defs/externalPrerequisite" }
       }
     },
     "symlink": {
@@ -163,6 +165,17 @@
         "encoding": { "const": "utf-8" },
         "typecode": { "const": "n" },
         "build_context_id": { "$ref": "#/$defs/id" }
+      }
+    },
+    "externalPrerequisite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prerequisite_id", "manifest_sha256", "provider_id", "capability"],
+      "properties": {
+        "prerequisite_id": { "$ref": "#/$defs/id" },
+        "manifest_sha256": { "$ref": "#/$defs/sha256" },
+        "provider_id": { "$ref": "#/$defs/id" },
+        "capability": { "type": "string", "pattern": "^[a-z0-9._-]+$" }
       }
     }
   }

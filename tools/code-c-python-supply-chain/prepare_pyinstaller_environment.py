@@ -204,6 +204,7 @@ def main() -> None:
     parser.add_argument("--pyinstaller-wheel", type=Path, required=True)
     parser.add_argument("--cpython-installation", type=Path, required=True)
     parser.add_argument("--runtime-identity", type=Path, required=True)
+    parser.add_argument("--runtime-attestation", type=Path, required=True)
     parser.add_argument("--spec", type=Path, required=True)
     parser.add_argument("--workpath", type=Path, required=True)
     parser.add_argument("--distpath", type=Path, required=True)
@@ -229,6 +230,7 @@ def main() -> None:
             "pyinstaller_wheel",
             "cpython_installation",
             "runtime_identity",
+            "runtime_attestation",
             "spec",
         )
         future_outputs = (
@@ -295,6 +297,25 @@ def main() -> None:
 
     installation = json.loads(arguments.cpython_installation.read_text(encoding="utf-8"))
     runtime = json.loads(arguments.runtime_identity.read_text(encoding="utf-8"))
+    runtime_attestation = json.loads(arguments.runtime_attestation.read_text(encoding="utf-8"))
+    if (
+        runtime_attestation.get("status") != "PASS"
+        or runtime_attestation.get("validation_mode") != "PREINSTALLED_COMPATIBLE_RUNTIME_ONLY"
+        or runtime_attestation.get("prerequisite_id")
+        != "microsoft-vc-v14-x64-14.51.36247.0"
+        or runtime_attestation.get("manifest_sha256")
+        != "c3dd16982ee2c406aa3795aabc2e18ba3870125f861fea7a06f75111449ebe3b"
+        or runtime_attestation.get("installed_runtime_compatibility") != "PASS"
+        or any(
+            runtime_attestation.get(key) != "NO"
+            for key in (
+                "VC_REDIST_DOWNLOADED_BY_CODE_C",
+                "VC_REDIST_BUNDLED_BY_CODE_C",
+                "VC_REDIST_INSTALLED_BY_CODE_C",
+            )
+        )
+    ):
+        raise SystemExit("Windows build environment requires a PASS preinstalled MSVC attestation")
     if (
         installation.get("status") != "PASS"
         or runtime.get("status") != "PASS"
@@ -350,6 +371,10 @@ def main() -> None:
         manifest_path=manifest_path,
         selected_evidence_path=selected_evidence_path,
         repository_root=repository_root,
+    )
+    child_environment["CODE_C_EXTERNAL_PREREQUISITE_MANIFEST"] = str(
+        repository_root
+        / "compliance/runtime-prerequisites/msvc-v14-x64/external-prerequisite.v1.json"
     )
     required_environment = (
         "SYSTEMROOT",
@@ -523,6 +548,21 @@ def main() -> None:
             "msvc_runtime_approval_request": str(
                 selected_evidence_path.parent / "DEPENDENCY_APPROVAL_REQUEST_MSVC_RUNTIME_V1.md"
             ),
+            "external_prerequisite_manifest": str(
+                repository_root
+                / "compliance/runtime-prerequisites/msvc-v14-x64/external-prerequisite.v1.json"
+            ),
+            "runtime_attestation": str(arguments.runtime_attestation.resolve(strict=True)),
+        },
+        "external_runtime": {
+            "validation_mode": "PREINSTALLED_COMPATIBLE_RUNTIME_ONLY",
+            "prerequisite_id": runtime_attestation["prerequisite_id"],
+            "manifest_sha256": runtime_attestation["manifest_sha256"],
+            "installed_runtime_version": runtime_attestation["installed_runtime_version"],
+            "compatibility": runtime_attestation["installed_runtime_compatibility"],
+            "downloaded_by_code_c": runtime_attestation["VC_REDIST_DOWNLOADED_BY_CODE_C"],
+            "bundled_by_code_c": runtime_attestation["VC_REDIST_BUNDLED_BY_CODE_C"],
+            "installed_by_code_c": runtime_attestation["VC_REDIST_INSTALLED_BY_CODE_C"],
         },
         "validations": {
             "required_os_env_validation": "PASS",

@@ -1,94 +1,38 @@
-name: Python supply-chain candidate generation
+name: Python supply-chain current-head worker candidate
 
 on:
   workflow_dispatch:
+  push:
+    branches: [code-c/stage-b-validation-candidate]
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
-  group: python-supply-chain-candidate-${{ github.ref }}
+  group: python-supply-chain-current-head-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  stage-a-cpython-artifact-binding:
-    runs-on: windows-2022
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-        with:
-          version: 11.19.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: 24.19.0
-          cache: pnpm
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
-        with:
-          python-version: '3.12.10'
-      - run: pnpm install --frozen-lockfile
-      - name: Download exact Windows CPython acquisition artifact
-        run: >-
-          python tools/code-c-python-supply-chain/download_toolchain_sources.py
-          --target windows
-          --output-root artifacts/python-supply-chain/toolchain
-      - name: Reconfirm Stage A policy and exact CPython artifact binding
-        shell: bash
-        run: |
-          node -e 'const fs=require("node:fs"); const path="compliance/vulnerability-reviews/cpython-3.13.15-windows-x64/stage-a-current-context.json"; const value=JSON.parse(fs.readFileSync(path,"utf8")); value.source_commit=process.env.GITHUB_SHA; fs.mkdirSync("artifacts/python-supply-chain/evidence",{recursive:true}); fs.writeFileSync("artifacts/python-supply-chain/evidence/windows-stage-a-current-context.json",JSON.stringify(value,null,2)+"\n");'
-          pnpm compliance:python:toolchain:vulnerability-disposition \
-            --vulnerability-review compliance/vulnerability-reviews/cpython-3.13.15-windows-x64/stage-a-review.json \
-            --current-context artifacts/python-supply-chain/evidence/windows-stage-a-current-context.json \
-            --output artifacts/python-supply-chain/evidence/windows-stage-a-disposition.json
-          python tools/code-c-python-supply-chain/verify_stage_a_cpython_artifact.py \
-            --distribution artifacts/python-supply-chain/toolchain/windows/python-3.13.15-win32-x64.zip \
-            --stage-a-review compliance/vulnerability-reviews/cpython-3.13.15-windows-x64/stage-a-review.json \
-            --output artifacts/python-supply-chain/evidence/windows-stage-a-artifact-binding.json
-      - name: Enforce Stage A evidence upload budget
-        id: stage-a-upload-budget
-        if: always()
-        shell: bash
-        run: >-
-          node tools/actions-artifact-budget.mjs
-          --name python-stage-a-cpython-binding-${{ github.sha }}
-          --path artifacts/python-supply-chain/evidence
-          --inventory artifacts/python-supply-chain/evidence/ARTIFACT_UPLOAD_INVENTORY.json
-          --retention-days 3
-          --purpose stage-a-cpython-binding-evidence
-          --classification transient
-          --max-bytes 1048576
-      - name: Preserve Stage A binding evidence
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: ${{ always() && steps.stage-a-upload-budget.outcome == 'success' }}
-        with:
-          name: python-stage-a-cpython-binding-${{ github.sha }}
-          path: artifacts/python-supply-chain/evidence
-          if-no-files-found: error
-          retention-days: 3
-
-  generate-target-candidate:
-    needs: stage-a-cpython-artifact-binding
+  current-head-worker-native:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
           - target: linux
             runner: ubuntu-24.04
-            venv_python: artifacts/candidate-venv/bin/python
-            worker: artifacts/python-supply-chain/pyinstaller-build/linux/dist/media-worker
             distribution: python-3.13.15-linux-24.04-x64.tar.gz
             pyinstaller_wheel: pyinstaller-6.22.2-py3-none-manylinux2014_x86_64.whl
+            venv_python: artifacts/candidate-venv/bin/python
+            worker: artifacts/python-supply-chain/pyinstaller-build/linux/dist/media-worker
           - target: windows
             runner: windows-2022
-            venv_python: artifacts/candidate-venv/Scripts/python.exe
-            worker: artifacts/python-supply-chain/pyinstaller-build/windows/dist/media-worker.exe
             distribution: python-3.13.15-win32-x64.zip
             pyinstaller_wheel: pyinstaller-6.22.2-py3-none-win_amd64.whl
+            venv_python: artifacts/candidate-venv/Scripts/python.exe
+            worker: artifacts/python-supply-chain/pyinstaller-build/windows/dist/media-worker.exe
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 120
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
@@ -103,60 +47,105 @@ jobs:
           cache: pnpm
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          # Bootstrap only: this interpreter downloads/installs the locked distribution and is
-          # only passed to the negative isolation regression after installation.
           python-version: '3.12.10'
-      - name: Capture bootstrap Python identity for isolation regression
-        id: bootstrap-python
-        shell: bash
-        run: |
-          bootstrap_python="$(python -c 'import os, sys; print(os.path.abspath(sys.executable))')"
-          echo "python=$bootstrap_python" >> "$GITHUB_OUTPUT"
-          python --version
       - run: pnpm install --frozen-lockfile
-      - run: >-
-          python tools/code-c-python-supply-chain/download_toolchain_sources.py
-          --target ${{ matrix.target }}
-          --output-root artifacts/python-supply-chain/toolchain
-      - name: Verify exact Stage A CPython artifact authorization
-        if: matrix.target == 'windows'
+
+      - name: Download the exact approved Inventory v3 review bundle
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: code-c-python-inventory-review-bundle-ce5590e262a522e1ebff6039c6acae7423a3e778
+          run-id: 33488854344
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
+          path: artifacts/approved-inventory-bundle
+
+      - name: Materialize approved subjects and resolution evidence
         shell: bash
         run: |
-          node -e 'const fs=require("node:fs"); const path="compliance/vulnerability-reviews/cpython-3.13.15-windows-x64/stage-a-current-context.json"; const value=JSON.parse(fs.readFileSync(path,"utf8")); value.source_commit=process.env.GITHUB_SHA; fs.mkdirSync("artifacts/python-supply-chain/evidence",{recursive:true}); fs.writeFileSync("artifacts/python-supply-chain/evidence/windows-stage-a-current-context.json",JSON.stringify(value,null,2)+"\n");'
-          pnpm compliance:python:toolchain:vulnerability-disposition \
-            --vulnerability-review compliance/vulnerability-reviews/cpython-3.13.15-windows-x64/stage-a-review.json \
-            --current-context artifacts/python-supply-chain/evidence/windows-stage-a-current-context.json \
-            --output artifacts/python-supply-chain/evidence/windows-stage-a-disposition.json
-          python tools/code-c-python-supply-chain/verify_stage_a_cpython_artifact.py \
-            --distribution artifacts/python-supply-chain/toolchain/windows/${{ matrix.distribution }} \
-            --stage-a-review compliance/vulnerability-reviews/cpython-3.13.15-windows-x64/stage-a-review.json \
-            --output artifacts/python-supply-chain/evidence/windows-stage-a-artifact-binding.json
+          set -euo pipefail
+          target='${{ matrix.target }}'
+          python tools/code-c-python-supply-chain/prepare_approved_build_inputs.py \
+            --bundle-root artifacts/approved-inventory-bundle \
+            --output-root artifacts/approved-inputs \
+            --target "$target"
+          mkdir -p artifacts/python-supply-chain/candidates artifacts/python-supply-chain/target
+          cp -R artifacts/approved-inventory-bundle/. artifacts/python-supply-chain/
+          cp "artifacts/approved-inputs/${target}-runtime.json" \
+            "artifacts/python-supply-chain/candidates/code-c-${target}-runtime.v3.json"
+          cp "artifacts/approved-inputs/${target}-worker-build.json" \
+            "artifacts/python-supply-chain/candidates/code-c-${target}-worker-build.v3.json"
+          cp "artifacts/approved-inputs/${target}-target-descriptor.json" \
+            "artifacts/python-supply-chain/target/${target}.json"
+
+      - name: Bind current Code C HEAD to the 4+2 active approvals
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/python-supply-chain/evidence
+          node tools/code-c-python-supply-chain/verify_build_approval_binding.mjs \
+            --code-c-head "$GITHUB_SHA" \
+            --main-quality-baseline e00abb61a5f493ec02cfeea0ee6e4d3e5a0f99b0 \
+            --review-snapshot compliance/approval/review-snapshot-v2/review-snapshot-code-c-python-inventory-v3-v2-20260901.json \
+            --approval-contract schemas/compliance/artifact-approval-provenance/v2/approval.schema.json \
+            --authority-policy compliance/approval/authority-policy-v1.json \
+            --subject artifacts/approved-inputs/linux-runtime.json \
+            --subject artifacts/approved-inputs/linux-worker-build.json \
+            --subject artifacts/approved-inputs/windows-runtime.json \
+            --subject artifacts/approved-inputs/windows-worker-build.json \
+            --subject artifacts/approved-inputs/linux-toolchain.json \
+            --subject artifacts/approved-inputs/windows-toolchain.json \
+            --target-descriptor artifacts/approved-inputs/linux-target-descriptor.json \
+            --target-descriptor artifacts/approved-inputs/windows-target-descriptor.json \
+            --approval-record compliance/approval/records/approval-code-c-linux-runtime-py31315.json \
+            --approval-record compliance/approval/records/approval-code-c-linux-worker-build-py31315.json \
+            --approval-record compliance/approval/records/approval-code-c-windows-runtime-py31315.json \
+            --approval-record compliance/approval/records/approval-code-c-windows-worker-build-py31315.json \
+            --approval-record compliance/approval/records/approval-code-c-linux-toolchain-intake-evidence.json \
+            --approval-record compliance/approval/records/approval-code-c-windows-toolchain-intake-evidence.json \
+            --output artifacts/python-supply-chain/evidence/build-approval-binding.json
+
+      - name: Hydrate the exact approved wheels and toolchain artifacts
+        shell: bash
+        run: >-
+          python tools/code-c-python-supply-chain/hydrate_approved_artifacts.py
+          --target ${{ matrix.target }}
+          --inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v3.json
+          --inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v3.json
+          --toolchain-inventory artifacts/approved-inputs/${{ matrix.target }}-toolchain.json
+          --artifact-root artifacts/python-supply-chain/wheels/approved
+          --toolchain-artifact-root artifacts/python-supply-chain/toolchain
+
       - name: Install the exact locked CPython distribution
         id: locked-python
         shell: bash
         run: >-
           python tools/code-c-python-supply-chain/install_locked_cpython.py
           --target ${{ matrix.target }}
-          --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.distribution }}
-          --pip-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip-26.2.1-py3-none-any.whl
+          --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/cpython/${{ matrix.distribution }}
+          --pip-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip/pip-26.2.1-py3-none-any.whl
           --output artifacts/python-supply-chain/evidence/${{ matrix.target }}-cpython-installation.json
-      - name: Install hash-locked shared Python compliance tooling
+
+      - name: Install hash-locked Python compliance tooling
         env:
           PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
         run: pnpm compliance:python:tooling:install
-      - name: Capture real target tags from locked CPython
+
+      - name: Bootstrap the pinned pip into a clean Worker environment
+        shell: bash
+        run: >-
+          python tools/code-c-python-supply-chain/bootstrap_pinned_pip.py
+          --wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip/pip-26.2.1-py3-none-any.whl
+          --venv artifacts/candidate-venv
+
+      - name: Verify the approved target descriptor against the locked interpreter
+        shell: bash
         env:
           PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
         run: >-
-          pnpm compliance:python:target -- describe-current
-          --output artifacts/python-supply-chain/target/${{ matrix.target }}.json
-      - name: Reject ambient pip configuration
-        shell: bash
-        run: >-
-          '${{ steps.locked-python.outputs.python }}' tools/code-c-python-supply-chain/bootstrap_pinned_pip.py
-          --wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip-26.2.1-py3-none-any.whl
-          --venv artifacts/candidate-venv
-      - name: Attest standard-GIL cp313 interpreter and runner target
+          pnpm compliance:python:target -- verify-current
+          --target artifacts/python-supply-chain/target/${{ matrix.target }}.json
+
+      - name: Capture locked runtime identity and standard-GIL binding
         shell: bash
         env:
           PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
@@ -166,77 +155,48 @@ jobs:
           ${{ matrix.venv_python }} tools/code-c-python-supply-chain/capture_runtime_identity.py
           --target ${{ matrix.target }}
           --target-descriptor artifacts/python-supply-chain/target/${{ matrix.target }}.json
-          --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.distribution }}
+          --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/cpython/${{ matrix.distribution }}
           --installation-evidence artifacts/python-supply-chain/evidence/${{ matrix.target }}-cpython-installation.json
           --output artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json
-      - name: Verify locked Python binding isolation and path handling
+
+      - name: Install the exact approved wheel graph with hashes
         shell: bash
-        env:
-          LOCKED_PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
-          BOOTSTRAP_PYTHON_EXECUTABLE: ${{ steps.bootstrap-python.outputs.python }}
-          CANDIDATE_PYTHON_EXECUTABLE: ${{ github.workspace }}/${{ matrix.venv_python }}
         run: |
-          "$CANDIDATE_PYTHON_EXECUTABLE" tools/code-c-python-supply-chain/verify_interpreter_binding_regressions.py \
-            --target "${{ matrix.target }}" \
-            --target-descriptor "artifacts/python-supply-chain/target/${{ matrix.target }}.json" \
-            --locked-python "$LOCKED_PYTHON_EXECUTABLE" \
-            --bootstrap-python "$BOOTSTRAP_PYTHON_EXECUTABLE" \
-            --output "artifacts/python-supply-chain/evidence/${{ matrix.target }}-interpreter-binding-regressions.json"
-      - name: Generate target graph from wheel metadata
+          set -euo pipefail
+          ${{ matrix.venv_python }} tools/code-c-python-supply-chain/install_candidate.py \
+            --python '${{ matrix.venv_python }}' \
+            --candidate artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v3.json \
+            --wheel-root artifacts/python-supply-chain/wheels/approved \
+            --candidate artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v3.json \
+            --wheel-root artifacts/python-supply-chain/wheels/approved
+          ${{ matrix.venv_python }} -I tools/code-c-python-supply-chain/verify_candidate_installed.py \
+            --target '${{ matrix.target }}' \
+            --bundle artifacts/python-supply-chain \
+            --candidate artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v3.json \
+            --candidate artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v3.json \
+            --scope runtime \
+            --scope worker-build
+
+      - name: Verify exact build input closure before PyInstaller
         shell: bash
-        env:
-          PIP_CONFIG_FILE: ${{ github.workspace }}/sidecars/media-worker/supply-chain/pip-hermetic.conf
-          PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
-          PYTHONNOUSERSITE: '1'
-          PYTHONPATH: ${{ github.workspace }}/artifacts/python-compliance-tools/site-packages
         run: >-
-          ${{ matrix.venv_python }} tools/code-c-python-supply-chain/generate_candidates.py
+          python tools/code-c-python-supply-chain/verify_build_input_closure.py
           --target ${{ matrix.target }}
-          --target-descriptor artifacts/python-supply-chain/target/${{ matrix.target }}.json
-          --runtime-identity artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json
-          --output-root artifacts/python-supply-chain
-      - name: Verify fail-closed Python intake controls
-        shell: bash
-        env:
-          PIP_CONFIG_FILE: ${{ github.workspace }}/sidecars/media-worker/supply-chain/pip-hermetic.conf
-          PYTHONNOUSERSITE: '1'
-        run: >-
-          '${{ steps.locked-python.outputs.python }}' tools/code-c-python-supply-chain/verify_negative_controls.py
-          --python ${{ matrix.venv_python }}
-          --wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip-26.2.1-py3-none-any.whl
-      - name: Install candidate runtime and build graph with hashes
-        shell: bash
-        env:
-          PIP_CONFIG_FILE: ${{ github.workspace }}/sidecars/media-worker/supply-chain/pip-hermetic.conf
-          PYTHONNOUSERSITE: '1'
-        run: >-
-          python tools/code-c-python-supply-chain/install_candidate.py
-          --python ${{ matrix.venv_python }}
-          --candidate artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v2.json
-          --wheel-root artifacts/python-supply-chain/wheels/runtime
-          --candidate artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v2.json
-          --wheel-root artifacts/python-supply-chain/wheels/worker-build
-      - name: Reconcile the installed candidate environment with the exact graph
-        shell: bash
-        run: >-
-          ${{ matrix.venv_python }} -I tools/code-c-python-supply-chain/verify_candidate_installed.py
-          --target ${{ matrix.target }}
-          --bundle artifacts/python-supply-chain
-          --scope runtime
-          --scope worker-build
-      - name: Run targeted CArchive symlink and native semantic regressions
-        env:
-          PYTHON_EXECUTABLE: ${{ github.workspace }}/${{ matrix.venv_python }}
-        run: >-
-          pnpm exec vitest run
-          tests/contract/packaged-native-toolchain-provenance.test.ts
-          -t 'uses CArchive typecode|fails closed for malformed CArchive symlink metadata'
-          --maxWorkers=1
+          --runtime-inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v3.json
+          --worker-build-inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v3.json
+          --wheel-root artifacts/python-supply-chain/wheels/approved
+          --toolchain-root artifacts/python-supply-chain/toolchain
+          --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/cpython/${{ matrix.distribution }}
+          --pip-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip/pip-26.2.1-py3-none-any.whl
+          --pyinstaller-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pyinstaller/${{ matrix.pyinstaller_wheel }}
+          --output artifacts/python-supply-chain/evidence/${{ matrix.target }}-build-input-closure.json
+
       - name: Run Worker and supply-chain contract regressions on the exact candidate graph
         shell: bash
         env:
           PYTHON_EXECUTABLE: ${{ github.workspace }}/${{ matrix.venv_python }}
         run: |
+          set -euo pipefail
           pnpm media-worker:test
           mkdir -p artifacts/python-supply-chain/evidence
           pnpm exec vitest run \
@@ -251,20 +211,76 @@ jobs:
             --reporter=json \
             --outputFile=artifacts/python-supply-chain/evidence/${{ matrix.target }}-current-head-regressions.json
           node -e 'const fs=require("node:fs"); const path="artifacts/python-supply-chain/evidence/${{ matrix.target }}-current-head-regressions.json"; const value=JSON.parse(fs.readFileSync(path,"utf8")); const files=value.testResults?.length; const tests=value.numTotalTests; if (!Number.isInteger(files)||files<=0||!Number.isInteger(tests)||tests<=0) throw new Error(`empty current-head regression execution: files=${files}, tests=${tests}`); console.log(`current-head-regression-evidence: PASS (shell=bash; files=${files}; tests=${tests}; assertions_executed=YES; exit_code=0)`);'
-      - name: Freeze hermetic Windows PyInstaller environment and file provenance
+
+      - name: Attest the preinstalled Windows MSVC prerequisite
+        if: matrix.target == 'windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass \
+            -File tools/runtime-prerequisite/attest-preinstalled-msvc-runtime.ps1 \
+            -Manifest compliance/runtime-prerequisites/msvc-v14-x64/external-prerequisite.v1.json \
+            -Output artifacts/python-supply-chain/evidence/windows-preinstalled-msvc-runtime-attestation.json
+          python tools/runtime-prerequisite/verify-preinstalled-msvc-runtime.py \
+            --manifest compliance/runtime-prerequisites/msvc-v14-x64/external-prerequisite.v1.json \
+            --attestation artifacts/python-supply-chain/evidence/windows-preinstalled-msvc-runtime-attestation.json \
+            --output artifacts/python-supply-chain/evidence/windows-preinstalled-msvc-runtime-validation.json
+
+      - name: Record the external-runtime validation disposition
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ '${{ matrix.target }}' == 'windows' ]]; then
+            cp artifacts/python-supply-chain/evidence/windows-preinstalled-msvc-runtime-validation.json \
+              artifacts/python-supply-chain/evidence/windows-external-runtime-validation.json
+          else
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('artifacts/python-supply-chain/evidence/linux-external-runtime-validation.json')
+          path.parent.mkdir(parents=True, exist_ok=True)
+          path.write_text(json.dumps({
+              'schema_version': '1',
+              'status': 'NOT_APPLICABLE',
+              'validation_mode': 'PREINSTALLED_COMPATIBLE_RUNTIME_ONLY',
+              'reason': 'Linux Worker has no Windows MSVC external prerequisite.'
+          }, sort_keys=True, indent=2) + '\n', encoding='utf-8')
+          (Path('artifacts/python-supply-chain/evidence/linux-preinstalled-msvc-runtime-attestation.json')).write_text(
+              json.dumps({'schema_version': '1', 'status': 'NOT_APPLICABLE',
+                          'reason': 'Linux Worker has no Windows MSVC runtime.'},
+                         sort_keys=True, indent=2) + '\n', encoding='utf-8')
+          parsed = Path('artifacts/python-supply-chain/pyinstaller-build/linux/parsed')
+          parsed.mkdir(parents=True, exist_ok=True)
+          (parsed / 'prepackage-selected-native-provenance.json').write_text(json.dumps({
+              'schema_version': 'code-c-prepackage-selected-native-provenance-v1',
+              'status': 'NOT_APPLICABLE',
+              'reason': 'Linux Worker has no Windows external prerequisite.'
+          }, sort_keys=True, indent=2) + '\n', encoding='utf-8')
+          (parsed / 'msvc-runtime-dependency-request.v1.json').write_text(json.dumps({
+              'schema_version': '1',
+              'status': 'NOT_APPLICABLE',
+              'reason': 'Linux Worker has no Windows MSVC runtime dependency.'
+          }, sort_keys=True, indent=2) + '\n', encoding='utf-8')
+          (parsed / 'DEPENDENCY_APPROVAL_REQUEST_MSVC_RUNTIME_V1.md').write_text(
+              '# MSVC Runtime Dependency Request\n\nNOT_APPLICABLE: Linux target.\n', encoding='utf-8')
+          PY
+          fi
+
+      - name: Prepare hermetic Windows PyInstaller environment
         if: matrix.target == 'windows'
         shell: bash
         run: >-
           ${{ matrix.venv_python }} -I tools/code-c-python-supply-chain/prepare_pyinstaller_environment.py
           --target windows
           --repository-root '${{ github.workspace }}'
-          --runtime-inventory artifacts/python-supply-chain/candidates/code-c-windows-runtime.v2.json
-          --worker-build-inventory artifacts/python-supply-chain/candidates/code-c-windows-worker-build.v2.json
-          --cpython-distribution artifacts/python-supply-chain/toolchain/windows/${{ matrix.distribution }}
-          --pip-wheel artifacts/python-supply-chain/toolchain/windows/pip-26.2.1-py3-none-any.whl
-          --pyinstaller-wheel artifacts/python-supply-chain/toolchain/windows/${{ matrix.pyinstaller_wheel }}
+          --runtime-inventory artifacts/python-supply-chain/candidates/code-c-windows-runtime.v3.json
+          --worker-build-inventory artifacts/python-supply-chain/candidates/code-c-windows-worker-build.v3.json
+          --cpython-distribution artifacts/python-supply-chain/toolchain/windows/cpython/${{ matrix.distribution }}
+          --pip-wheel artifacts/python-supply-chain/toolchain/windows/pip/pip-26.2.1-py3-none-any.whl
+          --pyinstaller-wheel artifacts/python-supply-chain/toolchain/windows/pyinstaller/${{ matrix.pyinstaller_wheel }}
           --cpython-installation artifacts/python-supply-chain/evidence/windows-cpython-installation.json
           --runtime-identity artifacts/python-supply-chain/evidence/windows-runtime-identity.json
+          --runtime-attestation artifacts/python-supply-chain/evidence/windows-preinstalled-msvc-runtime-validation.json
           --spec sidecars/media-worker/media-worker.spec
           --workpath artifacts/python-supply-chain/pyinstaller-build/windows/work
           --distpath artifacts/python-supply-chain/pyinstaller-build/windows/dist
@@ -272,9 +288,11 @@ jobs:
           --selected-evidence artifacts/python-supply-chain/pyinstaller-build/windows/parsed/prepackage-selected-native-provenance.json
           --build-context artifacts/python-supply-chain/pyinstaller-build/windows/build-context.json
           --output artifacts/python-supply-chain/pyinstaller-build/windows/build-environment-manifest.json
+
       - name: Freeze exact build context before PyInstaller starts
         shell: bash
         run: |
+          set -euo pipefail
           environment_args=()
           if [[ '${{ matrix.target }}' == 'windows' ]]; then
             environment_args+=(
@@ -283,34 +301,36 @@ jobs:
             )
           fi
           ${{ matrix.venv_python }} tools/code-c-python-supply-chain/prepare_pyinstaller_build_context.py \
-            --target ${{ matrix.target }} \
+            --target '${{ matrix.target }}' \
             --repository-root '${{ github.workspace }}' \
             --workpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/work \
             --distpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/dist \
             --spec sidecars/media-worker/media-worker.spec \
-            --runtime-inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v2.json \
-            --worker-build-inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v2.json \
+            --runtime-inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v3.json \
+            --worker-build-inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v3.json \
             --runtime-identity artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json \
-            --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.distribution }} \
-            --pip-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip-26.2.1-py3-none-any.whl \
-            --pyinstaller-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.pyinstaller_wheel }} \
-            --main-quality-baseline d1348c50e36b725bfcbf9bec17343392cf0412c7 \
+            --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/cpython/${{ matrix.distribution }} \
+            --pip-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip/pip-26.2.1-py3-none-any.whl \
+            --pyinstaller-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pyinstaller/${{ matrix.pyinstaller_wheel }} \
+            --approval-binding artifacts/python-supply-chain/evidence/build-approval-binding.json \
+            --build-input-closure artifacts/python-supply-chain/evidence/${{ matrix.target }}-build-input-closure.json \
+            --main-quality-baseline e00abb61a5f493ec02cfeea0ee6e4d3e5a0f99b0 \
             "${environment_args[@]}" \
             --output artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
-      - name: Build Linux candidate one-file worker in clean isolated workpath
+
+      - name: Build the Linux one-file Worker in its isolated workpath
         if: matrix.target == 'linux'
         shell: bash
         run: |
-          set -o pipefail
-          mkdir -p artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/raw
-          ${{ matrix.venv_python }} -I -m PyInstaller \
-            --clean \
-            --noconfirm \
-            --workpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/work \
-            --distpath artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/dist \
+          set -euo pipefail
+          mkdir -p artifacts/python-supply-chain/pyinstaller-build/linux/raw
+          ${{ matrix.venv_python }} -I -m PyInstaller --clean --noconfirm \
+            --workpath artifacts/python-supply-chain/pyinstaller-build/linux/work \
+            --distpath artifacts/python-supply-chain/pyinstaller-build/linux/dist \
             sidecars/media-worker/media-worker.spec \
-            2>&1 | tee artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/raw/pyinstaller-build.log
-      - name: Build Windows candidate one-file worker in hermetic child environment
+            2>&1 | tee artifacts/python-supply-chain/pyinstaller-build/linux/raw/pyinstaller-build.log
+
+      - name: Build the Windows one-file Worker in the hermetic child environment
         if: matrix.target == 'windows'
         shell: bash
         run: >-
@@ -318,7 +338,8 @@ jobs:
           --manifest artifacts/python-supply-chain/pyinstaller-build/windows/build-environment-manifest.json
           --build-context artifacts/python-supply-chain/pyinstaller-build/windows/build-context.json
           --build-log artifacts/python-supply-chain/pyinstaller-build/windows/raw/pyinstaller-build.log
-      - name: Capture raw PyInstaller Analysis, TOC and materialized evidence
+
+      - name: Capture raw Analysis, TOC and materialized build evidence
         shell: bash
         run: >-
           ${{ matrix.venv_python }} tools/code-c-python-supply-chain/capture_pyinstaller_build_evidence.py
@@ -328,215 +349,127 @@ jobs:
           --build-log artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/raw/pyinstaller-build.log
           --spec sidecars/media-worker/media-worker.spec
           --build-context artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
-          --runtime-inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v2.json
+          --runtime-inventory artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v3.json
           --output-root artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}
-      - name: Capture actual toolchain and CArchive evidence
+
+      - name: Capture Linux CArchive and native reconciliation evidence
+        if: matrix.target == 'linux'
         shell: bash
-        env:
-          PYTHONNOUSERSITE: '1'
         run: >-
           ${{ matrix.venv_python }} tools/code-c-python-supply-chain/capture_target_evidence.py
-          --target ${{ matrix.target }}
+          --target linux
           --bundle artifacts/python-supply-chain
-          --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.distribution }}
-          --pip-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip-26.2.1-py3-none-any.whl
-          --pyinstaller-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.pyinstaller_wheel }}
-          --build-context artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
-          --build-evidence artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/pyinstaller-build-evidence.json
-          --final-artifact ${{ matrix.worker }}
-      - name: Validate Packaging Selection Evidence v1 and Native Reconciliation v3
+          --distribution artifacts/python-supply-chain/toolchain/linux/cpython/${{ matrix.distribution }}
+          --pip-wheel artifacts/python-supply-chain/toolchain/linux/pip/pip-26.2.1-py3-none-any.whl
+          --pyinstaller-wheel artifacts/python-supply-chain/toolchain/linux/pyinstaller/${{ matrix.pyinstaller_wheel }}
+          --build-context artifacts/python-supply-chain/pyinstaller-build/linux/build-context.json
+          --build-evidence artifacts/python-supply-chain/pyinstaller-build/linux/pyinstaller-build-evidence.json
+          --final-artifact '${{ matrix.worker }}'
+
+      - name: Capture Windows CArchive and external-runtime partition
+        if: matrix.target == 'windows'
+        shell: bash
+        run: >-
+          ${{ matrix.venv_python }} tools/code-c-python-supply-chain/capture_target_evidence.py
+          --target windows
+          --bundle artifacts/python-supply-chain
+          --distribution artifacts/python-supply-chain/toolchain/windows/cpython/${{ matrix.distribution }}
+          --pip-wheel artifacts/python-supply-chain/toolchain/windows/pip/pip-26.2.1-py3-none-any.whl
+          --pyinstaller-wheel artifacts/python-supply-chain/toolchain/windows/pyinstaller/${{ matrix.pyinstaller_wheel }}
+          --build-context artifacts/python-supply-chain/pyinstaller-build/windows/build-context.json
+          --build-evidence artifacts/python-supply-chain/pyinstaller-build/windows/pyinstaller-build-evidence.json
+          --prepackage-selected-evidence artifacts/python-supply-chain/pyinstaller-build/windows/parsed/prepackage-selected-native-provenance.json
+          --external-prerequisite compliance/runtime-prerequisites/msvc-v14-x64/external-prerequisite.v1.json
+          --final-artifact '${{ matrix.worker }}'
+
+      - name: Validate Packaging Selection v1 and Native Reconciliation v3
         shell: bash
         run: |
+          set -euo pipefail
           node tools/python-supply-chain/cli.mjs packaging-selection-validate \
             --selection-evidence artifacts/python-supply-chain/native-v3/${{ matrix.target }}/packaging-selection-evidence.v1.json
           node tools/python-supply-chain/cli.mjs native-reconcile-v3 \
             --selection-evidence artifacts/python-supply-chain/native-v3/${{ matrix.target }}/packaging-selection-evidence.v1.json \
             --native-reconciliation artifacts/python-supply-chain/native-v3/${{ matrix.target }}/native-reconciliation.v3.json \
             --output artifacts/python-supply-chain/native-v3/${{ matrix.target }}/native-reconciliation-report.v3.json
-      - name: Freeze approved exact wheel graph
+
+      - name: Run the packaged Worker runtime smoke
         shell: bash
         run: |
-          reviewed_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          ${{ matrix.venv_python }} tools/code-c-python-supply-chain/approve_candidates.py \
-            --target ${{ matrix.target }} \
-            --bundle artifacts/python-supply-chain \
-            --artifact-root artifacts/python-supply-chain/approved-wheels \
-            --inventory-root artifacts/python-supply-chain/approved-inventories \
-            --lock-root artifacts/python-supply-chain/hash-locks \
-            --reviewed-at "$reviewed_at"
-      - name: Capture exact target graph and Artifact License Evidence v3
-        shell: bash
-        env:
-          PYTHON_EXECUTABLE: ${{ github.workspace }}/${{ matrix.venv_python }}
-        run: >-
-          node tools/code-c-python-supply-chain/prepare_license_target.mjs
-          --target ${{ matrix.target }}
-          --inventory-root artifacts/python-supply-chain/approved-inventories/${{ matrix.target }}
-          --artifact-root artifacts/python-supply-chain/approved-wheels
-          --resolution-root artifacts/python-supply-chain/resolution
-          --build-context artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
-          --output-root artifacts/python-supply-chain/license-preparation/${{ matrix.target }}
-          --main-quality-baseline d1348c50e36b725bfcbf9bec17343392cf0412c7
-      - name: Preserve candidate worker bytes
-        shell: bash
-        run: |
-          mkdir -p artifacts/python-supply-chain/build/${{ matrix.target }}
-          cp '${{ matrix.worker }}' artifacts/python-supply-chain/build/${{ matrix.target }}/
-      - name: Enforce target license evidence upload budget
-        shell: bash
-        run: >-
-          node tools/actions-artifact-budget.mjs
-          --name python-license-preparation-${{ matrix.target }}-${{ github.sha }}
-          --path artifacts/python-supply-chain/license-preparation
-          --inventory artifacts/python-supply-chain/license-preparation/ARTIFACT_UPLOAD_INVENTORY.json
-          --retention-days 3
-          --purpose exact-artifact-license-review-evidence
-          --classification transient
-          --max-bytes 2097152
-      - name: Preserve target license preparation evidence
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: python-license-preparation-${{ matrix.target }}-${{ github.sha }}
-          path: artifacts/python-supply-chain/license-preparation
-          if-no-files-found: error
-          compression-level: 0
-          retention-days: 3
-      - name: Enforce compact native diagnostic upload budget
-        id: native-diagnostic-upload-budget
+          set -euo pipefail
+          mkdir -p artifacts/python-supply-chain/evidence
+          '${{ matrix.worker }}' --runtime-smoke \
+            > artifacts/python-supply-chain/evidence/${{ matrix.target }}-worker-runtime-smoke.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('artifacts/python-supply-chain/evidence/${{ matrix.target }}-worker-runtime-smoke.json')
+          value = json.loads(path.read_text(encoding='utf-8'))
+          if value.get('status') != 'PASS' or value.get('contains_torch') or value.get('contains_transformers'):
+              raise SystemExit('packaged Worker runtime smoke did not prove the approved CPU closure')
+          print('worker-runtime-smoke: PASS')
+          PY
+
+      - name: Enforce compact current-head evidence containment budget
+        id: evidence-upload-budget
         if: always()
         shell: bash
-        run: >-
-          node tools/actions-artifact-budget.mjs
-          --name python-native-diagnostic-${{ matrix.target }}-${{ github.sha }}
-          --path artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v2.json
-          --path artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v2.json
-          --path artifacts/python-supply-chain/diagnostics/${{ matrix.target }}-native-reconciliation.json
-          --path artifacts/python-supply-chain/evidence/${{ matrix.target }}-cpython-installation.json
-          --path artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json
-          --path artifacts/python-supply-chain/evidence/${{ matrix.target }}-target-evidence.json
-          --path artifacts/python-supply-chain/inspection/${{ matrix.target }}-worker-onefile.json
-          --path artifacts/python-supply-chain/native-v3/${{ matrix.target }}
-          --path artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
-          --path artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-environment-manifest.json
-          --path artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/pyinstaller-build-evidence.json
-          --path artifacts/python-supply-chain/target/${{ matrix.target }}.json
-          --inventory artifacts/python-supply-chain/evidence/${{ matrix.target }}-ARTIFACT_UPLOAD_INVENTORY.json
-          --retention-days 1
-          --purpose compact-native-reconciliation-diagnostic
-          --classification transient
-          --max-bytes 8388608
-      - name: Preserve compact native reconciliation diagnostic evidence
+        run: |
+          set -euo pipefail
+          target='${{ matrix.target }}'
+          node tools/actions-artifact-budget.mjs \
+            --name "code-c-current-head-worker-native-${target}-${GITHUB_SHA}" \
+            --path "artifacts/python-supply-chain/candidates/code-c-${target}-runtime.v3.json" \
+            --path "artifacts/python-supply-chain/candidates/code-c-${target}-worker-build.v3.json" \
+            --path artifacts/python-supply-chain/evidence/build-approval-binding.json \
+            --path "artifacts/python-supply-chain/evidence/${target}-build-input-closure.json" \
+            --path "artifacts/python-supply-chain/evidence/${target}-cpython-installation.json" \
+            --path "artifacts/python-supply-chain/evidence/${target}-runtime-identity.json" \
+            --path "artifacts/python-supply-chain/evidence/${target}-current-head-regressions.json" \
+            --path "artifacts/python-supply-chain/evidence/${target}-worker-runtime-smoke.json" \
+            --path "artifacts/python-supply-chain/evidence/${target}-target-evidence.json" \
+            --path "artifacts/python-supply-chain/diagnostics/${target}-native-reconciliation.json" \
+            --path "artifacts/python-supply-chain/inspection/${target}-worker-onefile.json" \
+            --path "artifacts/python-supply-chain/native-v3/${target}" \
+            --path "artifacts/python-supply-chain/pyinstaller-build/${target}/build-context.json" \
+            --path "artifacts/python-supply-chain/pyinstaller-build/${target}/pyinstaller-build-evidence.json" \
+            --path "artifacts/python-supply-chain/pyinstaller-build/${target}/parsed/prepackage-selected-native-provenance.json" \
+            --path "artifacts/python-supply-chain/pyinstaller-build/${target}/parsed/msvc-runtime-dependency-request.v1.json" \
+            --path "artifacts/python-supply-chain/pyinstaller-build/${target}/parsed/DEPENDENCY_APPROVAL_REQUEST_MSVC_RUNTIME_V1.md" \
+            --path "artifacts/python-supply-chain/evidence/${target}-external-runtime-validation.json" \
+            --path "artifacts/python-supply-chain/evidence/${target}-preinstalled-msvc-runtime-attestation.json" \
+            --inventory "artifacts/python-supply-chain/evidence/${target}-ARTIFACT_UPLOAD_INVENTORY.json" \
+            --retention-days 3 \
+            --purpose current-head-worker-native-reconciliation \
+            --classification transient \
+            --max-bytes 12000000
+
+      - name: Upload only compact current-head evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: ${{ always() && steps.native-diagnostic-upload-budget.outcome == 'success' }}
+        if: ${{ always() && steps.evidence-upload-budget.outcome == 'success' }}
         with:
-          name: python-native-diagnostic-${{ matrix.target }}-${{ github.sha }}
+          name: code-c-current-head-worker-native-${{ matrix.target }}-${{ github.sha }}
           path: |
-            artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v2.json
-            artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v2.json
-            artifacts/python-supply-chain/diagnostics/${{ matrix.target }}-native-reconciliation.json
+            artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-runtime.v3.json
+            artifacts/python-supply-chain/candidates/code-c-${{ matrix.target }}-worker-build.v3.json
+            artifacts/python-supply-chain/evidence/build-approval-binding.json
+            artifacts/python-supply-chain/evidence/${{ matrix.target }}-build-input-closure.json
             artifacts/python-supply-chain/evidence/${{ matrix.target }}-cpython-installation.json
-            artifacts/python-supply-chain/evidence/${{ matrix.target }}-ARTIFACT_UPLOAD_INVENTORY.json
             artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json
+            artifacts/python-supply-chain/evidence/${{ matrix.target }}-current-head-regressions.json
+            artifacts/python-supply-chain/evidence/${{ matrix.target }}-worker-runtime-smoke.json
             artifacts/python-supply-chain/evidence/${{ matrix.target }}-target-evidence.json
+            artifacts/python-supply-chain/diagnostics/${{ matrix.target }}-native-reconciliation.json
             artifacts/python-supply-chain/inspection/${{ matrix.target }}-worker-onefile.json
             artifacts/python-supply-chain/native-v3/${{ matrix.target }}
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
-            artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-environment-manifest.json
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/pyinstaller-build-evidence.json
-            artifacts/python-supply-chain/target/${{ matrix.target }}.json
+            artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/parsed/prepackage-selected-native-provenance.json
+            artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/parsed/msvc-runtime-dependency-request.v1.json
+            artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/parsed/DEPENDENCY_APPROVAL_REQUEST_MSVC_RUNTIME_V1.md
+            artifacts/python-supply-chain/evidence/${{ matrix.target }}-external-runtime-validation.json
+            artifacts/python-supply-chain/evidence/${{ matrix.target }}-preinstalled-msvc-runtime-attestation.json
+            artifacts/python-supply-chain/evidence/${{ matrix.target }}-ARTIFACT_UPLOAD_INVENTORY.json
           if-no-files-found: error
           compression-level: 0
-          retention-days: 1
-
-  assemble-license-review-bundle:
-    needs: generate-target-candidate
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-        with:
-          version: 11.19.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: 24.19.0
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Download Linux and Windows exact-license target evidence
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          pattern: python-license-preparation-*-${{ github.sha }}
-          path: artifacts/python-supply-chain/license-preparation
-          merge-multiple: true
-      - name: Build graph-bound exact-artifact review request bundle
-        run: >-
-          node tools/code-c-python-supply-chain/create_license_review_bundle.mjs
-          --input-root artifacts/python-supply-chain/license-preparation
-          --output-root artifacts/python-supply-chain/license-review-bundle
-      - name: Enforce formal license handoff upload budget
-        shell: bash
-        run: >-
-          node tools/actions-artifact-budget.mjs
-          --name code-c-artifact-license-review-bundle-${{ github.sha }}
-          --path artifacts/python-supply-chain/license-review-bundle
-          --inventory artifacts/python-supply-chain/license-review-bundle/ARTIFACT_UPLOAD_INVENTORY.json
-          --retention-days 7
-          --purpose authoritative-license-review-handoff
-          --classification authoritative
-          --max-bytes 4194304
-      - name: Preserve formal license review handoff
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: code-c-artifact-license-review-bundle-${{ github.sha }}
-          path: artifacts/python-supply-chain/license-review-bundle
-          if-no-files-found: error
-          compression-level: 0
-          retention-days: 7
-
-  report-license-preparation-status:
-    if: always()
-    needs: [generate-target-candidate, assemble-license-review-bundle]
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    permissions:
-      statuses: write
-    steps:
-      - name: Download completed license preparation summary
-        if: needs.assemble-license-review-bundle.result == 'success'
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          name: code-c-artifact-license-review-bundle-${{ github.sha }}
-          path: artifacts/python-supply-chain/license-review-bundle
-      - name: Publish exact candidate preparation status
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          TARGET_SHA: ${{ github.sha }}
-          TARGET_REPOSITORY: ${{ github.repository }}
-          TARGET_JOBS_RESULT: ${{ needs.generate-target-candidate.result }}
-          BUNDLE_JOB_RESULT: ${{ needs.assemble-license-review-bundle.result }}
-        shell: bash
-        run: |
-          state=failure
-          description="candidate preparation failed before exact-artifact bundle"
-          summary=artifacts/python-supply-chain/license-review-bundle/CODE_C_LICENSE_REVIEW_PREPARATION.json
-          if [[ "$TARGET_JOBS_RESULT" == success && "$BUNDLE_JOB_RESULT" == success && -f "$summary" ]]; then
-            state=success
-            description="$(jq -r '"bundle ready; gate=" + .python_license_gate + "; total=" + (.total_unique_wheel_artifacts|tostring) + ", review=" + (.required_review|tostring) + ", blocked=" + (.hard_blocked|tostring)' "$summary")"
-          fi
-          payload="$(jq -n \
-            --arg state "$state" \
-            --arg context 'code-c/artifact-license-review-preparation' \
-            --arg description "$description" \
-            --arg target_url "$TARGET_URL" \
-            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
-          curl --fail --silent --show-error \
-            --request POST \
-            --header "Authorization: Bearer $GH_TOKEN" \
-            --header 'Accept: application/vnd.github+json' \
-            --header 'X-GitHub-Api-Version: 2022-11-28' \
-            "${{ github.api_url }}/repos/$TARGET_REPOSITORY/statuses/$TARGET_SHA" \
-            --data "$payload"
+          retention-days: 3
