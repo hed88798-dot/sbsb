@@ -391,9 +391,7 @@ async function main() {
           policy_decisions: decisions,
         });
       } else if (decisions.every((decision) => decision.policy_result !== 'FAIL')) {
-        requiredReview.push(
-          requiredReviewRecord({ artifact, evidence, uses, decisions }),
-        );
+        requiredReview.push(requiredReviewRecord({ artifact, evidence, uses, decisions }));
       } else {
         hardBlocked.push(
           hardBlock(
