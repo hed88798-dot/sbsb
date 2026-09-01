@@ -14,6 +14,7 @@ import {
   validateArtifactLicenseEvidenceV3,
 } from '../license-policy/artifact-review.mjs';
 import { evaluateLicenseEvidence, licenseIdentityHash } from '../license-policy/evaluator.mjs';
+import { deriveLicenseMachineSuggestion } from '../python-supply-chain/license.mjs';
 import {
   assertLicenseBaselineBinding,
   assertWorkerArtifactBinding,
@@ -177,6 +178,19 @@ async function main() {
       artifact,
       inspected: item.inspected,
       evidenceStatus: evidenceStatus(item.inspected),
+      machineSuggestion:
+        evidenceStatus(item.inspected) === 'MANUAL_REVIEW'
+          ? (() => {
+              const suggestion = deriveLicenseMachineSuggestion(item.inspected);
+              return suggestion
+                ? {
+                    status: 'UNAPPROVED_MACHINE_SUGGESTION',
+                    suggested_spdx_expression: suggestion.expression,
+                    generator: 'inspect-wheel.py/exact-license-evidence/v1',
+                  }
+                : null;
+            })()
+          : null,
     });
     validateArtifactLicenseEvidenceV3(evidence);
     const evidencePath = resolve(evidenceDirectory, `${artifact.sha256}.json`);

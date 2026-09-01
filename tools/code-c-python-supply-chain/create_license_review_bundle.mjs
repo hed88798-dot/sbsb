@@ -13,6 +13,7 @@ import {
   assertLicenseBaselineBinding,
   MINIMUM_REQUIRED_LICENSE_CONTRACT_BASELINE,
 } from './license-baseline.mjs';
+import { parseSpdxExpression } from '../license-policy/spdx-parser.mjs';
 
 const CLASSIFIER_EXPRESSIONS = new Map([
   ['License :: OSI Approved :: Apache Software License', 'Apache-2.0'],
@@ -51,6 +52,14 @@ function evidenceReferences(evidence) {
 }
 
 function machineSuggestion(evidence) {
+  const recorded = evidence.machine_suggestion?.suggested_spdx_expression;
+  if (recorded) {
+    return {
+      expression: recorded,
+      source: 'EXACT_ARTIFACT_ARCHIVE_BYTES',
+      rationale: 'Suggestion was produced by the pinned exact-wheel evidence extractor.',
+    };
+  }
   const raw = evidence.raw_license_evidence;
   const legacy = compactText(raw.legacy_license_value);
   const lower = legacy.toLowerCase();
@@ -67,6 +76,18 @@ function machineSuggestion(evidence) {
     ['isc license (iscl)', 'ISC'],
     ['python software foundation license', 'PSF-2.0'],
   ]);
+  if (legacy) {
+    try {
+      const parsed = parseSpdxExpression(legacy);
+      return {
+        expression: parsed.normalized_expression,
+        source: 'EXACT_LEGACY_METADATA_SPDX_EXPRESSION',
+        rationale: 'The exact wheel METADATA License field is a valid SPDX expression.',
+      };
+    } catch {
+      // Continue through conservative aliases and legacy text signatures.
+    }
+  }
   if (exactAliases.has(lower)) {
     return {
       expression: exactAliases.get(lower),
@@ -171,7 +192,71 @@ function specializedDecision(artifact, expression, use, specialized) {
   });
 }
 
-function hardBlock(artifact, evidence, uses, reason, requiredNextAction, policyDecisions = []) {
+function requiredReviewRecord({ artifact, evidence, uses, suggestion, decisions }) {
+  return {
+    request_schema_version: '1',
+    requested_review_contract: 'Artifact License Review v1',
+    requested_action: 'APPROVE',
+    package: artifact.package,
+    version: artifact.version,
+    filename: artifact.filename,
+    sha256: artifact.sha256,
+    purl: artifact.purl,
+    targets: [...new Set(uses.map((use) => use.target))].sort(),
+    scopes: [...new Set(uses.map((use) => use.scope))].sort(),
+    artifact_roles: [...new Set(uses.map((use) => use.artifact_role))].sort(),
+    dependency_paths: uses.map((use) => ({
+      target: use.target,
+      scope: use.scope,
+      inventory_id: use.inventory_id,
+      paths: use.dependency_paths,
+    })),
+    raw_license: evidence.raw_license_evidence.legacy_license_value,
+    reported_license_expression: evidence.raw_license_evidence.reported_license_expression,
+    classifier_evidence: evidence.raw_license_evidence.classifiers,
+    bundled_license_evidence: evidence.raw_license_evidence.license_files,
+    suggested_spdx_expression: suggestion?.expression ?? null,
+    suggestion_source: suggestion?.source ?? 'ARTIFACT_REPORTED_VALID_SPDX',
+    suggestion_rationale:
+      suggestion?.rationale ??
+      'The exact artifact expression is valid but its policy result requires authorized review.',
+    suggestion_status: suggestion ? 'MACHINE_SUGGESTION_NOT_APPROVAL' : 'ARTIFACT_EXPRESSION',
+    evidence_references: evidenceReferences(evidence),
+    evidence_snapshot_sha256: evidence.evidence_snapshot_sha256,
+    projected_policy_decisions: decisions,
+    review_status: 'PENDING',
+  };
+}
+
+function usageEvaluation(artifact, use, decision, disposition, reason) {
+  return {
+    package: artifact.package,
+    version: artifact.version,
+    artifact_filename: artifact.filename,
+    artifact_sha256: artifact.sha256,
+    target: use.target,
+    scope: use.scope,
+    usage_binding_id: use.usage_binding_id ?? use.inventory_id ?? null,
+    usage_binding_sha256: use.usage_binding_sha256 ?? null,
+    inventory_id: use.inventory_id,
+    usage_role: use.artifact_role,
+    distribution_role: use.distribution_role,
+    disposition,
+    policy_result: decision?.policy_result ?? null,
+    reason: decision?.reason ?? reason,
+  };
+}
+
+function hardBlock(
+  artifact,
+  evidence,
+  uses,
+  reason,
+  requiredNextAction,
+  policyDecisions = [],
+  evidenceClassification = 'L3',
+  usageEvaluations = [],
+) {
   return {
     package: artifact.package,
     version: artifact.version,
@@ -181,9 +266,13 @@ function hardBlock(artifact, evidence, uses, reason, requiredNextAction, policyD
     scopes: [...new Set(uses.map((use) => use.scope))].sort(),
     raw_license: evidence.raw_license_evidence,
     evidence_snapshot_sha256: evidence.evidence_snapshot_sha256,
+    evidence_classification: evidenceClassification,
+    artifact_license_evidence_id: `artifact-license-evidence-v3:${evidence.evidence_snapshot_sha256}`,
+    artifact_license_evidence_sha256: evidence.evidence_snapshot_sha256,
     block_reason: reason,
     required_next_action: requiredNextAction,
     policy_decisions: policyDecisions,
+    usage_evaluations: usageEvaluations,
   };
 }
 
@@ -214,6 +303,12 @@ async function main() {
 
   const artifactsByHash = new Map();
   for (const target of targets) {
+    const inventoryHashes = new Map(
+      (target.inventories ?? []).map((inventory) => [
+        inventory.inventory_id,
+        inventory.inventory_sha256,
+      ]),
+    );
     for (const artifact of target.artifacts) {
       const evidence = validateArtifactLicenseEvidenceV3(
         JSON.parse(readFileSync(resolve(artifact.evidence_path), 'utf8')),
@@ -226,9 +321,25 @@ async function main() {
         ) {
           throw new Error(`${artifact.sha256}: cross-target exact artifact evidence mismatch`);
         }
-        existing.uses.push(...artifact.uses);
+        existing.uses.push(
+          ...artifact.uses.map((use) => ({
+            ...use,
+            usage_binding_id: use.usage_binding_id ?? use.inventory_id ?? null,
+            usage_binding_sha256:
+              use.usage_binding_sha256 ?? inventoryHashes.get(use.inventory_id) ?? null,
+          })),
+        );
       } else {
-        artifactsByHash.set(artifact.sha256, { artifact, evidence, uses: [...artifact.uses] });
+        artifactsByHash.set(artifact.sha256, {
+          artifact,
+          evidence,
+          uses: artifact.uses.map((use) => ({
+            ...use,
+            usage_binding_id: use.usage_binding_id ?? use.inventory_id ?? null,
+            usage_binding_sha256:
+              use.usage_binding_sha256 ?? inventoryHashes.get(use.inventory_id) ?? null,
+          })),
+        });
       }
     }
   }
@@ -237,6 +348,7 @@ async function main() {
   const autoApproved = [];
   const requiredReview = [];
   const hardBlocked = [];
+  const usageEvaluations = [];
   const bundleEvidenceRoot = resolve(outputRoot, 'evidence-v3');
   mkdirSync(bundleEvidenceRoot, { recursive: true });
   for (const entry of [...artifactsByHash.values()].sort((left, right) =>
@@ -247,6 +359,21 @@ async function main() {
     const rawExpression = evidence.raw_license_evidence.reported_license_expression;
     if (evidence.evidence_status === 'PASS' && rawExpression) {
       const decisions = uses.map((use) => roleDecision(artifact, rawExpression, use, 'PASS'));
+      usageEvaluations.push(
+        ...decisions.map((decision, index) =>
+          usageEvaluation(
+            artifact,
+            uses[index],
+            decision,
+            decision.policy_result === 'PASS'
+              ? 'AUTO_POLICY_PASS'
+              : decision.policy_result === 'MANUAL_REVIEW'
+                ? 'NEW_REQUIRED_REVIEW'
+                : 'HARD_BLOCKED',
+            'exact artifact expression evaluated by the pinned policy',
+          ),
+        ),
+      );
       if (decisions.every((decision) => decision.policy_result === 'PASS')) {
         autoApproved.push({
           package: artifact.package,
@@ -263,6 +390,10 @@ async function main() {
           policy_result: 'PASS',
           policy_decisions: decisions,
         });
+      } else if (decisions.every((decision) => decision.policy_result !== 'FAIL')) {
+        requiredReview.push(
+          requiredReviewRecord({ artifact, evidence, uses, decisions }),
+        );
       } else {
         hardBlocked.push(
           hardBlock(
@@ -274,12 +405,33 @@ async function main() {
               ? 'MANUAL_LEGAL_OR_PROJECT_POLICY_REVIEW_REQUIRED'
               : 'REPLACE_ARTIFACT_OR_USE_A_SEPARATELY_APPROVED_POLICY_CHANGE',
             decisions,
+            'L3',
+            decisions.map((decision, index) =>
+              usageEvaluation(
+                artifact,
+                uses[index],
+                decision,
+                'HARD_BLOCKED',
+                'exact artifact expression is rejected by current policy',
+              ),
+            ),
           ),
         );
       }
     } else if (evidence.evidence_status === 'MANUAL_REVIEW') {
       const suggestion = machineSuggestion(evidence);
       if (!suggestion) {
+        usageEvaluations.push(
+          ...uses.map((use) =>
+            usageEvaluation(
+              artifact,
+              use,
+              null,
+              'HARD_BLOCKED',
+              'exact artifact evidence has no deterministic normalization',
+            ),
+          ),
+        );
         hardBlocked.push(
           hardBlock(
             artifact,
@@ -287,10 +439,21 @@ async function main() {
             uses,
             'RAW_ARTIFACT_EVIDENCE_CANNOT_BE_NORMALIZED_UNAMBIGUOUSLY',
             'MANUAL_LEGAL_FACT_REVIEW_OR_REPLACE_ARTIFACT',
+            [],
+            'L3',
+            uses.map((use) =>
+              usageEvaluation(
+                artifact,
+                use,
+                null,
+                'HARD_BLOCKED',
+                'exact artifact evidence has no deterministic normalization',
+              ),
+            ),
           ),
         );
       } else {
-        evidence.machine_suggestion = {
+        evidence.machine_suggestion ??= {
           status: 'UNAPPROVED_MACHINE_SUGGESTION',
           suggested_spdx_expression: suggestion.expression,
           generator: 'code-c-exact-artifact-evidence-normalizer/v1',
@@ -302,47 +465,33 @@ async function main() {
             specializedDecision(artifact, suggestion.expression, use, specialized) ??
             roleDecision(artifact, suggestion.expression, use, 'PASS'),
         );
-        if (decisions.every((decision) => decision.policy_result === 'PASS')) {
-          requiredReview.push({
-            request_schema_version: '1',
-            requested_review_contract: 'Artifact License Review v1',
-            requested_action: 'APPROVE',
-            package: artifact.package,
-            version: artifact.version,
-            filename: artifact.filename,
-            sha256: artifact.sha256,
-            purl: artifact.purl,
-            targets: [...new Set(uses.map((use) => use.target))].sort(),
-            scopes: [...new Set(uses.map((use) => use.scope))].sort(),
-            artifact_roles: [...new Set(uses.map((use) => use.artifact_role))].sort(),
-            dependency_paths: uses.map((use) => ({
-              target: use.target,
-              scope: use.scope,
-              inventory_id: use.inventory_id,
-              paths: use.dependency_paths,
-            })),
-            raw_license: evidence.raw_license_evidence.legacy_license_value,
-            reported_license_expression: evidence.raw_license_evidence.reported_license_expression,
-            classifier_evidence: evidence.raw_license_evidence.classifiers,
-            bundled_license_evidence: evidence.raw_license_evidence.license_files,
-            suggested_spdx_expression: suggestion.expression,
-            suggestion_source: suggestion.source,
-            suggestion_rationale: suggestion.rationale,
-            suggestion_status: 'MACHINE_SUGGESTION_NOT_APPROVAL',
-            evidence_references: evidenceReferences(evidence),
-            evidence_snapshot_sha256: evidence.evidence_snapshot_sha256,
-            specialized_existing_evidence: specialized
-              ? {
-                  schema_version: specialized.value.schema_version,
-                  path: specialized.path,
-                  sha256: await sha256File(specialized.path),
-                  expression: specialized.value.package_license.expression,
-                  context_bound_usage_gate_still_required: true,
-                }
-              : null,
-            projected_policy_decisions: decisions,
-            review_status: 'PENDING',
-          });
+        usageEvaluations.push(
+          ...decisions.map((decision, index) =>
+            usageEvaluation(
+              artifact,
+              uses[index],
+              decision,
+              decision.policy_result === 'PASS'
+                ? 'NEW_REQUIRED_REVIEW'
+                : decision.policy_result === 'MANUAL_REVIEW'
+                  ? 'NEW_REQUIRED_REVIEW'
+                  : 'HARD_BLOCKED',
+              'suggested exact-artifact license fact evaluated by the pinned policy',
+            ),
+          ),
+        );
+        if (decisions.every((decision) => decision.policy_result !== 'FAIL')) {
+          const request = requiredReviewRecord({ artifact, evidence, uses, suggestion, decisions });
+          request.specialized_existing_evidence = specialized
+            ? {
+                schema_version: specialized.value.schema_version,
+                path: specialized.path,
+                sha256: await sha256File(specialized.path),
+                expression: specialized.value.package_license.expression,
+                context_bound_usage_gate_still_required: true,
+              }
+            : null;
+          requiredReview.push(request);
         } else {
           hardBlocked.push(
             hardBlock(
@@ -354,11 +503,34 @@ async function main() {
                 : 'SUGGESTED_LICENSE_FACT_REQUIRES_MANUAL_LEGAL_OR_PROJECT_POLICY_REVIEW',
               'FACT_REVIEW_MAY_CLARIFY_THE_LICENSE_BUT_CANNOT_OVERRIDE_PROJECT_POLICY',
               decisions,
+              'L3',
+              decisions.map((decision, index) =>
+                usageEvaluation(
+                  artifact,
+                  uses[index],
+                  decision,
+                  'HARD_BLOCKED',
+                  'suggested exact-artifact license fact is rejected by current policy',
+                ),
+              ),
             ),
           );
         }
       }
     } else {
+      usageEvaluations.push(
+        ...uses.map((use) =>
+          usageEvaluation(
+            artifact,
+            use,
+            null,
+            'HARD_BLOCKED',
+            evidence.evidence_status === 'FAIL'
+              ? 'exact wheel has no artifact-contained license evidence'
+              : 'exact wheel license evidence is internally conflicting',
+          ),
+        ),
+      );
       hardBlocked.push(
         hardBlock(
           artifact,
@@ -368,6 +540,19 @@ async function main() {
             ? 'INSUFFICIENT_EXACT_ARTIFACT_LICENSE_EVIDENCE'
             : 'CONFLICTING_EXACT_ARTIFACT_LICENSE_EVIDENCE',
           'REPLACE_ARTIFACT_OR_ADD_FORMALLY_SUPPORTED_NON_WHEEL_LICENSE_EVIDENCE',
+          [],
+          'L3',
+          uses.map((use) =>
+            usageEvaluation(
+              artifact,
+              use,
+              null,
+              'HARD_BLOCKED',
+              evidence.evidence_status === 'FAIL'
+                ? 'exact wheel has no artifact-contained license evidence'
+                : 'exact wheel license evidence is internally conflicting',
+            ),
+          ),
         ),
       );
     }
@@ -378,6 +563,52 @@ async function main() {
   if (autoApproved.length + requiredReview.length + hardBlocked.length !== total) {
     throw new Error('license classification is not complete and exclusive');
   }
+  const dispositionCounts = {
+    AUTO_POLICY_PASS: usageEvaluations.filter((entry) => entry.disposition === 'AUTO_POLICY_PASS')
+      .length,
+    HISTORICAL_LICENSE_REVIEW_REUSE: usageEvaluations.filter(
+      (entry) => entry.disposition === 'HISTORICAL_LICENSE_REVIEW_REUSE',
+    ).length,
+    NEW_REQUIRED_REVIEW: usageEvaluations.filter(
+      (entry) => entry.disposition === 'NEW_REQUIRED_REVIEW',
+    ).length,
+    HARD_BLOCKED: usageEvaluations.filter((entry) => entry.disposition === 'HARD_BLOCKED').length,
+  };
+  const usageCount = [...artifactsByHash.values()].reduce(
+    (count, entry) => count + entry.uses.length,
+    0,
+  );
+  if (
+    usageEvaluations.length !== usageCount ||
+    Object.values(dispositionCounts).reduce((sum, count) => sum + count, 0) !== usageCount
+  ) {
+    throw new Error('license usage disposition partition is incomplete or non-exclusive');
+  }
+  const evidenceGeneratorPath = resolve('tools/python-supply-chain/inspect-wheel.py');
+  const evidenceGeneratorSha256 = await sha256File(evidenceGeneratorPath);
+  const licenseSubjectClosureSha256 = licenseIdentityHash({
+    policy_version: policy.document.license_policy_version,
+    policy_sha256: policy.sha256,
+    evidence_generator: {
+      id: 'inspect-wheel.py/exact-license-evidence/v1',
+      sha256: evidenceGeneratorSha256,
+    },
+    artifacts: [...artifactsByHash.values()].map(({ artifact, evidence, uses }) => ({
+      package: artifact.package,
+      version: artifact.version,
+      filename: artifact.filename,
+      sha256: artifact.sha256,
+      evidence_snapshot_sha256: evidence.evidence_snapshot_sha256,
+      uses,
+    })),
+    usage_evaluations: usageEvaluations,
+  });
+  const sentencepieceArtifacts = [...artifactsByHash.values()].filter(
+    ({ artifact }) => artifact.package === 'sentencepiece',
+  );
+  const pyinstallerHooksUses = [...artifactsByHash.values()]
+    .filter(({ artifact }) => artifact.package === 'pyinstaller-hooks-contrib')
+    .flatMap(({ uses }) => uses);
   const currentSubjectSets = targets.map((target) => target.license_target_subject_set);
   if (currentSubjectSets.every(Boolean)) {
     for (const [index, subjectSet] of currentSubjectSets.entries()) {
@@ -444,6 +675,49 @@ async function main() {
       required_review: requiredReview.length,
       hard_blocked: hardBlocked.length,
     },
+    count_domains: {
+      unique_license_artifact_count: total,
+      license_usage_evaluation_count: usageCount,
+      auto_policy_pass_usage_count: dispositionCounts.AUTO_POLICY_PASS,
+      historical_license_review_reuse_usage_count:
+        dispositionCounts.HISTORICAL_LICENSE_REVIEW_REUSE,
+      new_required_review_usage_count: dispositionCounts.NEW_REQUIRED_REVIEW,
+      new_required_review_unique_artifact_count: requiredReview.length,
+      hard_blocked_usage_count: dispositionCounts.HARD_BLOCKED,
+      hard_blocked_unique_artifact_count: hardBlocked.length,
+    },
+    license_disposition_partition: {
+      status: 'PASS',
+      invariant:
+        'license_usage_evaluation_count = auto_policy_pass_usage_count + historical_license_review_reuse_usage_count + new_required_review_usage_count + hard_blocked_usage_count',
+      usage_evaluations: usageEvaluations,
+    },
+    license_evidence_authority: {
+      extraction_source: 'EXACT_ARTIFACT_ARCHIVE_BYTES',
+      artifact_sha_binding: 'PASS',
+      installed_site_packages_metadata_used_as_license_authority: 'NO',
+      approved_artifact_bytes_mutated_for_license_evidence: 'NO',
+      wheel_repacked_for_license_evidence: 'NO',
+      approved_artifact_sha_changed: 'NO',
+    },
+    license_evidence_generator: {
+      id: 'inspect-wheel.py/exact-license-evidence/v1',
+      sha256: evidenceGeneratorSha256,
+    },
+    license_subject_closure_sha256: licenseSubjectClosureSha256,
+    diagnostics: {
+      sentencepiece_unique_artifact_count: sentencepieceArtifacts.length,
+      sentencepiece_usage_evaluation_count: usageEvaluations.filter(
+        (entry) => entry.package === 'sentencepiece',
+      ).length,
+      pyinstaller_hooks_contrib_role: pyinstallerHooksUses.map((use) => ({
+        artifact_role: use.artifact_role,
+        distribution_role: use.distribution_role,
+        target: use.target,
+        scope: use.scope,
+      })),
+      hard_block_diagnostics: hardBlocked,
+    },
     classification_complete_and_exclusive: true,
     regression_fixture_used_as_production_approval: false,
     pyinstaller_worker_build_license: Object.fromEntries(
@@ -459,6 +733,8 @@ async function main() {
           ? 'BLOCKED_PENDING_ARTIFACT_LICENSE_REVIEW'
           : 'PASS',
     f_license_review: requiredReview.length > 0 ? 'PENDING' : 'NOT_REQUIRED',
+    license_review_bundle_status:
+      hardBlocked.length > 0 ? 'DIAGNOSTIC_PRE_HARD_BLOCK_CLOSURE' : 'READY_FOR_CODE_F_REVIEW',
     license_review_graph_reconciliation: 'NOT_STARTED',
     stage_b: 'BLOCKED_NOT_RERUN',
   };
@@ -477,8 +753,13 @@ async function main() {
     license_review_bundle_sha256: fileSha256,
     ...graphBinding,
     ...document.counts,
+    ...document.count_domains,
+    license_disposition_partition: document.license_disposition_partition.status,
+    license_evidence_generator: document.license_evidence_generator,
+    license_subject_closure_sha256: document.license_subject_closure_sha256,
     python_license_gate: document.python_license_gate,
     f_license_review: document.f_license_review,
+    license_review_bundle_status: document.license_review_bundle_status,
     license_review_graph_reconciliation: document.license_review_graph_reconciliation,
     stage_b: document.stage_b,
   };

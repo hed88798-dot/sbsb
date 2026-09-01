@@ -5,6 +5,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createArtifactLicenseEvidenceV3 } from './artifact-review.mjs';
 import { canonicalJson, normalizePythonName } from '../python-supply-chain/inventory.mjs';
+import { deriveLicenseMachineSuggestion } from '../python-supply-chain/license.mjs';
 
 const repositoryRoot = resolve(fileURLToPath(new URL('../../', import.meta.url)));
 
@@ -38,6 +39,13 @@ try {
     inspected.license_classifiers.length > 0 ||
     inspected.license_files.length > 0,
   );
+  const evidenceStatus = inspected.license_expression
+    ? 'PASS'
+    : hasRawLicenseEvidence
+      ? 'MANUAL_REVIEW'
+      : 'FAIL';
+  const derivedSuggestion =
+    evidenceStatus === 'MANUAL_REVIEW' ? deriveLicenseMachineSuggestion(inspected) : null;
   const evidence = createArtifactLicenseEvidenceV3({
     artifact: {
       package: packageName,
@@ -47,18 +55,17 @@ try {
       purl: `pkg:pypi/${packageName}@${inspected.version}`,
     },
     inspected,
-    evidenceStatus: inspected.license_expression
-      ? 'PASS'
-      : hasRawLicenseEvidence
-        ? 'MANUAL_REVIEW'
-        : 'FAIL',
-    machineSuggestion: suggestion
-      ? {
-          status: 'UNAPPROVED_MACHINE_SUGGESTION',
-          suggested_spdx_expression: suggestion,
-          generator: 'capture-artifact-license-evidence.mjs/manual-input',
-        }
-      : null,
+    evidenceStatus,
+    machineSuggestion:
+      suggestion || derivedSuggestion?.expression
+        ? {
+            status: 'UNAPPROVED_MACHINE_SUGGESTION',
+            suggested_spdx_expression: suggestion || derivedSuggestion.expression,
+            generator: suggestion
+              ? 'capture-artifact-license-evidence.mjs/manual-input'
+              : 'inspect-wheel.py/exact-license-evidence/v1',
+          }
+        : null,
   });
   const outputPath = resolve(output);
   mkdirSync(dirname(outputPath), { recursive: true });

@@ -11,7 +11,10 @@ import {
 } from '../../tools/license-policy/artifact-review.mjs';
 import { parseSpdxExpression } from '../../tools/license-policy/spdx-parser.mjs';
 import { buildReviewedArtifactNoticeEntry } from '../../tools/license-policy/notices.mjs';
-import { auditPythonLicenses } from '../../tools/python-supply-chain/license.mjs';
+import {
+  auditPythonLicenses,
+  deriveLicenseMachineSuggestion,
+} from '../../tools/python-supply-chain/license.mjs';
 import { buildPythonSbomRecords } from '../../tools/python-supply-chain/sbom.mjs';
 
 const repositoryRoot = resolve(import.meta.dirname, '../..');
@@ -122,6 +125,35 @@ function verifiedArtifact(evidence: ReturnType<typeof loadEvidence>) {
 }
 
 describe('Generic exact-artifact reviewed wheel license contract', () => {
+  it('derives only unapproved suggestions from exact archive license facts', () => {
+    expect(
+      deriveLicenseMachineSuggestion({
+        legacy_license: null,
+        license_classifiers: ['License :: OSI Approved :: BSD License'],
+        license_files: [
+          {
+            relative_path: 'dist-info/licenses/LICENSE.txt',
+            sha256: 'a'.repeat(64),
+            spdx_signatures: ['BSD-3-Clause'],
+          },
+        ],
+      }),
+    ).toMatchObject({
+      expression: 'BSD-3-Clause',
+      source: 'EXACT_LICENSE_FILE_BYTE_SIGNATURE',
+    });
+    expect(
+      deriveLicenseMachineSuggestion({
+        legacy_license: 'MPL-2.0 AND MIT',
+        license_classifiers: [],
+        license_files: [],
+      }),
+    ).toMatchObject({
+      expression: 'MPL-2.0 AND MIT',
+      source: 'EXACT_LEGACY_METADATA_SPDX_EXPRESSION',
+    });
+  });
+
   it('uses a valid reported SPDX expression directly and does not let a review override it', () => {
     const evidence = loadEvidence();
     evidence.raw_license_evidence.reported_license_expression = 'Apache-2.0';

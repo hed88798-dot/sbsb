@@ -6,6 +6,7 @@ import {
   createArtifactLicenseEvidenceV3,
   resolveArtifactLicenseReview,
 } from '../license-policy/artifact-review.mjs';
+import { parseSpdxExpression } from '../license-policy/spdx-parser.mjs';
 import { normalizePythonName } from './inventory.mjs';
 
 function assertApprovedBuildToolUsage(evaluation, evidence) {
@@ -34,6 +35,98 @@ function wheelRoles(scope) {
     : { artifactRole: 'PYTHON_BUILD_DEPENDENCY', distributionRole: 'BUILD_ONLY_USE' };
 }
 
+function compactText(value) {
+  return value?.trim().replaceAll(/\s+/gu, ' ') ?? '';
+}
+
+const LEGACY_ALIASES = new Map([
+  ['apache 2.0', 'Apache-2.0'],
+  ['apache-2.0', 'Apache-2.0'],
+  ['apache software license', 'Apache-2.0'],
+  ['mit', 'MIT'],
+  ['mit license', 'MIT'],
+  ['bsd-3-clause', 'BSD-3-Clause'],
+  ['3-clause bsd license', 'BSD-3-Clause'],
+  ['bsd 3-clause license', 'BSD-3-Clause'],
+  ['isc', 'ISC'],
+  ['isc license (iscl)', 'ISC'],
+  ['python software foundation license', 'PSF-2.0'],
+]);
+
+/**
+ * Derive an unapproved suggestion from facts extracted from the exact wheel.
+ * This never approves a license; it only prevents a complete, deterministic
+ * artifact fact from being misclassified as missing evidence.
+ */
+export function deriveLicenseMachineSuggestion(inspected) {
+  const legacy = compactText(inspected.legacy_license);
+  if (legacy) {
+    try {
+      const parsed = parseSpdxExpression(legacy);
+      return {
+        expression: parsed.normalized_expression,
+        source: 'EXACT_LEGACY_METADATA_SPDX_EXPRESSION',
+        rationale: 'The exact wheel METADATA License field is a valid SPDX expression.',
+      };
+    } catch {
+      // Continue through conservative legacy aliases and byte signatures.
+    }
+    const alias = LEGACY_ALIASES.get(legacy.toLowerCase());
+    if (alias) {
+      return {
+        expression: alias,
+        source: 'EXACT_LEGACY_METADATA_ALIAS',
+        rationale: 'A deterministic generic alias normalized the exact legacy metadata value.',
+      };
+    }
+  }
+
+  const signatures = [
+    ...(inspected.license_files ?? []).flatMap((entry) => entry.spdx_signatures ?? []),
+  ].sort();
+  const uniqueSignatures = [...new Set(signatures)];
+  if (uniqueSignatures.length > 0) {
+    return {
+      expression: uniqueSignatures.join(' AND '),
+      source: 'EXACT_LICENSE_FILE_BYTE_SIGNATURE',
+      rationale:
+        'The exact wheel license-file bytes contain conservative standard SPDX text signatures.',
+    };
+  }
+
+  const classifierExpressions = [
+    ...(inspected.license_classifiers ?? [])
+      .map((value) =>
+        new Map([
+          ['License :: OSI Approved :: Apache Software License', 'Apache-2.0'],
+          ['License :: OSI Approved :: GNU General Public License v2 (GPLv2)', 'GPL-2.0-or-later'],
+          ['License :: OSI Approved :: ISC License (ISCL)', 'ISC'],
+          ['License :: OSI Approved :: MIT License', 'MIT'],
+          ['License :: OSI Approved :: Python Software Foundation License', 'PSF-2.0'],
+        ]).get(value),
+      )
+      .filter(Boolean),
+  ].sort();
+  const uniqueClassifiers = [...new Set(classifierExpressions)];
+  if (uniqueClassifiers.length === 1) {
+    return {
+      expression: uniqueClassifiers[0],
+      source: 'UNAMBIGUOUS_LICENSE_CLASSIFIER',
+      rationale:
+        'One recognized artifact-reported license classifier mapped to one SPDX expression.',
+    };
+  }
+  if (uniqueClassifiers.length > 1) {
+    return {
+      expression: uniqueClassifiers.join(' AND '),
+      source: 'MULTIPLE_LICENSE_CLASSIFIERS_CONJUNCTION',
+      rationale:
+        'Every recognized artifact-reported license classifier was retained as a conjunctive machine suggestion.',
+    };
+  }
+  return null;
+}
+
 export function buildWheelArtifactLicenseEvidenceV3(verifiedArtifacts) {
   return verifiedArtifacts.map(({ artifact, inspected }) => {
     const metadataExpression = inspected.license_expression?.trim() || null;
@@ -59,6 +152,19 @@ export function buildWheelArtifactLicenseEvidenceV3(verifiedArtifacts) {
       },
       inspected,
       evidenceStatus,
+      machineSuggestion:
+        evidenceStatus === 'MANUAL_REVIEW'
+          ? (() => {
+              const suggestion = deriveLicenseMachineSuggestion(inspected);
+              return suggestion
+                ? {
+                    status: 'UNAPPROVED_MACHINE_SUGGESTION',
+                    suggested_spdx_expression: suggestion.expression,
+                    generator: 'inspect-wheel.py/exact-license-evidence/v1',
+                  }
+                : null;
+            })()
+          : null,
     });
   });
 }
