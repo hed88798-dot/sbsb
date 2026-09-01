@@ -355,6 +355,7 @@ async function main() {
     license_target_approval_effective_state_revalidation: 'PASS',
     active_inventory_approvals: approved.active_inventory_approvals,
     active_toolchain_provenance_approvals: approved.active_toolchain_provenance_approvals,
+    approval_mismatch_count: 0,
     license_target_active_inventory_count: approved.inventory.length,
     required_inventory_slot_coverage: 'PASS',
     missing_required_inventory_slot_count: 0,
