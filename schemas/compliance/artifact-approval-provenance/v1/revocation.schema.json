@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/artifact-approval-provenance/v1/revocation.schema.json",
+  "title": "Artifact Approval Revocation Record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "revocation_id",
+    "schema_version",
+    "approval_id",
+    "approval_sha256",
+    "reason",
+    "reviewer",
+    "reviewer_role",
+    "reviewer_authority",
+    "authority_policy_version",
+    "authority_policy_sha256",
+    "created_at",
+    "canonicalization_version"
+  ],
+  "properties": {
+    "revocation_id": { "$ref": "#/$defs/id" },
+    "schema_version": { "const": "1" },
+    "approval_id": { "$ref": "#/$defs/id" },
+    "approval_sha256": { "$ref": "#/$defs/sha256" },
+    "reason": { "type": "string", "minLength": 1 },
+    "reviewer": { "type": "string", "minLength": 1 },
+    "reviewer_role": { "type": "string", "minLength": 1 },
+    "reviewer_authority": { "type": "string", "minLength": 1 },
+    "authority_policy_version": { "$ref": "#/$defs/version" },
+    "authority_policy_sha256": { "$ref": "#/$defs/sha256" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "canonicalization_version": { "const": "json-utf8-lf-v1" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$" },
+    "version": { "type": "string", "pattern": "^[0-9]+(?:\\.[0-9]+){0,3}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

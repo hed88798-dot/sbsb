@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/artifact-approval-provenance/v1/review-snapshot.schema.json",
+  "title": "Artifact Approval Review Evidence Snapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "snapshot_id",
+    "schema_version",
+    "code_c_head_sha",
+    "main_quality_baseline",
+    "review_bundle_id",
+    "review_bundle_sha256",
+    "subjects",
+    "inventory_schema_identity",
+    "approval_contract_version",
+    "approval_contract_sha256",
+    "authority_policy_version",
+    "authority_policy_sha256",
+    "created_at",
+    "canonicalization_version"
+  ],
+  "properties": {
+    "snapshot_id": { "$ref": "#/$defs/id" },
+    "schema_version": { "const": "1" },
+    "code_c_head_sha": { "$ref": "#/$defs/sha1" },
+    "main_quality_baseline": { "$ref": "#/$defs/sha1" },
+    "review_bundle_id": { "$ref": "#/$defs/id" },
+    "review_bundle_sha256": { "$ref": "#/$defs/sha256" },
+    "subjects": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/subject" }
+    },
+    "inventory_schema_identity": { "$ref": "#/$defs/schemaIdentity" },
+    "approval_contract_version": { "$ref": "#/$defs/version" },
+    "approval_contract_sha256": { "$ref": "#/$defs/sha256" },
+    "authority_policy_version": { "$ref": "#/$defs/version" },
+    "authority_policy_sha256": { "$ref": "#/$defs/sha256" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "canonicalization_version": { "const": "json-utf8-lf-v1" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$" },
+    "version": { "type": "string", "pattern": "^[0-9]+(?:\\.[0-9]+){0,3}$" },
+    "sha1": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "schemaIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_id", "schema_version", "schema_sha256"],
+      "properties": {
+        "schema_id": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "schema_version": { "$ref": "#/$defs/version" },
+        "schema_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject_type",
+        "subject_id",
+        "subject_schema_version",
+        "subject_sha256",
+        "subject_role",
+        "target_descriptor_id",
+        "target_descriptor_sha256",
+        "artifact_graph_digest",
+        "dependency_graph_digest",
+        "resolver_provenance_digest",
+        "toolchain_evidence_sha256"
+      ],
+      "properties": {
+        "subject_type": { "enum": ["PYTHON_ARTIFACT_INVENTORY", "TOOLCHAIN_EVIDENCE"] },
+        "subject_id": { "$ref": "#/$defs/id" },
+        "subject_schema_version": { "$ref": "#/$defs/version" },
+        "subject_sha256": { "$ref": "#/$defs/sha256" },
+        "subject_role": { "enum": ["RUNTIME", "WORKER_BUILD", "TOOLCHAIN"] },
+        "target_descriptor_id": { "$ref": "#/$defs/id" },
+        "target_descriptor_sha256": { "$ref": "#/$defs/sha256" },
+        "artifact_graph_digest": { "$ref": "#/$defs/sha256" },
+        "dependency_graph_digest": { "$ref": "#/$defs/sha256" },
+        "resolver_provenance_digest": { "$ref": "#/$defs/sha256" },
+        "toolchain_evidence_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}
