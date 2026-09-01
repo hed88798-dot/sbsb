@@ -8,3 +8,5 @@ compliance/license-policy/** text eol=lf
 compliance/quality-tooling/npm/** text eol=lf
 compliance/approval/** text eol=lf
 schemas/compliance/artifact-approval-provenance/** text eol=lf
+schemas/compliance/python-artifact-inventory/** text eol=lf
+schemas/compliance/python-toolchain-inventory/** text eol=lf
