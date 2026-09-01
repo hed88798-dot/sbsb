@@ -109,6 +109,14 @@ def main() -> None:
             check=False,
         )
     if result.returncode:
+        try:
+            log_tail = arguments.build_log.read_bytes()[-16000:].decode(
+                "utf-8", errors="replace"
+            )
+        except OSError:
+            log_tail = "<build log unavailable>"
+        print("hermetic PyInstaller build log tail (diagnostic):")
+        print(log_tail)
         raise SystemExit(
             f"hermetic PyInstaller build failed with exit code {result.returncode}; "
             f"see {arguments.build_log}"
