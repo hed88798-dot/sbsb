@@ -1,0 +1,75 @@
+{
+  "schema_version": "1",
+  "fixture_scope": "DIAGNOSTIC_ONLY_NOT_LICENSE_APPROVAL",
+  "upstream_project": "google/sentencepiece",
+  "release_tag": "v0.2.1",
+  "release_commit": "31646a467d2051eb904e0b45de3a73e91fe1c1e3",
+  "release_identity_sha256": "9def9956f08fcddeb30889d76252732866af4e77988b1b066d0782092d2928f4",
+  "release_commit_signature_verified": "PASS",
+  "official_slsa_provenance_mechanism_confirmed": "YES",
+  "workflow_path": ".github/workflows/wheel.yml",
+  "workflow_raw_file_sha256": "f1c8dba959fbc1cdc64d3116f8509f4d7f2440aa228282a57f89452d10d86320",
+  "provenance": {
+    "filename": "multiple.intoto.jsonl",
+    "artifact_id": "github-release-asset:google/sentencepiece:v0.2.1:281681944:be40ea1220e99c8a853738a35db7bd779d6d5cbaca792a97b8734aaadb3ac9a8",
+    "sha256": "be40ea1220e99c8a853738a35db7bd779d6d5cbaca792a97b8734aaadb3ac9a8",
+    "verification_tool": "sigstore-python",
+    "verification_tool_version": "4.1.0",
+    "offline_replay": "PASS",
+    "source_binding": "PASS",
+    "subject_count": 33,
+    "current_linux_cp313_subject": "PASS",
+    "current_windows_cp313_subject": "FAIL"
+  },
+  "source_license_artifact": {
+    "filename": "sentencepiece-0.2.1.tar.gz",
+    "artifact_id": "github-release-asset:google/sentencepiece:v0.2.1:281679921:8138cec27c2f2282f4a34d9a016e3374cd40e5c6e9cb335063db66a0a3b71fad",
+    "sha256": "8138cec27c2f2282f4a34d9a016e3374cd40e5c6e9cb335063db66a0a3b71fad",
+    "release_binding": "PASS",
+    "provenance_subject_match": "FAIL",
+    "project_license_path": "sentencepiece-0.2.1/sentencepiece/LICENSE",
+    "project_license_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "license_expression_supported": "Apache-2.0",
+    "coverage_to_exact_wheel": "REQUIRES_REVIEW"
+  },
+  "targets": {
+    "linux": {
+      "current_channel": "PYPI",
+      "current_wheel_filename": "sentencepiece-0.2.1-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+      "current_wheel_sha256": "c7f0fd2f2693309e6628aeeb2e2faf6edd221134dfccac3308ca0de01f8dab47",
+      "github_release_asset_id": 281678973,
+      "github_release_asset_sha256": "c7f0fd2f2693309e6628aeeb2e2faf6edd221134dfccac3308ca0de01f8dab47",
+      "byte_identity": "SAME",
+      "release_membership": "PASS",
+      "provenance_verification": "PASS",
+      "license_coverage": "REQUIRES_REVIEW",
+      "license_to_exact_wheel_binding": "PASS"
+    },
+    "windows": {
+      "current_channel": "PYPI",
+      "current_wheel_filename": "sentencepiece-0.2.1-cp313-cp313-win_amd64.whl",
+      "current_wheel_sha256": "10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b",
+      "github_release_asset_id": 281681805,
+      "github_release_asset_sha256": "10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b",
+      "byte_identity": "SAME",
+      "release_membership": "PASS",
+      "provenance_verification": "FAIL",
+      "license_coverage": "REQUIRES_REVIEW",
+      "license_to_exact_wheel_binding": "FAIL"
+    }
+  },
+  "negative_control_regression": {
+    "same_filename_wrong_sha": "BLOCK",
+    "correct_sha_wrong_release_tag": "BLOCK",
+    "correct_sha_wrong_source_repository": "BLOCK",
+    "valid_attestation_missing_subject": "BLOCK",
+    "attestation_bytes_changed": "BLOCK",
+    "release_membership_without_license_coverage": "REQUIRED_REVIEW"
+  },
+  "contract_can_express_upstream_license_binding": "NO",
+  "pyinstaller_hooks_component_coverage_evidence": "PRESERVED",
+  "final_disposition": "PARTIAL",
+  "dependency_artifact_change_candidate": "YES",
+  "dependency_change_required": "UNDECIDED",
+  "qicr_ready_for_code_f": "NO"
+}
