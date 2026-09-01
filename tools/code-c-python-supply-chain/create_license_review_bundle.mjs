@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
 import { sha256File } from '../python-supply-chain/inventory.mjs';
@@ -11,9 +11,15 @@ import {
 import { validateArtifactLicenseEvidenceV3 } from '../license-policy/artifact-review.mjs';
 import {
   assertLicenseBaselineBinding,
+  containsCommit,
   MINIMUM_REQUIRED_LICENSE_CONTRACT_BASELINE,
 } from './license-baseline.mjs';
 import { parseSpdxExpression } from '../license-policy/spdx-parser.mjs';
+import {
+  evaluateLicenseCoverage,
+  validateBuildOnlyUsageBinding,
+  validateUpstreamReleaseBinding,
+} from '../license-policy/coverage.mjs';
 
 const CLASSIFIER_EXPRESSIONS = new Map([
   ['License :: OSI Approved :: Apache Software License', 'Apache-2.0'],
@@ -35,6 +41,11 @@ function argument(name) {
   const value = index >= 0 ? process.argv[index + 1] : null;
   if (!value) throw new Error(`${name} is required`);
   return value;
+}
+
+function optionalArgument(name) {
+  const index = process.argv.indexOf(name);
+  return index >= 0 ? (process.argv[index + 1] ?? null) : null;
 }
 
 function compactText(value) {
@@ -276,9 +287,173 @@ function hardBlock(
   };
 }
 
+function sameCoverageArtifact(left, right) {
+  return ['package', 'version', 'filename', 'sha256', 'artifact_type'].every(
+    (key) =>
+      (left?.[key] ?? (key === 'artifact_type' ? 'PYTHON_WHEEL' : undefined)) === right?.[key],
+  );
+}
+
+function loadCoverageRevalidation(coverageRoot, artifactsByHash) {
+  const fixtureNames = [
+    'sentencepiece-linux',
+    'sentencepiece-windows',
+    'pyinstaller-hooks-contrib',
+  ];
+  const fixtures = fixtureNames.map((name) => {
+    const fixtureRoot = resolve(coverageRoot, name);
+    const manifestPath = resolve(fixtureRoot, 'manifest.json');
+    const artifactPath = resolve(fixtureRoot, 'artifact.json');
+    const membersPath = resolve(fixtureRoot, 'members.json');
+    const coveragePath = resolve(fixtureRoot, 'coverage.json');
+    if (![manifestPath, artifactPath, membersPath, coveragePath].every(existsSync)) {
+      throw new Error(`${name}: incomplete License Coverage v1 fixture`);
+    }
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    if (manifest.fixture_scope !== 'REGRESSION_ONLY_NOT_RELEASE_APPROVAL') {
+      throw new Error(`${name}: fixture is not explicitly regression-only`);
+    }
+    const artifact = JSON.parse(readFileSync(artifactPath, 'utf8'));
+    const members = JSON.parse(readFileSync(membersPath, 'utf8'));
+    const records = JSON.parse(readFileSync(coveragePath, 'utf8'));
+    const bindingPath = resolve(fixtureRoot, 'upstream-binding.json');
+    const usageBindingPath = resolve(fixtureRoot, 'usage-binding.json');
+    const upstreamBinding = existsSync(bindingPath)
+      ? JSON.parse(readFileSync(bindingPath, 'utf8'))
+      : null;
+    const usageBinding = existsSync(usageBindingPath)
+      ? JSON.parse(readFileSync(usageBindingPath, 'utf8'))
+      : null;
+    let evaluation = null;
+    let error = null;
+    try {
+      evaluation = evaluateLicenseCoverage({
+        artifact,
+        members,
+        records,
+        upstreamBinding,
+        expectedRelease: manifest.expected_upstream_release ?? null,
+      });
+      if (usageBinding) validateBuildOnlyUsageBinding(usageBinding);
+      if (upstreamBinding) validateUpstreamReleaseBinding(upstreamBinding);
+    } catch (caught) {
+      error = caught instanceof Error ? caught.message : String(caught);
+    }
+    const productionEntry = artifactsByHash.get(artifact.sha256);
+    const exactArtifactMatch = Boolean(
+      productionEntry && sameCoverageArtifact(productionEntry.artifact, artifact),
+    );
+    const productionIdentity = productionEntry
+      ? {
+          package: productionEntry.artifact.package,
+          version: productionEntry.artifact.version,
+          filename: productionEntry.artifact.filename,
+          sha256: productionEntry.artifact.sha256,
+          artifact_type: 'PYTHON_WHEEL',
+        }
+      : null;
+    return {
+      fixture_id: manifest.fixture_id,
+      fixture_name: name,
+      fixture_scope: manifest.fixture_scope,
+      artifact,
+      production_identity: productionIdentity,
+      exact_artifact_match: exactArtifactMatch,
+      identity_mismatch_fields: productionEntry
+        ? ['package', 'version', 'filename', 'sha256', 'artifact_type'].filter(
+            (key) =>
+              (productionEntry.artifact[key] ??
+                (key === 'artifact_type' ? 'PYTHON_WHEEL' : undefined)) !== artifact[key],
+          )
+        : ['artifact_not_present_in_current_license_graph'],
+      status: error ? 'FAIL' : evaluation.status,
+      error,
+      coverage_record_sha256: records.map((record) => record.coverage_record_sha256),
+      upstream_binding_id: upstreamBinding?.binding_id ?? null,
+      upstream_binding_record_sha256: upstreamBinding?.binding_record_sha256 ?? null,
+      upstream_binding_method: upstreamBinding?.binding_method ?? null,
+      upstream_binding_assurance: upstreamBinding?.binding_assurance ?? null,
+      review_statuses: [
+        ...new Set(records.map((record) => record.review_provenance.review_status)),
+      ],
+      effective_license_expressions: [
+        ...new Set(records.map((record) => record.license_assertion.spdx_expression)),
+      ],
+      usage_binding_status: usageBinding ? 'PASS' : 'NOT_APPLICABLE',
+      member_manifest_sha256: evaluation?.member_manifest_sha256 ?? null,
+      member_count: evaluation?.member_count ?? null,
+      covered_member_count: evaluation?.covered_member_count ?? null,
+    };
+  });
+  return {
+    contract_status: fixtures.every((fixture) => fixture.status === 'PASS') ? 'PASS' : 'FAIL',
+    production_approval_used: false,
+    fixtures,
+  };
+}
+
+function coverageRequiredReviewRecord({ artifact, uses, coverage }) {
+  const coverageIdentity = licenseIdentityHash({
+    fixture_id: coverage.fixture_id,
+    coverage_record_sha256: coverage.coverage_record_sha256,
+    upstream_binding_id: coverage.upstream_binding_id,
+    upstream_binding_record_sha256: coverage.upstream_binding_record_sha256,
+    member_manifest_sha256: coverage.member_manifest_sha256,
+  });
+  return {
+    request_schema_version: '1',
+    requested_review_contract: 'Artifact License Review v1',
+    requested_action: 'APPROVE',
+    package: artifact.package,
+    version: artifact.version,
+    filename: artifact.filename,
+    sha256: artifact.sha256,
+    purl: artifact.purl,
+    targets: [...new Set(uses.map((use) => use.target))].sort(),
+    scopes: [...new Set(uses.map((use) => use.scope))].sort(),
+    artifact_roles: [...new Set(uses.map((use) => use.artifact_role))].sort(),
+    dependency_paths: uses.map((use) => ({
+      target: use.target,
+      scope: use.scope,
+      inventory_id: use.inventory_id,
+      paths: use.dependency_paths,
+    })),
+    raw_license: null,
+    reported_license_expression: null,
+    classifier_evidence: [],
+    bundled_license_evidence: [],
+    suggested_spdx_expression: coverage.effective_license_expressions[0] ?? null,
+    suggestion_source: 'LICENSE_COVERAGE_V1_UPSTREAM_RELEASE',
+    suggestion_rationale:
+      'Whole-artifact License Coverage v1 and Upstream Release Binding v1 account for the exact artifact; commercial-policy approval remains pending.',
+    suggestion_status: 'MACHINE_SUGGESTION_NOT_APPROVAL',
+    evidence_references: [
+      `license-coverage-fixture:${coverage.fixture_id}`,
+      ...coverage.coverage_record_sha256.map((sha256) => `coverage-record:${sha256}`),
+      ...(coverage.upstream_binding_id ? [`upstream-binding:${coverage.upstream_binding_id}`] : []),
+    ],
+    evidence_snapshot_sha256: coverageIdentity,
+    projected_policy_decisions: [],
+    review_status: 'PENDING',
+    coverage_evidence: {
+      contract: 'License Coverage v1 / Upstream Release Binding v1',
+      coverage_record_sha256: coverage.coverage_record_sha256,
+      upstream_binding_record_sha256: coverage.upstream_binding_record_sha256,
+      upstream_binding_assurance: coverage.upstream_binding_assurance,
+      member_manifest_sha256: coverage.member_manifest_sha256,
+      coverage_status: coverage.status,
+      commercial_policy_decision: 'NOT_PROVIDED_BY_COVERAGE_CONTRACT',
+    },
+  };
+}
+
 async function main() {
   const inputRoot = resolve(argument('--input-root'));
   const outputRoot = resolve(argument('--output-root'));
+  const coverageRootArgument = optionalArgument('--coverage-root');
+  const coverageRoot = coverageRootArgument ? resolve(coverageRootArgument) : null;
+  const requestedBaseline = optionalArgument('--current-main-quality-baseline');
+  const requestedEvaluatorHead = optionalArgument('--current-license-evaluator-head');
   const targets = ['linux', 'windows'].map((target) =>
     JSON.parse(readFileSync(resolve(inputRoot, target, 'target-license-evidence.json'), 'utf8')),
   );
@@ -289,11 +464,20 @@ async function main() {
   if (baselineSet.size !== 1) {
     throw new Error('target graphs were not produced from one current main quality baseline');
   }
-  const mainBaseline = [...baselineSet][0];
+  const targetGraphBaseline = [...baselineSet][0];
+  const mainBaseline = requestedBaseline ?? targetGraphBaseline;
+  const evaluationHead = requestedEvaluatorHead ?? currentValidationHead();
+  if (requestedBaseline && targetGraphBaseline !== requestedBaseline) {
+    if (!containsCommit(targetGraphBaseline, requestedBaseline)) {
+      throw new Error(
+        `target graph baseline ${targetGraphBaseline} is not an ancestor of requested current main baseline ${requestedBaseline}`,
+      );
+    }
+  }
   assertLicenseBaselineBinding({
     minimumBaseline: MINIMUM_REQUIRED_LICENSE_CONTRACT_BASELINE,
     currentMainBaseline: mainBaseline,
-    validationHead: currentValidationHead(),
+    validationHead: evaluationHead,
   });
   for (const target of targets) {
     if (target.pyinstaller_worker_build_license?.status !== 'PASS') {
@@ -349,6 +533,13 @@ async function main() {
   const requiredReview = [];
   const hardBlocked = [];
   const usageEvaluations = [];
+  const coverageRevalidation = coverageRoot
+    ? loadCoverageRevalidation(coverageRoot, artifactsByHash)
+    : {
+        contract_status: 'NOT_RUN',
+        production_approval_used: false,
+        fixtures: [],
+      };
   const bundleEvidenceRoot = resolve(outputRoot, 'evidence-v3');
   mkdirSync(bundleEvidenceRoot, { recursive: true });
   for (const entry of [...artifactsByHash.values()].sort((left, right) =>
@@ -557,6 +748,49 @@ async function main() {
     writeCanonicalJson(resolve(bundleEvidenceRoot, `${artifact.sha256}.json`), evidence);
   }
 
+  // Coverage evidence can replace the old "no exact license evidence" blocker
+  // only when the v1 record binds to the exact production artifact identity.
+  // Regression fixtures with a filename or other identity mismatch stay hard
+  // blocked; no basename or SHA-only inference is allowed here.
+  if (coverageRoot) {
+    for (let index = hardBlocked.length - 1; index >= 0; index -= 1) {
+      const blocked = hardBlocked[index];
+      if (blocked.package !== 'sentencepiece') continue;
+      const coverage = coverageRevalidation.fixtures.find(
+        (fixture) =>
+          fixture.artifact.sha256 === blocked.sha256 &&
+          fixture.fixture_name ===
+            (blocked.targets.includes('windows') ? 'sentencepiece-windows' : 'sentencepiece-linux'),
+      );
+      if (!coverage || coverage.status !== 'PASS' || !coverage.exact_artifact_match) continue;
+      if (!coverage.review_statuses.includes('REQUIRES_REVIEW')) continue;
+      const artifactEntry = artifactsByHash.get(blocked.sha256);
+      if (!artifactEntry) throw new Error(`${blocked.sha256}: coverage artifact disappeared`);
+      const reviewRecord = coverageRequiredReviewRecord({
+        artifact: artifactEntry.artifact,
+        uses: artifactEntry.uses,
+        coverage,
+      });
+      requiredReview.push(reviewRecord);
+      const blockedUsageKeys = new Set(
+        blocked.usage_evaluations.map(
+          (usage) => `${usage.target}\0${usage.scope}\0${usage.inventory_id}`,
+        ),
+      );
+      for (const usage of usageEvaluations) {
+        const key = `${usage.target}\0${usage.scope}\0${usage.inventory_id}`;
+        if (usage.artifact_sha256 === blocked.sha256 && blockedUsageKeys.has(key)) {
+          usage.disposition = 'NEW_REQUIRED_REVIEW';
+          usage.policy_result = null;
+          usage.reason =
+            'exact artifact is covered by License Coverage v1; authorized Artifact License Review remains pending';
+        }
+      }
+      hardBlocked.splice(index, 1);
+    }
+  }
+  requiredReview.sort((left, right) => left.sha256.localeCompare(right.sha256));
+
   const total = artifactsByHash.size;
   if (autoApproved.length + requiredReview.length + hardBlocked.length !== total) {
     throw new Error('license classification is not complete and exclusive');
@@ -624,7 +858,7 @@ async function main() {
     }
   }
   const graphBinding = {
-    code_c_head_sha: head,
+    code_c_head_sha: evaluationHead,
     main_quality_baseline_sha: mainBaseline,
     minimum_required_license_contract_baseline: MINIMUM_REQUIRED_LICENSE_CONTRACT_BASELINE,
     baseline_semantics: 'MINIMUM_CAPABILITY_FLOOR',
@@ -662,6 +896,8 @@ async function main() {
     contracts: {
       artifact_license_evidence: 'v3',
       artifact_license_review: 'v1',
+      license_coverage: 'v1',
+      upstream_release_binding: 'v1',
     },
     policy: {
       version: policy.document.license_policy_version,
@@ -715,6 +951,16 @@ async function main() {
         scope: use.scope,
       })),
       hard_block_diagnostics: hardBlocked,
+      license_coverage_revalidation: coverageRevalidation,
+      license_closure_rebind: {
+        target_evidence_code_c_head_sha: head,
+        target_evidence_main_quality_baseline_sha: targetGraphBaseline,
+        evaluator_head_sha: evaluationHead,
+        current_main_quality_baseline_sha: mainBaseline,
+        target_evidence_rebound_without_worker_rebuild: Boolean(
+          requestedBaseline || requestedEvaluatorHead,
+        ),
+      },
     },
     classification_complete_and_exclusive: true,
     regression_fixture_used_as_production_approval: false,
