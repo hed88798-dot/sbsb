@@ -762,7 +762,21 @@ async function main() {
           fixture.fixture_name ===
             (blocked.targets.includes('windows') ? 'sentencepiece-windows' : 'sentencepiece-linux'),
       );
-      if (!coverage || coverage.status !== 'PASS' || !coverage.exact_artifact_match) continue;
+      if (!coverage || coverage.status !== 'PASS') continue;
+      if (!coverage.exact_artifact_match) {
+        blocked.block_reason = 'LICENSE_COVERAGE_NOT_BOUND_TO_CURRENT_EXACT_ARTIFACT';
+        blocked.required_next_action =
+          'REISSUE_OR_BIND_COVERAGE_TO_CURRENT_EXACT_ARTIFACT_IDENTITY';
+        blocked.coverage_evidence = {
+          fixture_id: coverage.fixture_id,
+          coverage_status: coverage.status,
+          exact_artifact_match: coverage.exact_artifact_match,
+          identity_mismatch_fields: coverage.identity_mismatch_fields,
+          coverage_record_sha256: coverage.coverage_record_sha256,
+          upstream_binding_record_sha256: coverage.upstream_binding_record_sha256,
+        };
+        continue;
+      }
       if (!coverage.review_statuses.includes('REQUIRES_REVIEW')) continue;
       const artifactEntry = artifactsByHash.get(blocked.sha256);
       if (!artifactEntry) throw new Error(`${blocked.sha256}: coverage artifact disappeared`);
