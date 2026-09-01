@@ -50,6 +50,7 @@ jobs:
       - run: pnpm vulnerability:scan
       - run: pnpm compliance:python:verify
       - run: pnpm compliance:python:target:verify
+      - run: pnpm compliance:approval:verify
       - run: pnpm golden:verify
       - run: pnpm build
       - run: pnpm sbom:generate

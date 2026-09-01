@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/artifact-approval-provenance/v1/approval.schema.json",
+  "title": "Artifact Approval Provenance v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "approval_id",
+    "schema_version",
+    "subject_type",
+    "subject_id",
+    "subject_schema_version",
+    "subject_sha256",
+    "subject_role",
+    "target_descriptor_id",
+    "target_descriptor_sha256",
+    "approval_scope",
+    "review_evidence_snapshot_id",
+    "review_evidence_snapshot_sha256",
+    "reviewer",
+    "reviewer_role",
+    "reviewer_authority",
+    "authority_policy_version",
+    "authority_policy_sha256",
+    "decision",
+    "decision_reason",
+    "created_at",
+    "expires_at",
+    "recheck_triggers",
+    "supersedes",
+    "canonicalization_version"
+  ],
+  "properties": {
+    "approval_id": { "$ref": "#/$defs/id" },
+    "schema_version": { "const": "1" },
+    "subject_type": { "enum": ["PYTHON_ARTIFACT_INVENTORY", "TOOLCHAIN_EVIDENCE"] },
+    "subject_id": { "$ref": "#/$defs/id" },
+    "subject_schema_version": { "$ref": "#/$defs/version" },
+    "subject_sha256": { "$ref": "#/$defs/sha256" },
+    "subject_role": { "enum": ["RUNTIME", "WORKER_BUILD", "TOOLCHAIN"] },
+    "target_descriptor_id": { "$ref": "#/$defs/id" },
+    "target_descriptor_sha256": { "$ref": "#/$defs/sha256" },
+    "approval_scope": {
+      "enum": ["PYTHON_ARTIFACT_INVENTORY_PROVENANCE", "TOOLCHAIN_PROVENANCE_APPROVAL"]
+    },
+    "review_evidence_snapshot_id": { "$ref": "#/$defs/id" },
+    "review_evidence_snapshot_sha256": { "$ref": "#/$defs/sha256" },
+    "reviewer": { "type": "string", "minLength": 1 },
+    "reviewer_role": { "type": "string", "minLength": 1 },
+    "reviewer_authority": { "type": "string", "minLength": 1 },
+    "authority_policy_version": { "$ref": "#/$defs/version" },
+    "authority_policy_sha256": { "$ref": "#/$defs/sha256" },
+    "decision": { "enum": ["APPROVED", "REJECTED"] },
+    "decision_reason": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "expires_at": { "type": ["string", "null"], "format": "date-time" },
+    "recheck_triggers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "SUBJECT_BYTES_CHANGED",
+          "TARGET_DESCRIPTOR_CHANGED",
+          "REVIEW_EVIDENCE_CHANGED",
+          "APPROVAL_POLICY_CHANGED",
+          "AUTHORITY_POLICY_CHANGED",
+          "SCHEMA_CHANGED",
+          "EXPIRY_REACHED",
+          "SECURITY_REVIEW_REQUIRED"
+        ]
+      }
+    },
+    "supersedes": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["approval_id", "approval_sha256"],
+      "properties": {
+        "approval_id": { "$ref": "#/$defs/id" },
+        "approval_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "canonicalization_version": { "const": "json-utf8-lf-v1" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$" },
+    "version": { "type": "string", "pattern": "^[0-9]+(?:\\.[0-9]+){0,3}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}
