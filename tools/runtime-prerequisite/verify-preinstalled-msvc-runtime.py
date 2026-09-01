@@ -41,7 +41,10 @@ def main() -> None:
     arguments = parser.parse_args()
     manifest = json.loads(arguments.manifest.read_text(encoding="utf-8"))
     attestation = json.loads(arguments.attestation.read_text(encoding="utf-8"))
-    if canonical_sha256(manifest) != MANIFEST_SHA:
+    manifest_identity = {
+        key: value for key, value in manifest.items() if key != "manifest_sha256"
+    }
+    if canonical_sha256(manifest_identity) != MANIFEST_SHA:
         raise SystemExit("external prerequisite manifest hash mismatch")
     if manifest.get("prerequisite_id") != MANIFEST_ID:
         raise SystemExit("external prerequisite manifest ID mismatch")
