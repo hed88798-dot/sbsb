@@ -275,6 +275,13 @@ def resolve_scope(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", choices=["windows", "linux"], required=True)
+    parser.add_argument(
+        "--scope",
+        action="append",
+        choices=["runtime", "worker-build", "model-export", "model-evaluation"],
+        dest="scopes",
+        help="Generate only the selected scope. Repeat for multiple scopes; defaults to all target scopes.",
+    )
     parser.add_argument("--target-descriptor", type=Path, required=True)
     parser.add_argument("--runtime-identity", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
@@ -350,7 +357,10 @@ def main() -> None:
         != sha256_file(arguments.target_descriptor)
     ):
         raise SystemExit("candidate generation requires matching standard-GIL cp313 runtime evidence")
+    selected_scopes = set(arguments.scopes or definitions["scopes"].keys())
     for scope_name, scope in definitions["scopes"].items():
+        if scope_name not in selected_scopes:
+            continue
         if arguments.target not in scope["targets"]:
             continue
         resolve_scope(

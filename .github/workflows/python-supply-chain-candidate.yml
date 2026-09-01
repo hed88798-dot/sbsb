@@ -2,8 +2,6 @@ name: Python supply-chain candidate generation
 
 on:
   workflow_dispatch:
-  push:
-    branches: [code-c/stage-b-validation-candidate]
 
 permissions:
   contents: read

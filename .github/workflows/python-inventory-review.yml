@@ -1,0 +1,220 @@
+name: Python inventory review preparation
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [code-c/stage-b-validation-candidate]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: python-inventory-review-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare-target-inventory:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux
+            runner: ubuntu-24.04
+            venv_python: artifacts/candidate-venv/bin/python
+            distribution: python-3.13.15-linux-24.04-x64.tar.gz
+          - target: windows
+            runner: windows-2022
+            venv_python: artifacts/candidate-venv/Scripts/python.exe
+            distribution: python-3.13.15-win32-x64.zip
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify required baseline and artifact containment ancestry
+        shell: bash
+        run: |
+          git merge-base --is-ancestor 7a034a6b0244d1dbff0eae839a5d6ea837a0efe3 HEAD
+          git merge-base --is-ancestor c7578576a6c5be47bdc3b0f65e7651c3bfa799a0 HEAD
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12.10'
+      - run: pnpm install --frozen-lockfile
+      - name: Download exact locked toolchain inputs
+        run: >-
+          python tools/code-c-python-supply-chain/download_toolchain_sources.py
+          --target ${{ matrix.target }}
+          --output-root artifacts/python-supply-chain/toolchain
+      - name: Verify exact Windows CPython artifact authorization
+        if: matrix.target == 'windows'
+        shell: bash
+        run: |
+          node -e 'const fs=require("node:fs"); const path="compliance/vulnerability-reviews/cpython-3.13.15-windows-x64/stage-a-current-context.json"; const value=JSON.parse(fs.readFileSync(path,"utf8")); value.source_commit=process.env.GITHUB_SHA; fs.mkdirSync("artifacts/python-supply-chain/evidence",{recursive:true}); fs.writeFileSync("artifacts/python-supply-chain/evidence/windows-stage-a-current-context.json",JSON.stringify(value,null,2)+"\n");'
+          pnpm compliance:python:toolchain:vulnerability-disposition \
+            --vulnerability-review compliance/vulnerability-reviews/cpython-3.13.15-windows-x64/stage-a-review.json \
+            --current-context artifacts/python-supply-chain/evidence/windows-stage-a-current-context.json \
+            --output artifacts/python-supply-chain/evidence/windows-stage-a-disposition.json
+          python tools/code-c-python-supply-chain/verify_stage_a_cpython_artifact.py \
+            --distribution artifacts/python-supply-chain/toolchain/windows/${{ matrix.distribution }} \
+            --stage-a-review compliance/vulnerability-reviews/cpython-3.13.15-windows-x64/stage-a-review.json \
+            --output artifacts/python-supply-chain/evidence/windows-stage-a-artifact-binding.json
+      - name: Install the exact locked CPython distribution
+        id: locked-python
+        shell: bash
+        run: >-
+          python tools/code-c-python-supply-chain/install_locked_cpython.py
+          --target ${{ matrix.target }}
+          --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.distribution }}
+          --pip-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip-26.2.1-py3-none-any.whl
+          --output artifacts/python-supply-chain/evidence/${{ matrix.target }}-cpython-installation.json
+      - name: Install hash-locked shared compatibility tooling
+        env:
+          PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
+        run: pnpm compliance:python:tooling:install
+      - name: Capture real target descriptor
+        env:
+          PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
+        run: >-
+          pnpm compliance:python:target -- describe-current
+          --output artifacts/python-supply-chain/target/${{ matrix.target }}.json
+      - name: Bootstrap pinned pip without ambient configuration
+        shell: bash
+        run: >-
+          '${{ steps.locked-python.outputs.python }}' tools/code-c-python-supply-chain/bootstrap_pinned_pip.py
+          --wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pip-26.2.1-py3-none-any.whl
+          --venv artifacts/candidate-venv
+      - name: Attest standard-GIL cp313 runtime identity
+        shell: bash
+        env:
+          PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
+          PYTHONPATH: ${{ github.workspace }}/artifacts/python-compliance-tools/site-packages
+          PYTHONNOUSERSITE: '1'
+        run: >-
+          ${{ matrix.venv_python }} tools/code-c-python-supply-chain/capture_runtime_identity.py
+          --target ${{ matrix.target }}
+          --target-descriptor artifacts/python-supply-chain/target/${{ matrix.target }}.json
+          --distribution artifacts/python-supply-chain/toolchain/${{ matrix.target }}/${{ matrix.distribution }}
+          --installation-evidence artifacts/python-supply-chain/evidence/${{ matrix.target }}-cpython-installation.json
+          --output artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json
+      - name: Generate only runtime and worker-build inventory candidates
+        shell: bash
+        env:
+          PIP_CONFIG_FILE: ${{ github.workspace }}/sidecars/media-worker/supply-chain/pip-hermetic.conf
+          PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
+          PYTHONNOUSERSITE: '1'
+          PYTHONPATH: ${{ github.workspace }}/artifacts/python-compliance-tools/site-packages
+        run: >-
+          ${{ matrix.venv_python }} tools/code-c-python-supply-chain/generate_candidates.py
+          --target ${{ matrix.target }}
+          --scope runtime
+          --scope worker-build
+          --target-descriptor artifacts/python-supply-chain/target/${{ matrix.target }}.json
+          --runtime-identity artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json
+          --output-root artifacts/python-supply-chain
+      - name: Attest preinstalled compatible Windows runtime without installation
+        if: matrix.target == 'windows'
+        shell: pwsh
+        run: |
+          ./tools/runtime-prerequisite/windows-provider-probe.ps1 `
+            -Manifest compliance/runtime-prerequisites/msvc-v14-x64/external-prerequisite.v1.json `
+            -Output artifacts/runtime-prerequisite/WINDOWS_PROVIDER_PROBE.raw.json
+          node tools/runtime-prerequisite/finalize-windows-provider-probe.mjs `
+            --input artifacts/runtime-prerequisite/WINDOWS_PROVIDER_PROBE.raw.json `
+            --prerequisite compliance/runtime-prerequisites/msvc-v14-x64/external-prerequisite.v1.json `
+            --output artifacts/runtime-prerequisite/WINDOWS_PROVIDER_PROBE.json
+          Remove-Item artifacts/runtime-prerequisite/WINDOWS_PROVIDER_PROBE.raw.json
+      - name: Freeze target inventory review evidence
+        shell: bash
+        run: |
+          prerequisite_args=()
+          if [[ '${{ matrix.target }}' == 'windows' ]]; then
+            prerequisite_args+=(--runtime-prerequisite-attestation artifacts/runtime-prerequisite/WINDOWS_PROVIDER_PROBE.json)
+          fi
+          ${{ matrix.venv_python }} tools/code-c-python-supply-chain/prepare_inventory_review.py target \
+            --target '${{ matrix.target }}' \
+            --main-baseline 7a034a6b0244d1dbff0eae839a5d6ea837a0efe3 \
+            --containment-sha c7578576a6c5be47bdc3b0f65e7651c3bfa799a0 \
+            --target-descriptor artifacts/python-supply-chain/target/${{ matrix.target }}.json \
+            --runtime-identity artifacts/python-supply-chain/evidence/${{ matrix.target }}-runtime-identity.json \
+            --installation-evidence artifacts/python-supply-chain/evidence/${{ matrix.target }}-cpython-installation.json \
+            --graph-attestation artifacts/python-supply-chain/evidence/${{ matrix.target }}-graph-interpreter-attestation.json \
+            --candidate-root artifacts/python-supply-chain/candidates \
+            --resolution-root artifacts/python-supply-chain/resolution \
+            --toolchain-root artifacts/python-supply-chain/toolchain \
+            "${prerequisite_args[@]}" \
+            --output-root artifacts/python-inventory-review/${{ matrix.target }}
+      - name: Enforce target review evidence upload budget
+        shell: bash
+        run: >-
+          node tools/actions-artifact-budget.mjs
+          --name python-inventory-review-target-${{ matrix.target }}-${{ github.sha }}
+          --path artifacts/python-inventory-review/${{ matrix.target }}
+          --inventory artifacts/python-inventory-review/${{ matrix.target }}/ARTIFACT_UPLOAD_INVENTORY.json
+          --retention-days 3
+          --purpose python-inventory-target-review-evidence
+          --classification transient
+          --max-bytes 4194304
+      - name: Preserve compact target inventory review evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: python-inventory-review-target-${{ matrix.target }}-${{ github.sha }}
+          path: artifacts/python-inventory-review/${{ matrix.target }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 3
+
+  assemble-inventory-review-bundle:
+    needs: prepare-target-inventory
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Download independent Linux and Windows inventory evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: python-inventory-review-target-*-${{ github.sha }}
+          path: artifacts/python-inventory-review/target-artifacts
+      - name: Assemble one batch-only Code F review handoff
+        run: >-
+          python tools/code-c-python-supply-chain/prepare_inventory_review.py assemble
+          --input-root artifacts/python-inventory-review/target-artifacts
+          --output-root artifacts/python-inventory-review/final-bundle
+      - name: Enforce authoritative review bundle upload budget
+        shell: bash
+        run: >-
+          node tools/actions-artifact-budget.mjs
+          --name code-c-python-inventory-review-bundle-${{ github.sha }}
+          --path artifacts/python-inventory-review/final-bundle
+          --inventory artifacts/python-inventory-review/final-bundle/ARTIFACT_UPLOAD_INVENTORY.json
+          --retention-days 7
+          --purpose authoritative-python-inventory-review-handoff
+          --classification authoritative
+          --max-bytes 12582912
+      - name: Preserve authoritative Python inventory review handoff
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: code-c-python-inventory-review-bundle-${{ github.sha }}
+          path: artifacts/python-inventory-review/final-bundle
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7

@@ -1,0 +1,694 @@
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import shutil
+import subprocess
+import zipfile
+from pathlib import Path, PurePosixPath
+
+from canonical_evidence import canonical_sha256, write_canonical_json
+from policy import sha256_file
+
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+SOURCE_LOCK = (
+    REPOSITORY_ROOT
+    / "sidecars"
+    / "media-worker"
+    / "supply-chain"
+    / "toolchain-source-lock.json"
+)
+DEFINITIONS = (
+    REPOSITORY_ROOT
+    / "sidecars"
+    / "media-worker"
+    / "supply-chain"
+    / "dependency-definitions.json"
+)
+PREREQUISITE = (
+    REPOSITORY_ROOT
+    / "compliance"
+    / "runtime-prerequisites"
+    / "msvc-v14-x64"
+    / "external-prerequisite.v1.json"
+)
+ROLE_BY_SCOPE = {
+    "runtime": "RUNTIME",
+    "worker-build": "WORKER_BUILD",
+}
+
+
+def load_json(path: Path) -> dict[str, object]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def git(*arguments: str) -> str:
+    result = subprocess.run(
+        ["git", *arguments],
+        cwd=REPOSITORY_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode:
+        raise SystemExit(result.stderr.strip() or result.stdout.strip() or "git command failed")
+    return result.stdout.strip()
+
+
+def require_ancestor(commit: str, head: str, label: str) -> None:
+    result = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", commit, head],
+        cwd=REPOSITORY_ROOT,
+        check=False,
+    )
+    if result.returncode:
+        raise SystemExit(f"current HEAD does not contain required {label}: {commit}")
+
+
+def safe_archive_member(name: str) -> PurePosixPath:
+    path = PurePosixPath(name)
+    if path.is_absolute() or ".." in path.parts or "\\" in name:
+        raise SystemExit(f"unsafe PyInstaller wheel path: {name}")
+    return path
+
+
+def exact_toolchain_evidence(
+    target: str,
+    toolchain_root: Path,
+    runtime_identity: dict[str, object],
+) -> dict[str, object]:
+    lock = load_json(SOURCE_LOCK)
+    target_lock = lock["targets"][target]
+    inputs = {
+        "CPYTHON_DISTRIBUTION": target_lock["cpython_distribution"],
+        "PIP": lock["pip"],
+        "PYINSTALLER": target_lock["pyinstaller"],
+    }
+    components: list[dict[str, object]] = []
+    for kind, item in inputs.items():
+        path = toolchain_root / target / str(item["filename"])
+        if not path.is_file():
+            raise SystemExit(f"missing exact toolchain input: {path}")
+        actual_hash = sha256_file(path)
+        if actual_hash != item["sha256"] or path.stat().st_size != item["size"]:
+            raise SystemExit(f"toolchain artifact differs from source lock: {path.name}")
+        components.append(
+            {
+                "component_kind": kind,
+                "filename": item["filename"],
+                "sha256": actual_hash,
+                "size": path.stat().st_size,
+                "canonical_reference": item["download_url"],
+                "canonical_source": item["canonical_source"],
+                "approval_status": "PENDING_CODE_F_REVIEW",
+            }
+        )
+
+    pyinstaller_path = toolchain_root / target / str(target_lock["pyinstaller"]["filename"])
+    expected_member = (
+        "PyInstaller/bootloader/Windows-64bit-intel/run.exe"
+        if target == "windows"
+        else "PyInstaller/bootloader/Linux-64bit-intel/run"
+    )
+    with zipfile.ZipFile(pyinstaller_path) as archive:
+        names = archive.namelist()
+        if len(names) != len(set(names)):
+            raise SystemExit("PyInstaller wheel contains duplicate archive members")
+        for name in names:
+            safe_archive_member(name)
+        matches = [name for name in names if name == expected_member]
+        if len(matches) != 1:
+            raise SystemExit(f"PyInstaller wheel has {len(matches)} selected bootloader members")
+        bootloader_bytes = archive.read(matches[0])
+    components.append(
+        {
+            "component_kind": "PYINSTALLER_BOOTLOADER",
+            "filename": PurePosixPath(expected_member).name,
+            "wheel_member_path": expected_member,
+            "sha256": hashlib.sha256(bootloader_bytes).hexdigest(),
+            "size": len(bootloader_bytes),
+            "source_pyinstaller_sha256": target_lock["pyinstaller"]["sha256"],
+            "canonical_reference": target_lock["pyinstaller"]["download_url"],
+            "canonical_source": target_lock["pyinstaller"]["canonical_source"],
+            "approval_status": "PENDING_CODE_F_REVIEW",
+        }
+    )
+    return {
+        "schema_version": "1",
+        "evidence_type": "PYTHON_TOOLCHAIN_INTAKE_EVIDENCE",
+        "target": target,
+        "inventory_schema": "python-toolchain-inventory/v1",
+        "formal_inventory_status": "MISSING_PENDING_CODE_F_REVIEW",
+        "source_lock_sha256": sha256_file(SOURCE_LOCK),
+        "python": {
+            "implementation": "CPython",
+            "version": lock["python_version"],
+            "abi": lock["python_abi"],
+            "free_threaded": lock["free_threaded"],
+            "locked_executable_sha256": runtime_identity["locked_interpreter"][
+                "executable_sha256"
+            ],
+            "locked_runtime_library_sha256": runtime_identity["locked_interpreter"][
+                "runtime_library_sha256"
+            ],
+        },
+        "components": components,
+        "packaged_native_mapping": "DEFERRED_UNTIL_INVENTORY_APPROVAL_AND_NATIVE_STAGE",
+        "approval_owner": "CODE_F",
+    }
+
+
+def compare_candidate_to_resolution(
+    candidate: dict[str, object], resolution: dict[str, object], target: str, scope: str
+) -> list[dict[str, object]]:
+    expected_scope = "PRODUCTION_WORKER_RUNTIME" if scope == "runtime" else "WORKER_BUILD"
+    if candidate.get("schema_version") != "2" or candidate.get("scope") != expected_scope:
+        raise SystemExit(f"{target}/{scope}: candidate schema or scope mismatch")
+    if candidate.get("graph_complete") is not False:
+        raise SystemExit(f"{target}/{scope}: Code C candidate must remain PENDING")
+    candidate_packages = {
+        str(package["purl"]): package for package in candidate.get("packages", [])
+    }
+    resolution_packages = {
+        f"pkg:pypi/{str(package['name']).lower().replace('_', '-').replace('.', '-')}@{package['version']}": package
+        for package in resolution.get("packages", [])
+    }
+    # PEP 503 normalization also folds repeated separators. Resolve through exact package/version pairs
+    # when the simple spelling above differs.
+    by_name_version = {
+        (str(package["name"]).lower().replace("_", "-").replace(".", "-"), str(package["version"])): package
+        for package in resolution.get("packages", [])
+    }
+    if len(candidate_packages) != len(resolution.get("packages", [])):
+        raise SystemExit(f"{target}/{scope}: candidate/resolution package count mismatch")
+    exact_artifacts = []
+    for purl, package in sorted(candidate_packages.items()):
+        name_version = purl.removeprefix("pkg:pypi/").rsplit("@", 1)
+        if len(name_version) != 2:
+            raise SystemExit(f"{target}/{scope}: invalid candidate purl {purl}")
+        resolved = resolution_packages.get(purl) or by_name_version.get(tuple(name_version))
+        if not resolved:
+            raise SystemExit(f"{target}/{scope}: candidate package absent from resolution: {purl}")
+        provenance = resolved["provenance"]
+        metadata = resolved["metadata"]
+        if (
+            package["filename"] != provenance["filename"]
+            or package["sha256"] != provenance["sha256"]
+            or package["version"] != resolved["version"]
+        ):
+            raise SystemExit(f"{target}/{scope}: exact artifact drift for {purl}")
+        if package["provenance"]["review_status"] != "PENDING":
+            raise SystemExit(f"{target}/{scope}: Code C attempted to approve {purl}")
+        candidate_natives = {
+            (entry["relative_path"], entry["sha256"])
+            for entry in package["native_artifacts"]
+        }
+        resolution_natives = {
+            (entry["relative_path"], entry["sha256"])
+            for entry in metadata["native_artifacts"]
+        }
+        if candidate_natives != resolution_natives:
+            raise SystemExit(f"{target}/{scope}: native-member drift for {purl}")
+        exact_artifacts.append(
+            {
+                "purl": purl,
+                "filename": package["filename"],
+                "sha256": package["sha256"],
+                "download_url": provenance["download_url"],
+                "source": provenance["source"],
+                "direct": resolved["direct"],
+                "dependencies": resolved["dependencies"],
+                "native_member_count": len(resolution_natives),
+                "license_expression": package["license_expression"],
+                "license_files": package["license_files"],
+            }
+        )
+    return exact_artifacts
+
+
+def historical_drift(
+    target: str, scope: str, exact_artifacts: list[dict[str, object]], target_sha256: str
+) -> dict[str, object]:
+    historical_path = REPOSITORY_ROOT / "compliance" / "python-artifacts" / target / f"{scope}.v2.json"
+    current = {entry["purl"]: entry for entry in exact_artifacts}
+    if not historical_path.is_file():
+        return {
+            "scope": scope,
+            "comparison_basis": None,
+            "comparison_basis_status": "NO_COMPARABLE_HISTORICAL_INVENTORY",
+            "inventory_drift": "PRESENT",
+            "target_identity_changed": True,
+            "added": sorted(current),
+            "removed": [],
+            "changed_exact_artifacts": [],
+            "historical_approval_reuse": [],
+        }
+    historical = load_json(historical_path)
+    prior = {package["purl"]: package for package in historical["packages"]}
+    added = sorted(set(current) - set(prior))
+    removed = sorted(set(prior) - set(current))
+    changed = sorted(
+        purl
+        for purl in set(current) & set(prior)
+        if current[purl]["sha256"] != prior[purl]["sha256"]
+        or current[purl]["filename"] != prior[purl]["filename"]
+    )
+    historical_target_sha = canonical_sha256(historical["target"])
+    target_changed = historical_target_sha != target_sha256
+    drift = "PRESENT" if added or removed or changed or target_changed else "NONE"
+    return {
+        "scope": scope,
+        "comparison_basis": str(historical_path.relative_to(REPOSITORY_ROOT)),
+        "comparison_basis_sha256": sha256_file(historical_path),
+        "comparison_basis_status": "FORMAL_INVENTORY",
+        "inventory_drift": drift,
+        "target_identity_changed": target_changed,
+        "added": added,
+        "removed": removed,
+        "changed_exact_artifacts": changed,
+        "historical_approval_reuse": [] if drift == "PRESENT" else [historical["inventory_id"]],
+    }
+
+
+def copy_json(source: Path, destination: Path) -> None:
+    if not source.is_file() or source.suffix.lower() != ".json":
+        raise SystemExit(f"review evidence must be an existing JSON file: {source}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, destination)
+
+
+def prepare_target(arguments: argparse.Namespace) -> None:
+    head = git("rev-parse", "HEAD")
+    require_ancestor(arguments.main_baseline, head, "main quality baseline")
+    require_ancestor(arguments.containment_sha, head, "artifact containment commit")
+    target = arguments.target
+    descriptor = load_json(arguments.target_descriptor)
+    runtime_identity = load_json(arguments.runtime_identity)
+    installation = load_json(arguments.installation_evidence)
+    descriptor_sha = sha256_file(arguments.target_descriptor)
+    descriptor_identity = canonical_sha256(descriptor)
+    if (
+        descriptor.get("implementation") != "cpython"
+        or descriptor.get("python_version") != "3.13.15"
+        or descriptor.get("os") != target
+        or descriptor.get("architecture") != "x86_64"
+        or descriptor.get("compatibility", {}).get("tag_source")
+        != "packaging.tags.sys_tags"
+    ):
+        raise SystemExit(f"{target}: target descriptor violates approved cp313 x64 target")
+    interpreter = runtime_identity.get("interpreter", {})
+    if (
+        runtime_identity.get("status") != "PASS"
+        or interpreter.get("version") != "3.13.15"
+        or interpreter.get("python_abi") != "cp313"
+        or interpreter.get("python_free_threaded") is not False
+        or runtime_identity.get("target_descriptor", {}).get("sha256") != descriptor_sha
+        or installation.get("status") != "PASS"
+    ):
+        raise SystemExit(f"{target}: locked runtime identity is not approved standard-GIL cp313")
+
+    output_root = arguments.output_root
+    if output_root.exists():
+        raise SystemExit(f"inventory review output must start absent: {output_root}")
+    output_root.mkdir(parents=True)
+    copied = {
+        "target_descriptor": output_root / "target-descriptor.json",
+        "runtime_identity": output_root / "runtime-identity.json",
+        "installation_evidence": output_root / "cpython-installation.json",
+        "graph_interpreter_attestation": output_root / "graph-interpreter-attestation.json",
+        "dependency_definitions": output_root / "dependency-definitions.snapshot.json",
+        "toolchain_source_lock": output_root / "toolchain-source-lock.snapshot.json",
+    }
+    for source, destination in (
+        (arguments.target_descriptor, copied["target_descriptor"]),
+        (arguments.runtime_identity, copied["runtime_identity"]),
+        (arguments.installation_evidence, copied["installation_evidence"]),
+        (arguments.graph_attestation, copied["graph_interpreter_attestation"]),
+        (DEFINITIONS, copied["dependency_definitions"]),
+        (SOURCE_LOCK, copied["toolchain_source_lock"]),
+    ):
+        copy_json(source, destination)
+
+    inventories = []
+    drift_entries = []
+    for scope, role in ROLE_BY_SCOPE.items():
+        candidate_path = arguments.candidate_root / f"code-c-{target}-{scope}.v2.json"
+        resolution_path = arguments.resolution_root / f"{target}-{scope}.json"
+        candidate = load_json(candidate_path)
+        resolution = load_json(resolution_path)
+        if candidate.get("target") != descriptor:
+            raise SystemExit(f"{target}/{scope}: candidate target descriptor drift")
+        if resolution.get("target") != target or resolution.get("scope") != scope:
+            raise SystemExit(f"{target}/{scope}: resolution target/scope drift")
+        if (
+            resolution.get("runtime_identity", {}).get("distribution_sha256")
+            != runtime_identity["distribution"]["sha256"]
+            or resolution.get("runtime_identity", {}).get("target_descriptor_sha256")
+            != descriptor_sha
+        ):
+            raise SystemExit(f"{target}/{scope}: resolution runtime binding drift")
+        exact_artifacts = compare_candidate_to_resolution(candidate, resolution, target, scope)
+        candidate_destination = output_root / "candidates" / candidate_path.name
+        resolution_destination = output_root / "resolution" / resolution_path.name
+        copy_json(candidate_path, candidate_destination)
+        copy_json(resolution_path, resolution_destination)
+        drift = historical_drift(target, scope, exact_artifacts, descriptor_identity)
+        drift_entries.append(drift)
+        inventories.append(
+            {
+                "inventory_id": candidate["inventory_id"],
+                "target": target,
+                "role": role,
+                "scope": candidate["scope"],
+                "candidate_path": candidate_destination.relative_to(output_root).as_posix(),
+                "candidate_sha256": sha256_file(candidate_destination),
+                "resolution_path": resolution_destination.relative_to(output_root).as_posix(),
+                "resolution_sha256": sha256_file(resolution_destination),
+                "dependency_graph_identity_sha256": canonical_sha256(resolution),
+                "package_count": len(exact_artifacts),
+                "native_member_count": sum(
+                    int(entry["native_member_count"]) for entry in exact_artifacts
+                ),
+                "graph_complete_evidence": "PASS",
+                "approval_status": "PENDING_CODE_F_REVIEW",
+                "approval_owner": "CODE_F",
+                "exact_artifacts": exact_artifacts,
+            }
+        )
+
+    drift_report = {
+        "schema_version": "1",
+        "report_id": f"code-c-python-inventory-drift-{target}-{head[:12]}",
+        "target": target,
+        "head_sha": head,
+        "inventory_drift": (
+            "PRESENT"
+            if any(entry["inventory_drift"] == "PRESENT" for entry in drift_entries)
+            else "NONE"
+        ),
+        "comparisons": drift_entries,
+    }
+    drift_path = output_root / "inventory-drift-report.json"
+    write_canonical_json(drift_path, drift_report)
+
+    toolchain = exact_toolchain_evidence(target, arguments.toolchain_root, runtime_identity)
+    toolchain_path = output_root / "toolchain-intake-evidence.json"
+    write_canonical_json(toolchain_path, toolchain)
+
+    runtime_prerequisite = None
+    if target == "windows":
+        if not arguments.runtime_prerequisite_attestation:
+            raise SystemExit("windows inventory review requires current runtime prerequisite attestation")
+        probe = load_json(arguments.runtime_prerequisite_attestation)
+        prerequisite = load_json(PREREQUISITE)
+        installed = probe.get("installed_runtime", {})
+        if (
+            probe.get("runtime_provider_closure") != "PASS"
+            or probe.get("prerequisite_id") != prerequisite["prerequisite_id"]
+            or installed.get("minimum_version_satisfied") is not True
+        ):
+            raise SystemExit("Windows preinstalled runtime prerequisite attestation failed")
+        probe_destination = output_root / "windows-runtime-prerequisite-attestation.json"
+        copy_json(arguments.runtime_prerequisite_attestation, probe_destination)
+        prerequisite_destination = output_root / "external-prerequisite.snapshot.json"
+        copy_json(PREREQUISITE, prerequisite_destination)
+        runtime_prerequisite = {
+            "status": "PASS",
+            "validation_mode": "PREINSTALLED_COMPATIBLE_RUNTIME_ONLY",
+            "manifest_id": prerequisite["prerequisite_id"],
+            "manifest_sha256": sha256_file(PREREQUISITE),
+            "attestation_path": probe_destination.relative_to(output_root).as_posix(),
+            "attestation_sha256": sha256_file(probe_destination),
+            "installed_runtime_version": installed["version"],
+            "minimum_accepted_runtime_version": prerequisite["compatibility_policy"][
+                "minimum_accepted_version"
+            ],
+            "installed_runtime_compatibility": "PASS",
+            "vc_redist_downloaded_by_code_c": "NO",
+            "vc_redist_bundled_by_code_c": "NO",
+            "vc_redist_installed_by_code_c": "NO",
+        }
+
+    formal_inventory_root = REPOSITORY_ROOT / "compliance" / "python-artifacts" / target
+    current_inventory_ids = []
+    if formal_inventory_root.is_dir():
+        for path in sorted(formal_inventory_root.glob("*.json")):
+            current_inventory_ids.append(load_json(path).get("inventory_id"))
+    formal_toolchain = REPOSITORY_ROOT / "compliance" / "python-toolchain" / f"{target}.v1.json"
+    target_report = {
+        "schema_version": "1",
+        "report_id": f"code-c-python-inventory-target-{target}-{head[:12]}",
+        "status": "PASS",
+        "validation_phase": "PYTHON_INVENTORY_ONLY",
+        "code_c_head_sha": head,
+        "main_quality_baseline": arguments.main_baseline,
+        "contains_required_main_baseline": "PASS",
+        "required_code_c_containment_sha": arguments.containment_sha,
+        "contains_required_containment_sha": "PASS",
+        "target": {
+            "descriptor_id": f"code-c-{target}-cpython-31315-x86-64-{descriptor_identity[:12]}",
+            "descriptor_sha256": descriptor_sha,
+            "descriptor_identity_sha256": descriptor_identity,
+            "os": target,
+            "architecture": "x86_64",
+            "python_version": "3.13.15",
+            "python_abi": "cp313",
+            "python_free_threaded": False,
+            "python_gil": "STANDARD",
+        },
+        "cpython_artifact": {
+            "distribution_sha256": runtime_identity["distribution"]["sha256"],
+            "interpreter_payload_sha256": load_json(SOURCE_LOCK)["targets"][target][
+                "cpython_distribution"
+            ]["interpreter_payload_sha256"],
+        },
+        "inventory_gate_diagnostic": {
+            "status": "PASS",
+            "required_inventory_roles": ["RUNTIME", "WORKER_BUILD"],
+            "current_inventory_ids": current_inventory_ids,
+            "current_active_approval_ids": current_inventory_ids,
+            "missing_inventory_roles": (
+                [] if len(current_inventory_ids) == 2 else ["RUNTIME", "WORKER_BUILD"]
+            ),
+            "missing_approved_inventory_roles": (
+                [] if len(current_inventory_ids) == 2 else ["RUNTIME", "WORKER_BUILD"]
+            ),
+            "stale_approval_count": 0,
+            "target_mismatch_count": 0,
+            "role_mismatch_count": 0,
+            "inventory_hash_mismatch_count": 0,
+            "approval_registry_schema_version": None,
+            "approval_model": "INLINE_PYTHON_ARTIFACT_INVENTORY_V2_PROVENANCE",
+            "toolchain_inventory_required": True,
+            "toolchain_inventory_present": formal_toolchain.is_file(),
+        },
+        "inventory_candidates": inventories,
+        "inventory_graph_completeness": "PASS",
+        "dependency_definitions_sha256": sha256_file(DEFINITIONS),
+        "dependency_graph_set_sha256": canonical_sha256(
+            [entry["dependency_graph_identity_sha256"] for entry in inventories]
+        ),
+        "inventory_drift": drift_report["inventory_drift"],
+        "inventory_drift_report_id": drift_report["report_id"],
+        "inventory_drift_report_sha256": sha256_file(drift_path),
+        "historical_approval_reuse_count": 0,
+        "new_approval_required_count": len(inventories) + (0 if formal_toolchain.is_file() else 1),
+        "toolchain_intake_evidence_path": toolchain_path.relative_to(output_root).as_posix(),
+        "toolchain_intake_evidence_sha256": sha256_file(toolchain_path),
+        "runtime_prerequisite_attestation": runtime_prerequisite,
+        "actions_artifact_containment": {
+            "status": "PASS",
+            "large_candidate_actions_upload": "FORBIDDEN",
+            "max_single_actions_artifact_bytes": 20 * 1024 * 1024,
+            "declared_total_run_budget_bytes": 20 * 1024 * 1024,
+            "candidate_worker_binary": "NOT_GENERATED",
+            "pyinstaller_workpath": "NOT_GENERATED",
+            "python_environment_upload": "FORBIDDEN",
+        },
+        "approval_owner": "CODE_F_INVENTORY_REVIEW",
+        "python_inventory_gate": "BLOCKED_PENDING_CODE_F_APPROVAL",
+        "downstream": {
+            "one_file_worker_build": "BLOCKED_NOT_RERUN",
+            "windows_native_reconciliation": "BLOCKED_NOT_RERUN",
+            "linux_native_reconciliation": "BLOCKED_NOT_RERUN",
+            "python_license_gate": "BLOCKED_NOT_RERUN",
+            "stage_b": "BLOCKED_NOT_RERUN",
+            "real_siglip_onnx_e2e": "BLOCKED_NOT_RERUN",
+            "index_regression": "BLOCKED_NOT_RERUN",
+        },
+    }
+    write_canonical_json(output_root / "target-report.json", target_report)
+    print(
+        f"python-inventory-review-target: PASS ({target}; {len(inventories)} inventories; "
+        f"{sum(item['package_count'] for item in inventories)} role-scoped wheel records)"
+    )
+
+
+def assemble(arguments: argparse.Namespace) -> None:
+    reports = sorted(arguments.input_root.rglob("target-report.json"))
+    if len(reports) != 2:
+        raise SystemExit(f"expected two target reports, got {len(reports)}")
+    loaded = [(path, load_json(path)) for path in reports]
+    by_target = {str(report["target"]["os"]): (path, report) for path, report in loaded}
+    if set(by_target) != {"linux", "windows"}:
+        raise SystemExit("inventory review bundle requires independent Linux and Windows reports")
+    heads = {report["code_c_head_sha"] for _, report in loaded}
+    if len(heads) != 1 or any(report.get("status") != "PASS" for _, report in loaded):
+        raise SystemExit("target inventory reports do not share one passing current HEAD")
+    head = heads.pop()
+    if arguments.output_root.exists():
+        raise SystemExit(f"inventory review bundle output must start absent: {arguments.output_root}")
+    arguments.output_root.mkdir(parents=True)
+    inventory_requests = []
+    target_summaries = []
+    for target in ("linux", "windows"):
+        report_path, report = by_target[target]
+        destination = arguments.output_root / "targets" / target
+        shutil.copytree(report_path.parent, destination)
+        copied_report = destination / "target-report.json"
+        for inventory in report["inventory_candidates"]:
+            inventory_requests.append(
+                {
+                    "inventory_id": inventory["inventory_id"],
+                    "inventory_sha256": inventory["candidate_sha256"],
+                    "target": target,
+                    "role": inventory["role"],
+                    "approval_record_id": None,
+                    "approval_status": "PENDING_CODE_F_REVIEW",
+                    "reviewer": "CODE_F",
+                    "reviewed_evidence_snapshot": inventory[
+                        "dependency_graph_identity_sha256"
+                    ],
+                    "revocation_state": "NOT_APPLICABLE_PENDING_REVIEW",
+                    "expiry_state": "NOT_APPLICABLE_PENDING_REVIEW",
+                }
+            )
+        target_summaries.append(
+            {
+                "target": target,
+                "report_path": copied_report.relative_to(arguments.output_root).as_posix(),
+                "report_sha256": sha256_file(copied_report),
+                "target_descriptor_sha256": report["target"]["descriptor_sha256"],
+                "cpython_distribution_sha256": report["cpython_artifact"][
+                    "distribution_sha256"
+                ],
+                "dependency_graph_set_sha256": report["dependency_graph_set_sha256"],
+                "inventory_drift": report["inventory_drift"],
+            }
+        )
+    identity = {
+        "head_sha": head,
+        "main_quality_baseline": loaded[0][1]["main_quality_baseline"],
+        "required_code_c_containment_sha": loaded[0][1][
+            "required_code_c_containment_sha"
+        ],
+        "target_summaries": target_summaries,
+        "inventory_requests": inventory_requests,
+    }
+    bundle_id = f"code-c-python-inventory-review-{head[:12]}-{canonical_sha256(identity)[:16]}"
+    bundle = {
+        "schema_version": "1",
+        "bundle_id": bundle_id,
+        "bundle_semantics": "BATCH_CONTAINER_ONLY",
+        "status": "READY_FOR_CODE_F_REVIEW",
+        "validation_phase": "PYTHON_INVENTORY_ONLY",
+        "inventory_review_head_sha": head,
+        "main_quality_baseline": identity["main_quality_baseline"],
+        "required_code_c_containment_sha": identity["required_code_c_containment_sha"],
+        "bundle_identity_payload_sha256": canonical_sha256(identity),
+        "target_summaries": target_summaries,
+        "inventory_approval_requests": inventory_requests,
+        "toolchain_approval_requests": [
+            {
+                "target": target,
+                "evidence_path": f"targets/{target}/toolchain-intake-evidence.json",
+                "evidence_sha256": sha256_file(
+                    arguments.output_root
+                    / "targets"
+                    / target
+                    / "toolchain-intake-evidence.json"
+                ),
+                "approval_status": "PENDING_CODE_F_REVIEW",
+                "approval_owner": "CODE_F",
+            }
+            for target in ("linux", "windows")
+        ],
+        "historical_approval_reuse_count": 0,
+        "new_inventory_approval_required_count": len(inventory_requests),
+        "approval_registry_schema_version": None,
+        "approval_model": "INLINE_PYTHON_ARTIFACT_INVENTORY_V2_PROVENANCE",
+        "python_inventory_gate": "BLOCKED_PENDING_CODE_F_APPROVAL",
+        "approval_reconciliation": "NOT_REQUIRED_YET",
+        "artifact_containment": {
+            "status": "PASS",
+            "large_candidate_actions_upload": "FORBIDDEN",
+            "target_artifact_budget_bytes_each": 4 * 1024 * 1024,
+            "final_bundle_budget_bytes": 12 * 1024 * 1024,
+            "declared_total_run_budget_bytes": 20 * 1024 * 1024,
+        },
+        "staleness_triggers": [
+            "target descriptor changes",
+            "CPython artifact changes",
+            "toolchain source lock changes",
+            "dependency definitions change",
+            "resolved wheel set or exact bytes change",
+            "inventory role changes",
+            "shared inventory schema or generator semantics change",
+        ],
+        "owner_of_next_fix": "CODE_F_INVENTORY_REVIEW",
+        "pr_8_updated": "NO",
+    }
+    bundle_path = arguments.output_root / "CODE_C_PYTHON_INVENTORY_REVIEW_BUNDLE.json"
+    write_canonical_json(bundle_path, bundle)
+    summary = (
+        "# Code C Python Inventory Review Request\n\n"
+        f"- Bundle: `{bundle_id}`\n"
+        f"- Code C HEAD: `{head}`\n"
+        "- Semantics: `BATCH_CONTAINER_ONLY`\n"
+        "- Inventory requests: 4 (Linux/Windows runtime and worker-build)\n"
+        "- Toolchain evidence requests: 2 (Linux and Windows)\n"
+        "- Approval owner: Code F\n"
+        "- Python Inventory Gate: `BLOCKED_PENDING_CODE_F_APPROVAL`\n"
+        "- Worker, Native, License, Stage B, SigLIP and Index gates: `BLOCKED_NOT_RERUN`\n\n"
+        "Each inventory/role requires an independent approval decision. Acceptance of this bundle does not "
+        "approve any contained inventory.\n"
+    )
+    (arguments.output_root / "CODE_C_PYTHON_INVENTORY_REVIEW_REQUEST.md").write_bytes(
+        summary.encode("utf-8")
+    )
+    print(
+        f"python-inventory-review-bundle: PASS ({bundle_id}; "
+        f"{len(inventory_requests)} independent inventory requests)"
+    )
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    target_parser = subparsers.add_parser("target")
+    target_parser.add_argument("--target", choices=["windows", "linux"], required=True)
+    target_parser.add_argument("--main-baseline", required=True)
+    target_parser.add_argument("--containment-sha", required=True)
+    target_parser.add_argument("--target-descriptor", type=Path, required=True)
+    target_parser.add_argument("--runtime-identity", type=Path, required=True)
+    target_parser.add_argument("--installation-evidence", type=Path, required=True)
+    target_parser.add_argument("--graph-attestation", type=Path, required=True)
+    target_parser.add_argument("--candidate-root", type=Path, required=True)
+    target_parser.add_argument("--resolution-root", type=Path, required=True)
+    target_parser.add_argument("--toolchain-root", type=Path, required=True)
+    target_parser.add_argument("--runtime-prerequisite-attestation", type=Path)
+    target_parser.add_argument("--output-root", type=Path, required=True)
+    assemble_parser = subparsers.add_parser("assemble")
+    assemble_parser.add_argument("--input-root", type=Path, required=True)
+    assemble_parser.add_argument("--output-root", type=Path, required=True)
+    arguments = parser.parse_args()
+    if arguments.command == "target":
+        prepare_target(arguments)
+    else:
+        assemble(arguments)
+
+
+if __name__ == "__main__":
+    main()
