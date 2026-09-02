@@ -5,7 +5,6 @@ import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import {
-  artifactLicenseReviewRecordHash,
   loadArtifactLicenseReviewPolicy,
   validateArtifactLicenseEvidenceV3,
   validateArtifactLicenseReviewV1,
