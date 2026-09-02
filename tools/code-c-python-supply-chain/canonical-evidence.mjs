@@ -69,9 +69,19 @@ export function writeCanonicalJson(path, value) {
 function prettierJsonBytes(value, target) {
   const canonicalBytes = canonicalJsonBytes(value);
   const packageManager = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+  const prettierConfig = resolve(repositoryRoot, '.prettierrc.json');
   const formattedBytes = execFileSync(
     packageManager,
-    ['exec', 'prettier', '--parser', 'json', '--stdin-filepath', resolve(target)],
+    [
+      'exec',
+      'prettier',
+      '--config',
+      prettierConfig,
+      '--parser',
+      'json',
+      '--stdin-filepath',
+      resolve(target),
+    ],
     {
       cwd: repositoryRoot,
       input: canonicalBytes,
@@ -127,7 +137,7 @@ export function writePrettierJson(path, value) {
       in_memory_file_byte_identity: true,
       temp_file_same_directory: dirname(temporary) === directory,
       atomic_replace: replaced,
-      formatter: 'pnpm exec prettier --parser json',
+      formatter: 'pnpm exec prettier --config .prettierrc.json --parser json',
     };
   } finally {
     if (descriptor !== undefined) closeSync(descriptor);

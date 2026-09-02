@@ -29,11 +29,14 @@ def prettier_bytes(payload: bytes, target: Path, parser: str) -> bytes:
     if package_manager is None:
         raise SystemExit("repository-pinned Prettier requires pnpm on PATH")
     repository_root = Path(__file__).resolve().parents[2]
+    prettier_config = repository_root / ".prettierrc.json"
     result = subprocess.run(
         [
             package_manager,
             "exec",
             "prettier",
+            "--config",
+            str(prettier_config),
             "--parser",
             parser,
             "--stdin-filepath",
