@@ -1,0 +1,44 @@
+{
+  "action": "APPROVE",
+  "artifact": {
+    "filename": "opencv_python_headless-4.14.0.94-cp37-abi3-manylinux_2_28_x86_64.whl",
+    "package": "opencv-python-headless",
+    "sha256": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527",
+    "version": "4.14.0.94"
+  },
+  "evidence_references": [
+    "raw:legacy-license",
+    "raw:license-classifier:0",
+    "raw:license:cv2/LICENSE-3RD-PARTY.txt",
+    "raw:license:cv2/LICENSE.txt",
+    "raw:license:opencv_python_headless-4.14.0.94.dist-info/LICENSE-3RD-PARTY.txt",
+    "raw:license:opencv_python_headless-4.14.0.94.dist-info/LICENSE.txt"
+  ],
+  "evidence_snapshot_sha256": "9ba74d12edbffc31458bce2237c6529f534b54eb9f45e449484a94ef0869b9da",
+  "review_id": "code-f-opencv-python-headless-license-review-211e581f5a4670ac",
+  "review_policy": {
+    "policy_id": "artifact-license-review-authority",
+    "policy_sha256": "2330eebf7d9bcc5838ace31cb355fd917b37c63ecf00e7630143f3098de176a8",
+    "tool_version": "1",
+    "version": "2026.08.29.1"
+  },
+  "review_reason": "ORIGINAL_REVIEW_TRIGGER=LEGACY_OR_AMBIGUOUS_LICENSE_FACT_REQUIRES_EXACT_ARTIFACT_REVIEW REVIEW_CATEGORY=LEGACY_SPDX_CANONICALIZATION REVIEW_TRIGGER_RESOLUTION=RESOLVED REVIEW_DECISION=APPROVED Code F approves the exact opencv-python-headless 4.14.0.94 wheel (211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527) from raw exact-wheel evidence snapshot 9ba74d12edbffc31458bce2237c6529f534b54eb9f45e449484a94ef0869b9da. The reviewed SPDX fact is Apache-2.0; machine suggestions are not used as approval. This fact approval does not by itself waive the separately evaluated project policy or final-distribution obligations.",
+  "review_record_sha256": "2fe20042358cc3a7b539480698a93876dd47dccf91d21b91d0ac18f74b7b2798",
+  "reviewed_spdx_expression": "Apache-2.0",
+  "reviewer": {
+    "approval_method": "CONTROLLED_PULL_REQUEST_REQUIRED_REVIEW",
+    "approval_reference": {
+      "approval_event_id": "github-review:solo-maintainer-authorized-2026-09-02",
+      "approved_commit_sha": "e4301f864675cd8991f030e8f6ffdf96e131e9bc",
+      "pull_request": 31,
+      "repository": "hed88798-dot/ai-video-platform"
+    },
+    "approval_timestamp": "2026-09-02T13:00:00Z",
+    "authority_id": "code-f-quality-release-compliance",
+    "identity": "github:hed88798-dot",
+    "role": "LICENSE_COMPLIANCE_APPROVER"
+  },
+  "revokes_review_id": null,
+  "schema_version": "1",
+  "supersedes_review_id": null
+}

@@ -1,0 +1,40 @@
+{
+  "action": "APPROVE",
+  "artifact": {
+    "filename": "pywin32_ctypes-0.2.3-py3-none-any.whl",
+    "package": "pywin32-ctypes",
+    "sha256": "8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8",
+    "version": "0.2.3"
+  },
+  "evidence_references": [
+    "raw:legacy-license",
+    "raw:license:pywin32_ctypes-0.2.3.dist-info/LICENSE.txt"
+  ],
+  "evidence_snapshot_sha256": "bdbb231ff9722af3d63889ed9627e56a0075e6b09117cf895264fc2fc1e386e8",
+  "review_id": "code-f-pywin32-ctypes-license-review-8a1513379d709975",
+  "review_policy": {
+    "policy_id": "artifact-license-review-authority",
+    "policy_sha256": "2330eebf7d9bcc5838ace31cb355fd917b37c63ecf00e7630143f3098de176a8",
+    "tool_version": "1",
+    "version": "2026.08.29.1"
+  },
+  "review_reason": "ORIGINAL_REVIEW_TRIGGER=LEGACY_OR_AMBIGUOUS_LICENSE_FACT_REQUIRES_EXACT_ARTIFACT_REVIEW REVIEW_CATEGORY=LEGACY_SPDX_CANONICALIZATION REVIEW_TRIGGER_RESOLUTION=RESOLVED REVIEW_DECISION=APPROVED Code F approves the exact pywin32-ctypes 0.2.3 wheel (8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8) from raw exact-wheel evidence snapshot bdbb231ff9722af3d63889ed9627e56a0075e6b09117cf895264fc2fc1e386e8. The reviewed SPDX fact is BSD-3-Clause; machine suggestions are not used as approval. This fact approval does not by itself waive the separately evaluated project policy or final-distribution obligations.",
+  "review_record_sha256": "22162377b8305d8d2aa9958b5cdbfcadf8c243c0c4b7b4db33b5327057188c5d",
+  "reviewed_spdx_expression": "BSD-3-Clause",
+  "reviewer": {
+    "approval_method": "CONTROLLED_PULL_REQUEST_REQUIRED_REVIEW",
+    "approval_reference": {
+      "approval_event_id": "github-review:solo-maintainer-authorized-2026-09-02",
+      "approved_commit_sha": "e4301f864675cd8991f030e8f6ffdf96e131e9bc",
+      "pull_request": 31,
+      "repository": "hed88798-dot/ai-video-platform"
+    },
+    "approval_timestamp": "2026-09-02T13:00:00Z",
+    "authority_id": "code-f-quality-release-compliance",
+    "identity": "github:hed88798-dot",
+    "role": "LICENSE_COMPLIANCE_APPROVER"
+  },
+  "revokes_review_id": null,
+  "schema_version": "1",
+  "supersedes_review_id": null
+}

@@ -1,0 +1,41 @@
+{
+  "action": "APPROVE",
+  "artifact": {
+    "filename": "pyinstaller-6.22.2-py3-none-win_amd64.whl",
+    "package": "pyinstaller",
+    "sha256": "9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7",
+    "version": "6.22.2"
+  },
+  "evidence_references": [
+    "raw:legacy-license",
+    "raw:license-classifier:0",
+    "raw:copying:pyinstaller-6.22.2.dist-info/licenses/COPYING.txt"
+  ],
+  "evidence_snapshot_sha256": "c754d3538d645d66a750b35d69190a6488b234899bf7a10cbbcf72fd5ec12eb8",
+  "review_id": "code-f-pyinstaller-license-review-9b990fa6bbe14357",
+  "review_policy": {
+    "policy_id": "artifact-license-review-authority",
+    "policy_sha256": "2330eebf7d9bcc5838ace31cb355fd917b37c63ecf00e7630143f3098de176a8",
+    "tool_version": "1",
+    "version": "2026.08.29.1"
+  },
+  "review_reason": "ORIGINAL_REVIEW_TRIGGER=LEGACY_LICENSE_TEXT_WITH_BOOTLOADER_EXCEPTION REVIEW_CATEGORY=AMBIGUOUS_LICENSE_EVIDENCE REVIEW_TRIGGER_RESOLUTION=RESOLVED REVIEW_DECISION=APPROVED Code F approves the exact pyinstaller 6.22.2 wheel (9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7) from raw exact-wheel evidence snapshot c754d3538d645d66a750b35d69190a6488b234899bf7a10cbbcf72fd5ec12eb8. The reviewed SPDX fact is GPL-2.0-or-later WITH Bootloader-exception; machine suggestions are not used as approval. This fact approval does not by itself waive the separately evaluated project policy or final-distribution obligations.",
+  "review_record_sha256": "b6749e89cabc9763e6a0ade43cd5107e9c71a8a3f0824f65b9591405379cd5f4",
+  "reviewed_spdx_expression": "GPL-2.0-or-later WITH Bootloader-exception",
+  "reviewer": {
+    "approval_method": "CONTROLLED_PULL_REQUEST_REQUIRED_REVIEW",
+    "approval_reference": {
+      "approval_event_id": "github-review:solo-maintainer-authorized-2026-09-02",
+      "approved_commit_sha": "e4301f864675cd8991f030e8f6ffdf96e131e9bc",
+      "pull_request": 31,
+      "repository": "hed88798-dot/ai-video-platform"
+    },
+    "approval_timestamp": "2026-09-02T13:00:00Z",
+    "authority_id": "code-f-quality-release-compliance",
+    "identity": "github:hed88798-dot",
+    "role": "LICENSE_COMPLIANCE_APPROVER"
+  },
+  "revokes_review_id": null,
+  "schema_version": "1",
+  "supersedes_review_id": null
+}

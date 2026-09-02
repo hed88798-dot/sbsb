@@ -1,0 +1,33 @@
+{
+  "artifact": {
+    "artifact_type": "PYTHON_WHEEL",
+    "filename": "pillow-12.3.0-cp313-cp313-win_amd64.whl",
+    "package": "pillow",
+    "purl": "pkg:pypi/pillow@12.3.0",
+    "sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
+    "version": "12.3.0"
+  },
+  "evidence_snapshot_sha256": "aeaf7625a0e3e79c46ea8e6cdfa7127f47b9611295535812f57ab8219e490a91",
+  "evidence_status": "PASS",
+  "extractor": {
+    "name": "inspect-wheel.py",
+    "version": "2"
+  },
+  "machine_suggestion": null,
+  "raw_license_evidence": {
+    "bundled_license_evidence_identity_sha256": null,
+    "classifiers": [],
+    "legacy_license_value": null,
+    "license_files": [
+      {
+        "kind": "LICENSE",
+        "relative_path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+        "sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857",
+        "size": 78016
+      }
+    ],
+    "metadata_sha256": "2c4378001803cfac65809a50722d46e0da4ce8061e717f103e5d52734bab30f5",
+    "reported_license_expression": "MIT-CMU"
+  },
+  "schema_version": "3"
+}

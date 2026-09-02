@@ -1,0 +1,33 @@
+{
+  "artifact": {
+    "artifact_type": "PYTHON_WHEEL",
+    "filename": "click-8.5.0-py3-none-any.whl",
+    "package": "click",
+    "purl": "pkg:pypi/click@8.5.0",
+    "sha256": "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360",
+    "version": "8.5.0"
+  },
+  "evidence_snapshot_sha256": "9748b2598d406e34451dfd0e5e44b4651cff7163a4143b526cea9669e906e8dd",
+  "evidence_status": "PASS",
+  "extractor": {
+    "name": "inspect-wheel.py",
+    "version": "2"
+  },
+  "machine_suggestion": null,
+  "raw_license_evidence": {
+    "bundled_license_evidence_identity_sha256": null,
+    "classifiers": [],
+    "legacy_license_value": null,
+    "license_files": [
+      {
+        "kind": "LICENSE",
+        "relative_path": "click-8.5.0.dist-info/licenses/LICENSE.txt",
+        "sha256": "9a8ad106a394e853bfe21f42f4e72d592819a22805d991b5f3275029292b658d",
+        "size": 1475
+      }
+    ],
+    "metadata_sha256": "e87bce0bd194de70dfb8e708e0a6b0483009f25611804eaf87bfeb63e6c20501",
+    "reported_license_expression": "BSD-3-Clause"
+  },
+  "schema_version": "3"
+}

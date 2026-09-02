@@ -1,0 +1,40 @@
+{
+  "action": "APPROVE",
+  "artifact": {
+    "filename": "tqdm-4.70.0-py3-none-any.whl",
+    "package": "tqdm",
+    "sha256": "7f585706bfddbdebf89daac705b2dfcc16890130727d3197ca62c732b4310953",
+    "version": "4.70.0"
+  },
+  "evidence_references": [
+    "raw:legacy-license",
+    "raw:license:tqdm-4.70.0.dist-info/licenses/LICENCE"
+  ],
+  "evidence_snapshot_sha256": "b216e1fb7232603102a3c884bf92fa2464c12ce4edf75013670a163824ee421f",
+  "review_id": "code-f-tqdm-license-review-7f585706bfddbdeb",
+  "review_policy": {
+    "policy_id": "artifact-license-review-authority",
+    "policy_sha256": "2330eebf7d9bcc5838ace31cb355fd917b37c63ecf00e7630143f3098de176a8",
+    "tool_version": "1",
+    "version": "2026.08.29.1"
+  },
+  "review_reason": "ORIGINAL_REVIEW_TRIGGER=MULTI_LICENSE_EXPRESSION_REQUIRES_BRANCH_REVIEW REVIEW_CATEGORY=MULTI_LICENSE_RELATIONSHIP REVIEW_TRIGGER_RESOLUTION=RESOLVED REVIEW_DECISION=APPROVED Code F approves the exact tqdm 4.70.0 wheel (7f585706bfddbdebf89daac705b2dfcc16890130727d3197ca62c732b4310953) from raw exact-wheel evidence snapshot b216e1fb7232603102a3c884bf92fa2464c12ce4edf75013670a163824ee421f. The reviewed SPDX fact is MPL-2.0 AND MIT; machine suggestions are not used as approval. The exact MPL-2.0 AND MIT relationship is retained; no OR rewrite or single-license selection is made, and MPL file-level obligations remain visible to distribution reconciliation.",
+  "review_record_sha256": "a0b05f0d75838537c2d5781d66a0adf5bdad9e3e607462e34a6ecc70b47899cb",
+  "reviewed_spdx_expression": "MPL-2.0 AND MIT",
+  "reviewer": {
+    "approval_method": "CONTROLLED_PULL_REQUEST_REQUIRED_REVIEW",
+    "approval_reference": {
+      "approval_event_id": "github-review:solo-maintainer-authorized-2026-09-02",
+      "approved_commit_sha": "e4301f864675cd8991f030e8f6ffdf96e131e9bc",
+      "pull_request": 31,
+      "repository": "hed88798-dot/ai-video-platform"
+    },
+    "approval_timestamp": "2026-09-02T13:00:00Z",
+    "authority_id": "code-f-quality-release-compliance",
+    "identity": "github:hed88798-dot",
+    "role": "LICENSE_COMPLIANCE_APPROVER"
+  },
+  "revokes_review_id": null,
+  "schema_version": "1",
+  "supersedes_review_id": null
+}

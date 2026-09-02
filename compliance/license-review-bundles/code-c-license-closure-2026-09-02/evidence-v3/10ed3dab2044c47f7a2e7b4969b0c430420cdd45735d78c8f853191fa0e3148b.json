@@ -1,0 +1,26 @@
+{
+  "artifact": {
+    "artifact_type": "PYTHON_WHEEL",
+    "filename": "sentencepiece-0.2.1-cp313-cp313-win_amd64.whl",
+    "package": "sentencepiece",
+    "purl": "pkg:pypi/sentencepiece@0.2.1",
+    "sha256": "10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b",
+    "version": "0.2.1"
+  },
+  "evidence_snapshot_sha256": "8e953cfdda5c2557f4f75bcfba826f35d6d50a8ddb54975d5f3bdc155cfbe32f",
+  "evidence_status": "FAIL",
+  "extractor": {
+    "name": "inspect-wheel.py",
+    "version": "2"
+  },
+  "machine_suggestion": null,
+  "raw_license_evidence": {
+    "bundled_license_evidence_identity_sha256": null,
+    "classifiers": [],
+    "legacy_license_value": null,
+    "license_files": [],
+    "metadata_sha256": "3de0de19c0bf383a6946bc0494b5c428e7216cb7d94a4607db4cb430f5e23abb",
+    "reported_license_expression": null
+  },
+  "schema_version": "3"
+}
