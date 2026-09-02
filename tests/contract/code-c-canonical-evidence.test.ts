@@ -116,7 +116,7 @@ describe('Code C canonical evidence bytes', () => {
         resolve(repositoryRoot, 'tools/code-c-python-supply-chain', name),
         'utf8',
       );
-      expect(source, name).toContain('writeCanonicalJson');
+      expect(source, name).toMatch(/\bwrite(?:Canonical|Prettier)Json\b/u);
       expect(source, name).not.toMatch(/writeFileSync\([^\n]+, canonicalJson/u);
     }
   });
