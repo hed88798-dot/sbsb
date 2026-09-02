@@ -69,7 +69,7 @@ export function writeCanonicalJson(path, value) {
 function prettierJsonBytes(value, target) {
   const canonicalBytes = canonicalJsonBytes(value);
   const packageManager = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
-  return execFileSync(
+  const formattedBytes = execFileSync(
     packageManager,
     ['exec', 'prettier', '--parser', 'json', '--stdin-filepath', resolve(target)],
     {
@@ -79,6 +79,16 @@ function prettierJsonBytes(value, target) {
       shell: false,
     },
   );
+  let formattedValue;
+  try {
+    formattedValue = JSON.parse(formattedBytes.toString('utf8'));
+  } catch (error) {
+    throw new Error(`repository-pinned Prettier emitted invalid JSON for ${target}: ${error}`);
+  }
+  if (canonicalJson(formattedValue) !== canonicalJson(value)) {
+    throw new Error(`repository-pinned Prettier changed JSON semantics for ${target}`);
+  }
+  return formattedBytes;
 }
 
 export function writePrettierJson(path, value) {

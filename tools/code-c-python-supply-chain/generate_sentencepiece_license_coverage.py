@@ -52,7 +52,14 @@ def prettier_bytes(payload: bytes, target: Path, parser: str) -> bytes:
 
 
 def prettier_json(value: Any, target: Path) -> bytes:
-    return prettier_bytes(canonical(value), target, "json")
+    formatted = prettier_bytes(canonical(value), target, "json")
+    try:
+        formatted_value = json.loads(formatted.decode())
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"repository-pinned Prettier emitted invalid JSON for {target}: {error}")
+    if canonical(formatted_value) != canonical(value):
+        raise SystemExit(f"repository-pinned Prettier changed JSON semantics for {target}")
+    return formatted
 
 
 def prettier_markdown(value: str, target: Path) -> bytes:
