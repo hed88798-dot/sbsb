@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import {
   closeSync,
@@ -10,7 +11,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { canonicalJson } from '../python-supply-chain/inventory.mjs';
+import { canonicalJson, repositoryRoot } from '../python-supply-chain/inventory.mjs';
 
 export const canonicalizationVersion = 'json-utf8-lf-v1';
 
@@ -58,6 +59,65 @@ export function writeCanonicalJson(path, value) {
       in_memory_file_byte_identity: true,
       temp_file_same_directory: dirname(temporary) === directory,
       atomic_replace: replaced,
+    };
+  } finally {
+    if (descriptor !== undefined) closeSync(descriptor);
+    if (!replaced) rmSync(temporary, { force: true });
+  }
+}
+
+function prettierJsonBytes(value, target) {
+  const canonicalBytes = canonicalJsonBytes(value);
+  const packageManager = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+  return execFileSync(
+    packageManager,
+    ['exec', 'prettier', '--parser', 'json', '--stdin-filepath', resolve(target)],
+    {
+      cwd: repositoryRoot,
+      input: canonicalBytes,
+      encoding: null,
+      shell: false,
+    },
+  );
+}
+
+export function writePrettierJson(path, value) {
+  const target = resolve(path);
+  const directory = dirname(target);
+  mkdirSync(directory, { recursive: true });
+  const formattedBytes = prettierJsonBytes(value, target);
+  const payloadSha256 = sha256Bytes(formattedBytes);
+  const temporary = resolve(
+    directory,
+    `.${target.split(/[\\/]/u).at(-1)}.${process.pid}.${randomBytes(8).toString('hex')}.tmp`,
+  );
+  let descriptor;
+  let replaced = false;
+  try {
+    descriptor = openSync(temporary, 'wx', 0o644);
+    writeFileSync(descriptor, formattedBytes);
+    fsyncSync(descriptor);
+    closeSync(descriptor);
+    descriptor = undefined;
+    const temporaryBytes = readFileSync(temporary);
+    if (!temporaryBytes.equals(formattedBytes) || sha256Bytes(temporaryBytes) !== payloadSha256) {
+      throw new Error(`Prettier evidence byte drift before atomic replace: ${target}`);
+    }
+    renameSync(temporary, target);
+    replaced = true;
+    const fileBytes = readFileSync(target);
+    const fileSha256 = sha256Bytes(fileBytes);
+    if (!fileBytes.equals(formattedBytes) || fileSha256 !== payloadSha256) {
+      throw new Error(`Prettier evidence byte drift after atomic replace: ${target}`);
+    }
+    return {
+      canonical_payload_sha256: payloadSha256,
+      canonical_file_sha256: fileSha256,
+      canonical_payload_file_hash_equal: true,
+      in_memory_file_byte_identity: true,
+      temp_file_same_directory: dirname(temporary) === directory,
+      atomic_replace: replaced,
+      formatter: 'pnpm exec prettier --parser json',
     };
   } finally {
     if (descriptor !== undefined) closeSync(descriptor);

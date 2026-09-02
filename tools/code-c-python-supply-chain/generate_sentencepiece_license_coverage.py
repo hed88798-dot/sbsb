@@ -13,6 +13,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import shutil
+import subprocess
 import zipfile
 from pathlib import Path
 from typing import Any
@@ -20,6 +22,41 @@ from typing import Any
 
 def canonical(value: Any) -> bytes:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+
+
+def prettier_bytes(payload: bytes, target: Path, parser: str) -> bytes:
+    package_manager = shutil.which("pnpm") or shutil.which("pnpm.cmd")
+    if package_manager is None:
+        raise SystemExit("repository-pinned Prettier requires pnpm on PATH")
+    repository_root = Path(__file__).resolve().parents[2]
+    result = subprocess.run(
+        [
+            package_manager,
+            "exec",
+            "prettier",
+            "--parser",
+            parser,
+            "--stdin-filepath",
+            str(target.resolve()),
+        ],
+        input=payload,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        cwd=repository_root,
+        check=False,
+    )
+    if result.returncode != 0:
+        detail = result.stderr.decode(errors="replace").strip()
+        raise SystemExit(f"repository-pinned Prettier failed for {target}: {detail}")
+    return result.stdout
+
+
+def prettier_json(value: Any, target: Path) -> bytes:
+    return prettier_bytes(canonical(value), target, "json")
+
+
+def prettier_markdown(value: str, target: Path) -> bytes:
+    return prettier_bytes(value.encode(), target, "markdown")
 
 
 def identity_hash(value: Any) -> str:
@@ -208,10 +245,12 @@ def main() -> None:
 
     output = args.output_root / "sentencepiece-linux" if args.target == "linux" else args.output_root / "sentencepiece-windows"
     output.mkdir(parents=True, exist_ok=True)
-    (output / "artifact.json").write_bytes(canonical(artifact) + b"\n")
-    (output / "members.json").write_bytes(canonical(members) + b"\n")
-    (output / "coverage.json").write_bytes(canonical([coverage]) + b"\n")
-    (output / "upstream-binding.json").write_bytes(canonical(binding) + b"\n")
+    (output / "artifact.json").write_bytes(prettier_json(artifact, output / "artifact.json"))
+    (output / "members.json").write_bytes(prettier_json(members, output / "members.json"))
+    (output / "coverage.json").write_bytes(prettier_json([coverage], output / "coverage.json"))
+    (output / "upstream-binding.json").write_bytes(
+        prettier_json(binding, output / "upstream-binding.json")
+    )
     manifest = {
         "coverage_record_origin": "PRODUCTION_EVIDENCE",
         "producer_version": "code-c-sentencepiece-license-coverage/v1",
@@ -241,9 +280,9 @@ def main() -> None:
         "provenance_sha256": binding["attestation"]["provenance_sha256"],
         "review_status": "REQUIRES_REVIEW",
     }
-    (output / "manifest.json").write_bytes(canonical(manifest) + b"\n")
+    (output / "manifest.json").write_bytes(prettier_json(manifest, output / "manifest.json"))
     request = f"""# SentencePiece {args.target} Production License Coverage Request\n\n- Origin: PRODUCTION_EVIDENCE\n- Artifact: `{subject_filename}`\n- SHA-256: `{wheel_sha}`\n- Resolver filename: `{resolver_filename}`\n- Official release asset: `{release_asset_filename}`\n- Local storage filename: `{args.wheel.name}` (not an authority)\n- Coverage record: `{coverage['coverage_id']}`\n- Coverage SHA-256: `{coverage['coverage_record_sha256']}`\n- Upstream binding: `{binding['binding_id']}` (`{binding['binding_record_sha256']}`)\n- License assertion: `Apache-2.0`, whole-artifact coverage\n- Review status: `REQUIRES_REVIEW` (coverage is not commercial-policy approval)\n\nAll four artifact SHA identities are equal. The current subject, resolver, and\nofficial release filename are intentionally recorded separately; local storage\nname is retained only as diagnostic context.\n"""
-    (output / "REQUEST.md").write_text(request, encoding="utf-8")
+    (output / "REQUEST.md").write_bytes(prettier_markdown(request, output / "REQUEST.md"))
     print(json.dumps({"target": args.target, "output": str(output), "artifact_sha256": wheel_sha, "coverage_record_sha256": coverage["coverage_record_sha256"], "binding_record_sha256": binding["binding_record_sha256"]}, sort_keys=True))
 
 

@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { execFileSync } from 'node:child_process';
 import { join, relative, resolve } from 'node:path';
 import { sha256File } from '../python-supply-chain/inventory.mjs';
-import { writeCanonicalJson } from './canonical-evidence.mjs';
+import { writePrettierJson } from './canonical-evidence.mjs';
 import {
   loadLicensePolicy,
   evaluateLicenseEvidence,
@@ -901,7 +901,7 @@ async function main() {
         ),
       );
     }
-    writeCanonicalJson(resolve(bundleEvidenceRoot, `${artifact.sha256}.json`), evidence);
+    writePrettierJson(resolve(bundleEvidenceRoot, `${artifact.sha256}.json`), evidence);
   }
 
   // Coverage evidence can replace the old "no exact license evidence" blocker
@@ -1175,7 +1175,7 @@ async function main() {
   assertPortableBundleValue(document);
   mkdirSync(outputRoot, { recursive: true });
   const bundlePath = resolve(outputRoot, 'CODE_C_ARTIFACT_LICENSE_REVIEW_BUNDLE.json');
-  writeCanonicalJson(bundlePath, document);
+  writePrettierJson(bundlePath, document);
   const fileSha256 = await sha256File(bundlePath);
   writeFileSync(
     resolve(outputRoot, 'CODE_C_ARTIFACT_LICENSE_REVIEW_BUNDLE.sha256'),
@@ -1199,7 +1199,7 @@ async function main() {
     stage_b: document.stage_b,
   };
   assertPortableBundleValue(summary);
-  writeCanonicalJson(resolve(outputRoot, 'CODE_C_LICENSE_REVIEW_PREPARATION.json'), summary);
+  writePrettierJson(resolve(outputRoot, 'CODE_C_LICENSE_REVIEW_PREPARATION.json'), summary);
   console.log(
     `code-c-license-review-bundle: PASS (${document.license_review_bundle_id}; ${fileSha256}; ` +
       `${total} total, ${autoApproved.length} auto, ${requiredReview.length} review, ${hardBlocked.length} blocked)`,
