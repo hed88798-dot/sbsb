@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/distribution-trust-chain/v1/retention-receipt.schema.json",
+  "title": "Frozen Candidate Retention Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "receipt_sha256",
+    "candidate_id",
+    "platform",
+    "worker",
+    "carchive",
+    "build_recipe",
+    "environment_descriptor",
+    "build_context",
+    "storage_channel_class",
+    "primary_copy",
+    "secondary_copy",
+    "archived_at",
+    "retention_state",
+    "recovery_procedure_version",
+    "availability_verification_timestamp"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "receipt_id": { "$ref": "#/$defs/id" },
+    "receipt_sha256": { "$ref": "#/$defs/sha256" },
+    "candidate_id": { "$ref": "#/$defs/id" },
+    "platform": { "$ref": "#/$defs/platform" },
+    "worker": { "$ref": "#/$defs/output" },
+    "carchive": { "$ref": "#/$defs/output" },
+    "build_recipe": { "$ref": "#/$defs/binding" },
+    "environment_descriptor": { "$ref": "#/$defs/binding" },
+    "build_context": { "$ref": "#/$defs/binding" },
+    "storage_channel_class": { "const": "PROJECT_CONTROLLED_LOCAL_COLD_ARCHIVE" },
+    "primary_copy": { "$ref": "#/$defs/copy" },
+    "secondary_copy": { "$ref": "#/$defs/copy" },
+    "archived_at": { "type": "string", "format": "date-time" },
+    "retention_state": { "enum": ["ARCHIVED", "RECOVERY_DRILL_PASSED", "FROZEN_CANDIDATE"] },
+    "recovery_procedure_version": { "type": "string", "minLength": 1 },
+    "availability_verification_timestamp": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]{2,191}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "architecture"],
+      "properties": {
+        "os": { "enum": ["linux", "windows"] },
+        "architecture": { "enum": ["x86_64", "arm64"] }
+      }
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sha256"],
+      "properties": { "id": { "$ref": "#/$defs/id" }, "sha256": { "$ref": "#/$defs/sha256" } }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "size_bytes"],
+      "properties": {
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "size_bytes": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "copy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "copy_id",
+        "storage_locator",
+        "storage_location_identity",
+        "archived_object_sha256",
+        "availability_status"
+      ],
+      "properties": {
+        "copy_id": { "$ref": "#/$defs/id" },
+        "storage_locator": { "$ref": "#/$defs/portableLocator" },
+        "storage_location_identity": { "type": "string", "minLength": 1 },
+        "archived_object_sha256": { "$ref": "#/$defs/sha256" },
+        "availability_status": { "const": "AVAILABLE" }
+      }
+    },
+    "portableLocator": { "type": "string", "pattern": "^cold-archive://[a-z0-9._/-]+$" }
+  }
+}
