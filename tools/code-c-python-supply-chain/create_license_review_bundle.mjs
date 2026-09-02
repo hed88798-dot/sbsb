@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-import { join, resolve } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 import { sha256File } from '../python-supply-chain/inventory.mjs';
 import { writeCanonicalJson } from './canonical-evidence.mjs';
 import {
@@ -233,6 +233,41 @@ function loadSpecializedEvidence(artifact) {
   }
   if (matches.length > 1) throw new Error(`${artifact.sha256}: ambiguous specialized evidence`);
   return matches[0] ?? null;
+}
+
+function portableRepoLocator(filePath) {
+  const repositoryRoot = resolve('.');
+  const locator = relative(repositoryRoot, filePath).replaceAll('\\', '/');
+  if (!locator || locator.startsWith('../') || locator === '..') {
+    throw new Error(`evidence path is outside the repository: ${filePath}`);
+  }
+  return locator;
+}
+
+function assertPortableBundleValue(value, path = '$') {
+  if (typeof value === 'string') {
+    if (
+      value.startsWith('/') ||
+      /^[A-Za-z]:[\\/]/u.test(value) ||
+      value.startsWith('\\\\') ||
+      value.startsWith('file:') ||
+      /(?:^|[\\/])(?:Users|home)[\\/]/u.test(value) ||
+      value.includes('/.cache/codex') ||
+      value.includes('\\.cache\\codex')
+    ) {
+      throw new Error(`non-portable absolute path in license review bundle at ${path}: ${value}`);
+    }
+    return;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) => assertPortableBundleValue(entry, `${path}[${index}]`));
+    return;
+  }
+  if (value && typeof value === 'object') {
+    Object.entries(value).forEach(([key, entry]) =>
+      assertPortableBundleValue(entry, `${path}.${key}`),
+    );
+  }
 }
 
 function specializedDecision(artifact, expression, use, specialized) {
@@ -795,7 +830,7 @@ async function main() {
           request.specialized_existing_evidence = specialized
             ? {
                 schema_version: specialized.value.schema_version,
-                path: specialized.path,
+                path: portableRepoLocator(specialized.path),
                 sha256: await sha256File(specialized.path),
                 expression: specialized.value.package_license.expression,
                 context_bound_usage_gate_still_required: true,
@@ -1137,6 +1172,7 @@ async function main() {
     license_review_graph_reconciliation: 'NOT_STARTED',
     stage_b: 'BLOCKED_NOT_RERUN',
   };
+  assertPortableBundleValue(document);
   mkdirSync(outputRoot, { recursive: true });
   const bundlePath = resolve(outputRoot, 'CODE_C_ARTIFACT_LICENSE_REVIEW_BUNDLE.json');
   writeCanonicalJson(bundlePath, document);
@@ -1162,6 +1198,7 @@ async function main() {
     license_review_graph_reconciliation: document.license_review_graph_reconciliation,
     stage_b: document.stage_b,
   };
+  assertPortableBundleValue(summary);
   writeCanonicalJson(resolve(outputRoot, 'CODE_C_LICENSE_REVIEW_PREPARATION.json'), summary);
   console.log(
     `code-c-license-review-bundle: PASS (${document.license_review_bundle_id}; ${fileSha256}; ` +
