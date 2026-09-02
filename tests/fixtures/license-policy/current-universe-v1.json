@@ -1,0 +1,62 @@
+{
+  "schema_version": "1",
+  "source_snapshot_id": "code-c-license-universe-2026-09-02",
+  "source_note": "Immutable Code C closure partition supplied for the GPL build-only policy change. The 35 non-target usages are carried as disposition counts so their 21 required reviews are not re-approved in this round.",
+  "total_usage": 37,
+  "pre_change_disposition_counts": {
+    "PASS": 14,
+    "MANUAL_REVIEW": 21,
+    "FAIL": 2
+  },
+  "non_target_usage_count": 35,
+  "expected_non_target_disposition_counts": {
+    "PASS": 14,
+    "MANUAL_REVIEW": 21,
+    "FAIL": 0
+  },
+  "post_change_disposition_counts": {
+    "PASS": 16,
+    "MANUAL_REVIEW": 21,
+    "FAIL": 0
+  },
+  "target_usages": [
+    {
+      "usage_binding_id": "code-c-linux-worker-build-py31315",
+      "artifact_sha256": "24257a04c7a5a7a034cf28e39dcee20fbeeb9f043076729480f2e1b69904408a",
+      "package": "pyinstaller-hooks-contrib",
+      "version": "2026.7",
+      "artifact_role": "PYTHON_BUILD_DEPENDENCY",
+      "distribution_role": "BUILD_ONLY_USE",
+      "detected_license_expression": "GPL-2.0-or-later",
+      "previous_policy_result": "FAIL",
+      "expected_policy_result": "PASS",
+      "usage_policy_context": {
+        "BUILD_ONLY_USAGE_BINDING": "PASS",
+        "GPL_COMPONENT_DISTRIBUTED": "NO",
+        "GPL_COMPONENT_MEMBERS_IN_FINAL_ARTIFACT": 0,
+        "COMPONENT_COVERAGE": "COMPLETE",
+        "FINAL_ARTIFACT_RECONCILIATION": "PASS",
+        "GPL_COVERED_CODE_COPIED_OR_INJECTED_INTO_FINAL_OUTPUT": "NO"
+      }
+    },
+    {
+      "usage_binding_id": "code-c-windows-worker-build-py31315",
+      "artifact_sha256": "24257a04c7a5a7a034cf28e39dcee20fbeeb9f043076729480f2e1b69904408a",
+      "package": "pyinstaller-hooks-contrib",
+      "version": "2026.7",
+      "artifact_role": "PYTHON_BUILD_DEPENDENCY",
+      "distribution_role": "BUILD_ONLY_USE",
+      "detected_license_expression": "GPL-2.0-or-later",
+      "previous_policy_result": "FAIL",
+      "expected_policy_result": "PASS",
+      "usage_policy_context": {
+        "BUILD_ONLY_USAGE_BINDING": "PASS",
+        "GPL_COMPONENT_DISTRIBUTED": "NO",
+        "GPL_COMPONENT_MEMBERS_IN_FINAL_ARTIFACT": 0,
+        "COMPONENT_COVERAGE": "COMPLETE",
+        "FINAL_ARTIFACT_RECONCILIATION": "PASS",
+        "GPL_COVERED_CODE_COPIED_OR_INJECTED_INTO_FINAL_OUTPUT": "NO"
+      }
+    }
+  ]
+}
