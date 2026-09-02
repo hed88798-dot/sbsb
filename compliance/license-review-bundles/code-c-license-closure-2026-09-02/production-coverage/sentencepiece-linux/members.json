@@ -1,0 +1,110 @@
+[
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "usage": "UNUSED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/__init__.py",
+    "sha256": "3504f490fde39231264512322bf8ec282ba0e8bf73422daf20f4d64229fc136c",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/_sentencepiece.cpython-313-x86_64-linux-gnu.so",
+    "sha256": "1f809f1b9093853c23e2d248628e7b73def616ad5ab4b6159545e02b20c152dd",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/_version.py",
+    "sha256": "3e6710d8f236a0ff22ae72ed24b25bcb661f5bab01bcb0262fe569001cd3ab07",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/sentencepiece.i",
+    "sha256": "1dfbfc00714e2447c37c4955608868cf6f56eeb575549d19d7768fed2edc93a3",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/sentencepiece_model_pb2.py",
+    "sha256": "2dac04c267548885354fd1dc62efab34455315cc0087d8bea9abcc32c83dae21",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/sentencepiece_pb2.py",
+    "sha256": "fd98275ce929a1270c5db27ef0130a9f643dec16cc387f47cfe2fb24531c26ba",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/sentencepiece_wrap.cxx",
+    "sha256": "5e56d416ceece3c8b78bf9e191af54fdbe355e9bff79e483f54feec4eef8d98d",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/package_data/",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "usage": "UNUSED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/package_data/nfkc.bin",
+    "sha256": "52f11028ff8a7df3e009d94a8b6a54d4a8a17132efb4ccc1c9a0a41e432bd91e",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/package_data/nfkc_cf.bin",
+    "sha256": "60833ec11201446659c3549c183b18f024c4007628cc6b3a4e91ae007697b826",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/package_data/nmt_nfkc.bin",
+    "sha256": "79372c41389c2b9b29bc171017ab5400e352debd686b02670a42bec709015074",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/package_data/nmt_nfkc_cf.bin",
+    "sha256": "22c292c76f503795f30c85d79d30a7f572fff4f49e00392d2d60f4f93e941a1e",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece-0.2.1.dist-info/",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "usage": "UNUSED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece-0.2.1.dist-info/METADATA",
+    "sha256": "ce0a2e9c599cd060a7bc3dffb18be5cfc3d5f293533e3ee4e870eaef0a5500fd",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece-0.2.1.dist-info/WHEEL",
+    "sha256": "14686888b043eb3dde3bcf2d9d8452d1380b696bde02be6ec9722a065c7a9a7a",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece-0.2.1.dist-info/top_level.txt",
+    "sha256": "3485d52a6b2afb1759e4a44e3071d5d2090b0377ef6cd4dbd60d4ab6089814e9",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece-0.2.1.dist-info/RECORD",
+    "sha256": "f3ffd53571897bb1353cae5af2ebf50b2a008cfd21f05484042e0c91880aa4f9",
+    "usage": "DISTRIBUTED"
+  }
+]

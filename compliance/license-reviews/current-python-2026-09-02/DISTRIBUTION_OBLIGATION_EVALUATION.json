@@ -1,0 +1,11 @@
+{
+  "build_only_artifacts_excluded_from_distribution_notice": "PASS",
+  "notice_binding": "PENDING_CODE_C_POST_F_RECONCILIATION",
+  "reason": "The Code C review bundle does not contain Worker SHA, CArchive SHA, packaging selection, or final distributed-set evidence. F does not infer final distribution obligations from build inventories.",
+  "sbom_license_binding": "PENDING_CODE_C_POST_F_RECONCILIATION",
+  "schema_version": "1",
+  "snapshot_id": "code-f-python-license-review-evidence-dfbe53a38d6b5f60",
+  "snapshot_sha256": "549e4c5ae6a91a3f8b36d4fd917f44b86d9be48397ada7ef4518a387edbe9c0c",
+  "status": "BLOCKED_PENDING_FINAL_DISTRIBUTION_BINDING",
+  "unresolved_distribution_obligation_count": "UNKNOWN_PENDING_CODE_C_POST_F_RECONCILIATION"
+}

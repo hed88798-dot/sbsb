@@ -1,0 +1,37 @@
+{
+  "artifact": {
+    "artifact_type": "PYTHON_WHEEL",
+    "filename": "pywin32_ctypes-0.2.3-py3-none-any.whl",
+    "package": "pywin32-ctypes",
+    "purl": "pkg:pypi/pywin32-ctypes@0.2.3",
+    "sha256": "8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8",
+    "version": "0.2.3"
+  },
+  "evidence_snapshot_sha256": "bdbb231ff9722af3d63889ed9627e56a0075e6b09117cf895264fc2fc1e386e8",
+  "evidence_status": "MANUAL_REVIEW",
+  "extractor": {
+    "name": "inspect-wheel.py",
+    "version": "2"
+  },
+  "machine_suggestion": {
+    "generator": "inspect-wheel.py/exact-license-evidence/v1",
+    "status": "UNAPPROVED_MACHINE_SUGGESTION",
+    "suggested_spdx_expression": "BSD-3-Clause"
+  },
+  "raw_license_evidence": {
+    "bundled_license_evidence_identity_sha256": null,
+    "classifiers": [],
+    "legacy_license_value": "BSD-3-Clause",
+    "license_files": [
+      {
+        "kind": "LICENSE",
+        "relative_path": "pywin32_ctypes-0.2.3.dist-info/LICENSE.txt",
+        "sha256": "dfa83b3e2709adfcdb838d9ad55823ca674abb780e60563d9dd9544ccbf785e9",
+        "size": 1644
+      }
+    ],
+    "metadata_sha256": "1e3767d3faff4d5b9c347160883831098d1f25acf4306b02c9acdcc6bfb5883b",
+    "reported_license_expression": null
+  },
+  "schema_version": "3"
+}

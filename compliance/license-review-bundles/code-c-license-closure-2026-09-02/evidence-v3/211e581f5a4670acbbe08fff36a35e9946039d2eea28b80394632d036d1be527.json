@@ -1,0 +1,55 @@
+{
+  "artifact": {
+    "artifact_type": "PYTHON_WHEEL",
+    "filename": "opencv_python_headless-4.14.0.94-cp37-abi3-manylinux_2_28_x86_64.whl",
+    "package": "opencv-python-headless",
+    "purl": "pkg:pypi/opencv-python-headless@4.14.0.94",
+    "sha256": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527",
+    "version": "4.14.0.94"
+  },
+  "evidence_snapshot_sha256": "9ba74d12edbffc31458bce2237c6529f534b54eb9f45e449484a94ef0869b9da",
+  "evidence_status": "MANUAL_REVIEW",
+  "extractor": {
+    "name": "inspect-wheel.py",
+    "version": "2"
+  },
+  "machine_suggestion": {
+    "generator": "inspect-wheel.py/exact-license-evidence/v1",
+    "status": "UNAPPROVED_MACHINE_SUGGESTION",
+    "suggested_spdx_expression": "Apache-2.0"
+  },
+  "raw_license_evidence": {
+    "bundled_license_evidence_identity_sha256": null,
+    "classifiers": ["License :: OSI Approved :: Apache Software License"],
+    "legacy_license_value": "Apache 2.0",
+    "license_files": [
+      {
+        "kind": "LICENSE",
+        "relative_path": "cv2/LICENSE-3RD-PARTY.txt",
+        "sha256": "36bae33968d5e67f66906bc595949cb78d65978604e7392f552a79006c93cf2c",
+        "size": 179306
+      },
+      {
+        "kind": "LICENSE",
+        "relative_path": "cv2/LICENSE.txt",
+        "sha256": "09d719058e782ac7bc71ba21c944e1136cde2bb957c0e888121f0218d6b5f02c",
+        "size": 1070
+      },
+      {
+        "kind": "LICENSE",
+        "relative_path": "opencv_python_headless-4.14.0.94.dist-info/LICENSE-3RD-PARTY.txt",
+        "sha256": "36bae33968d5e67f66906bc595949cb78d65978604e7392f552a79006c93cf2c",
+        "size": 179306
+      },
+      {
+        "kind": "LICENSE",
+        "relative_path": "opencv_python_headless-4.14.0.94.dist-info/LICENSE.txt",
+        "sha256": "09d719058e782ac7bc71ba21c944e1136cde2bb957c0e888121f0218d6b5f02c",
+        "size": 1070
+      }
+    ],
+    "metadata_sha256": "2d255be83476e08c6b8348e9ae01603a83c78f7882a6cd5b17de9cbb2ab563b1",
+    "reported_license_expression": null
+  },
+  "schema_version": "3"
+}

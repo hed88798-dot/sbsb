@@ -1,0 +1,33 @@
+{
+  "artifact": {
+    "artifact_type": "PYTHON_WHEEL",
+    "filename": "scenedetect_headless-0.7.1-py3-none-any.whl",
+    "package": "scenedetect-headless",
+    "purl": "pkg:pypi/scenedetect-headless@0.7.1",
+    "sha256": "0594131cf2da278ac9f9442e1ce2a8fe6ccb25ab83a0899f349784e688d304c6",
+    "version": "0.7.1"
+  },
+  "evidence_snapshot_sha256": "fbe2cb499594ee3cfaa7d95d3e1cc161f39c24bd0a88c8c969dd704d6053f3c0",
+  "evidence_status": "PASS",
+  "extractor": {
+    "name": "inspect-wheel.py",
+    "version": "2"
+  },
+  "machine_suggestion": null,
+  "raw_license_evidence": {
+    "bundled_license_evidence_identity_sha256": null,
+    "classifiers": [],
+    "legacy_license_value": null,
+    "license_files": [
+      {
+        "kind": "LICENSE",
+        "relative_path": "scenedetect_headless-0.7.1.dist-info/licenses/LICENSE",
+        "sha256": "e855ca89e457a7d0b6b7c92ad475d1120a9a5b5bf4e5048c706b1b3889fbc349",
+        "size": 1505
+      }
+    ],
+    "metadata_sha256": "469520a9d4f49f6b26a19251974dce963a6493c3711a0dd50a355c9fae382551",
+    "reported_license_expression": "BSD-3-Clause"
+  },
+  "schema_version": "3"
+}
