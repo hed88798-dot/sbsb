@@ -1,0 +1,39 @@
+{
+  "artifact": {
+    "artifact_type": "PYTHON_WHEEL",
+    "filename": "altgraph-0.17.5-py2.py3-none-any.whl",
+    "package": "altgraph",
+    "purl": "pkg:pypi/altgraph@0.17.5",
+    "sha256": "f3a22400bce1b0c701683820ac4f3b159cd301acab067c51c653e06961600597",
+    "version": "0.17.5"
+  },
+  "evidence_snapshot_sha256": "e71c5703ff67064d4a6180d31966d146dd11be94788097bacc1334956d2a71c6",
+  "evidence_status": "MANUAL_REVIEW",
+  "extractor": {
+    "name": "inspect-wheel.py",
+    "version": "2"
+  },
+  "machine_suggestion": {
+    "generator": "inspect-wheel.py/exact-license-evidence/v1",
+    "status": "UNAPPROVED_MACHINE_SUGGESTION",
+    "suggested_spdx_expression": "MIT"
+  },
+  "raw_license_evidence": {
+    "bundled_license_evidence_identity_sha256": null,
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ],
+    "legacy_license_value": "MIT",
+    "license_files": [
+      {
+        "kind": "LICENSE",
+        "relative_path": "altgraph-0.17.5.dist-info/LICENSE",
+        "sha256": "6c194d6db0c64d45535d10c95142b9b0cda7b7dcc7f1ddee302b3d536f3dbe46",
+        "size": 1002
+      }
+    ],
+    "metadata_sha256": "dc60641dba229a3aef09f764f562c38d908b930c92615af2e626af31d6ff19b5",
+    "reported_license_expression": null
+  },
+  "schema_version": "3"
+}

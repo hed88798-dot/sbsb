@@ -1,0 +1,39 @@
+{
+  "artifact": {
+    "artifact_type": "PYTHON_WHEEL",
+    "filename": "onnxruntime-1.29.0-cp313-cp313-manylinux_2_28_x86_64.whl",
+    "package": "onnxruntime",
+    "purl": "pkg:pypi/onnxruntime@1.29.0",
+    "sha256": "e2128f31f449e922c62dbe5d8b6b7b079f0bcaf2d56a102fa203cb6e5bb5ab19",
+    "version": "1.29.0"
+  },
+  "evidence_snapshot_sha256": "0e85c4c3490370ad2a9efec8a565535aaad888100a06b6ffd8ec3bc5e2bf30fc",
+  "evidence_status": "MANUAL_REVIEW",
+  "extractor": {
+    "name": "inspect-wheel.py",
+    "version": "2"
+  },
+  "machine_suggestion": {
+    "generator": "inspect-wheel.py/exact-license-evidence/v1",
+    "status": "UNAPPROVED_MACHINE_SUGGESTION",
+    "suggested_spdx_expression": "MIT"
+  },
+  "raw_license_evidence": {
+    "bundled_license_evidence_identity_sha256": null,
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ],
+    "legacy_license_value": "MIT License",
+    "license_files": [
+      {
+        "kind": "LICENSE",
+        "relative_path": "onnxruntime/LICENSE",
+        "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c",
+        "size": 1073
+      }
+    ],
+    "metadata_sha256": "513d45ca74cf6318c91ab9944e3d43d39188e409f0c65e8e15c121e3f08db1e2",
+    "reported_license_expression": null
+  },
+  "schema_version": "3"
+}

@@ -1,0 +1,45 @@
+{
+  "artifact": {
+    "artifact_type": "PYTHON_WHEEL",
+    "filename": "setuptools-84.0.0-py3-none-any.whl",
+    "package": "setuptools",
+    "purl": "pkg:pypi/setuptools@84.0.0",
+    "sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+    "version": "84.0.0"
+  },
+  "evidence_snapshot_sha256": "b4fefd85b22aaef6236626896755e5c3ebb996ea8c64605e60db26b7a729d586",
+  "evidence_status": "PASS",
+  "extractor": {
+    "name": "inspect-wheel.py",
+    "version": "2"
+  },
+  "machine_suggestion": null,
+  "raw_license_evidence": {
+    "bundled_license_evidence_identity_sha256": null,
+    "classifiers": [],
+    "legacy_license_value": null,
+    "license_files": [
+      {
+        "kind": "LICENSE",
+        "relative_path": "setuptools-84.0.0.dist-info/licenses/LICENSE",
+        "sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741",
+        "size": 1023
+      },
+      {
+        "kind": "NOTICE",
+        "relative_path": "setuptools/config/NOTICE",
+        "sha256": "2dddf08818297a3b89d43d95ff659d8da85741108c9136dfa3a4d856c0623bd8",
+        "size": 493
+      },
+      {
+        "kind": "NOTICE",
+        "relative_path": "setuptools/config/_validate_pyproject/NOTICE",
+        "sha256": "09c9bcea95ca086f8bc5bed174e40bc835b297d40fb5f86bbbb570fe0a5581a7",
+        "size": 18737
+      }
+    ],
+    "metadata_sha256": "3ef2975718dd31cabdd5829455e9b868ca14dbf79ed8fed2de0af4e87347006e",
+    "reported_license_expression": "MIT"
+  },
+  "schema_version": "3"
+}

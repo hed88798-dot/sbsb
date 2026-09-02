@@ -1,0 +1,37 @@
+{
+  "artifact": {
+    "artifact_type": "PYTHON_WHEEL",
+    "filename": "pefile-2024.8.26-py3-none-any.whl",
+    "package": "pefile",
+    "purl": "pkg:pypi/pefile@2024.8.26",
+    "sha256": "76f8b485dcd3b1bb8166f1128d395fa3d87af26360c2358fb75b80019b957c6f",
+    "version": "2024.8.26"
+  },
+  "evidence_snapshot_sha256": "7ad13b94bc781e1e41445c46245176f56be56b75ae7711689a1085f8f1b96319",
+  "evidence_status": "MANUAL_REVIEW",
+  "extractor": {
+    "name": "inspect-wheel.py",
+    "version": "2"
+  },
+  "machine_suggestion": {
+    "generator": "inspect-wheel.py/exact-license-evidence/v1",
+    "status": "UNAPPROVED_MACHINE_SUGGESTION",
+    "suggested_spdx_expression": "MIT"
+  },
+  "raw_license_evidence": {
+    "bundled_license_evidence_identity_sha256": null,
+    "classifiers": [],
+    "legacy_license_value": "MIT",
+    "license_files": [
+      {
+        "kind": "LICENSE",
+        "relative_path": "pefile-2024.8.26.dist-info/LICENSE",
+        "sha256": "b44409c067c6da52bfb54bb6624fb11a7b52157c3a13ae1400232f8196e86ad3",
+        "size": 1083
+      }
+    ],
+    "metadata_sha256": "8ad83a5f8659e8da6eeaabf2dafa0eebb8c05832a3def16a5db4dd0d52e72474",
+    "reported_license_expression": null
+  },
+  "schema_version": "3"
+}

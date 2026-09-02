@@ -1,0 +1,37 @@
+{
+  "artifact": {
+    "artifact_type": "PYTHON_WHEEL",
+    "filename": "protobuf-7.36.0-cp310-abi3-manylinux2014_x86_64.whl",
+    "package": "protobuf",
+    "purl": "pkg:pypi/protobuf@7.36.0",
+    "sha256": "70f5ec8eb0da81a44360c0dc0beac99a0d78071d21956a7076bae8bd2051841b",
+    "version": "7.36.0"
+  },
+  "evidence_snapshot_sha256": "d871d17589f75bc9ffc320821a6b58e3f2a0647d278d9c5517d978927a7c03a8",
+  "evidence_status": "MANUAL_REVIEW",
+  "extractor": {
+    "name": "inspect-wheel.py",
+    "version": "2"
+  },
+  "machine_suggestion": {
+    "generator": "inspect-wheel.py/exact-license-evidence/v1",
+    "status": "UNAPPROVED_MACHINE_SUGGESTION",
+    "suggested_spdx_expression": "BSD-3-Clause"
+  },
+  "raw_license_evidence": {
+    "bundled_license_evidence_identity_sha256": null,
+    "classifiers": [],
+    "legacy_license_value": "3-Clause BSD License",
+    "license_files": [
+      {
+        "kind": "LICENSE",
+        "relative_path": "protobuf-7.36.0.dist-info/LICENSE",
+        "sha256": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
+        "size": 1732
+      }
+    ],
+    "metadata_sha256": "a318aecdc5dbf73e6fa1377b1c3b7b8e3e439e17ebeb4cb37357c2eb6a2ef182",
+    "reported_license_expression": null
+  },
+  "schema_version": "3"
+}

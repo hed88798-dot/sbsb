@@ -1,0 +1,57 @@
+{
+  "artifact": {
+    "artifact_type": "PYTHON_WHEEL",
+    "filename": "opencv_python_headless-4.14.0.94-cp37-abi3-win_amd64.whl",
+    "package": "opencv-python-headless",
+    "purl": "pkg:pypi/opencv-python-headless@4.14.0.94",
+    "sha256": "cbed65415b8f6a9541c705afe3e64795840524d0ff3bc58f507826284a1dc64b",
+    "version": "4.14.0.94"
+  },
+  "evidence_snapshot_sha256": "7e7ddb0b30c841867cea5f5ab035d13382bf510f5209e99b82b84a21433a4e07",
+  "evidence_status": "MANUAL_REVIEW",
+  "extractor": {
+    "name": "inspect-wheel.py",
+    "version": "2"
+  },
+  "machine_suggestion": {
+    "generator": "inspect-wheel.py/exact-license-evidence/v1",
+    "status": "UNAPPROVED_MACHINE_SUGGESTION",
+    "suggested_spdx_expression": "Apache-2.0"
+  },
+  "raw_license_evidence": {
+    "bundled_license_evidence_identity_sha256": null,
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ],
+    "legacy_license_value": "Apache 2.0",
+    "license_files": [
+      {
+        "kind": "LICENSE",
+        "relative_path": "cv2/LICENSE-3RD-PARTY.txt",
+        "sha256": "e24e3768561906cc7ccba808f2e8bb4b4bcb2988fece11656b7b56cf14da6bc5",
+        "size": 182909
+      },
+      {
+        "kind": "LICENSE",
+        "relative_path": "cv2/LICENSE.txt",
+        "sha256": "edef0fac1eb08d29d34563f724742e078da2513e196133a12c6ad9ff01e26107",
+        "size": 1090
+      },
+      {
+        "kind": "LICENSE",
+        "relative_path": "opencv_python_headless-4.14.0.94.dist-info/LICENSE-3RD-PARTY.txt",
+        "sha256": "e24e3768561906cc7ccba808f2e8bb4b4bcb2988fece11656b7b56cf14da6bc5",
+        "size": 182909
+      },
+      {
+        "kind": "LICENSE",
+        "relative_path": "opencv_python_headless-4.14.0.94.dist-info/LICENSE.txt",
+        "sha256": "edef0fac1eb08d29d34563f724742e078da2513e196133a12c6ad9ff01e26107",
+        "size": 1090
+      }
+    ],
+    "metadata_sha256": "dfae8c30ae21718f3565c6f5a5b7044fdae4339a849b1b6307ce6d58b3d21e4e",
+    "reported_license_expression": null
+  },
+  "schema_version": "3"
+}

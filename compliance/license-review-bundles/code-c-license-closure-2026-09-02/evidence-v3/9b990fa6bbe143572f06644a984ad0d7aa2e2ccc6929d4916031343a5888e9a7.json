@@ -1,0 +1,39 @@
+{
+  "artifact": {
+    "artifact_type": "PYTHON_WHEEL",
+    "filename": "pyinstaller-6.22.2-py3-none-win_amd64.whl",
+    "package": "pyinstaller",
+    "purl": "pkg:pypi/pyinstaller@6.22.2",
+    "sha256": "9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7",
+    "version": "6.22.2"
+  },
+  "evidence_snapshot_sha256": "c754d3538d645d66a750b35d69190a6488b234899bf7a10cbbcf72fd5ec12eb8",
+  "evidence_status": "MANUAL_REVIEW",
+  "extractor": {
+    "name": "inspect-wheel.py",
+    "version": "2"
+  },
+  "machine_suggestion": {
+    "generator": "inspect-wheel.py/exact-license-evidence/v1",
+    "status": "UNAPPROVED_MACHINE_SUGGESTION",
+    "suggested_spdx_expression": "GPL-2.0-or-later WITH Bootloader-exception"
+  },
+  "raw_license_evidence": {
+    "bundled_license_evidence_identity_sha256": null,
+    "classifiers": [
+      "License :: OSI Approved :: GNU General Public License v2 (GPLv2)"
+    ],
+    "legacy_license_value": "GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones)",
+    "license_files": [
+      {
+        "kind": "COPYING",
+        "relative_path": "pyinstaller-6.22.2.dist-info/licenses/COPYING.txt",
+        "sha256": "dcf75fdb959db1e3b41c0f8505069d2ece781b5ec6b3d0a4d30975cfc6580245",
+        "size": 32138
+      }
+    ],
+    "metadata_sha256": "e5c6c30c203497ef05953191e727172817e9337a446d236540928d533781b121",
+    "reported_license_expression": null
+  },
+  "schema_version": "3"
+}

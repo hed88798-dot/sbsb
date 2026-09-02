@@ -1,0 +1,235 @@
+{
+  "auto_approved_by_evidence": 8,
+  "auto_policy_pass_usage_count": 16,
+  "baseline_semantics": "MINIMUM_CAPABILITY_FLOOR",
+  "code_c_head_sha": "6381a07c6f7ffaf7592699792933a6fe513190b7",
+  "f_license_review": "PENDING",
+  "hard_blocked": 0,
+  "hard_blocked_unique_artifact_count": 0,
+  "hard_blocked_usage_count": 0,
+  "historical_license_review_reuse_usage_count": 0,
+  "license_disposition_partition": "PASS",
+  "license_evidence_generator": {
+    "id": "inspect-wheel.py/exact-license-evidence/v1",
+    "sha256": "cbbb83e290ce2e9f0b130617d381cbe0928fc24548c365bcb28e2c445b9a0318"
+  },
+  "license_review_bundle_id": "code-c-artifact-license-review-13912bd384a1be6ef0a3efdc",
+  "license_review_bundle_sha256": "6a79d6b27587f84cabff8726cfbe1a87bc3bf7497e4306fda231ab5544b8fe3e",
+  "license_review_bundle_status": "READY_FOR_CODE_F_REVIEW",
+  "license_review_graph_reconciliation": "NOT_STARTED",
+  "license_subject_closure_sha256": "e21b50df657121ae49911a6cef0b917b6610db530cc5856edc3bc76ed3b17127",
+  "license_target_subject_sets": [
+    {
+      "approval_subject_set_sha256": "e4c2c10e34c1014867e7d89ecf13ab9454c58b9f626bd9f52cd8d1bf56a153af",
+      "inventories": [
+        {
+          "approval_id": "approval-code-c-linux-runtime-py31315",
+          "approval_sha256": "af829ef0232f25c3e4130ae8384fe819a1d64e2458278a1da51460f7a5029d67",
+          "slot": "linux/runtime",
+          "subject_id": "code-c-linux-runtime-py31315",
+          "subject_role": "RUNTIME",
+          "subject_schema_id": "https://local.app/schemas/compliance/python-artifact-inventory/v3/inventory.schema.json",
+          "subject_schema_sha256": "7a4999d4e31c83f3691ad69be6dc49822c4d0eebd77330964401ae349ae64e0e",
+          "subject_schema_version": "3",
+          "subject_sha256": "b6397a493afb9c555dde18a5c44947aee88692cf837f84f226bb9cdab451e9f2",
+          "subject_type": "PYTHON_ARTIFACT_INVENTORY",
+          "target_descriptor_id": "code-c-linux-cpython-31315-x86-64-2b71b8be5739",
+          "target_descriptor_sha256": "2b71b8be5739e2ef139ac4e6d3e15a6bdd7dd1805484ce227dbfcf094a36da67"
+        },
+        {
+          "approval_id": "approval-code-c-linux-worker-build-py31315",
+          "approval_sha256": "2a768d3ecd93a5321558d1bcfcc9b6ab709adad308c9b247b021e0be19dffa79",
+          "slot": "linux/worker-build",
+          "subject_id": "code-c-linux-worker-build-py31315",
+          "subject_role": "WORKER_BUILD",
+          "subject_schema_id": "https://local.app/schemas/compliance/python-artifact-inventory/v3/inventory.schema.json",
+          "subject_schema_sha256": "7a4999d4e31c83f3691ad69be6dc49822c4d0eebd77330964401ae349ae64e0e",
+          "subject_schema_version": "3",
+          "subject_sha256": "de1538e8753bbee056f238f6483d3f9d080eb018ec74b5f5926a58a078fcf56c",
+          "subject_type": "PYTHON_ARTIFACT_INVENTORY",
+          "target_descriptor_id": "code-c-linux-cpython-31315-x86-64-2b71b8be5739",
+          "target_descriptor_sha256": "2b71b8be5739e2ef139ac4e6d3e15a6bdd7dd1805484ce227dbfcf094a36da67"
+        },
+        {
+          "approval_id": "approval-code-c-windows-runtime-py31315",
+          "approval_sha256": "d79169914111f50d439d1aa326bdea2c6af6964fe6519e693c076f72a99f76e8",
+          "slot": "windows/runtime",
+          "subject_id": "code-c-windows-runtime-py31315",
+          "subject_role": "RUNTIME",
+          "subject_schema_id": "https://local.app/schemas/compliance/python-artifact-inventory/v3/inventory.schema.json",
+          "subject_schema_sha256": "7a4999d4e31c83f3691ad69be6dc49822c4d0eebd77330964401ae349ae64e0e",
+          "subject_schema_version": "3",
+          "subject_sha256": "5d7cd9e0e93af5606f33af97d54588f1fdfb9949089c658e62ad5b185f0cce8a",
+          "subject_type": "PYTHON_ARTIFACT_INVENTORY",
+          "target_descriptor_id": "code-c-windows-cpython-31315-x86-64-713f76e0a170",
+          "target_descriptor_sha256": "713f76e0a170611b00700e3a9705a6046b0f0f5869836420b51e342e8233d418"
+        },
+        {
+          "approval_id": "approval-code-c-windows-worker-build-py31315",
+          "approval_sha256": "2ad1ba91864c094756f229c70400f316a120cc246de3855734e2226c07096563",
+          "slot": "windows/worker-build",
+          "subject_id": "code-c-windows-worker-build-py31315",
+          "subject_role": "WORKER_BUILD",
+          "subject_schema_id": "https://local.app/schemas/compliance/python-artifact-inventory/v3/inventory.schema.json",
+          "subject_schema_sha256": "7a4999d4e31c83f3691ad69be6dc49822c4d0eebd77330964401ae349ae64e0e",
+          "subject_schema_version": "3",
+          "subject_sha256": "c7ed5092c627fdbad3d28c7cd85246a03c1cacbbb65664c377fce94d23de7cc7",
+          "subject_type": "PYTHON_ARTIFACT_INVENTORY",
+          "target_descriptor_id": "code-c-windows-cpython-31315-x86-64-713f76e0a170",
+          "target_descriptor_sha256": "713f76e0a170611b00700e3a9705a6046b0f0f5869836420b51e342e8233d418"
+        }
+      ],
+      "license_evaluator": {
+        "head_sha": "024a84c1e6346bdf9539aab7211c82e427425f7f",
+        "identity": "CODE_C_CURRENT_CHECKOUT_HEAD"
+      },
+      "subject_set_sha256": "05df0aa51cde8529883e6f0d0b34f44e3b385ecab4c6b0589038f99810c4a92d",
+      "target": "linux",
+      "toolchains": [
+        {
+          "approval_id": "approval-code-c-linux-toolchain-intake-evidence",
+          "approval_sha256": "cd7a10b79446af8b082767ac4c1d968022424e8b0712b330a921cf376a907c66",
+          "subject_id": "code-c-linux-toolchain-intake-evidence",
+          "subject_role": "TOOLCHAIN",
+          "subject_schema_id": "https://local.app/schemas/compliance/python-toolchain-inventory/v1/inventory.schema.json",
+          "subject_schema_sha256": "b5e1035ccde3adcdffc1dbf1d73418c1585d0e292669020622b9b42acb3e9bd2",
+          "subject_schema_version": "1",
+          "subject_sha256": "4e6a5e8a7b5ef245124ff188f8c2a74cba61a4ce37cfc8e4b2a6079f6fd4f95f",
+          "subject_type": "TOOLCHAIN_EVIDENCE",
+          "target": "linux",
+          "target_descriptor_id": "code-c-linux-cpython-31315-x86-64-2b71b8be5739",
+          "target_descriptor_sha256": "2b71b8be5739e2ef139ac4e6d3e15a6bdd7dd1805484ce227dbfcf094a36da67"
+        },
+        {
+          "approval_id": "approval-code-c-windows-toolchain-intake-evidence",
+          "approval_sha256": "1941af69b1a92c051a8589df432ea2b11ba23552cc64055102cc6131b8c68e7c",
+          "subject_id": "code-c-windows-toolchain-intake-evidence",
+          "subject_role": "TOOLCHAIN",
+          "subject_schema_id": "https://local.app/schemas/compliance/python-toolchain-inventory/v1/inventory.schema.json",
+          "subject_schema_sha256": "b5e1035ccde3adcdffc1dbf1d73418c1585d0e292669020622b9b42acb3e9bd2",
+          "subject_schema_version": "1",
+          "subject_sha256": "f19a6ef7a06bcfe2f804afb0f61c2f04fa4bc8638d5af61e8262f8e7c4fa5f88",
+          "subject_type": "TOOLCHAIN_EVIDENCE",
+          "target": "windows",
+          "target_descriptor_id": "code-c-windows-cpython-31315-x86-64-713f76e0a170",
+          "target_descriptor_sha256": "713f76e0a170611b00700e3a9705a6046b0f0f5869836420b51e342e8233d418"
+        }
+      ],
+      "worker_build_context_sha256": "ee3a8a5a4ae56368f08f16e7eb36cabdebfeb6c4f394daa552fd9ad6c8371130"
+    },
+    {
+      "approval_subject_set_sha256": "e4c2c10e34c1014867e7d89ecf13ab9454c58b9f626bd9f52cd8d1bf56a153af",
+      "inventories": [
+        {
+          "approval_id": "approval-code-c-linux-runtime-py31315",
+          "approval_sha256": "af829ef0232f25c3e4130ae8384fe819a1d64e2458278a1da51460f7a5029d67",
+          "slot": "linux/runtime",
+          "subject_id": "code-c-linux-runtime-py31315",
+          "subject_role": "RUNTIME",
+          "subject_schema_id": "https://local.app/schemas/compliance/python-artifact-inventory/v3/inventory.schema.json",
+          "subject_schema_sha256": "7a4999d4e31c83f3691ad69be6dc49822c4d0eebd77330964401ae349ae64e0e",
+          "subject_schema_version": "3",
+          "subject_sha256": "b6397a493afb9c555dde18a5c44947aee88692cf837f84f226bb9cdab451e9f2",
+          "subject_type": "PYTHON_ARTIFACT_INVENTORY",
+          "target_descriptor_id": "code-c-linux-cpython-31315-x86-64-2b71b8be5739",
+          "target_descriptor_sha256": "2b71b8be5739e2ef139ac4e6d3e15a6bdd7dd1805484ce227dbfcf094a36da67"
+        },
+        {
+          "approval_id": "approval-code-c-linux-worker-build-py31315",
+          "approval_sha256": "2a768d3ecd93a5321558d1bcfcc9b6ab709adad308c9b247b021e0be19dffa79",
+          "slot": "linux/worker-build",
+          "subject_id": "code-c-linux-worker-build-py31315",
+          "subject_role": "WORKER_BUILD",
+          "subject_schema_id": "https://local.app/schemas/compliance/python-artifact-inventory/v3/inventory.schema.json",
+          "subject_schema_sha256": "7a4999d4e31c83f3691ad69be6dc49822c4d0eebd77330964401ae349ae64e0e",
+          "subject_schema_version": "3",
+          "subject_sha256": "de1538e8753bbee056f238f6483d3f9d080eb018ec74b5f5926a58a078fcf56c",
+          "subject_type": "PYTHON_ARTIFACT_INVENTORY",
+          "target_descriptor_id": "code-c-linux-cpython-31315-x86-64-2b71b8be5739",
+          "target_descriptor_sha256": "2b71b8be5739e2ef139ac4e6d3e15a6bdd7dd1805484ce227dbfcf094a36da67"
+        },
+        {
+          "approval_id": "approval-code-c-windows-runtime-py31315",
+          "approval_sha256": "d79169914111f50d439d1aa326bdea2c6af6964fe6519e693c076f72a99f76e8",
+          "slot": "windows/runtime",
+          "subject_id": "code-c-windows-runtime-py31315",
+          "subject_role": "RUNTIME",
+          "subject_schema_id": "https://local.app/schemas/compliance/python-artifact-inventory/v3/inventory.schema.json",
+          "subject_schema_sha256": "7a4999d4e31c83f3691ad69be6dc49822c4d0eebd77330964401ae349ae64e0e",
+          "subject_schema_version": "3",
+          "subject_sha256": "5d7cd9e0e93af5606f33af97d54588f1fdfb9949089c658e62ad5b185f0cce8a",
+          "subject_type": "PYTHON_ARTIFACT_INVENTORY",
+          "target_descriptor_id": "code-c-windows-cpython-31315-x86-64-713f76e0a170",
+          "target_descriptor_sha256": "713f76e0a170611b00700e3a9705a6046b0f0f5869836420b51e342e8233d418"
+        },
+        {
+          "approval_id": "approval-code-c-windows-worker-build-py31315",
+          "approval_sha256": "2ad1ba91864c094756f229c70400f316a120cc246de3855734e2226c07096563",
+          "slot": "windows/worker-build",
+          "subject_id": "code-c-windows-worker-build-py31315",
+          "subject_role": "WORKER_BUILD",
+          "subject_schema_id": "https://local.app/schemas/compliance/python-artifact-inventory/v3/inventory.schema.json",
+          "subject_schema_sha256": "7a4999d4e31c83f3691ad69be6dc49822c4d0eebd77330964401ae349ae64e0e",
+          "subject_schema_version": "3",
+          "subject_sha256": "c7ed5092c627fdbad3d28c7cd85246a03c1cacbbb65664c377fce94d23de7cc7",
+          "subject_type": "PYTHON_ARTIFACT_INVENTORY",
+          "target_descriptor_id": "code-c-windows-cpython-31315-x86-64-713f76e0a170",
+          "target_descriptor_sha256": "713f76e0a170611b00700e3a9705a6046b0f0f5869836420b51e342e8233d418"
+        }
+      ],
+      "license_evaluator": {
+        "head_sha": "024a84c1e6346bdf9539aab7211c82e427425f7f",
+        "identity": "CODE_C_CURRENT_CHECKOUT_HEAD"
+      },
+      "subject_set_sha256": "febc271e10ffa5450f11ddb1f2bfc7208f396aeacdee14903b9e55f7125ef6ed",
+      "target": "windows",
+      "toolchains": [
+        {
+          "approval_id": "approval-code-c-linux-toolchain-intake-evidence",
+          "approval_sha256": "cd7a10b79446af8b082767ac4c1d968022424e8b0712b330a921cf376a907c66",
+          "subject_id": "code-c-linux-toolchain-intake-evidence",
+          "subject_role": "TOOLCHAIN",
+          "subject_schema_id": "https://local.app/schemas/compliance/python-toolchain-inventory/v1/inventory.schema.json",
+          "subject_schema_sha256": "b5e1035ccde3adcdffc1dbf1d73418c1585d0e292669020622b9b42acb3e9bd2",
+          "subject_schema_version": "1",
+          "subject_sha256": "4e6a5e8a7b5ef245124ff188f8c2a74cba61a4ce37cfc8e4b2a6079f6fd4f95f",
+          "subject_type": "TOOLCHAIN_EVIDENCE",
+          "target": "linux",
+          "target_descriptor_id": "code-c-linux-cpython-31315-x86-64-2b71b8be5739",
+          "target_descriptor_sha256": "2b71b8be5739e2ef139ac4e6d3e15a6bdd7dd1805484ce227dbfcf094a36da67"
+        },
+        {
+          "approval_id": "approval-code-c-windows-toolchain-intake-evidence",
+          "approval_sha256": "1941af69b1a92c051a8589df432ea2b11ba23552cc64055102cc6131b8c68e7c",
+          "subject_id": "code-c-windows-toolchain-intake-evidence",
+          "subject_role": "TOOLCHAIN",
+          "subject_schema_id": "https://local.app/schemas/compliance/python-toolchain-inventory/v1/inventory.schema.json",
+          "subject_schema_sha256": "b5e1035ccde3adcdffc1dbf1d73418c1585d0e292669020622b9b42acb3e9bd2",
+          "subject_schema_version": "1",
+          "subject_sha256": "f19a6ef7a06bcfe2f804afb0f61c2f04fa4bc8638d5af61e8262f8e7c4fa5f88",
+          "subject_type": "TOOLCHAIN_EVIDENCE",
+          "target": "windows",
+          "target_descriptor_id": "code-c-windows-cpython-31315-x86-64-713f76e0a170",
+          "target_descriptor_sha256": "713f76e0a170611b00700e3a9705a6046b0f0f5869836420b51e342e8233d418"
+        }
+      ],
+      "worker_build_context_sha256": "3b6bbc9dd64c60d68e57e72fa6f23d1effe23fe8ea0455ccc461b70ff8283fca"
+    }
+  ],
+  "license_usage_evaluation_count": 37,
+  "linux_artifact_set_sha256": "13accbc8f861b3d34880d7a4e31f274b926ebfd0ea612667d9a7853ea9197866",
+  "linux_graph_id": "code-c-license-graph-linux-73f43725f5d4034eb3d1b37e",
+  "main_quality_baseline_sha": "3609d6349bc0f4e78a5270db0e6ae2da583bb26e",
+  "minimum_required_license_contract_baseline": "d1348c50e36b725bfcbf9bec17343392cf0412c7",
+  "new_required_review_unique_artifact_count": 18,
+  "new_required_review_usage_count": 21,
+  "python_license_gate": "BLOCKED_PENDING_CODE_F_LICENSE_REVIEW",
+  "required_review": 18,
+  "schema_version": "1",
+  "stage_b": "BLOCKED_NOT_RERUN",
+  "status": "PASS",
+  "total_unique_wheel_artifacts": 26,
+  "unique_license_artifact_count": 26,
+  "windows_artifact_set_sha256": "bbff91eee6cfb5f3ea685933728574e41d598a1723674862e623545f2ed9b70a",
+  "windows_graph_id": "code-c-license-graph-windows-105578d1992771fb8f22087f"
+}

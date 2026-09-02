@@ -1,0 +1,45 @@
+{
+  "artifact": {
+    "artifact_type": "PYTHON_WHEEL",
+    "filename": "packaging-26.3-py3-none-any.whl",
+    "package": "packaging",
+    "purl": "pkg:pypi/packaging@26.3",
+    "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+    "version": "26.3"
+  },
+  "evidence_snapshot_sha256": "b8f880df15f1a92f467b05d12bbfc47da42d4a4dbd4abb1e6bdd26910eb6a02e",
+  "evidence_status": "PASS",
+  "extractor": {
+    "name": "inspect-wheel.py",
+    "version": "2"
+  },
+  "machine_suggestion": null,
+  "raw_license_evidence": {
+    "bundled_license_evidence_identity_sha256": null,
+    "classifiers": [],
+    "legacy_license_value": null,
+    "license_files": [
+      {
+        "kind": "LICENSE",
+        "relative_path": "packaging-26.3.dist-info/licenses/LICENSE",
+        "sha256": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48",
+        "size": 197
+      },
+      {
+        "kind": "LICENSE",
+        "relative_path": "packaging-26.3.dist-info/licenses/LICENSE.APACHE",
+        "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+        "size": 10174
+      },
+      {
+        "kind": "LICENSE",
+        "relative_path": "packaging-26.3.dist-info/licenses/LICENSE.BSD",
+        "sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5",
+        "size": 1344
+      }
+    ],
+    "metadata_sha256": "70fdb89fc4d4a9a043bf7372b8972bcc883fddff34ab55e9cf80d73875384763",
+    "reported_license_expression": "Apache-2.0 OR BSD-2-Clause"
+  },
+  "schema_version": "3"
+}

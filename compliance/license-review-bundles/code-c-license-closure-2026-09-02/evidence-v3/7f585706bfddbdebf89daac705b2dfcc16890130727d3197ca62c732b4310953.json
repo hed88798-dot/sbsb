@@ -1,0 +1,37 @@
+{
+  "artifact": {
+    "artifact_type": "PYTHON_WHEEL",
+    "filename": "tqdm-4.70.0-py3-none-any.whl",
+    "package": "tqdm",
+    "purl": "pkg:pypi/tqdm@4.70.0",
+    "sha256": "7f585706bfddbdebf89daac705b2dfcc16890130727d3197ca62c732b4310953",
+    "version": "4.70.0"
+  },
+  "evidence_snapshot_sha256": "b216e1fb7232603102a3c884bf92fa2464c12ce4edf75013670a163824ee421f",
+  "evidence_status": "MANUAL_REVIEW",
+  "extractor": {
+    "name": "inspect-wheel.py",
+    "version": "2"
+  },
+  "machine_suggestion": {
+    "generator": "inspect-wheel.py/exact-license-evidence/v1",
+    "status": "UNAPPROVED_MACHINE_SUGGESTION",
+    "suggested_spdx_expression": "MPL-2.0 AND MIT"
+  },
+  "raw_license_evidence": {
+    "bundled_license_evidence_identity_sha256": null,
+    "classifiers": [],
+    "legacy_license_value": "MPL-2.0 AND MIT",
+    "license_files": [
+      {
+        "kind": "LICENSE",
+        "relative_path": "tqdm-4.70.0.dist-info/licenses/LICENCE",
+        "sha256": "fcff87c3a47ce8028a8512aa182d4fcf0ad1c90544ee75cf9b343684cac194de",
+        "size": 1985
+      }
+    ],
+    "metadata_sha256": "0d95b85b90428f8776afc4a92b17c5094f78ee98d150b3255acbcdf4e9d57941",
+    "reported_license_expression": null
+  },
+  "schema_version": "3"
+}
