@@ -113,6 +113,17 @@ function verifyCoverage(bundleDirectory, artifact) {
   };
 }
 
+function reviewEvidenceSnapshotHash(evidence, coverage) {
+  if (!coverage) return evidence.evidence_snapshot_sha256;
+  return licenseIdentityHash({
+    coverage_record_id: coverage.coverage_record_id,
+    coverage_record_sha256: [coverage.coverage_record_sha256],
+    upstream_binding_id: coverage.upstream_binding_id,
+    upstream_binding_record_sha256: coverage.upstream_binding_record_sha256,
+    member_manifest_sha256: coverage.member_manifest_sha256,
+  });
+}
+
 function main() {
   const bundleDirectory = resolve(argument('--bundle-dir', defaultBundleDirectory));
   const reviewDirectory = resolve(argument('--review-dir', defaultReviewDirectory));
@@ -135,7 +146,7 @@ function main() {
   assertEqual(bundle.license_review_bundle_status, 'READY_FOR_CODE_F_REVIEW', 'bundle status');
   assertEqual(
     bundle.graph_binding.code_c_head_sha,
-    '6381a07c6f7ffaf7592699792933a6fe513190b7',
+    '81582dc91f5e72be6fa8ac41065f31794516d099',
     'Code C HEAD',
   );
   assertEqual(
@@ -169,11 +180,6 @@ function main() {
       artifact.sha256,
       `${artifact.sha256}: evidence artifact SHA`,
     );
-    assertEqual(
-      evidence.evidence_snapshot_sha256,
-      artifact.evidence_snapshot_sha256,
-      `${artifact.sha256}: evidence snapshot`,
-    );
     evidenceBySha.set(artifact.sha256, evidence);
   }
   assertEqual(
@@ -186,6 +192,14 @@ function main() {
   for (const artifact of bundle.required_review_artifacts) {
     const coverage = verifyCoverage(bundleDirectory, artifact);
     if (coverage) coverageBySha.set(artifact.sha256, coverage);
+  }
+  for (const artifact of [...bundle.auto_approved_artifacts, ...bundle.required_review_artifacts]) {
+    const evidence = evidenceBySha.get(artifact.sha256);
+    assertEqual(
+      artifact.evidence_snapshot_sha256,
+      reviewEvidenceSnapshotHash(evidence, coverageBySha.get(artifact.sha256)),
+      `${artifact.sha256}: review evidence snapshot`,
+    );
   }
 
   const recordDirectory = resolve(reviewDirectory, 'records');
@@ -230,10 +244,12 @@ function main() {
 
   const assessmentValidator = makeAssessmentValidator();
   const assessmentDocument = loadJson(resolve(reviewDirectory, 'assessments.json'));
-  if (!assessmentValidator(assessmentDocument))
-    throw new Error(`assessment document schema invalid: ${schemaError(assessmentValidator)}`);
+  if (assessmentDocument.schema_version !== '1' || !Array.isArray(assessmentDocument.assessments))
+    throw new Error('assessment document must contain schema_version 1 and an assessments array');
   const assessmentByReview = new Map();
   for (const assessment of assessmentDocument.assessments) {
+    if (!assessmentValidator(assessment))
+      throw new Error(`assessment schema invalid: ${schemaError(assessmentValidator)}`);
     assertEqual(
       licenseIdentityHash(withoutKey(assessment, 'assessment_sha256')),
       assessment.assessment_sha256,

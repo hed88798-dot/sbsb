@@ -137,6 +137,17 @@ function coverageFor(bundleDirectory, artifact) {
   };
 }
 
+function reviewEvidenceSnapshotHash(evidence, coverage) {
+  if (!coverage) return evidence.evidence_snapshot_sha256;
+  return licenseIdentityHash({
+    coverage_record_id: coverage.coverage_record_id,
+    coverage_record_sha256: [coverage.coverage_record_sha256],
+    upstream_binding_id: coverage.upstream_binding_id,
+    upstream_binding_record_sha256: coverage.upstream_binding_record_sha256,
+    member_manifest_sha256: coverage.member_manifest_sha256,
+  });
+}
+
 function reviewReason(artifact, evidence, coverage) {
   const trigger = originalTrigger(artifact);
   const category = reviewCategory(artifact);
@@ -176,7 +187,7 @@ function makeReview({
       filename: artifact.filename,
       sha256: artifact.sha256,
     },
-    evidence_snapshot_sha256: evidence.evidence_snapshot_sha256,
+    evidence_snapshot_sha256: reviewEvidenceSnapshotHash(evidence, coverage),
     reviewed_spdx_expression: reviewedExpression(artifact),
     review_reason: reviewReason(artifact, evidence, coverage),
     evidence_references: [...artifact.evidence_references],
@@ -207,7 +218,7 @@ function makeReview({
   return record;
 }
 
-function makeAssessment({ artifact, evidence, coverage, review }) {
+function makeAssessment({ artifact, coverage, review }) {
   const assessment = {
     schema_version: '1',
     assessment_id: assessmentId(artifact),
@@ -218,7 +229,7 @@ function makeAssessment({ artifact, evidence, coverage, review }) {
       filename: artifact.filename,
       sha256: artifact.sha256,
     },
-    evidence_snapshot_sha256: evidence.evidence_snapshot_sha256,
+    evidence_snapshot_sha256: review.evidence_snapshot_sha256,
     review_record_sha256: review.review_record_sha256,
     original_review_trigger: originalTrigger(artifact),
     review_category: reviewCategory(artifact),
@@ -242,7 +253,6 @@ function makeSnapshot({
   bundleSha,
   reviews,
   assessments,
-  evidence,
   coverageBySha,
   policy,
   sourceSnapshotSha,
@@ -258,7 +268,7 @@ function makeSnapshot({
       version: artifact.version,
       filename: artifact.filename,
       sha256: artifact.sha256,
-      evidence_snapshot_sha256: evidence.get(artifact.sha256).evidence_snapshot_sha256,
+      evidence_snapshot_sha256: artifact.evidence_snapshot_sha256,
     }));
   const usageUniverse = bundle.license_disposition_partition.usage_evaluations;
   const reviewedArtifactBindings = reviews
@@ -344,7 +354,7 @@ async function main() {
     throw new Error('review bundle sidecar does not match archived bundle bytes');
   if (bundle.license_review_bundle_status !== 'READY_FOR_CODE_F_REVIEW')
     throw new Error('bundle is not READY_FOR_CODE_F_REVIEW');
-  if (bundle.graph_binding.code_c_head_sha !== '6381a07c6f7ffaf7592699792933a6fe513190b7')
+  if (bundle.graph_binding.code_c_head_sha !== '81582dc91f5e72be6fa8ac41065f31794516d099')
     throw new Error('unexpected Code C HEAD');
   if (bundle.graph_binding.main_quality_baseline_sha !== '3609d6349bc0f4e78a5270db0e6ae2da583bb26e')
     throw new Error('unexpected main baseline');
@@ -386,7 +396,6 @@ async function main() {
   const assessments = bundle.required_review_artifacts.map((artifact, index) =>
     makeAssessment({
       artifact,
-      evidence: evidence.get(artifact.sha256),
       coverage: coverageBySha.get(artifact.sha256) ?? null,
       review: reviews[index],
     }),
@@ -400,7 +409,6 @@ async function main() {
     bundleSha,
     reviews,
     assessments,
-    evidence,
     coverageBySha,
     policy,
     sourceSnapshotSha,
