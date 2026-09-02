@@ -1,0 +1,91 @@
+{
+  "build_context_id": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5",
+  "clean_isolated_buildpath": "PASS",
+  "created_at": "2026-09-01T12:37:26.061728Z",
+  "created_before_build": true,
+  "evidence_capture_alters_build_inputs": "NO",
+  "inputs": {
+    "approval_binding": {
+      "active_inventory_approval_count": 4,
+      "active_toolchain_approval_count": 2,
+      "approval_contract_sha256": "9c21394ab131599f1b8e9c4e2cfa01a40c79afa43a54d107eacef36ad2db5a56",
+      "path": "artifacts/python-supply-chain/evidence/build-approval-binding.json",
+      "review_snapshot_sha256": "198a199992e5e5895569f063102886196ba094c8143bdfc824ef94ea4967ae78",
+      "sha256": "8039401b48233a8ce3fffd4c48ea94df6607c58fe5d123c7b4f54ad812c5480e"
+    },
+    "build_environment_manifest": {
+      "build_environment_manifest_id": "code-c-build-environment-19ea31a293738622f48352cca8eb70ff",
+      "path": "artifacts/python-supply-chain/pyinstaller-build/windows/build-environment-manifest.json",
+      "sha256": "dddc2e89740dfc3f61bb3f72ececd3106249b2d445ada3702da2e6eabd4e77ff"
+    },
+    "build_input_closure": {
+      "path": "artifacts/python-supply-chain/evidence/windows-build-input-closure.json",
+      "sha256": "df818b62c94d0784566f0d09cc34a1d754fcc62e4805146ba38bbf254e53b082"
+    },
+    "build_settings": {
+      "clean": true,
+      "distpath": "artifacts/python-supply-chain/pyinstaller-build/windows/dist",
+      "noconfirm": true,
+      "onefile": true,
+      "strip": false,
+      "upx": false,
+      "workpath": "artifacts/python-supply-chain/pyinstaller-build/windows/work"
+    },
+    "code_c_commit": "ab035c73b2d6268958f17c02774dceb7b080a1ce",
+    "cpython_artifact": {
+      "filename": "python-3.13.15-amd64.exe",
+      "sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+    },
+    "cpython_distribution": {
+      "filename": "python-3.13.15-win32-x64.zip",
+      "sha256": "73c2a2935597f8181e9bc60bc3a35cd2be28698d8f64b965055a29b43425a2b7"
+    },
+    "main_quality_baseline": "e00abb61a5f493ec02cfeea0ee6e4d3e5a0f99b0",
+    "pip_artifact": {
+      "filename": "pip-26.2.1-py3-none-any.whl",
+      "sha256": "71138adf1f4ca900cdb7d289c21b7494329f2332b6d85f0e1c42108c0384ed3e"
+    },
+    "pyinstaller_artifact": {
+      "filename": "pyinstaller-6.22.2-py3-none-win_amd64.whl",
+      "sha256": "9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7",
+      "version": "6.22.2"
+    },
+    "pyinstaller_hooks_contrib_artifact": {
+      "filename": "pyinstaller_hooks_contrib-2026.7-py3-none-any.whl",
+      "package_name": "pyinstaller-hooks-contrib",
+      "purl": "pkg:pypi/pyinstaller-hooks-contrib@2026.7",
+      "sha256": "24257a04c7a5a7a034cf28e39dcee20fbeeb9f043076729480f2e1b69904408a",
+      "version": "2026.7"
+    },
+    "runtime_identity": {
+      "path": "artifacts/python-supply-chain/evidence/windows-runtime-identity.json",
+      "sha256": "8b2b24823e4bacb86c4effe1da236c0f3a1393bf4b45c054e9b67f6dfdcf1184"
+    },
+    "sidecar_command_surface_sha256": "ee9e4d270d908c5cdfc468f7ed77a385c7b54249a96872ead660b7604f2a6383",
+    "source_import_graph_sha256": "7b191069ab22437f0ae3cf97572aa6bd423399be3fa308901979cde524dfafb0",
+    "specification": {
+      "path": "sidecars/media-worker/media-worker.spec",
+      "sha256": "1c12ea2d615bb7403e163b0615ca00bd48996adaf0ebb04ff522d9833c0ccb4a"
+    },
+    "target": {
+      "architecture": "x86_64",
+      "implementation": "CPython",
+      "os": "windows",
+      "python_version": "3.13.15"
+    },
+    "wheel_graph_sha256": "6672911c5a87fb866757dad5fc52618f5e799c857f834709fd7ba10a0441c67f",
+    "wheel_inventories": [
+      {
+        "inventory_id": "code-c-windows-runtime-py31315",
+        "path": "artifacts/python-supply-chain/candidates/code-c-windows-runtime.v3.json",
+        "sha256": "5d7cd9e0e93af5606f33af97d54588f1fdfb9949089c658e62ad5b185f0cce8a"
+      },
+      {
+        "inventory_id": "code-c-windows-worker-build-py31315",
+        "path": "artifacts/python-supply-chain/candidates/code-c-windows-worker-build.v3.json",
+        "sha256": "c7ed5092c627fdbad3d28c7cd85246a03c1cacbbb65664c377fce94d23de7cc7"
+      }
+    ]
+  },
+  "schema_version": "1"
+}

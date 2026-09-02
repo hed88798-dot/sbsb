@@ -1,0 +1,807 @@
+{
+  "actual_sources": {
+    "cpython_distribution": {
+      "actual_sha256": "73c2a2935597f8181e9bc60bc3a35cd2be28698d8f64b965055a29b43425a2b7",
+      "canonical_source": "https://github.com/actions/python-versions/releases/tag/3.13.15-31064747964",
+      "download_url": "https://github.com/actions/python-versions/releases/download/3.13.15-31064747964/python-3.13.15-win32-x64.zip",
+      "filename": "python-3.13.15-win32-x64.zip",
+      "installed_license": {
+        "evidence_path": "license-evidence/cpython-3.13.15/windows.LICENSE.txt",
+        "relative_path": "LICENSE.txt",
+        "sha256": "62bec384df47b0328307db41455ff6ea2559e5546b394ac69148561b21703120",
+        "size": 33861
+      },
+      "installer_entry": "setup.ps1",
+      "installer_entry_sha256": "8eebc19fc3795df2c77ae4cc3ea850567e3a43b4d5271a3f1a2c33a39a625e00",
+      "interpreter_payload": "python-3.13.15-amd64.exe",
+      "interpreter_payload_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "sha256": "73c2a2935597f8181e9bc60bc3a35cd2be28698d8f64b965055a29b43425a2b7",
+      "size": 29163819
+    },
+    "media_worker_spec": {
+      "relative_path": "sidecars/media-worker/media-worker.spec",
+      "sha256": "1c12ea2d615bb7403e163b0615ca00bd48996adaf0ebb04ff522d9833c0ccb4a"
+    },
+    "pip": {
+      "actual_sha256": "71138adf1f4ca900cdb7d289c21b7494329f2332b6d85f0e1c42108c0384ed3e",
+      "canonical_source": "https://pypi.org/project/pip/26.2.1/",
+      "download_url": "https://files.pythonhosted.org/packages/f3/6e/1736e5b4ae2b778ef2f81c47d797de9f891d4d8acb047a24ca37a60294dd/pip-26.2.1-py3-none-any.whl",
+      "filename": "pip-26.2.1-py3-none-any.whl",
+      "license_expression": "MIT",
+      "license_files": [
+        {
+          "relative_path": "pip-26.2.1.dist-info/licenses/LICENSE.txt",
+          "sha256": "634300a669d49aeae65b12c6c48c924c51a4cdf3d1ff086dc3456dc8bcaa2104"
+        }
+      ],
+      "license_reference": "https://github.com/pypa/pip/blob/26.2.1/LICENSE.txt",
+      "sha256": "71138adf1f4ca900cdb7d289c21b7494329f2332b6d85f0e1c42108c0384ed3e",
+      "size": 1816632,
+      "version": "26.2.1"
+    },
+    "pyinstaller": {
+      "actual_sha256": "9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7",
+      "canonical_source": "https://pypi.org/project/pyinstaller/6.22.2/",
+      "download_url": "https://files.pythonhosted.org/packages/3f/53/8ba1d0f6159b490f700eac6161a4be5f0d4672608a6dae9fd73679f183ee/pyinstaller-6.22.2-py3-none-win_amd64.whl",
+      "filename": "pyinstaller-6.22.2-py3-none-win_amd64.whl",
+      "sha256": "9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7",
+      "size": 1405725,
+      "version": "6.22.2"
+    },
+    "pyinstaller_bootloader": {
+      "filename": "run.exe",
+      "installed_path": "bootloader/Windows-64bit-intel/run.exe",
+      "sha256": "9f93091d097c7bca65e18e233b68886a017da65c9681efb1fcbfcc254e4fa1fd",
+      "size": 287232,
+      "source_pyinstaller_wheel_sha256": "9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7"
+    },
+    "pyinstaller_hooks_contrib": {
+      "download_url": "https://files.pythonhosted.org/packages/0a/67/350377af7b50416344ab8792756d414eef7629c618a73e9a0b13bb1552d9/pyinstaller_hooks_contrib-2026.7-py3-none-any.whl",
+      "filename": "pyinstaller_hooks_contrib-2026.7-py3-none-any.whl",
+      "installed_direct_url": {
+        "archive_info": {
+          "hash": "sha256=24257a04c7a5a7a034cf28e39dcee20fbeeb9f043076729480f2e1b69904408a",
+          "hashes": {
+            "sha256": "24257a04c7a5a7a034cf28e39dcee20fbeeb9f043076729480f2e1b69904408a"
+          }
+        },
+        "url": "file:///D:/a/sbsb/sbsb/artifacts/python-supply-chain/wheels/approved/pyinstaller_hooks_contrib-2026.7-py3-none-any.whl"
+      },
+      "sha256": "24257a04c7a5a7a034cf28e39dcee20fbeeb9f043076729480f2e1b69904408a",
+      "source_worker_build_inventory_id": "code-c-windows-worker-build-py31315",
+      "version": "2026.7"
+    }
+  },
+  "build_context_id": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5",
+  "cpython_native_mapping": [
+    {
+      "filename": "_asyncio.pyd",
+      "internal_path": "_asyncio.pyd",
+      "materialized_sha256": "6941e2aeed3aad1a4658774ecb60309170066a040c2118a5efd16458ac3bed00",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\_asyncio.pyd",
+      "sha256": "6941e2aeed3aad1a4658774ecb60309170066a040c2118a5efd16458ac3bed00",
+      "size": 72928,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/_asyncio.pyd",
+      "type": "pyd"
+    },
+    {
+      "filename": "_bz2.pyd",
+      "internal_path": "_bz2.pyd",
+      "materialized_sha256": "261545bd24f15a783fc0c82568b766a4ab569dde14507a81701cccf5293e6e54",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\_bz2.pyd",
+      "sha256": "261545bd24f15a783fc0c82568b766a4ab569dde14507a81701cccf5293e6e54",
+      "size": 86752,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/_bz2.pyd",
+      "type": "pyd"
+    },
+    {
+      "filename": "_ctypes.pyd",
+      "internal_path": "_ctypes.pyd",
+      "materialized_sha256": "9d6dccb4cd84a44a107f9b06b91c0a44e85766d9bf4debb6abbde8fda7494c2c",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\_ctypes.pyd",
+      "sha256": "9d6dccb4cd84a44a107f9b06b91c0a44e85766d9bf4debb6abbde8fda7494c2c",
+      "size": 134368,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/_ctypes.pyd",
+      "type": "pyd"
+    },
+    {
+      "filename": "_decimal.pyd",
+      "internal_path": "_decimal.pyd",
+      "materialized_sha256": "1e6a5707163d3c103e0eb4695eefedbea4b855fb227c61cc265b168970d6c6f0",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\_decimal.pyd",
+      "sha256": "1e6a5707163d3c103e0eb4695eefedbea4b855fb227c61cc265b168970d6c6f0",
+      "size": 286944,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/_decimal.pyd",
+      "type": "pyd"
+    },
+    {
+      "filename": "_elementtree.pyd",
+      "internal_path": "_elementtree.pyd",
+      "materialized_sha256": "26c5c2f3f2b8dac1499f07a50d7afd14315c20a6a541abbe4e306bcd9df404f1",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\_elementtree.pyd",
+      "sha256": "26c5c2f3f2b8dac1499f07a50d7afd14315c20a6a541abbe4e306bcd9df404f1",
+      "size": 135904,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/_elementtree.pyd",
+      "type": "pyd"
+    },
+    {
+      "filename": "_hashlib.pyd",
+      "internal_path": "_hashlib.pyd",
+      "materialized_sha256": "79a26289aef0d92545a082507c7021f10e219621d137cb726c4d0fbbfd4b46ae",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\_hashlib.pyd",
+      "sha256": "79a26289aef0d92545a082507c7021f10e219621d137cb726c4d0fbbfd4b46ae",
+      "size": 69344,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/_hashlib.pyd",
+      "type": "pyd"
+    },
+    {
+      "filename": "_lzma.pyd",
+      "internal_path": "_lzma.pyd",
+      "materialized_sha256": "ee224aacf5cf9c9974a1b842aac8d89d5d9b7eeebbf4d76619ae0ce4da8ecd96",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\_lzma.pyd",
+      "sha256": "ee224aacf5cf9c9974a1b842aac8d89d5d9b7eeebbf4d76619ae0ce4da8ecd96",
+      "size": 159456,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/_lzma.pyd",
+      "type": "pyd"
+    },
+    {
+      "filename": "_multiprocessing.pyd",
+      "internal_path": "_multiprocessing.pyd",
+      "materialized_sha256": "db19972cf033b598f5826f8219bc2608412b84061d294f5972b43c2ab95f7af5",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\_multiprocessing.pyd",
+      "sha256": "db19972cf033b598f5826f8219bc2608412b84061d294f5972b43c2ab95f7af5",
+      "size": 38112,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/_multiprocessing.pyd",
+      "type": "pyd"
+    },
+    {
+      "filename": "_overlapped.pyd",
+      "internal_path": "_overlapped.pyd",
+      "materialized_sha256": "9db08b5449e18088754ce57e315657d00b46575e0151cd379efef8847488a606",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\_overlapped.pyd",
+      "sha256": "9db08b5449e18088754ce57e315657d00b46575e0151cd379efef8847488a606",
+      "size": 57568,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/_overlapped.pyd",
+      "type": "pyd"
+    },
+    {
+      "filename": "_queue.pyd",
+      "internal_path": "_queue.pyd",
+      "materialized_sha256": "4404c2569443ffb54e7cfffdca8ddf58c9a609175305970728ec12bc1c147b43",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\_queue.pyd",
+      "sha256": "4404c2569443ffb54e7cfffdca8ddf58c9a609175305970728ec12bc1c147b43",
+      "size": 35552,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/_queue.pyd",
+      "type": "pyd"
+    },
+    {
+      "filename": "_socket.pyd",
+      "internal_path": "_socket.pyd",
+      "materialized_sha256": "ccbd0f83df3784da08147b8e8765e28c978de28b5c0eddcfba5567b59d43fef9",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\_socket.pyd",
+      "sha256": "ccbd0f83df3784da08147b8e8765e28c978de28b5c0eddcfba5567b59d43fef9",
+      "size": 86752,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/_socket.pyd",
+      "type": "pyd"
+    },
+    {
+      "filename": "_ssl.pyd",
+      "internal_path": "_ssl.pyd",
+      "materialized_sha256": "8d2f51fa1dc929073a2ad8d1c7c0c911e8f695870dcf4dda2846f4b75a7f77fb",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\_ssl.pyd",
+      "sha256": "8d2f51fa1dc929073a2ad8d1c7c0c911e8f695870dcf4dda2846f4b75a7f77fb",
+      "size": 181984,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/_ssl.pyd",
+      "type": "pyd"
+    },
+    {
+      "filename": "_uuid.pyd",
+      "internal_path": "_uuid.pyd",
+      "materialized_sha256": "b93832742a2348d6659fd62e8a8aff061594693fc537da74c7d2d1cdf83a8475",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\_uuid.pyd",
+      "sha256": "b93832742a2348d6659fd62e8a8aff061594693fc537da74c7d2d1cdf83a8475",
+      "size": 27872,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/_uuid.pyd",
+      "type": "pyd"
+    },
+    {
+      "filename": "_wmi.pyd",
+      "internal_path": "_wmi.pyd",
+      "materialized_sha256": "db45362354fd4965329cb14bd974e60b26525045d09fb4fdfb1674a93b79d60c",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\_wmi.pyd",
+      "sha256": "db45362354fd4965329cb14bd974e60b26525045d09fb4fdfb1674a93b79d60c",
+      "size": 39648,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/_wmi.pyd",
+      "type": "pyd"
+    },
+    {
+      "filename": "libcrypto-3.dll",
+      "internal_path": "libcrypto-3.dll",
+      "materialized_sha256": "09499e186cf0e434ffa17ad153aa9a66d6048c54a2c03b823e2a06c49d9affe4",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\libcrypto-3.dll",
+      "sha256": "09499e186cf0e434ffa17ad153aa9a66d6048c54a2c03b823e2a06c49d9affe4",
+      "size": 5238520,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/libcrypto-3.dll",
+      "type": "dll"
+    },
+    {
+      "filename": "libffi-8.dll",
+      "internal_path": "libffi-8.dll",
+      "materialized_sha256": "eff52743773eb550fcc6ce3efc37c85724502233b6b002a35496d828bd7b280a",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\libffi-8.dll",
+      "sha256": "eff52743773eb550fcc6ce3efc37c85724502233b6b002a35496d828bd7b280a",
+      "size": 39696,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/libffi-8.dll",
+      "type": "dll"
+    },
+    {
+      "filename": "libssl-3.dll",
+      "internal_path": "libssl-3.dll",
+      "materialized_sha256": "28c395290279fa4f4f54a57b85cd66d853895f925fefb8f6fdebc0d8b1cdd07c",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\libssl-3.dll",
+      "sha256": "28c395290279fa4f4f54a57b85cd66d853895f925fefb8f6fdebc0d8b1cdd07c",
+      "size": 794872,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/libssl-3.dll",
+      "type": "dll"
+    },
+    {
+      "filename": "pyexpat.pyd",
+      "internal_path": "pyexpat.pyd",
+      "materialized_sha256": "b9c9c5a9f52af559a7eb4e8ddfd60558185bfc7794f32840bed1747d1ec9026a",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\pyexpat.pyd",
+      "sha256": "b9c9c5a9f52af559a7eb4e8ddfd60558185bfc7794f32840bed1747d1ec9026a",
+      "size": 221920,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/pyexpat.pyd",
+      "type": "pyd"
+    },
+    {
+      "filename": "python3.dll",
+      "internal_path": "python3.dll",
+      "materialized_sha256": "76e7fd69a01081726308317d6e502721c2ba6792b48880dc1ef649c755788db7",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\python3.dll",
+      "sha256": "76e7fd69a01081726308317d6e502721c2ba6792b48880dc1ef649c755788db7",
+      "size": 72416,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "python3.dll",
+      "type": "dll"
+    },
+    {
+      "filename": "python313.dll",
+      "internal_path": "python313.dll",
+      "materialized_sha256": "e820bf024efd2b56bb2b82791e6b6ddc7303f070f8e72cba7637482a8a906238",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\python313.dll",
+      "sha256": "e820bf024efd2b56bb2b82791e6b6ddc7303f070f8e72cba7637482a8a906238",
+      "size": 6135008,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "python313.dll",
+      "type": "dll"
+    },
+    {
+      "filename": "select.pyd",
+      "internal_path": "select.pyd",
+      "materialized_sha256": "024f955349fe46cf1bb2c22c6b57fcf38cf5755d46166fbf63e7e5b92433b111",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\select.pyd",
+      "sha256": "024f955349fe46cf1bb2c22c6b57fcf38cf5755d46166fbf63e7e5b92433b111",
+      "size": 32992,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/select.pyd",
+      "type": "pyd"
+    },
+    {
+      "filename": "unicodedata.pyd",
+      "internal_path": "unicodedata.pyd",
+      "materialized_sha256": "111e0fdfeef9887c04f6ebf1972ce1ccbec55b226012e4a288c2d4a0b17b216b",
+      "selected_source_path": "C:\\hostedtoolcache\\windows\\Python\\3.13.15\\x64\\DLLs\\unicodedata.pyd",
+      "sha256": "111e0fdfeef9887c04f6ebf1972ce1ccbec55b226012e4a288c2d4a0b17b216b",
+      "size": 712928,
+      "source_cpython_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_installed_path": "DLLs/unicodedata.pyd",
+      "type": "pyd"
+    }
+  ],
+  "final_artifact": {
+    "filename": "media-worker.exe",
+    "sha256": "d99fa3c7b30e9bf8e45c03a124a794de70baaac630f18fde4d8fd71f6cb5713c",
+    "size": 79229772
+  },
+  "missing_wheel_native_artifacts": [
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "_operand_flag_tests.cp313-win_amd64.pyd",
+      "final_present": false,
+      "package_name": "numpy",
+      "packaged_relative_path": "REVIEW_REQUIRED/_operand_flag_tests.cp313-win_amd64.pyd",
+      "purl": "pkg:pypi/numpy@2.3.5",
+      "pyinstaller_selected": false,
+      "relative_path": "numpy/_core/_operand_flag_tests.cp313-win_amd64.pyd",
+      "sha256": "28560c499d8c3086be7db1438e68824337c4c5e3df27d9e67101333d57d28857",
+      "source_package": "numpy",
+      "type": "pyd",
+      "wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "_rational_tests.cp313-win_amd64.pyd",
+      "final_present": false,
+      "package_name": "numpy",
+      "packaged_relative_path": "REVIEW_REQUIRED/_rational_tests.cp313-win_amd64.pyd",
+      "purl": "pkg:pypi/numpy@2.3.5",
+      "pyinstaller_selected": false,
+      "relative_path": "numpy/_core/_rational_tests.cp313-win_amd64.pyd",
+      "sha256": "1400cb24611534b26d9ae7efd326cf99ab35fd59eea6f42cda567f6be70ea9b0",
+      "source_package": "numpy",
+      "type": "pyd",
+      "wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "_simd.cp313-win_amd64.pyd",
+      "final_present": false,
+      "package_name": "numpy",
+      "packaged_relative_path": "REVIEW_REQUIRED/_simd.cp313-win_amd64.pyd",
+      "purl": "pkg:pypi/numpy@2.3.5",
+      "pyinstaller_selected": false,
+      "relative_path": "numpy/_core/_simd.cp313-win_amd64.pyd",
+      "sha256": "29c67076acce4e18996e318ea5b8ce62667e5135fcbeb47d0db57a0567e47e80",
+      "source_package": "numpy",
+      "type": "pyd",
+      "wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "_struct_ufunc_tests.cp313-win_amd64.pyd",
+      "final_present": false,
+      "package_name": "numpy",
+      "packaged_relative_path": "REVIEW_REQUIRED/_struct_ufunc_tests.cp313-win_amd64.pyd",
+      "purl": "pkg:pypi/numpy@2.3.5",
+      "pyinstaller_selected": false,
+      "relative_path": "numpy/_core/_struct_ufunc_tests.cp313-win_amd64.pyd",
+      "sha256": "fc8c492d7e590d6924bbabd5f6ecdf6a4e7226cf36a68c9b52d9ef686c766f27",
+      "source_package": "numpy",
+      "type": "pyd",
+      "wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "_umath_tests.cp313-win_amd64.pyd",
+      "final_present": false,
+      "package_name": "numpy",
+      "packaged_relative_path": "REVIEW_REQUIRED/_umath_tests.cp313-win_amd64.pyd",
+      "purl": "pkg:pypi/numpy@2.3.5",
+      "pyinstaller_selected": false,
+      "relative_path": "numpy/_core/_umath_tests.cp313-win_amd64.pyd",
+      "sha256": "575c613565707e94d1ffa975aa2a5f96ded5c02bbe35941206fa7fdbe687b732",
+      "source_package": "numpy",
+      "type": "pyd",
+      "wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "lapack_lite.cp313-win_amd64.pyd",
+      "final_present": false,
+      "package_name": "numpy",
+      "packaged_relative_path": "REVIEW_REQUIRED/lapack_lite.cp313-win_amd64.pyd",
+      "purl": "pkg:pypi/numpy@2.3.5",
+      "pyinstaller_selected": false,
+      "relative_path": "numpy/linalg/lapack_lite.cp313-win_amd64.pyd",
+      "sha256": "f035059e2922723770f8c60af58e054102a0fb09c0b3455ee23fd95e2bd28f2a",
+      "source_package": "numpy",
+      "type": "pyd",
+      "wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "_imagingft.cp313-win_amd64.pyd",
+      "final_present": false,
+      "package_name": "pillow",
+      "packaged_relative_path": "REVIEW_REQUIRED/_imagingft.cp313-win_amd64.pyd",
+      "purl": "pkg:pypi/pillow@12.3.0",
+      "pyinstaller_selected": false,
+      "relative_path": "PIL/_imagingft.cp313-win_amd64.pyd",
+      "sha256": "e94673a471a0b6fd5e92e8b6cdbdfe16e2e91bcf5689e9e4c9b391ab43788d85",
+      "source_package": "pillow",
+      "type": "pyd",
+      "wheel_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+    },
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "_imagingmorph.cp313-win_amd64.pyd",
+      "final_present": false,
+      "package_name": "pillow",
+      "packaged_relative_path": "REVIEW_REQUIRED/_imagingmorph.cp313-win_amd64.pyd",
+      "purl": "pkg:pypi/pillow@12.3.0",
+      "pyinstaller_selected": false,
+      "relative_path": "PIL/_imagingmorph.cp313-win_amd64.pyd",
+      "sha256": "9aa1903b1c4ecd1269a2f7575a62f764492b5510b43fe477970ecc606595cfc5",
+      "source_package": "pillow",
+      "type": "pyd",
+      "wheel_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+    },
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "_message.pyd",
+      "final_present": false,
+      "package_name": "protobuf",
+      "packaged_relative_path": "REVIEW_REQUIRED/_message.pyd",
+      "purl": "pkg:pypi/protobuf@7.36.0",
+      "pyinstaller_selected": false,
+      "relative_path": "google/_upb/_message.pyd",
+      "sha256": "e05ec368a9fe4d2b723128c8a6ba7b68b7cbbfb140ecf1ab0f68ba6b11cc60ca",
+      "source_package": "protobuf",
+      "type": "pyd",
+      "wheel_sha256": "1781cc1de61249b750848029bca452c0a8b7e990080316b9bbc2518b2117b488"
+    }
+  ],
+  "native_reconciliation": {
+    "ambiguous_hash_owner_count": 0,
+    "approved_cpython_native_count": 45,
+    "approved_native_universe_count": 81,
+    "approved_wheel_native_count": 36,
+    "classification_complete_and_exclusive": "PASS",
+    "final_embedded_native_count": 49,
+    "hash_match_recovered_count": 0,
+    "missing_classification": {
+      "M1_APPROVED_NOT_SELECTED": 9,
+      "M2_SELECTED_BUT_MISSING": 0,
+      "M3_RELOCATED_OR_RENAMED": 0,
+      "M4_GRAPH_ERROR": 0,
+      "UNRESOLVED": 0
+    },
+    "pyinstaller_materialized_native_count": 49,
+    "pyinstaller_selected_native_count": 53,
+    "symlink_metadata_count": 0,
+    "unknown_classification": {
+      "U1_WHEEL_PATH_MAPPING": 0,
+      "U2_TOOLCHAIN_OWNED": 0,
+      "U3_BUNDLED_THIRD_PARTY": 0,
+      "U4_APPROVED_SYSTEM_BUILD_RUNTIME": 0,
+      "U5_TRULY_UNAPPROVED": 0,
+      "UNRESOLVED": 0
+    }
+  },
+  "output_layers": {
+    "archive_payload": {
+      "sha256": "0e8ab47a5d08a3c7831575d018dc15f211ad7a4ffb837ae1183374e1e755f132",
+      "size": 78881100,
+      "trailing_data_size": 0
+    },
+    "bootloader": {
+      "sha256": "a0139fc445f9c2da0afca18e57120c5bc482af53b6138d55b2990b5e5323c444",
+      "size": 348672
+    }
+  },
+  "schema_version": "2-diagnostic",
+  "status": "PASS",
+  "target": {
+    "architecture": "x86_64",
+    "os": "windows",
+    "python_version": "3.13.15"
+  },
+  "unknown_native_artifacts": [],
+  "wheel_native_mapping": [
+    {
+      "embedded_sha256": "2e3e5cce3aea38c603680ca3da5d161fad123ce23a803bb692a56aff608989be",
+      "embedded_size": 7890944,
+      "internal_path": "PIL/_avif.cp313-win_amd64.pyd",
+      "materialized_sha256": "2e3e5cce3aea38c603680ca3da5d161fad123ce23a803bb692a56aff608989be",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\PIL\\_avif.cp313-win_amd64.pyd",
+      "source_package": "pillow",
+      "source_purl": "pkg:pypi/pillow@12.3.0",
+      "source_relative_path": "PIL/_avif.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+    },
+    {
+      "embedded_sha256": "88756e8e0e3f6180e518da25d379597c861e2d20d716ef001894789b515c1777",
+      "embedded_size": 2632704,
+      "internal_path": "PIL/_imaging.cp313-win_amd64.pyd",
+      "materialized_sha256": "88756e8e0e3f6180e518da25d379597c861e2d20d716ef001894789b515c1777",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\PIL\\_imaging.cp313-win_amd64.pyd",
+      "source_package": "pillow",
+      "source_purl": "pkg:pypi/pillow@12.3.0",
+      "source_relative_path": "PIL/_imaging.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+    },
+    {
+      "embedded_sha256": "7ecb50b954d13d72b7a0ff565872332443cdbc83a36e58a56b2b949a56f32549",
+      "embedded_size": 272384,
+      "internal_path": "PIL/_imagingcms.cp313-win_amd64.pyd",
+      "materialized_sha256": "7ecb50b954d13d72b7a0ff565872332443cdbc83a36e58a56b2b949a56f32549",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\PIL\\_imagingcms.cp313-win_amd64.pyd",
+      "source_package": "pillow",
+      "source_purl": "pkg:pypi/pillow@12.3.0",
+      "source_relative_path": "PIL/_imagingcms.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+    },
+    {
+      "embedded_sha256": "9d5bbea6a877a48ed7995a0640ecb0a5567d9fad544a4a1fbf9f22d507029b57",
+      "embedded_size": 21504,
+      "internal_path": "PIL/_imagingmath.cp313-win_amd64.pyd",
+      "materialized_sha256": "9d5bbea6a877a48ed7995a0640ecb0a5567d9fad544a4a1fbf9f22d507029b57",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\PIL\\_imagingmath.cp313-win_amd64.pyd",
+      "source_package": "pillow",
+      "source_purl": "pkg:pypi/pillow@12.3.0",
+      "source_relative_path": "PIL/_imagingmath.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+    },
+    {
+      "embedded_sha256": "8ccd6128481d5a3a15993c2f8a69585694ff972652a6b06dcaee276fc65633a7",
+      "embedded_size": 14848,
+      "internal_path": "PIL/_imagingtk.cp313-win_amd64.pyd",
+      "materialized_sha256": "8ccd6128481d5a3a15993c2f8a69585694ff972652a6b06dcaee276fc65633a7",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\PIL\\_imagingtk.cp313-win_amd64.pyd",
+      "source_package": "pillow",
+      "source_purl": "pkg:pypi/pillow@12.3.0",
+      "source_relative_path": "PIL/_imagingtk.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+    },
+    {
+      "embedded_sha256": "9918faf8d90faa86e03e48479c6a62383be71da759254afded18591a406a92fe",
+      "embedded_size": 416256,
+      "internal_path": "PIL/_webp.cp313-win_amd64.pyd",
+      "materialized_sha256": "9918faf8d90faa86e03e48479c6a62383be71da759254afded18591a406a92fe",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\PIL\\_webp.cp313-win_amd64.pyd",
+      "source_package": "pillow",
+      "source_purl": "pkg:pypi/pillow@12.3.0",
+      "source_relative_path": "PIL/_webp.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+    },
+    {
+      "embedded_sha256": "441542da947fb1d51b4e1c4654ceb191bd7748f917a5f88dfeb50dc7d5221241",
+      "embedded_size": 74742784,
+      "internal_path": "cv2/cv2.pyd",
+      "materialized_sha256": "441542da947fb1d51b4e1c4654ceb191bd7748f917a5f88dfeb50dc7d5221241",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\cv2\\cv2.pyd",
+      "source_package": "opencv-python-headless",
+      "source_purl": "pkg:pypi/opencv-python-headless@4.14.0.94",
+      "source_relative_path": "cv2/cv2.pyd",
+      "source_wheel_sha256": "cbed65415b8f6a9541c705afe3e64795840524d0ff3bc58f507826284a1dc64b"
+    },
+    {
+      "embedded_sha256": "131d7657a173f659de69e1e331916e4a9c0d8cf7bde7201a6988af6056b94853",
+      "embedded_size": 30518784,
+      "internal_path": "cv2/opencv_videoio_ffmpeg4140_64.dll",
+      "materialized_sha256": "131d7657a173f659de69e1e331916e4a9c0d8cf7bde7201a6988af6056b94853",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\cv2\\opencv_videoio_ffmpeg4140_64.dll",
+      "source_package": "opencv-python-headless",
+      "source_purl": "pkg:pypi/opencv-python-headless@4.14.0.94",
+      "source_relative_path": "cv2/opencv_videoio_ffmpeg4140_64.dll",
+      "source_wheel_sha256": "cbed65415b8f6a9541c705afe3e64795840524d0ff3bc58f507826284a1dc64b"
+    },
+    {
+      "embedded_sha256": "9e3e5a4229c1ca39f10dc82bba9e2b2bf48037790932566f37aff1a7ccf3588f",
+      "embedded_size": 20403712,
+      "internal_path": "numpy.libs/libscipy_openblas64_-9e3e5a4229c1ca39f10dc82bba9e2b2b.dll",
+      "materialized_sha256": "9e3e5a4229c1ca39f10dc82bba9e2b2bf48037790932566f37aff1a7ccf3588f",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\numpy.libs\\libscipy_openblas64_-9e3e5a4229c1ca39f10dc82bba9e2b2b.dll",
+      "source_package": "numpy",
+      "source_purl": "pkg:pypi/numpy@2.3.5",
+      "source_relative_path": "numpy.libs/libscipy_openblas64_-9e3e5a4229c1ca39f10dc82bba9e2b2b.dll",
+      "source_wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "embedded_sha256": "a4c2229bdc2a2a630acdc095b4d86008e5c3e3bc7773174354f3da4f5beb9cde",
+      "embedded_size": 575056,
+      "internal_path": "numpy.libs/msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll",
+      "materialized_sha256": "a4c2229bdc2a2a630acdc095b4d86008e5c3e3bc7773174354f3da4f5beb9cde",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\numpy.libs\\msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll",
+      "source_package": "numpy",
+      "source_purl": "pkg:pypi/numpy@2.3.5",
+      "source_relative_path": "numpy.libs/msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll",
+      "source_wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "embedded_sha256": "181efbd14d98fc4ccf96fc5c274fb7c85294e263a93320d8f261eb36881a9000",
+      "embedded_size": 63488,
+      "internal_path": "numpy/_core/_multiarray_tests.cp313-win_amd64.pyd",
+      "materialized_sha256": "181efbd14d98fc4ccf96fc5c274fb7c85294e263a93320d8f261eb36881a9000",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\numpy\\_core\\_multiarray_tests.cp313-win_amd64.pyd",
+      "source_package": "numpy",
+      "source_purl": "pkg:pypi/numpy@2.3.5",
+      "source_relative_path": "numpy/_core/_multiarray_tests.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "embedded_sha256": "04a87dcb37e46eff7b931a45e6d87366ede144b5ff319070a2cb983a9b2e1bbc",
+      "embedded_size": 4528128,
+      "internal_path": "numpy/_core/_multiarray_umath.cp313-win_amd64.pyd",
+      "materialized_sha256": "04a87dcb37e46eff7b931a45e6d87366ede144b5ff319070a2cb983a9b2e1bbc",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\numpy\\_core\\_multiarray_umath.cp313-win_amd64.pyd",
+      "source_package": "numpy",
+      "source_purl": "pkg:pypi/numpy@2.3.5",
+      "source_relative_path": "numpy/_core/_multiarray_umath.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "embedded_sha256": "450931b90eabbb64b3f7936f06ee95250fb5b9d1c06cf3892efed36c025909e8",
+      "embedded_size": 276480,
+      "internal_path": "numpy/fft/_pocketfft_umath.cp313-win_amd64.pyd",
+      "materialized_sha256": "450931b90eabbb64b3f7936f06ee95250fb5b9d1c06cf3892efed36c025909e8",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\numpy\\fft\\_pocketfft_umath.cp313-win_amd64.pyd",
+      "source_package": "numpy",
+      "source_purl": "pkg:pypi/numpy@2.3.5",
+      "source_relative_path": "numpy/fft/_pocketfft_umath.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "embedded_sha256": "ce9c95c3836521e26f4b34d71ad89ddc8e945fe72a2016f8b339999c6fb0edf4",
+      "embedded_size": 112128,
+      "internal_path": "numpy/linalg/_umath_linalg.cp313-win_amd64.pyd",
+      "materialized_sha256": "ce9c95c3836521e26f4b34d71ad89ddc8e945fe72a2016f8b339999c6fb0edf4",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\numpy\\linalg\\_umath_linalg.cp313-win_amd64.pyd",
+      "source_package": "numpy",
+      "source_purl": "pkg:pypi/numpy@2.3.5",
+      "source_relative_path": "numpy/linalg/_umath_linalg.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "embedded_sha256": "5423456cf271a96c9bf8376d5a49634465f393a681b8f29f0039a2206c542de6",
+      "embedded_size": 206848,
+      "internal_path": "numpy/random/_bounded_integers.cp313-win_amd64.pyd",
+      "materialized_sha256": "5423456cf271a96c9bf8376d5a49634465f393a681b8f29f0039a2206c542de6",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\numpy\\random\\_bounded_integers.cp313-win_amd64.pyd",
+      "source_package": "numpy",
+      "source_purl": "pkg:pypi/numpy@2.3.5",
+      "source_relative_path": "numpy/random/_bounded_integers.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "embedded_sha256": "db844232c16284032a353198f3606416ee1b7768ca46286e91819d34f645e627",
+      "embedded_size": 160768,
+      "internal_path": "numpy/random/_common.cp313-win_amd64.pyd",
+      "materialized_sha256": "db844232c16284032a353198f3606416ee1b7768ca46286e91819d34f645e627",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\numpy\\random\\_common.cp313-win_amd64.pyd",
+      "source_package": "numpy",
+      "source_purl": "pkg:pypi/numpy@2.3.5",
+      "source_relative_path": "numpy/random/_common.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "embedded_sha256": "14fd4a00819b036bcaab9b92b9fadb5aad5dbcea00390a6b7e78bffe4ec13aa0",
+      "embedded_size": 584192,
+      "internal_path": "numpy/random/_generator.cp313-win_amd64.pyd",
+      "materialized_sha256": "14fd4a00819b036bcaab9b92b9fadb5aad5dbcea00390a6b7e78bffe4ec13aa0",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\numpy\\random\\_generator.cp313-win_amd64.pyd",
+      "source_package": "numpy",
+      "source_purl": "pkg:pypi/numpy@2.3.5",
+      "source_relative_path": "numpy/random/_generator.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "embedded_sha256": "1cd4a5e52ac6791d91b94bce072579804c7a01961691986441692285891c5194",
+      "embedded_size": 83456,
+      "internal_path": "numpy/random/_mt19937.cp313-win_amd64.pyd",
+      "materialized_sha256": "1cd4a5e52ac6791d91b94bce072579804c7a01961691986441692285891c5194",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\numpy\\random\\_mt19937.cp313-win_amd64.pyd",
+      "source_package": "numpy",
+      "source_purl": "pkg:pypi/numpy@2.3.5",
+      "source_relative_path": "numpy/random/_mt19937.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "embedded_sha256": "a26be0e497ed821f02a25c91c73e3487bcde37a2ae6643eeb2f8ea536eecd3da",
+      "embedded_size": 92672,
+      "internal_path": "numpy/random/_pcg64.cp313-win_amd64.pyd",
+      "materialized_sha256": "a26be0e497ed821f02a25c91c73e3487bcde37a2ae6643eeb2f8ea536eecd3da",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\numpy\\random\\_pcg64.cp313-win_amd64.pyd",
+      "source_package": "numpy",
+      "source_purl": "pkg:pypi/numpy@2.3.5",
+      "source_relative_path": "numpy/random/_pcg64.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "embedded_sha256": "d7c2370679114aed54bdd64089d7f77b5d68261f1775967603376c72a593b001",
+      "embedded_size": 77824,
+      "internal_path": "numpy/random/_philox.cp313-win_amd64.pyd",
+      "materialized_sha256": "d7c2370679114aed54bdd64089d7f77b5d68261f1775967603376c72a593b001",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\numpy\\random\\_philox.cp313-win_amd64.pyd",
+      "source_package": "numpy",
+      "source_purl": "pkg:pypi/numpy@2.3.5",
+      "source_relative_path": "numpy/random/_philox.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "embedded_sha256": "333b0369d2538ee4ca1db76734bc1c943a4e8cff1b8c8c3ded080f18ff71cc95",
+      "embedded_size": 58880,
+      "internal_path": "numpy/random/_sfc64.cp313-win_amd64.pyd",
+      "materialized_sha256": "333b0369d2538ee4ca1db76734bc1c943a4e8cff1b8c8c3ded080f18ff71cc95",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\numpy\\random\\_sfc64.cp313-win_amd64.pyd",
+      "source_package": "numpy",
+      "source_purl": "pkg:pypi/numpy@2.3.5",
+      "source_relative_path": "numpy/random/_sfc64.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "embedded_sha256": "9463c856a55cba2d6a5776954ce74ef7693030c1b9bc29ef9a1c9c26b87ba3d3",
+      "embedded_size": 158208,
+      "internal_path": "numpy/random/bit_generator.cp313-win_amd64.pyd",
+      "materialized_sha256": "9463c856a55cba2d6a5776954ce74ef7693030c1b9bc29ef9a1c9c26b87ba3d3",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\numpy\\random\\bit_generator.cp313-win_amd64.pyd",
+      "source_package": "numpy",
+      "source_purl": "pkg:pypi/numpy@2.3.5",
+      "source_relative_path": "numpy/random/bit_generator.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "embedded_sha256": "da9ea962151d7d6d140c1c6266dd3e2da61d9a2c84fea6d68917206c1dc72fad",
+      "embedded_size": 482304,
+      "internal_path": "numpy/random/mtrand.cp313-win_amd64.pyd",
+      "materialized_sha256": "da9ea962151d7d6d140c1c6266dd3e2da61d9a2c84fea6d68917206c1dc72fad",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\numpy\\random\\mtrand.cp313-win_amd64.pyd",
+      "source_package": "numpy",
+      "source_purl": "pkg:pypi/numpy@2.3.5",
+      "source_relative_path": "numpy/random/mtrand.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "embedded_sha256": "4075344f1057c0d16883fb5a93428aeac5fecfbcb24e1560defb1cb80a6e0a85",
+      "embedded_size": 18093368,
+      "internal_path": "onnxruntime/capi/onnxruntime.dll",
+      "materialized_sha256": "4075344f1057c0d16883fb5a93428aeac5fecfbcb24e1560defb1cb80a6e0a85",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\onnxruntime\\capi\\onnxruntime.dll",
+      "source_package": "onnxruntime",
+      "source_purl": "pkg:pypi/onnxruntime@1.29.0",
+      "source_relative_path": "onnxruntime/capi/onnxruntime.dll",
+      "source_wheel_sha256": "2945e1f82f81f27e88decea88c7861f45baea23818950d467bf3909aa303119e"
+    },
+    {
+      "embedded_sha256": "d647b451ba2808310ae2694040b670809daddf12f7a4f6296aca2a553c2ac571",
+      "embedded_size": 21816,
+      "internal_path": "onnxruntime/capi/onnxruntime_providers_shared.dll",
+      "materialized_sha256": "d647b451ba2808310ae2694040b670809daddf12f7a4f6296aca2a553c2ac571",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\onnxruntime\\capi\\onnxruntime_providers_shared.dll",
+      "source_package": "onnxruntime",
+      "source_purl": "pkg:pypi/onnxruntime@1.29.0",
+      "source_relative_path": "onnxruntime/capi/onnxruntime_providers_shared.dll",
+      "source_wheel_sha256": "2945e1f82f81f27e88decea88c7861f45baea23818950d467bf3909aa303119e"
+    },
+    {
+      "embedded_sha256": "fc7ce1c1f18f630d8255ba13dff0b348f3f4436c743423a2fe2ad1dee510646c",
+      "embedded_size": 18748216,
+      "internal_path": "onnxruntime/capi/onnxruntime_pybind11_state.pyd",
+      "materialized_sha256": "fc7ce1c1f18f630d8255ba13dff0b348f3f4436c743423a2fe2ad1dee510646c",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\onnxruntime\\capi\\onnxruntime_pybind11_state.pyd",
+      "source_package": "onnxruntime",
+      "source_purl": "pkg:pypi/onnxruntime@1.29.0",
+      "source_relative_path": "onnxruntime/capi/onnxruntime_pybind11_state.pyd",
+      "source_wheel_sha256": "2945e1f82f81f27e88decea88c7861f45baea23818950d467bf3909aa303119e"
+    },
+    {
+      "embedded_sha256": "ef25868963dc0fa56cd6f3e5477725873dd115a879e8cd070317f573442ae47c",
+      "embedded_size": 1010688,
+      "internal_path": "sentencepiece/_sentencepiece.cp313-win_amd64.pyd",
+      "materialized_sha256": "ef25868963dc0fa56cd6f3e5477725873dd115a879e8cd070317f573442ae47c",
+      "selected_source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\candidate-venv\\Lib\\site-packages\\sentencepiece\\_sentencepiece.cp313-win_amd64.pyd",
+      "source_package": "sentencepiece",
+      "source_purl": "pkg:pypi/sentencepiece@0.2.1",
+      "source_relative_path": "sentencepiece/_sentencepiece.cp313-win_amd64.pyd",
+      "source_wheel_sha256": "10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b"
+    }
+  ]
+}

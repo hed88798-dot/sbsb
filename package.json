@@ -66,6 +66,7 @@
     "code-c:python:build:provenance": "python tools/code-c-python-supply-chain/create_build_provenance.py",
     "code-c:python:usage-binding": "python tools/code-c-python-supply-chain/create_usage_binding.py",
     "code-c:python:release:notices": "python tools/code-c-python-supply-chain/assemble_release_notices.py",
+    "code-c:python:license:post-f-reconcile": "python tools/code-c-python-supply-chain/reconcile_post_f_license.py",
     "golden:verify": "node tools/golden/validate-manifest.mjs",
     "golden:update": "node tools/golden/update-manifest.mjs",
     "golden:validate": "pnpm golden:verify",

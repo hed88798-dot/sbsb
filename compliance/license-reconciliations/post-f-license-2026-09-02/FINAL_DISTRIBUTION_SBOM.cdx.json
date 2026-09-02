@@ -1,0 +1,6524 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "urn:sha256:4b69bb8a6eec5da994cc8c575d49db6439efab67f94b063374e4a50b0716c1d1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4b69bb8a6eec5da994cc8c575d49db6439efab67f94b063374e4a50b0716c1d1"
+        }
+      ],
+      "name": "media-worker",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.sha256",
+          "value": "d1174459a8f662b56f0afea8cff35ba4b6f2adf3efd9d710c91309be66270949"
+        },
+        {
+          "name": "build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        },
+        {
+          "name": "packaging.selection.sha256",
+          "value": "5d2704933bbaceab24a87424918d59ba9dc14694e6e4b3cfed5de226a0b6ede3"
+        },
+        {
+          "name": "native.reconciliation.sha256",
+          "value": "aca7a59cd08395cff6848713aa0d94951374b8135d48380e21429c47845ce68a"
+        },
+        {
+          "name": "msvc.prerequisite",
+          "value": "PREINSTALLED_COMPATIBLE_RUNTIME_ONLY"
+        }
+      ],
+      "type": "application",
+      "version": "current-head"
+    },
+    {
+      "bom-ref": "urn:sha256:d99fa3c7b30e9bf8e45c03a124a794de70baaac630f18fde4d8fd71f6cb5713c",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d99fa3c7b30e9bf8e45c03a124a794de70baaac630f18fde4d8fd71f6cb5713c"
+        }
+      ],
+      "name": "media-worker",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.sha256",
+          "value": "0e8ab47a5d08a3c7831575d018dc15f211ad7a4ffb837ae1183374e1e755f132"
+        },
+        {
+          "name": "build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        },
+        {
+          "name": "packaging.selection.sha256",
+          "value": "94fb81ac0d84a2d9dafbf9150d8b49805f601e0e2a17751d224997589f911e24"
+        },
+        {
+          "name": "native.reconciliation.sha256",
+          "value": "c261ee31e97dea7976e30c6fe6acc489e96e0dccbcde32f6a8140f9f72f1bea1"
+        },
+        {
+          "name": "msvc.prerequisite",
+          "value": "PREINSTALLED_COMPATIBLE_RUNTIME_ONLY"
+        }
+      ],
+      "type": "application",
+      "version": "current-head"
+    },
+    {
+      "bom-ref": "urn:sha256:00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "name": "numpy",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "code-f-numpy-license-review-00dc4e846108a382"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "0c2b3042f73b9f0a49a2b7fadb51b2df6e151e41577d0139ef31f9d92f78e5d3"
+        },
+        {
+          "name": "license.obligations",
+          "value": "NO_ENDORSEMENT,PRESERVE_COPYRIGHT_NOTICE,PRESERVE_LICENSE_TEXT"
+        }
+      ],
+      "purl": "pkg:pypi/numpy@2.3.5",
+      "scope": "required",
+      "type": "library",
+      "version": "2.3.5"
+    },
+    {
+      "bom-ref": "urn:sha256:0594131cf2da278ac9f9442e1ce2a8fe6ccb25ab83a0899f349784e688d304c6",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0594131cf2da278ac9f9442e1ce2a8fe6ccb25ab83a0899f349784e688d304c6"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "name": "scenedetect-headless",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "AUTO_POLICY_PASS"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "fbe2cb499594ee3cfaa7d95d3e1cc161f39c24bd0a88c8c969dd704d6053f3c0"
+        },
+        {
+          "name": "license.obligations",
+          "value": "NO_ENDORSEMENT,PRESERVE_COPYRIGHT_NOTICE,PRESERVE_LICENSE_TEXT"
+        }
+      ],
+      "purl": "pkg:pypi/scenedetect-headless@0.7.1",
+      "scope": "required",
+      "type": "library",
+      "version": "0.7.1"
+    },
+    {
+      "bom-ref": "urn:sha256:0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "MIT-CMU"
+        }
+      ],
+      "name": "pillow",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "AUTO_POLICY_PASS"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "952941b0eb8ce7a6cd05f8213b723ac20fdbb8811e744afe134ef4d3d067e846"
+        },
+        {
+          "name": "license.obligations",
+          "value": "NO_ENDORSEMENT,NO_PUBLICITY_NAME_USE_WITHOUT_PERMISSION,PRESERVE_COPYRIGHT_NOTICE,PRESERVE_LICENSE_TEXT,PRESERVE_PERMISSION_NOTICE,RETAIN_NOTICE_IN_SUPPORTING_DOCUMENTATION_OR_DISTRIBUTION_MATERIAL"
+        }
+      ],
+      "purl": "pkg:pypi/pillow@12.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "12.3.0"
+    },
+    {
+      "bom-ref": "urn:sha256:10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "sentencepiece",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "code-f-sentencepiece-license-review-10ed3dab2044c47f"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "7864ff0f133dfcb220af3ca8fa41b140a1eea796f5318462e42d25c1bb54ea25"
+        },
+        {
+          "name": "license.obligations",
+          "value": "PRESERVE_LICENSE_TEXT,PRESERVE_REQUIRED_NOTICES"
+        }
+      ],
+      "purl": "pkg:pypi/sentencepiece@0.2.1",
+      "scope": "required",
+      "type": "library",
+      "version": "0.2.1"
+    },
+    {
+      "bom-ref": "urn:sha256:11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "name": "numpy",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "code-f-numpy-license-review-11e06aa0af8c0f05"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "8e07e92ee1f0a7d869df4d7fa32359c92a0bc260def2b922db4e2fe8075220fb"
+        },
+        {
+          "name": "license.obligations",
+          "value": "NO_ENDORSEMENT,PRESERVE_COPYRIGHT_NOTICE,PRESERVE_LICENSE_TEXT"
+        }
+      ],
+      "purl": "pkg:pypi/numpy@2.3.5",
+      "scope": "required",
+      "type": "library",
+      "version": "2.3.5"
+    },
+    {
+      "bom-ref": "urn:sha256:1781cc1de61249b750848029bca452c0a8b7e990080316b9bbc2518b2117b488",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1781cc1de61249b750848029bca452c0a8b7e990080316b9bbc2518b2117b488"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "name": "protobuf",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "code-f-protobuf-license-review-1781cc1de61249b7"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "bd96de0d28bdaa0434f9308bf0fccb2dc07e4785c082b7f7cd2710f9b67582c8"
+        },
+        {
+          "name": "license.obligations",
+          "value": "NO_ENDORSEMENT,PRESERVE_COPYRIGHT_NOTICE,PRESERVE_LICENSE_TEXT"
+        }
+      ],
+      "purl": "pkg:pypi/protobuf@7.36.0",
+      "scope": "required",
+      "type": "library",
+      "version": "7.36.0"
+    },
+    {
+      "bom-ref": "urn:sha256:1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "MIT-CMU"
+        }
+      ],
+      "name": "pillow",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "AUTO_POLICY_PASS"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "aeaf7625a0e3e79c46ea8e6cdfa7127f47b9611295535812f57ab8219e490a91"
+        },
+        {
+          "name": "license.obligations",
+          "value": "NO_ENDORSEMENT,NO_PUBLICITY_NAME_USE_WITHOUT_PERMISSION,PRESERVE_COPYRIGHT_NOTICE,PRESERVE_LICENSE_TEXT,PRESERVE_PERMISSION_NOTICE,RETAIN_NOTICE_IN_SUPPORTING_DOCUMENTATION_OR_DISTRIBUTION_MATERIAL"
+        }
+      ],
+      "purl": "pkg:pypi/pillow@12.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "12.3.0"
+    },
+    {
+      "bom-ref": "urn:sha256:211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "opencv-python-headless",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "code-f-opencv-python-headless-license-review-211e581f5a4670ac"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "9ba74d12edbffc31458bce2237c6529f534b54eb9f45e449484a94ef0869b9da"
+        },
+        {
+          "name": "license.obligations",
+          "value": "PRESERVE_LICENSE_TEXT,PRESERVE_REQUIRED_NOTICES,STATE_MODIFICATIONS_WHEN_REQUIRED"
+        }
+      ],
+      "purl": "pkg:pypi/opencv-python-headless@4.14.0.94",
+      "scope": "required",
+      "type": "library",
+      "version": "4.14.0.94"
+    },
+    {
+      "bom-ref": "urn:sha256:255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "name": "click",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "AUTO_POLICY_PASS"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "9748b2598d406e34451dfd0e5e44b4651cff7163a4143b526cea9669e906e8dd"
+        },
+        {
+          "name": "license.obligations",
+          "value": "NO_ENDORSEMENT,PRESERVE_COPYRIGHT_NOTICE,PRESERVE_LICENSE_TEXT"
+        }
+      ],
+      "purl": "pkg:pypi/click@8.5.0",
+      "scope": "required",
+      "type": "library",
+      "version": "8.5.0"
+    },
+    {
+      "bom-ref": "urn:sha256:2945e1f82f81f27e88decea88c7861f45baea23818950d467bf3909aa303119e",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2945e1f82f81f27e88decea88c7861f45baea23818950d467bf3909aa303119e"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "onnxruntime",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "code-f-onnxruntime-license-review-2945e1f82f81f27e"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "58e9df61d3cdb4a6fd9c0df5d3c507c14ac6b289f82b953d2dc160d704a50721"
+        },
+        {
+          "name": "license.obligations",
+          "value": "PRESERVE_COPYRIGHT_NOTICE,PRESERVE_LICENSE_TEXT"
+        }
+      ],
+      "purl": "pkg:pypi/onnxruntime@1.29.0",
+      "scope": "required",
+      "type": "library",
+      "version": "1.29.0"
+    },
+    {
+      "bom-ref": "urn:sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "name": "colorama",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "code-f-colorama-license-review-4f1d9991f5acc0ca"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "f906f1434a1fa43196295f43df30ff0d461a3c924e6323741d1317e3deb06050"
+        },
+        {
+          "name": "license.obligations",
+          "value": "NO_ENDORSEMENT,PRESERVE_COPYRIGHT_NOTICE,PRESERVE_LICENSE_TEXT"
+        }
+      ],
+      "purl": "pkg:pypi/colorama@0.4.6",
+      "scope": "required",
+      "type": "library",
+      "version": "0.4.6"
+    },
+    {
+      "bom-ref": "urn:sha256:70f5ec8eb0da81a44360c0dc0beac99a0d78071d21956a7076bae8bd2051841b",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "70f5ec8eb0da81a44360c0dc0beac99a0d78071d21956a7076bae8bd2051841b"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "name": "protobuf",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "code-f-protobuf-license-review-70f5ec8eb0da81a4"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "d871d17589f75bc9ffc320821a6b58e3f2a0647d278d9c5517d978927a7c03a8"
+        },
+        {
+          "name": "license.obligations",
+          "value": "NO_ENDORSEMENT,PRESERVE_COPYRIGHT_NOTICE,PRESERVE_LICENSE_TEXT"
+        }
+      ],
+      "purl": "pkg:pypi/protobuf@7.36.0",
+      "scope": "required",
+      "type": "library",
+      "version": "7.36.0"
+    },
+    {
+      "bom-ref": "urn:sha256:7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "flatbuffers",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "code-f-flatbuffers-license-review-7634f50c427838bb"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "514cbe997880e3c5a5105d4882738062b14d5393df9f3e533c1ec48f35fe9926"
+        },
+        {
+          "name": "license.obligations",
+          "value": "PRESERVE_LICENSE_TEXT,PRESERVE_REQUIRED_NOTICES,STATE_MODIFICATIONS_WHEN_REQUIRED"
+        }
+      ],
+      "purl": "pkg:pypi/flatbuffers@25.12.19",
+      "scope": "required",
+      "type": "library",
+      "version": "25.12.19"
+    },
+    {
+      "bom-ref": "urn:sha256:7f585706bfddbdebf89daac705b2dfcc16890130727d3197ca62c732b4310953",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7f585706bfddbdebf89daac705b2dfcc16890130727d3197ca62c732b4310953"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "MPL-2.0 AND MIT"
+        }
+      ],
+      "name": "tqdm",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "code-f-tqdm-license-review-7f585706bfddbdeb"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "b216e1fb7232603102a3c884bf92fa2464c12ce4edf75013670a163824ee421f"
+        },
+        {
+          "name": "license.obligations",
+          "value": "FILE_LEVEL_SOURCE_DISTRIBUTION_REVIEW_REQUIRED,PRESERVE_COPYRIGHT_NOTICE,PRESERVE_LICENSE_TEXT"
+        }
+      ],
+      "purl": "pkg:pypi/tqdm@4.70.0",
+      "scope": "required",
+      "type": "library",
+      "version": "4.70.0"
+    },
+    {
+      "bom-ref": "urn:sha256:c7f0fd2f2693309e6628aeeb2e2faf6edd221134dfccac3308ca0de01f8dab47",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c7f0fd2f2693309e6628aeeb2e2faf6edd221134dfccac3308ca0de01f8dab47"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "sentencepiece",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "code-f-sentencepiece-license-review-c7f0fd2f2693309e"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "ad2ade3995395fd597d76ac364c94d0c71ccc51cd51d46ef3b8f5a53361aa365"
+        },
+        {
+          "name": "license.obligations",
+          "value": "PRESERVE_LICENSE_TEXT,PRESERVE_REQUIRED_NOTICES"
+        }
+      ],
+      "purl": "pkg:pypi/sentencepiece@0.2.1",
+      "scope": "required",
+      "type": "library",
+      "version": "0.2.1"
+    },
+    {
+      "bom-ref": "urn:sha256:cbed65415b8f6a9541c705afe3e64795840524d0ff3bc58f507826284a1dc64b",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cbed65415b8f6a9541c705afe3e64795840524d0ff3bc58f507826284a1dc64b"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "opencv-python-headless",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "code-f-opencv-python-headless-license-review-cbed65415b8f6a95"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "7e7ddb0b30c841867cea5f5ab035d13382bf510f5209e99b82b84a21433a4e07"
+        },
+        {
+          "name": "license.obligations",
+          "value": "PRESERVE_LICENSE_TEXT,PRESERVE_REQUIRED_NOTICES,STATE_MODIFICATIONS_WHEN_REQUIRED"
+        }
+      ],
+      "purl": "pkg:pypi/opencv-python-headless@4.14.0.94",
+      "scope": "required",
+      "type": "library",
+      "version": "4.14.0.94"
+    },
+    {
+      "bom-ref": "urn:sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0 OR BSD-2-Clause"
+        }
+      ],
+      "name": "packaging",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "AUTO_POLICY_PASS"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "b8f880df15f1a92f467b05d12bbfc47da42d4a4dbd4abb1e6bdd26910eb6a02e"
+        },
+        {
+          "name": "license.obligations",
+          "value": "FULFILL_ONE_ACCEPTABLE_POLICY_BRANCH,PRESERVE_COPYRIGHT_NOTICE,PRESERVE_LICENSE_TEXT,PRESERVE_REQUIRED_NOTICES,STATE_MODIFICATIONS_WHEN_REQUIRED"
+        }
+      ],
+      "purl": "pkg:pypi/packaging@26.3",
+      "scope": "required",
+      "type": "library",
+      "version": "26.3"
+    },
+    {
+      "bom-ref": "urn:sha256:e2128f31f449e922c62dbe5d8b6b7b079f0bcaf2d56a102fa203cb6e5bb5ab19",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e2128f31f449e922c62dbe5d8b6b7b079f0bcaf2d56a102fa203cb6e5bb5ab19"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "onnxruntime",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "code-f-onnxruntime-license-review-e2128f31f449e922"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "0e85c4c3490370ad2a9efec8a565535aaad888100a06b6ffd8ec3bc5e2bf30fc"
+        },
+        {
+          "name": "license.obligations",
+          "value": "PRESERVE_COPYRIGHT_NOTICE,PRESERVE_LICENSE_TEXT"
+        }
+      ],
+      "purl": "pkg:pypi/onnxruntime@1.29.0",
+      "scope": "required",
+      "type": "library",
+      "version": "1.29.0"
+    },
+    {
+      "bom-ref": "urn:sha256:e34ff91a24bcddc6d939b878bdf3f5c437c9c46fe9e212b1bf455fdf1ee57586",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e34ff91a24bcddc6d939b878bdf3f5c437c9c46fe9e212b1bf455fdf1ee57586"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "platformdirs",
+      "properties": [
+        {
+          "name": "distribution.role",
+          "value": "RUNTIME_DISTRIBUTION"
+        },
+        {
+          "name": "license.review.id",
+          "value": "AUTO_POLICY_PASS"
+        },
+        {
+          "name": "license.evidence.snapshot.sha256",
+          "value": "2fc99d28479c44ac2085c44fa82a2a7bf856e5528a1dffd164caed5b4d858c16"
+        },
+        {
+          "name": "license.obligations",
+          "value": "PRESERVE_COPYRIGHT_NOTICE,PRESERVE_LICENSE_TEXT"
+        }
+      ],
+      "purl": "pkg:pypi/platformdirs@4.11.4",
+      "scope": "required",
+      "type": "library",
+      "version": "4.11.4"
+    },
+    {
+      "bom-ref": "native:linux:final-0001-91a5eef67b5a",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3155ad10215109cd3361d84882e922be7d6c397e7711229d799d03b66138286f"
+        }
+      ],
+      "name": "PIL/_avif.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0002-97aa2f67ab54",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b22c753cda12721dcecd4e43b329276d9d9a1dbb0a5aaf64cc6d08fdb514525a"
+        }
+      ],
+      "name": "PIL/_imaging.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0003-ee2392912bbd",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c9a2f67d7f866d7b92dbfeb9a40687359af114b33c8356a52c36fcde89f76335"
+        }
+      ],
+      "name": "PIL/_imagingcms.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0004-99fac3eff30f",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "37ab5a12b94f5f462f0ff2d0b94cf4d9cb2535961da562ea346031efc69032e7"
+        }
+      ],
+      "name": "PIL/_imagingmath.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0005-f2efde262827",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "29a2887813a753d89ab3f959261dbcd03c33cb7bc1f75e1eb9c7a2cb0c58b7c4"
+        }
+      ],
+      "name": "PIL/_imagingtk.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0006-2864758397f6",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "53399dd74c1b91b5799bc046fa8d3f4e0c2c20b32bfe0cf4622fcff178b7ee11"
+        }
+      ],
+      "name": "PIL/_webp.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0007-5d74d3364f10",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "eaf864c6e211836c68ad35c5cfa1b042232a58f4e5f976c319f58e0e8a849b16"
+        }
+      ],
+      "name": "cv2/cv2.abi3.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0008-5621af9fef81",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "218c4abdabce31161f3c2778762986d1fe06633705c7eb004a740946a5ccdfff"
+        }
+      ],
+      "name": "libbz2.so.1.0",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "SYSTEM_BUILD_RUNTIME_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "218c4abdabce31161f3c2778762986d1fe06633705c7eb004a740946a5ccdfff"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0009-f53adbf26fff",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1451aceec262c3338052fa77542eb971d4ba311c6bf12d9aa70d0b56aca942f9"
+        }
+      ],
+      "name": "libcrypto.so.3",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "SYSTEM_BUILD_RUNTIME_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "1451aceec262c3338052fa77542eb971d4ba311c6bf12d9aa70d0b56aca942f9"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0010-c120cb299c92",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "00f593fe192f2851b8ce23b25cec2488d769beb5a8f63e8c9e563071e1075153"
+        }
+      ],
+      "name": "libffi.so.8",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "SYSTEM_BUILD_RUNTIME_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "00f593fe192f2851b8ce23b25cec2488d769beb5a8f63e8c9e563071e1075153"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0011-0dcf133e09d9",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d93224d2b0dab4247598be683adca02f5cf00586f99c187579cd7e92058fb7cb"
+        }
+      ],
+      "name": "libgcc_s.so.1",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "SYSTEM_BUILD_RUNTIME_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "d93224d2b0dab4247598be683adca02f5cf00586f99c187579cd7e92058fb7cb"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0012-6dafbbd94650",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "696e868dd0700a19a6d65fc01608ec2d70d3cb91f65710e89180cd2e688f30cb"
+        }
+      ],
+      "name": "liblzma.so.5",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "SYSTEM_BUILD_RUNTIME_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "696e868dd0700a19a6d65fc01608ec2d70d3cb91f65710e89180cd2e688f30cb"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0013-54a7927d2117",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "18a6cab66b5167a8b7c80014d95805a3008850c6c0a47ca9906e09bddd7f7165"
+        }
+      ],
+      "name": "libpython3.13.so.1.0",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0014-6ae334fe46d8",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0a079f958147699f7bb5bf228406a5d878dc2387fe9cdc5cce6f3e35e20380fc"
+        }
+      ],
+      "name": "libreadline.so.8",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "SYSTEM_BUILD_RUNTIME_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0a079f958147699f7bb5bf228406a5d878dc2387fe9cdc5cce6f3e35e20380fc"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0015-8f828abd6a45",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "55869549f4c7d7221e311121696f135390a7172755459ad04aef831f855eb214"
+        }
+      ],
+      "name": "libssl.so.3",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "SYSTEM_BUILD_RUNTIME_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "55869549f4c7d7221e311121696f135390a7172755459ad04aef831f855eb214"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0016-853863b8cd15",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1fd75fe70354a416d75aef22bcae68c47bd25d20e2d0568c30b1a9838cf62f11"
+        }
+      ],
+      "name": "libstdc++.so.6",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "SYSTEM_BUILD_RUNTIME_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "1fd75fe70354a416d75aef22bcae68c47bd25d20e2d0568c30b1a9838cf62f11"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0017-e192fdfc4c04",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "28ab8e2e29d46dc8f7222025ca2d61e0b898364c6426cc631bf4ecc7c7f5ac52"
+        }
+      ],
+      "name": "libtinfo.so.6",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "SYSTEM_BUILD_RUNTIME_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "28ab8e2e29d46dc8f7222025ca2d61e0b898364c6426cc631bf4ecc7c7f5ac52"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0018-d88e8ef30767",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a0fe32d24d125186cf332570770ae749822b5b529d4d4f59222e1aedbc63b58d"
+        }
+      ],
+      "name": "libuuid.so.1",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "SYSTEM_BUILD_RUNTIME_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "a0fe32d24d125186cf332570770ae749822b5b529d4d4f59222e1aedbc63b58d"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0019-e2347eeb69e2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9b64150b28505a33d6bc3ecf709c279f6de97a1c184dbda65d06ee4537f6d286"
+        }
+      ],
+      "name": "libz.so.1",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "SYSTEM_BUILD_RUNTIME_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "9b64150b28505a33d6bc3ecf709c279f6de97a1c184dbda65d06ee4537f6d286"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0020-9fec7f213daf",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c6090048eccc763522c12ef016f81da6b627cb3a044f55cf0479a839c41c0980"
+        }
+      ],
+      "name": "numpy.libs/libgfortran-040039e1-0352e75f.so.5.0.0",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0021-1fa78596fbec",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6ed5137f412781ad7863439fb543613f620b43c32b63292a0029246162f5bbc6"
+        }
+      ],
+      "name": "numpy.libs/libquadmath-96973f99-934c22de.so.0.0.0",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0022-c7d95b745e26",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ee2039cf13a45e1e89f04d0cea9585657d93ffaa425594e1935161013fdf4e12"
+        }
+      ],
+      "name": "numpy.libs/libscipy_openblas64_-fdde5778.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0023-a0b343d35ef4",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d158c06acc1b2cc5af89343e0ffb951bc9a101a36e6493486e7a00c9e5df0081"
+        }
+      ],
+      "name": "numpy/_core/_multiarray_tests.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0024-887a1c13d901",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "36aaa2e181f47ba7a7a9ea9dd37f293e99cf289286f86250da3710e5b1430745"
+        }
+      ],
+      "name": "numpy/_core/_multiarray_umath.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0025-d1fda82b57c3",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6fa117ec21a0a9a04baac40a2aff3bec3a7e7065dd40685fc05830446cf3a963"
+        }
+      ],
+      "name": "numpy/fft/_pocketfft_umath.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0026-c2497168c56f",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b34389071e7912a6bf7360849c2e0a3b4e77009f25d0b2e18370a661119e2983"
+        }
+      ],
+      "name": "numpy/linalg/_umath_linalg.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0027-dd771271a3d4",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3b30620e1b6d3459072917c98e0bb87d72d1cfe9f0cdf649b781b886c8271f66"
+        }
+      ],
+      "name": "numpy/random/_bounded_integers.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0028-69f112311a83",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "aa98e4bc9ed3dea7267e382beda25828eeb5e0fff79d096de6dea6c4324ea821"
+        }
+      ],
+      "name": "numpy/random/_common.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0029-b95aee89f270",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a083bc28f733aaa8f165b82b516bf4c2b20e50371cebe38db061a47500f43101"
+        }
+      ],
+      "name": "numpy/random/_generator.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0030-ac5b7221bdd9",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d2fff2182d274f9adcf8dca3740ad17b6e84090fd01dd4c5acb164cb697d5553"
+        }
+      ],
+      "name": "numpy/random/_mt19937.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0031-9a68fc5feb46",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b7aa9611183ccabd40b9efe9156bac332c6c426607224f1060fbbad8ae8f28a5"
+        }
+      ],
+      "name": "numpy/random/_pcg64.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0032-1ba035e24286",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7e93f05391c653a50ba93263294eba56309bc7cb1592d60c9c51f0130a0d24ea"
+        }
+      ],
+      "name": "numpy/random/_philox.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0033-a83d6f2858f1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e277cc7eaa3299e5e859d3bbe1f45a30c4e41b4c93bcfc8c994e1b332248865e"
+        }
+      ],
+      "name": "numpy/random/_sfc64.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0034-b45b1e53185c",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "30d3b8885e67506df4b03531f787a45b1ae5100b7c5a292318b07b90977b6a7c"
+        }
+      ],
+      "name": "numpy/random/bit_generator.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0035-31ef031b44c9",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d36245820be27edb4d416fa290dd6f7e01a045b3cd31c7fbebfc4fe5f5b61733"
+        }
+      ],
+      "name": "numpy/random/mtrand.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0036-93a47fbb69f2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "086ec1d5388f64153d9c63470d126693db9a182c8ce236d3a1119068471b8a0d"
+        }
+      ],
+      "name": "onnxruntime/capi/libonnxruntime_providers_shared.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "e2128f31f449e922c62dbe5d8b6b7b079f0bcaf2d56a102fa203cb6e5bb5ab19"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0037-50ed737c769e",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "87a52fd4f5b54404e287aaf4edf3c2d00b3eb183f2bb50e3f56d0e1f52a9d03b"
+        }
+      ],
+      "name": "onnxruntime/capi/onnxruntime_pybind11_state.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "e2128f31f449e922c62dbe5d8b6b7b079f0bcaf2d56a102fa203cb6e5bb5ab19"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0038-7ec5d0df8327",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1158ff3dfd6b92bdf3f163c02c11c629baadba467604dcf5c579cf8daac071ea"
+        }
+      ],
+      "name": "opencv_python_headless.libs/libaom-a0d22147.so.3.14.1",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0039-ec3a28826e1c",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ad374a15351f348217c081ff0d422cec8a24434ec07c82d9a87aa5c1f2ef2006"
+        }
+      ],
+      "name": "opencv_python_headless.libs/libavcodec-57aca189.so.62.28.102",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0040-164478d8f8b9",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6bf44cd8b654d547161550085f46d1afa4ffa4babb56acf03363b1007d74c525"
+        }
+      ],
+      "name": "opencv_python_headless.libs/libavformat-50e282e4.so.62.12.102",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0041-0f9f0aa1af5f",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "08bd56025b1f665362a7ac4f1f2ac552e36803817a3637840a376242d38f30da"
+        }
+      ],
+      "name": "opencv_python_headless.libs/libavif-43e630fc.so.16.4.2",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0042-9abcf92ec20c",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fbd9aeb567815a65feba4c492c000d94643eb21581262944fcb8b77f9a98fb56"
+        }
+      ],
+      "name": "opencv_python_headless.libs/libavutil-431feb49.so.60.26.102",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0043-77fa3bf426e9",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a0f3596ad24657c5657908b709090a8facb3b93727d0181829daf80fd62ea859"
+        }
+      ],
+      "name": "opencv_python_headless.libs/libcrypto-a324fe28.so.1.1.1k",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0044-46f841252077",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1767a16263dbe12d8e98a4cda8c8465e024d4d33dac7218acada023929930ac5"
+        }
+      ],
+      "name": "opencv_python_headless.libs/libdav1d-d02dd842.so.7.0.0",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0045-8d952df0afd2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2b8f19025340baf49d5fb8b6b68113c429baf3ceb0e04d7b2663f673c44cdbed"
+        }
+      ],
+      "name": "opencv_python_headless.libs/libdrm-b0291a67.so.2.4.0",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0046-a083d8538297",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "468e71e59e1d784821a76702e5ecd1e0dbcfc024499f74a552d1bea4b26f27ad"
+        }
+      ],
+      "name": "opencv_python_headless.libs/libgfortran-83c28eba.so.5.0.0",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0047-29a49298a30b",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c073ab726795e391fd4ee09ce941c7d9e23e71a3737a910367f03d89487542f5"
+        }
+      ],
+      "name": "opencv_python_headless.libs/libopenblasp-r0-59ffcd50.3.15.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0048-53172993fe31",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e4d04733e75ffa81ab878c0ed628463ee4bba178120c32dc0372963680c6e768"
+        }
+      ],
+      "name": "opencv_python_headless.libs/libpng16-529cb57a.so.16.58.0",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0049-9cf70319c414",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a9307bbaa353623fa014e8b682d50c4629f5e5c7d61daa9a8652f7d165cd421a"
+        }
+      ],
+      "name": "opencv_python_headless.libs/libquadmath-2284e583.so.0.0.0",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0050-0ee8c405696b",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6b696f6571492d0e76cb8260ba75cb77fc49985e7585053e2ada009c18095991"
+        }
+      ],
+      "name": "opencv_python_headless.libs/libssl-8248cfc9.so.1.1.1k",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0051-f150e61d09b2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8c54e0dd8ccd3093512a2b23271f0829767862c96510ac0fd4e34ec4766466a7"
+        }
+      ],
+      "name": "opencv_python_headless.libs/libswresample-b08787fc.so.6.3.102",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0052-b28a46c1aa67",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8f9515d0882d84691ff236e54786f4afb8fc73d528691dec0ed3e9219dbb2f26"
+        }
+      ],
+      "name": "opencv_python_headless.libs/libswscale-ca2eb2d3.so.9.5.102",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0053-13c0856a9dc3",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "be3407f96ebd5fd5fde8eb91c9bf7d1e083916ddf856cf45784c67f1b2cb7f41"
+        }
+      ],
+      "name": "opencv_python_headless.libs/libvpx-4fb239ff.so.11.0.1",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0054-1816d9f3ad86",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "05484d24bf78cb8ed03169f1cb067204d829cb7af21de8820400d29d115e4320"
+        }
+      ],
+      "name": "pillow.libs/libXau-154567c4.so.6.0.0",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0055-00f63648bad7",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3a8819e60f0fd7c716ef14776085a81c941db354002a9f9a679da38447e5507f"
+        }
+      ],
+      "name": "pillow.libs/libavif-8a7f9d56.so.16.4.2",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0056-6f8291a7320d",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6d7c754529b30aff22efaaf88ba02061714591702c03f297f00ccb32ee6d9d9a"
+        }
+      ],
+      "name": "pillow.libs/libjpeg-31e2ca52.so.62.4.0",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0057-1bb349351733",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2549d6886e7de9960792e10ac87acfb9895e2afae85b7aac02108080cc7d3a71"
+        }
+      ],
+      "name": "pillow.libs/liblcms2-dade1fbf.so.2.0.19",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0058-e3f2e263f0b7",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "535737fa00b49f62d14d6d9bce76482440df700b33d2666d636894f751dd25f1"
+        }
+      ],
+      "name": "pillow.libs/liblzma-2be87c3e.so.5.8.3",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0059-7e3a573fc625",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "185cb358047fd8b351c1d05b84a7e906c59d68d7f41222805f7042895ae266d8"
+        }
+      ],
+      "name": "pillow.libs/libopenjp2-b07f72ad.so.2.5.4",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0060-3ff8513ecd87",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c2c5e89368b3bf9276a3cfea7e52ceb624db1c0c986c127169616219d5325807"
+        }
+      ],
+      "name": "pillow.libs/libsharpyuv-0066295b.so.0.1.2",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0061-1a39a1884641",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "522bafb6812978fc53db6c32e5c57786186b551fc5fd6a7c61b857ca01261d16"
+        }
+      ],
+      "name": "pillow.libs/libtiff-fc87e79d.so.6.2.0",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0062-e2651ccb9b99",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7df9ad3680dd09d756511334791c8c896207863816eb2910840e5fc4ae10028a"
+        }
+      ],
+      "name": "pillow.libs/libwebp-51b0b3f7.so.7.2.0",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0063-af42fbc921a0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a7ccaaf4388d8ec212ca85be17907e8e021b7da113f7f48c47722c1ebe602f8e"
+        }
+      ],
+      "name": "pillow.libs/libwebpdemux-9fe2abcc.so.2.0.17",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0064-3cff82ef4927",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "48ebf91c4d208901a48f851fb4c851d380fededd2a272104e3ca24c17499deba"
+        }
+      ],
+      "name": "pillow.libs/libwebpmux-8fb1c9f6.so.3.1.2",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0065-76aa9af17d12",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "633fe8df9f1bfc0ef60de6a3495a599ec56e56216491b90b79604cfecfb88000"
+        }
+      ],
+      "name": "pillow.libs/libxcb-ad31f5a3.so.1.1.0",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0066-058b3078c20c",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9501ab40e92a57491cadd2d02df46b596f24e74e6c0476b8500793f822fa0072"
+        }
+      ],
+      "name": "pillow.libs/libzstd-44be1190.so.1.5.7",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0067-43905b2b37f9",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a4685f26e20283e4f86386afae919ab36bbf87d241dbfb050426d0f8a27e4a5e"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_asyncio.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0068-244628941ef3",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5e2587334059e1bf0c8b0acdbddccce96f48f132b764ac354a2a0e1d242e80cb"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_bisect.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0069-621fef57459f",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ebb3b2287b616177f8604d05fb38022b028a95c6f496e78a02f972387165ced2"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_blake2.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0070-0f3ac85d9166",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e802af950ba693d17fb42c1853a55f6bd78664476e9d50d22c3f44a942d30f4e"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_bz2.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0071-91f88043d99d",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d4446e74503ccedfff371e70e308aeea581706a9ec921c650600bbb1485f3c83"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_codecs_cn.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0072-f772f976ffa7",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6d1e29092f912b7f7c61351b7232a9bfb55d6b133c7a61e6b4dfeb9667d15663"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_codecs_hk.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0073-8e0f1846de2e",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5ce261a18b65005378c5f7d84a5d9d9fc10659ae29a319040566cb1f9938a9c2"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_codecs_iso2022.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0074-0b45eae6609c",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "33b421eaccb6d1d7ac20d100680285ab820f69c459a5a32de836ab000ff9a3cb"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_codecs_jp.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0075-9d29fe3b7b8f",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "bc3f12f56faaf7e3b1904b97c258b80e7a707d95db8b7e60fe0502e3a9c63aef"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_codecs_kr.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0076-d295c0efebd5",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "52ca52fbdd075e33368c25122a4bbd36e161b3cba892f8124d9b3e90f4286114"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_codecs_tw.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0077-e2fcf9c9c50e",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "153a03358319923b5da02f631d871c8f01021095d42dacdc0dc080a930b52ba9"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_contextvars.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0078-7d1a7f1141c7",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b7a824c2d87286bb56a521306af9e9ebb876b38fc3632692e7b09493e6bdbc85"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_csv.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0079-0d3c316c8032",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "f17e6cf5f58412b1c35c78fddea2079494f04aade841ba1bb6963609fa7b43b7"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_ctypes.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0080-66004ce8a0f8",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a590ee25a354c9de21db35a8588a84b97f295829dee3b753621d753dd920da4a"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_datetime.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0081-51147a19af96",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "981edf67a44d0e9133333117fdab31ead5f286ddbfcb5f3e3a2f8519d93fb06f"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_decimal.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0082-82f53f2e113f",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c415258fd10de559398a1415f68fe19785db57f7688edff097530267c0b6969a"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_elementtree.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0083-eafa42b853b4",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "593f1bda55dfc1748d3542f4f040f3ffb5d3276d6fd7e5330384dc2e10e5326d"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_hashlib.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0084-f98c05012f3b",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "182bfa094a99abb25e146ed06a56d6676d248a6977815d79b857b6712b4bf172"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_heapq.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0085-bb0aad5be775",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4f9ee0107ce6debfd5f797ed3a9ab0d769c6ae69f36c5344d73d11822d431adf"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_json.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0086-9a976e7ce274",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9fa25a2f3d0abd5ab3d1f42aaf7aea7430c055708f7f1c8415d5add6b778fdf3"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_lzma.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0087-628ce50feb60",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d02e39e40b6b783dd75a93d0f02f2b175b35c7f5163fb13c207ab614737ae52a"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_md5.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0088-2b1bd2a8481c",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4d320c54d8e70f52ed439fd29312e714d826c674108a2bc88fc644ff89b17bd6"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_multibytecodec.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0089-a28705150658",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d0527bc3ec7ef842310d215efaef5d1b88c976bbb4cbb68b5f14f848e636017f"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_multiprocessing.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0090-516777c1b8ab",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "193f0179535d6aec7aae055670d3fd0e445c6f69e33cf58f5d87d9379b5c4938"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_opcode.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0091-048874e69d03",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "97c79d96499df649d67ef18949388e6b1c6688c5174587e3d3adab94e4911382"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_pickle.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0092-59558f25a62c",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "706bc56b8e036367bd7fee1094fb0241687e2f7148399b0f1829550dd2340afb"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_posixshmem.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0093-28887e0d193f",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "baae8b708b7535be001a1b4df140b52e8e3e46bc47cd02db922f7c81e0661a12"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_posixsubprocess.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0094-1bd4f20e91ab",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6cd938607b94da8a32e5d17d987cc3ca5a41d1e090532c6ede3aabf1f1cfbd4a"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_queue.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0095-a2e237f96ed6",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d7f6ac99eb42a9e8e4a360160d2ddf774f2fa178a34ff6300d8361d8ff4382db"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_random.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0096-6072d98efc8d",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4f906072ba4a8348cd0b27903cc07db5331a17db9015877f0c43a56487459ed0"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_sha1.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0097-b78d8a91fa70",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "592d2392641861c17da9c6e5f1652ee643e38f2243dbf96a81fa49758a412fb2"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_sha2.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0098-c8d0ad8593d1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "f73167e694f8594308cefce890bab0e742685a13aeadb2400ce25cf40bd0f2f7"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_sha3.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0099-15eb6f8bc19a",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cc29ede4cca96db24e2621397062e16fe63dcb43c0a78bd0b61274a00be38dc5"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_socket.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0100-941edd33c1fd",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6cc6bbd72cafd696530a7944ce928af50d333f91665aed5c34062d75a84a9e36"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_ssl.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0101-c96637c9a6ad",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e6402fb61820abc321a5d8d9ba99382438a07d55e480686f3451a7418f18f25b"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_statistics.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0102-2b49fdba638c",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7a12ac070014c4f583decbd40887b3ef6243015cf061e451374051cba1b0be84"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_struct.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0103-54f7ea54a95f",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a9acdbdd6ce2e1252eadb1b8c82e5a63d93567db646465dfa0dd046d914a7494"
+        }
+      ],
+      "name": "python3.13/lib-dynload/_uuid.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0104-96c0c8028585",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ca9d5148861bb6e943880bde816b0a91ab106330630f28a7874a9684f7f3c932"
+        }
+      ],
+      "name": "python3.13/lib-dynload/array.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0105-6d61fbe8a886",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "043b02504c5595c6eaf2a0163623b6b94f36634b0f6c22dafc7cf36f2bce720b"
+        }
+      ],
+      "name": "python3.13/lib-dynload/binascii.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0106-e2c548dba0f4",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "76e6099884ac48b5755912400a0c77ab2277a463eafb6b246a145257e2c84c30"
+        }
+      ],
+      "name": "python3.13/lib-dynload/fcntl.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0107-ed4bbf2d8472",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2918bb363a7eee4859852799c9f0c9d9c7f9c9a5a2160a1e108962a6e24b4ed3"
+        }
+      ],
+      "name": "python3.13/lib-dynload/grp.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0108-6b60b4f85c82",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7cccf08bdb4f07a07563a5b14c09e08c12fd2b78f63c32fab9cd7f104a54fd49"
+        }
+      ],
+      "name": "python3.13/lib-dynload/math.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0109-809ff89ca441",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "f29bf420b6fafe0268f5eedca63fef499c95a2f6cde20ceb92a33dcd5c40b2c3"
+        }
+      ],
+      "name": "python3.13/lib-dynload/mmap.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0110-0ff15daf991e",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d343f7a89ad374659262a2d4062148e6f31e519629af5d99c706f9ddd42ac11c"
+        }
+      ],
+      "name": "python3.13/lib-dynload/pyexpat.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0111-8b056fd07517",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "bb759ebe2c5ad0f0a640b7b818ca6d8a8726b41fab82126544afb52300c35342"
+        }
+      ],
+      "name": "python3.13/lib-dynload/readline.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0112-f4337c4ea989",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "dced7cefdf69e74f15e8c734d0c28122422d4ccd572fd01c6820c664c2dd64c4"
+        }
+      ],
+      "name": "python3.13/lib-dynload/resource.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0113-23fdf759bc00",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "faea5cf013ff2ffc94f37a539ac3500f07f371fcc0d0a9f3705f20acd3db0329"
+        }
+      ],
+      "name": "python3.13/lib-dynload/select.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0114-27a40ccd5615",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a19d950ff3143ad1633f323dd5293bac452c29d26ddf7985e372535284a25f49"
+        }
+      ],
+      "name": "python3.13/lib-dynload/termios.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0115-efc3df47434c",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "703b1d33d7991d5bf6cf0f794dac5cb01de6420c80bfe1a6adbf4b4791751b75"
+        }
+      ],
+      "name": "python3.13/lib-dynload/unicodedata.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0116-77b985475d27",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "85bb428f6f79dbeabc8c86c09c4e0de241508ccf7f8c850ea7b8237a6c57823e"
+        }
+      ],
+      "name": "python3.13/lib-dynload/zlib.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:linux:final-0117-d9cce1b12a04",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1f809f1b9093853c23e2d248628e7b73def616ad5ab4b6159545e02b20c152dd"
+        }
+      ],
+      "name": "sentencepiece/_sentencepiece.cpython-313-x86_64-linux-gnu.so",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "linux"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "c7f0fd2f2693309e6628aeeb2e2faf6edd221134dfccac3308ca0de01f8dab47"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0001-9ba4dd0e98bd",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2e3e5cce3aea38c603680ca3da5d161fad123ce23a803bb692a56aff608989be"
+        }
+      ],
+      "name": "PIL/_avif.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0002-3a71eddb05a8",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "88756e8e0e3f6180e518da25d379597c861e2d20d716ef001894789b515c1777"
+        }
+      ],
+      "name": "PIL/_imaging.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0003-f7855ee27740",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7ecb50b954d13d72b7a0ff565872332443cdbc83a36e58a56b2b949a56f32549"
+        }
+      ],
+      "name": "PIL/_imagingcms.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0004-6ec61ba4b0aa",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9d5bbea6a877a48ed7995a0640ecb0a5567d9fad544a4a1fbf9f22d507029b57"
+        }
+      ],
+      "name": "PIL/_imagingmath.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0005-8b61aa5c70ad",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8ccd6128481d5a3a15993c2f8a69585694ff972652a6b06dcaee276fc65633a7"
+        }
+      ],
+      "name": "PIL/_imagingtk.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0006-5c1319b0ebb1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9918faf8d90faa86e03e48479c6a62383be71da759254afded18591a406a92fe"
+        }
+      ],
+      "name": "PIL/_webp.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0007-0c3970a665f1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6941e2aeed3aad1a4658774ecb60309170066a040c2118a5efd16458ac3bed00"
+        }
+      ],
+      "name": "_asyncio.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0008-039385ad042f",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "261545bd24f15a783fc0c82568b766a4ab569dde14507a81701cccf5293e6e54"
+        }
+      ],
+      "name": "_bz2.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0009-956b394bc4f5",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9d6dccb4cd84a44a107f9b06b91c0a44e85766d9bf4debb6abbde8fda7494c2c"
+        }
+      ],
+      "name": "_ctypes.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0010-3c047f5978ed",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1e6a5707163d3c103e0eb4695eefedbea4b855fb227c61cc265b168970d6c6f0"
+        }
+      ],
+      "name": "_decimal.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0011-b609895d77cd",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "26c5c2f3f2b8dac1499f07a50d7afd14315c20a6a541abbe4e306bcd9df404f1"
+        }
+      ],
+      "name": "_elementtree.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0012-fc28a5e43945",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "79a26289aef0d92545a082507c7021f10e219621d137cb726c4d0fbbfd4b46ae"
+        }
+      ],
+      "name": "_hashlib.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0013-c47747086485",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ee224aacf5cf9c9974a1b842aac8d89d5d9b7eeebbf4d76619ae0ce4da8ecd96"
+        }
+      ],
+      "name": "_lzma.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0014-29500c1a3726",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "db19972cf033b598f5826f8219bc2608412b84061d294f5972b43c2ab95f7af5"
+        }
+      ],
+      "name": "_multiprocessing.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0015-74aa0b9aa16d",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9db08b5449e18088754ce57e315657d00b46575e0151cd379efef8847488a606"
+        }
+      ],
+      "name": "_overlapped.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0016-5155604f3572",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4404c2569443ffb54e7cfffdca8ddf58c9a609175305970728ec12bc1c147b43"
+        }
+      ],
+      "name": "_queue.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0017-efc9b392670c",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ccbd0f83df3784da08147b8e8765e28c978de28b5c0eddcfba5567b59d43fef9"
+        }
+      ],
+      "name": "_socket.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0018-7603dff71292",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8d2f51fa1dc929073a2ad8d1c7c0c911e8f695870dcf4dda2846f4b75a7f77fb"
+        }
+      ],
+      "name": "_ssl.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0019-493a1ea60091",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b93832742a2348d6659fd62e8a8aff061594693fc537da74c7d2d1cdf83a8475"
+        }
+      ],
+      "name": "_uuid.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0020-b6896260a767",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "db45362354fd4965329cb14bd974e60b26525045d09fb4fdfb1674a93b79d60c"
+        }
+      ],
+      "name": "_wmi.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0021-d3308dd029b8",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "441542da947fb1d51b4e1c4654ceb191bd7748f917a5f88dfeb50dc7d5221241"
+        }
+      ],
+      "name": "cv2/cv2.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "cbed65415b8f6a9541c705afe3e64795840524d0ff3bc58f507826284a1dc64b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0022-58f50aca3120",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "131d7657a173f659de69e1e331916e4a9c0d8cf7bde7201a6988af6056b94853"
+        }
+      ],
+      "name": "cv2/opencv_videoio_ffmpeg4140_64.dll",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "cbed65415b8f6a9541c705afe3e64795840524d0ff3bc58f507826284a1dc64b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0023-91f0b2d01051",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "09499e186cf0e434ffa17ad153aa9a66d6048c54a2c03b823e2a06c49d9affe4"
+        }
+      ],
+      "name": "libcrypto-3.dll",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0024-7a73848fad5d",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "eff52743773eb550fcc6ce3efc37c85724502233b6b002a35496d828bd7b280a"
+        }
+      ],
+      "name": "libffi-8.dll",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0025-e191be3f60fa",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "28c395290279fa4f4f54a57b85cd66d853895f925fefb8f6fdebc0d8b1cdd07c"
+        }
+      ],
+      "name": "libssl-3.dll",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0026-e171163e1135",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9e3e5a4229c1ca39f10dc82bba9e2b2bf48037790932566f37aff1a7ccf3588f"
+        }
+      ],
+      "name": "numpy.libs/libscipy_openblas64_-9e3e5a4229c1ca39f10dc82bba9e2b2b.dll",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0027-67d4545a2919",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a4c2229bdc2a2a630acdc095b4d86008e5c3e3bc7773174354f3da4f5beb9cde"
+        }
+      ],
+      "name": "numpy.libs/msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0028-8b92ba9e009e",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "181efbd14d98fc4ccf96fc5c274fb7c85294e263a93320d8f261eb36881a9000"
+        }
+      ],
+      "name": "numpy/_core/_multiarray_tests.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0029-46ff322bdfe5",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "04a87dcb37e46eff7b931a45e6d87366ede144b5ff319070a2cb983a9b2e1bbc"
+        }
+      ],
+      "name": "numpy/_core/_multiarray_umath.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0030-ac530369c632",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "450931b90eabbb64b3f7936f06ee95250fb5b9d1c06cf3892efed36c025909e8"
+        }
+      ],
+      "name": "numpy/fft/_pocketfft_umath.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0031-731886d426c7",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ce9c95c3836521e26f4b34d71ad89ddc8e945fe72a2016f8b339999c6fb0edf4"
+        }
+      ],
+      "name": "numpy/linalg/_umath_linalg.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0032-92eeca8ea1e2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5423456cf271a96c9bf8376d5a49634465f393a681b8f29f0039a2206c542de6"
+        }
+      ],
+      "name": "numpy/random/_bounded_integers.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0033-1d08a88f6044",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "db844232c16284032a353198f3606416ee1b7768ca46286e91819d34f645e627"
+        }
+      ],
+      "name": "numpy/random/_common.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0034-900a53ae9f8c",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "14fd4a00819b036bcaab9b92b9fadb5aad5dbcea00390a6b7e78bffe4ec13aa0"
+        }
+      ],
+      "name": "numpy/random/_generator.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0035-57d44f8a9554",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1cd4a5e52ac6791d91b94bce072579804c7a01961691986441692285891c5194"
+        }
+      ],
+      "name": "numpy/random/_mt19937.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0036-29d92369acfa",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a26be0e497ed821f02a25c91c73e3487bcde37a2ae6643eeb2f8ea536eecd3da"
+        }
+      ],
+      "name": "numpy/random/_pcg64.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0037-703f801b5827",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d7c2370679114aed54bdd64089d7f77b5d68261f1775967603376c72a593b001"
+        }
+      ],
+      "name": "numpy/random/_philox.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0038-1f36aab9a9df",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "333b0369d2538ee4ca1db76734bc1c943a4e8cff1b8c8c3ded080f18ff71cc95"
+        }
+      ],
+      "name": "numpy/random/_sfc64.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0039-99c56a022508",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9463c856a55cba2d6a5776954ce74ef7693030c1b9bc29ef9a1c9c26b87ba3d3"
+        }
+      ],
+      "name": "numpy/random/bit_generator.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0040-9144fcdb9176",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "da9ea962151d7d6d140c1c6266dd3e2da61d9a2c84fea6d68917206c1dc72fad"
+        }
+      ],
+      "name": "numpy/random/mtrand.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0041-2b35cc788e4b",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4075344f1057c0d16883fb5a93428aeac5fecfbcb24e1560defb1cb80a6e0a85"
+        }
+      ],
+      "name": "onnxruntime/capi/onnxruntime.dll",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2945e1f82f81f27e88decea88c7861f45baea23818950d467bf3909aa303119e"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0042-773f3015372f",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d647b451ba2808310ae2694040b670809daddf12f7a4f6296aca2a553c2ac571"
+        }
+      ],
+      "name": "onnxruntime/capi/onnxruntime_providers_shared.dll",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2945e1f82f81f27e88decea88c7861f45baea23818950d467bf3909aa303119e"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0043-7076f679925e",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fc7ce1c1f18f630d8255ba13dff0b348f3f4436c743423a2fe2ad1dee510646c"
+        }
+      ],
+      "name": "onnxruntime/capi/onnxruntime_pybind11_state.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "2945e1f82f81f27e88decea88c7861f45baea23818950d467bf3909aa303119e"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0044-df5c66bb2d8d",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b9c9c5a9f52af559a7eb4e8ddfd60558185bfc7794f32840bed1747d1ec9026a"
+        }
+      ],
+      "name": "pyexpat.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0045-63c880665806",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "76e7fd69a01081726308317d6e502721c2ba6792b48880dc1ef649c755788db7"
+        }
+      ],
+      "name": "python3.dll",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0046-674db60a6ea3",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e820bf024efd2b56bb2b82791e6b6ddc7303f070f8e72cba7637482a8a906238"
+        }
+      ],
+      "name": "python313.dll",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0047-f39ccbafd37d",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "024f955349fe46cf1bb2c22c6b57fcf38cf5755d46166fbf63e7e5b92433b111"
+        }
+      ],
+      "name": "select.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0048-feb712fe2df8",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ef25868963dc0fa56cd6f3e5477725873dd115a879e8cd070317f573442ae47c"
+        }
+      ],
+      "name": "sentencepiece/_sentencepiece.cp313-win_amd64.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "WHEEL_OWNED_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native:windows:final-0049-25a24bc21b0f",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "111e0fdfeef9887c04f6ebf1972ce1ccbec55b226012e4a288c2d4a0b17b216b"
+        }
+      ],
+      "name": "unicodedata.pyd",
+      "properties": [
+        {
+          "name": "distribution.target",
+          "value": "windows"
+        },
+        {
+          "name": "carchive.typecode",
+          "value": "b"
+        },
+        {
+          "name": "native.owner.kind",
+          "value": "CPYTHON_TOOLCHAIN_NATIVE"
+        },
+        {
+          "name": "native.source.artifact.sha256",
+          "value": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
+        },
+        {
+          "name": "native.build.context.id",
+          "value": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5"
+        }
+      ],
+      "type": "file"
+    }
+  ],
+  "dependencies": [
+    {
+      "dependsOn": [
+        "urn:sha256:0594131cf2da278ac9f9442e1ce2a8fe6ccb25ab83a0899f349784e688d304c6",
+        "urn:sha256:0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3",
+        "urn:sha256:11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017",
+        "urn:sha256:211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527",
+        "urn:sha256:255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360",
+        "urn:sha256:70f5ec8eb0da81a44360c0dc0beac99a0d78071d21956a7076bae8bd2051841b",
+        "urn:sha256:7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4",
+        "urn:sha256:7f585706bfddbdebf89daac705b2dfcc16890130727d3197ca62c732b4310953",
+        "urn:sha256:c7f0fd2f2693309e6628aeeb2e2faf6edd221134dfccac3308ca0de01f8dab47",
+        "urn:sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+        "urn:sha256:e2128f31f449e922c62dbe5d8b6b7b079f0bcaf2d56a102fa203cb6e5bb5ab19",
+        "urn:sha256:e34ff91a24bcddc6d939b878bdf3f5c437c9c46fe9e212b1bf455fdf1ee57586",
+        "native:linux:final-0001-91a5eef67b5a",
+        "native:linux:final-0002-97aa2f67ab54",
+        "native:linux:final-0003-ee2392912bbd",
+        "native:linux:final-0004-99fac3eff30f",
+        "native:linux:final-0005-f2efde262827",
+        "native:linux:final-0006-2864758397f6",
+        "native:linux:final-0007-5d74d3364f10",
+        "native:linux:final-0008-5621af9fef81",
+        "native:linux:final-0009-f53adbf26fff",
+        "native:linux:final-0010-c120cb299c92",
+        "native:linux:final-0011-0dcf133e09d9",
+        "native:linux:final-0012-6dafbbd94650",
+        "native:linux:final-0013-54a7927d2117",
+        "native:linux:final-0014-6ae334fe46d8",
+        "native:linux:final-0015-8f828abd6a45",
+        "native:linux:final-0016-853863b8cd15",
+        "native:linux:final-0017-e192fdfc4c04",
+        "native:linux:final-0018-d88e8ef30767",
+        "native:linux:final-0019-e2347eeb69e2",
+        "native:linux:final-0020-9fec7f213daf",
+        "native:linux:final-0021-1fa78596fbec",
+        "native:linux:final-0022-c7d95b745e26",
+        "native:linux:final-0023-a0b343d35ef4",
+        "native:linux:final-0024-887a1c13d901",
+        "native:linux:final-0025-d1fda82b57c3",
+        "native:linux:final-0026-c2497168c56f",
+        "native:linux:final-0027-dd771271a3d4",
+        "native:linux:final-0028-69f112311a83",
+        "native:linux:final-0029-b95aee89f270",
+        "native:linux:final-0030-ac5b7221bdd9",
+        "native:linux:final-0031-9a68fc5feb46",
+        "native:linux:final-0032-1ba035e24286",
+        "native:linux:final-0033-a83d6f2858f1",
+        "native:linux:final-0034-b45b1e53185c",
+        "native:linux:final-0035-31ef031b44c9",
+        "native:linux:final-0036-93a47fbb69f2",
+        "native:linux:final-0037-50ed737c769e",
+        "native:linux:final-0038-7ec5d0df8327",
+        "native:linux:final-0039-ec3a28826e1c",
+        "native:linux:final-0040-164478d8f8b9",
+        "native:linux:final-0041-0f9f0aa1af5f",
+        "native:linux:final-0042-9abcf92ec20c",
+        "native:linux:final-0043-77fa3bf426e9",
+        "native:linux:final-0044-46f841252077",
+        "native:linux:final-0045-8d952df0afd2",
+        "native:linux:final-0046-a083d8538297",
+        "native:linux:final-0047-29a49298a30b",
+        "native:linux:final-0048-53172993fe31",
+        "native:linux:final-0049-9cf70319c414",
+        "native:linux:final-0050-0ee8c405696b",
+        "native:linux:final-0051-f150e61d09b2",
+        "native:linux:final-0052-b28a46c1aa67",
+        "native:linux:final-0053-13c0856a9dc3",
+        "native:linux:final-0054-1816d9f3ad86",
+        "native:linux:final-0055-00f63648bad7",
+        "native:linux:final-0056-6f8291a7320d",
+        "native:linux:final-0057-1bb349351733",
+        "native:linux:final-0058-e3f2e263f0b7",
+        "native:linux:final-0059-7e3a573fc625",
+        "native:linux:final-0060-3ff8513ecd87",
+        "native:linux:final-0061-1a39a1884641",
+        "native:linux:final-0062-e2651ccb9b99",
+        "native:linux:final-0063-af42fbc921a0",
+        "native:linux:final-0064-3cff82ef4927",
+        "native:linux:final-0065-76aa9af17d12",
+        "native:linux:final-0066-058b3078c20c",
+        "native:linux:final-0067-43905b2b37f9",
+        "native:linux:final-0068-244628941ef3",
+        "native:linux:final-0069-621fef57459f",
+        "native:linux:final-0070-0f3ac85d9166",
+        "native:linux:final-0071-91f88043d99d",
+        "native:linux:final-0072-f772f976ffa7",
+        "native:linux:final-0073-8e0f1846de2e",
+        "native:linux:final-0074-0b45eae6609c",
+        "native:linux:final-0075-9d29fe3b7b8f",
+        "native:linux:final-0076-d295c0efebd5",
+        "native:linux:final-0077-e2fcf9c9c50e",
+        "native:linux:final-0078-7d1a7f1141c7",
+        "native:linux:final-0079-0d3c316c8032",
+        "native:linux:final-0080-66004ce8a0f8",
+        "native:linux:final-0081-51147a19af96",
+        "native:linux:final-0082-82f53f2e113f",
+        "native:linux:final-0083-eafa42b853b4",
+        "native:linux:final-0084-f98c05012f3b",
+        "native:linux:final-0085-bb0aad5be775",
+        "native:linux:final-0086-9a976e7ce274",
+        "native:linux:final-0087-628ce50feb60",
+        "native:linux:final-0088-2b1bd2a8481c",
+        "native:linux:final-0089-a28705150658",
+        "native:linux:final-0090-516777c1b8ab",
+        "native:linux:final-0091-048874e69d03",
+        "native:linux:final-0092-59558f25a62c",
+        "native:linux:final-0093-28887e0d193f",
+        "native:linux:final-0094-1bd4f20e91ab",
+        "native:linux:final-0095-a2e237f96ed6",
+        "native:linux:final-0096-6072d98efc8d",
+        "native:linux:final-0097-b78d8a91fa70",
+        "native:linux:final-0098-c8d0ad8593d1",
+        "native:linux:final-0099-15eb6f8bc19a",
+        "native:linux:final-0100-941edd33c1fd",
+        "native:linux:final-0101-c96637c9a6ad",
+        "native:linux:final-0102-2b49fdba638c",
+        "native:linux:final-0103-54f7ea54a95f",
+        "native:linux:final-0104-96c0c8028585",
+        "native:linux:final-0105-6d61fbe8a886",
+        "native:linux:final-0106-e2c548dba0f4",
+        "native:linux:final-0107-ed4bbf2d8472",
+        "native:linux:final-0108-6b60b4f85c82",
+        "native:linux:final-0109-809ff89ca441",
+        "native:linux:final-0110-0ff15daf991e",
+        "native:linux:final-0111-8b056fd07517",
+        "native:linux:final-0112-f4337c4ea989",
+        "native:linux:final-0113-23fdf759bc00",
+        "native:linux:final-0114-27a40ccd5615",
+        "native:linux:final-0115-efc3df47434c",
+        "native:linux:final-0116-77b985475d27",
+        "native:linux:final-0117-d9cce1b12a04"
+      ],
+      "ref": "urn:sha256:4b69bb8a6eec5da994cc8c575d49db6439efab67f94b063374e4a50b0716c1d1"
+    },
+    {
+      "dependsOn": [
+        "urn:sha256:00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+        "urn:sha256:0594131cf2da278ac9f9442e1ce2a8fe6ccb25ab83a0899f349784e688d304c6",
+        "urn:sha256:10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b",
+        "urn:sha256:1781cc1de61249b750848029bca452c0a8b7e990080316b9bbc2518b2117b488",
+        "urn:sha256:1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
+        "urn:sha256:255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360",
+        "urn:sha256:2945e1f82f81f27e88decea88c7861f45baea23818950d467bf3909aa303119e",
+        "urn:sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6",
+        "urn:sha256:7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4",
+        "urn:sha256:7f585706bfddbdebf89daac705b2dfcc16890130727d3197ca62c732b4310953",
+        "urn:sha256:cbed65415b8f6a9541c705afe3e64795840524d0ff3bc58f507826284a1dc64b",
+        "urn:sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+        "urn:sha256:e34ff91a24bcddc6d939b878bdf3f5c437c9c46fe9e212b1bf455fdf1ee57586",
+        "native:windows:final-0001-9ba4dd0e98bd",
+        "native:windows:final-0002-3a71eddb05a8",
+        "native:windows:final-0003-f7855ee27740",
+        "native:windows:final-0004-6ec61ba4b0aa",
+        "native:windows:final-0005-8b61aa5c70ad",
+        "native:windows:final-0006-5c1319b0ebb1",
+        "native:windows:final-0007-0c3970a665f1",
+        "native:windows:final-0008-039385ad042f",
+        "native:windows:final-0009-956b394bc4f5",
+        "native:windows:final-0010-3c047f5978ed",
+        "native:windows:final-0011-b609895d77cd",
+        "native:windows:final-0012-fc28a5e43945",
+        "native:windows:final-0013-c47747086485",
+        "native:windows:final-0014-29500c1a3726",
+        "native:windows:final-0015-74aa0b9aa16d",
+        "native:windows:final-0016-5155604f3572",
+        "native:windows:final-0017-efc9b392670c",
+        "native:windows:final-0018-7603dff71292",
+        "native:windows:final-0019-493a1ea60091",
+        "native:windows:final-0020-b6896260a767",
+        "native:windows:final-0021-d3308dd029b8",
+        "native:windows:final-0022-58f50aca3120",
+        "native:windows:final-0023-91f0b2d01051",
+        "native:windows:final-0024-7a73848fad5d",
+        "native:windows:final-0025-e191be3f60fa",
+        "native:windows:final-0026-e171163e1135",
+        "native:windows:final-0027-67d4545a2919",
+        "native:windows:final-0028-8b92ba9e009e",
+        "native:windows:final-0029-46ff322bdfe5",
+        "native:windows:final-0030-ac530369c632",
+        "native:windows:final-0031-731886d426c7",
+        "native:windows:final-0032-92eeca8ea1e2",
+        "native:windows:final-0033-1d08a88f6044",
+        "native:windows:final-0034-900a53ae9f8c",
+        "native:windows:final-0035-57d44f8a9554",
+        "native:windows:final-0036-29d92369acfa",
+        "native:windows:final-0037-703f801b5827",
+        "native:windows:final-0038-1f36aab9a9df",
+        "native:windows:final-0039-99c56a022508",
+        "native:windows:final-0040-9144fcdb9176",
+        "native:windows:final-0041-2b35cc788e4b",
+        "native:windows:final-0042-773f3015372f",
+        "native:windows:final-0043-7076f679925e",
+        "native:windows:final-0044-df5c66bb2d8d",
+        "native:windows:final-0045-63c880665806",
+        "native:windows:final-0046-674db60a6ea3",
+        "native:windows:final-0047-f39ccbafd37d",
+        "native:windows:final-0048-feb712fe2df8",
+        "native:windows:final-0049-25a24bc21b0f"
+      ],
+      "ref": "urn:sha256:d99fa3c7b30e9bf8e45c03a124a794de70baaac630f18fde4d8fd71f6cb5713c"
+    }
+  ],
+  "metadata": {
+    "properties": [
+      {
+        "name": "com.company.git.commit",
+        "value": "48d94bd6e262c2c36403beba2e346e5d36681d9c"
+      },
+      {
+        "name": "com.company.main.quality.baseline",
+        "value": "06c4620e8738bd63f8674e15d1158042a65c1d28"
+      },
+      {
+        "name": "com.company.sbom.completeness",
+        "value": "FINAL_DISTRIBUTION_SET_ONLY"
+      },
+      {
+        "name": "com.company.license.review.record.count",
+        "value": "18"
+      },
+      {
+        "name": "com.company.license.review.record.set.sha256",
+        "value": "7726678bd5eeb47ddf70512bd7e17fab8922348018be93c4768a18ee2e0fa2e7"
+      },
+      {
+        "name": "com.company.license.final.review.result.sha256",
+        "value": "0e45e2cae89a622dd60716916b3e9ba84734054e64f8572997490f4bf6e76f71"
+      },
+      {
+        "name": "com.company.license.review.bundle.sha256",
+        "value": "824eba5d4552179e727c8b34b95f0ecdd169e28c394265a858c5bd0955cc0c56"
+      },
+      {
+        "name": "com.company.license.policy.version",
+        "value": "2026.09.02.1"
+      },
+      {
+        "name": "com.company.final.distributed.set.sha256",
+        "value": "71ea72dfb51a4bf5df7320feefb1c6b8e4d87e1fdf784169e54b0457f2bb0163"
+      },
+      {
+        "name": "com.company.final.distributed.component.count",
+        "value": "187"
+      },
+      {
+        "name": "com.company.msvc.external.prerequisite",
+        "value": "PREINSTALLED_COMPATIBLE_RUNTIME_ONLY"
+      }
+    ],
+    "timestamp": "2026-09-02T00:00:00Z",
+    "tools": [
+      {
+        "name": "post-f-license-reconciler",
+        "vendor": "Code C",
+        "version": "1"
+      }
+    ]
+  },
+  "serialNumber": "urn:uuid:1a2fcdfcb7f139f27e3748b91ecaefc9",
+  "specVersion": "1.6",
+  "version": 1
+}

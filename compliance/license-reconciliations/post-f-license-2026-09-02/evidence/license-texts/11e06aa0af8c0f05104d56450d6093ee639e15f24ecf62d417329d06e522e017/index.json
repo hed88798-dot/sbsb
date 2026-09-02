@@ -1,0 +1,26 @@
+[
+  {
+    "filename": "numpy-2.3.5.dist-info__LICENSE.txt.txt",
+    "relative_path": "numpy-2.3.5.dist-info/LICENSE.txt",
+    "sha256": "2046a3130e50b11c01659b3a0d963e6ae0b7436ff8e89cbcfd9e87bc6112d595",
+    "size": 47768
+  },
+  {
+    "filename": "numpy___core__include__numpy__random__LICENSE.txt.txt",
+    "relative_path": "numpy/_core/include/numpy/random/LICENSE.txt",
+    "sha256": "fbc539f47d0cf83bc61378080fb873d5c14630126cacbfe754035c3926daa5ec",
+    "size": 1018
+  },
+  {
+    "filename": "numpy__ma__LICENSE.txt",
+    "relative_path": "numpy/ma/LICENSE",
+    "sha256": "05f3b88351988ecfad10abe92c0c50e5875c6452d5009a0084cc291551ffcca6",
+    "size": 1593
+  },
+  {
+    "filename": "numpy__random__LICENSE.md.txt",
+    "relative_path": "numpy/random/LICENSE.md",
+    "sha256": "103166b62b80443afb9eb3488e052ea06be0cff566b908f199e561fde49af19f",
+    "size": 3511
+  }
+]

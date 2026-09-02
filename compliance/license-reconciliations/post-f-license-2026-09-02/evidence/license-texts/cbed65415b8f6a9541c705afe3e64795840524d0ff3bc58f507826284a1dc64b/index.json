@@ -1,0 +1,26 @@
+[
+  {
+    "filename": "cv2__LICENSE-3RD-PARTY.txt.txt",
+    "relative_path": "cv2/LICENSE-3RD-PARTY.txt",
+    "sha256": "e24e3768561906cc7ccba808f2e8bb4b4bcb2988fece11656b7b56cf14da6bc5",
+    "size": 182909
+  },
+  {
+    "filename": "cv2__LICENSE.txt.txt",
+    "relative_path": "cv2/LICENSE.txt",
+    "sha256": "edef0fac1eb08d29d34563f724742e078da2513e196133a12c6ad9ff01e26107",
+    "size": 1090
+  },
+  {
+    "filename": "opencv_python_headless-4.14.0.94.dist-info__LICENSE-3RD-PARTY.txt.txt",
+    "relative_path": "opencv_python_headless-4.14.0.94.dist-info/LICENSE-3RD-PARTY.txt",
+    "sha256": "e24e3768561906cc7ccba808f2e8bb4b4bcb2988fece11656b7b56cf14da6bc5",
+    "size": 182909
+  },
+  {
+    "filename": "opencv_python_headless-4.14.0.94.dist-info__LICENSE.txt.txt",
+    "relative_path": "opencv_python_headless-4.14.0.94.dist-info/LICENSE.txt",
+    "sha256": "edef0fac1eb08d29d34563f724742e078da2513e196133a12c6ad9ff01e26107",
+    "size": 1090
+  }
+]

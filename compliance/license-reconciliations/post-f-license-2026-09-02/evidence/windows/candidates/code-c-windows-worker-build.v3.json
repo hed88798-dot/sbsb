@@ -1,0 +1,801 @@
+{
+  "graph_complete": true,
+  "inventory_id": "code-c-windows-worker-build-py31315",
+  "packages": [
+    {
+      "artifact_path": "altgraph-0.17.5-py2.py3-none-any.whl",
+      "artifact_type": "wheel",
+      "compatibility": {
+        "matched_tags": [
+          "py3-none-any"
+        ],
+        "status": "COMPATIBLE"
+      },
+      "dependencies": [],
+      "dependency_declarations": [],
+      "direct": false,
+      "filename": "altgraph-0.17.5-py2.py3-none-any.whl",
+      "license_expression": "MIT",
+      "license_files": [
+        {
+          "relative_path": "altgraph-0.17.5.dist-info/LICENSE",
+          "sha256": "6c194d6db0c64d45535d10c95142b9b0cda7b7dcc7f1ddee302b3d536f3dbe46"
+        }
+      ],
+      "native_artifacts": [],
+      "package_name": "altgraph",
+      "provenance": {
+        "download_url": "https://files.pythonhosted.org/packages/a9/ba/000a1996d4308bc65120167c21241a3b205464a2e0b58deda26ae8ac21d1/altgraph-0.17.5-py2.py3-none-any.whl",
+        "supplier": "Python Package Index upstream project maintainers",
+        "upstream_signature": null
+      },
+      "purl": "pkg:pypi/altgraph@0.17.5",
+      "sha256": "f3a22400bce1b0c701683820ac4f3b159cd301acab067c51c653e06961600597",
+      "source": "https://pypi.org/project/altgraph/0.17.5/",
+      "source_index": "https://pypi.org/simple",
+      "version": "0.17.5",
+      "wheel_tags": [
+        "py2-none-any",
+        "py3-none-any"
+      ]
+    },
+    {
+      "artifact_path": "packaging-26.3-py3-none-any.whl",
+      "artifact_type": "wheel",
+      "compatibility": {
+        "matched_tags": [
+          "py3-none-any"
+        ],
+        "status": "COMPATIBLE"
+      },
+      "dependencies": [],
+      "dependency_declarations": [],
+      "direct": false,
+      "filename": "packaging-26.3-py3-none-any.whl",
+      "license_expression": "Apache-2.0 OR BSD-2-Clause",
+      "license_files": [
+        {
+          "relative_path": "packaging-26.3.dist-info/licenses/LICENSE",
+          "sha256": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48"
+        },
+        {
+          "relative_path": "packaging-26.3.dist-info/licenses/LICENSE.APACHE",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+        },
+        {
+          "relative_path": "packaging-26.3.dist-info/licenses/LICENSE.BSD",
+          "sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5"
+        }
+      ],
+      "native_artifacts": [],
+      "package_name": "packaging",
+      "provenance": {
+        "download_url": "https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl",
+        "supplier": "Python Package Index upstream project maintainers",
+        "upstream_signature": null
+      },
+      "purl": "pkg:pypi/packaging@26.3",
+      "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+      "source": "https://pypi.org/project/packaging/26.3/",
+      "source_index": "https://pypi.org/simple",
+      "version": "26.3",
+      "wheel_tags": [
+        "py3-none-any"
+      ]
+    },
+    {
+      "artifact_path": "pefile-2024.8.26-py3-none-any.whl",
+      "artifact_type": "wheel",
+      "compatibility": {
+        "matched_tags": [
+          "py3-none-any"
+        ],
+        "status": "COMPATIBLE"
+      },
+      "dependencies": [],
+      "dependency_declarations": [],
+      "direct": false,
+      "filename": "pefile-2024.8.26-py3-none-any.whl",
+      "license_expression": "MIT",
+      "license_files": [
+        {
+          "relative_path": "pefile-2024.8.26.dist-info/LICENSE",
+          "sha256": "b44409c067c6da52bfb54bb6624fb11a7b52157c3a13ae1400232f8196e86ad3"
+        }
+      ],
+      "native_artifacts": [],
+      "package_name": "pefile",
+      "provenance": {
+        "download_url": "https://files.pythonhosted.org/packages/54/16/12b82f791c7f50ddec566873d5bdd245baa1491bac11d15ffb98aecc8f8b/pefile-2024.8.26-py3-none-any.whl",
+        "supplier": "Python Package Index upstream project maintainers",
+        "upstream_signature": null
+      },
+      "purl": "pkg:pypi/pefile@2024.8.26",
+      "sha256": "76f8b485dcd3b1bb8166f1128d395fa3d87af26360c2358fb75b80019b957c6f",
+      "source": "https://pypi.org/project/pefile/2024.8.26/",
+      "source_index": "https://pypi.org/simple",
+      "version": "2024.8.26",
+      "wheel_tags": [
+        "py3-none-any"
+      ]
+    },
+    {
+      "artifact_path": "pyinstaller-6.22.2-py3-none-win_amd64.whl",
+      "artifact_type": "wheel",
+      "compatibility": {
+        "matched_tags": [
+          "py3-none-win_amd64"
+        ],
+        "status": "COMPATIBLE"
+      },
+      "dependencies": [
+        "pkg:pypi/altgraph@0.17.5",
+        "pkg:pypi/packaging@26.3",
+        "pkg:pypi/pefile@2024.8.26",
+        "pkg:pypi/pyinstaller-hooks-contrib@2026.7",
+        "pkg:pypi/pywin32-ctypes@0.2.3",
+        "pkg:pypi/setuptools@84.0.0"
+      ],
+      "dependency_declarations": [
+        {
+          "disposition": "INCLUDED",
+          "package_name": "altgraph",
+          "purl": "pkg:pypi/altgraph@0.17.5",
+          "reason": "",
+          "requirement": "altgraph"
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "argcomplete",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "argcomplete; extra == 'completion'"
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "execnet",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "execnet>=1.5.0; extra == 'hook-testing'"
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "importlib-metadata",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "importlib-metadata>=4.6; python_version < '3.10'"
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "macholib",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "macholib>=1.8; sys_platform == 'darwin'"
+        },
+        {
+          "disposition": "INCLUDED",
+          "package_name": "packaging",
+          "purl": "pkg:pypi/packaging@26.3",
+          "reason": "",
+          "requirement": "packaging>=22.0"
+        },
+        {
+          "disposition": "INCLUDED",
+          "package_name": "pefile",
+          "purl": "pkg:pypi/pefile@2024.8.26",
+          "reason": "",
+          "requirement": "pefile>=2022.5.30; sys_platform == 'win32'"
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "psutil",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "psutil; extra == 'hook-testing'"
+        },
+        {
+          "disposition": "INCLUDED",
+          "package_name": "pyinstaller-hooks-contrib",
+          "purl": "pkg:pypi/pyinstaller-hooks-contrib@2026.7",
+          "reason": "",
+          "requirement": "pyinstaller-hooks-contrib>=2026.6"
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "pytest",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "pytest>=2.7.3; extra == 'hook-testing'"
+        },
+        {
+          "disposition": "INCLUDED",
+          "package_name": "pywin32-ctypes",
+          "purl": "pkg:pypi/pywin32-ctypes@0.2.3",
+          "reason": "",
+          "requirement": "pywin32-ctypes>=0.2.1; sys_platform == 'win32'"
+        },
+        {
+          "disposition": "INCLUDED",
+          "package_name": "setuptools",
+          "purl": "pkg:pypi/setuptools@84.0.0",
+          "reason": "",
+          "requirement": "setuptools>=42.0.0"
+        }
+      ],
+      "direct": true,
+      "filename": "pyinstaller-6.22.2-py3-none-win_amd64.whl",
+      "license_expression": "GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones)",
+      "license_files": [
+        {
+          "relative_path": "pyinstaller-6.22.2.dist-info/licenses/COPYING.txt",
+          "sha256": "dcf75fdb959db1e3b41c0f8505069d2ece781b5ec6b3d0a4d30975cfc6580245"
+        }
+      ],
+      "native_artifacts": [],
+      "package_name": "pyinstaller",
+      "provenance": {
+        "download_url": "https://files.pythonhosted.org/packages/3f/53/8ba1d0f6159b490f700eac6161a4be5f0d4672608a6dae9fd73679f183ee/pyinstaller-6.22.2-py3-none-win_amd64.whl",
+        "supplier": "Python Package Index upstream project maintainers",
+        "upstream_signature": null
+      },
+      "purl": "pkg:pypi/pyinstaller@6.22.2",
+      "sha256": "9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7",
+      "source": "https://pypi.org/project/pyinstaller/6.22.2/",
+      "source_index": "https://pypi.org/simple",
+      "version": "6.22.2",
+      "wheel_tags": [
+        "py3-none-win_amd64"
+      ]
+    },
+    {
+      "artifact_path": "pyinstaller_hooks_contrib-2026.7-py3-none-any.whl",
+      "artifact_type": "wheel",
+      "compatibility": {
+        "matched_tags": [
+          "py3-none-any"
+        ],
+        "status": "COMPATIBLE"
+      },
+      "dependencies": [
+        "pkg:pypi/packaging@26.3"
+      ],
+      "dependency_declarations": [
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "importlib_metadata",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "importlib_metadata>=4.6; python_version < \"3.10\""
+        },
+        {
+          "disposition": "INCLUDED",
+          "package_name": "packaging",
+          "purl": "pkg:pypi/packaging@26.3",
+          "reason": "",
+          "requirement": "packaging>=22.0"
+        }
+      ],
+      "direct": false,
+      "filename": "pyinstaller_hooks_contrib-2026.7-py3-none-any.whl",
+      "license_expression": "UNKNOWN",
+      "license_files": [
+        {
+          "relative_path": "pyinstaller_hooks_contrib-2026.7.dist-info/licenses/LICENSE",
+          "sha256": "91d0baaff00773038e72c0a1fc9d5d2d38706b7a2b9c04f34296608f931b9cd0"
+        }
+      ],
+      "native_artifacts": [],
+      "package_name": "pyinstaller-hooks-contrib",
+      "provenance": {
+        "download_url": "https://files.pythonhosted.org/packages/0a/67/350377af7b50416344ab8792756d414eef7629c618a73e9a0b13bb1552d9/pyinstaller_hooks_contrib-2026.7-py3-none-any.whl",
+        "supplier": "Python Package Index upstream project maintainers",
+        "upstream_signature": null
+      },
+      "purl": "pkg:pypi/pyinstaller-hooks-contrib@2026.7",
+      "sha256": "24257a04c7a5a7a034cf28e39dcee20fbeeb9f043076729480f2e1b69904408a",
+      "source": "https://pypi.org/project/pyinstaller-hooks-contrib/2026.7/",
+      "source_index": "https://pypi.org/simple",
+      "version": "2026.7",
+      "wheel_tags": [
+        "py3-none-any"
+      ]
+    },
+    {
+      "artifact_path": "pywin32_ctypes-0.2.3-py3-none-any.whl",
+      "artifact_type": "wheel",
+      "compatibility": {
+        "matched_tags": [
+          "py3-none-any"
+        ],
+        "status": "COMPATIBLE"
+      },
+      "dependencies": [],
+      "dependency_declarations": [],
+      "direct": false,
+      "filename": "pywin32_ctypes-0.2.3-py3-none-any.whl",
+      "license_expression": "BSD-3-Clause",
+      "license_files": [
+        {
+          "relative_path": "pywin32_ctypes-0.2.3.dist-info/LICENSE.txt",
+          "sha256": "dfa83b3e2709adfcdb838d9ad55823ca674abb780e60563d9dd9544ccbf785e9"
+        }
+      ],
+      "native_artifacts": [],
+      "package_name": "pywin32-ctypes",
+      "provenance": {
+        "download_url": "https://files.pythonhosted.org/packages/de/3d/8161f7711c017e01ac9f008dfddd9410dff3674334c233bde66e7ba65bbf/pywin32_ctypes-0.2.3-py3-none-any.whl",
+        "supplier": "Python Package Index upstream project maintainers",
+        "upstream_signature": null
+      },
+      "purl": "pkg:pypi/pywin32-ctypes@0.2.3",
+      "sha256": "8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8",
+      "source": "https://pypi.org/project/pywin32-ctypes/0.2.3/",
+      "source_index": "https://pypi.org/simple",
+      "version": "0.2.3",
+      "wheel_tags": [
+        "py3-none-any"
+      ]
+    },
+    {
+      "artifact_path": "setuptools-84.0.0-py3-none-any.whl",
+      "artifact_type": "wheel",
+      "compatibility": {
+        "matched_tags": [
+          "py3-none-any"
+        ],
+        "status": "COMPATIBLE"
+      },
+      "dependencies": [],
+      "dependency_declarations": [
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "build",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "build[virtualenv]>=1.0.3; extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "filelock",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "filelock>=3.4.0; extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "furo",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "furo; extra == \"doc\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "importlib_metadata",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "importlib_metadata>=6; python_version < \"3.10\" and extra == \"core\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "importlib_metadata",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "importlib_metadata>=7.0.2; python_version < \"3.10\" and extra == \"type\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "ini2toml",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "ini2toml[lite]>=0.14; extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "jaraco.develop",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "jaraco.develop>=7.21; (python_version >= \"3.9\" and sys_platform != \"cygwin\") and extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "jaraco.develop",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "jaraco.develop>=7.21; sys_platform != \"cygwin\" and extra == \"type\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "jaraco.envs",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "jaraco.envs>=2.2; extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "jaraco.functools",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "jaraco.functools>=4; extra == \"core\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "jaraco.packaging",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "jaraco.packaging>=9.3; extra == \"doc\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "jaraco.path",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "jaraco.path>=3.7.2; extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "jaraco.test",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "jaraco.test>=5.5; extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "jaraco.text",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "jaraco.text>=3.7; extra == \"core\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "jaraco.tidelift",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "jaraco.tidelift>=1.4; extra == \"doc\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "more_itertools",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "more_itertools; extra == \"core\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "more_itertools",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "more_itertools>=8.8; extra == \"core\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "mypy",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "mypy==1.18.*; extra == \"type\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "packaging",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "packaging>=24.2; extra == \"core\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "packaging",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "packaging>=24.2; extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "pip",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "pip>=19.1; extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "pygments-github-lexers",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "pygments-github-lexers==0.0.5; extra == \"doc\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "pyproject-hooks",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "pyproject-hooks!=1.1; extra == \"doc\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "pyproject-hooks",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "pyproject-hooks!=1.1; extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "pytest",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "pytest!=8.1.*,>=6; extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "pytest-checkdocs",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "pytest-checkdocs>=2.14; extra == \"check\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "pytest-cov",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "pytest-cov; extra == \"cover\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "pytest-enabler",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "pytest-enabler>=3.4; extra == \"enabler\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "pytest-home",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "pytest-home>=0.5; extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "pytest-mypy",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "pytest-mypy>=1.0.1; platform_python_implementation != \"PyPy\" and extra == \"type\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "pytest-perf",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "pytest-perf; sys_platform != \"cygwin\" and extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "pytest-ruff",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "pytest-ruff>=0.2.1; sys_platform != \"cygwin\" and extra == \"check\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "pytest-subprocess",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "pytest-subprocess; extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "pytest-timeout",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "pytest-timeout; extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "pytest-xdist",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "pytest-xdist>=3; extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "rst.linker",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "rst.linker>=1.9; extra == \"doc\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "ruff",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "ruff>=0.13.0; sys_platform != \"cygwin\" and extra == \"check\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "sphinx-favicon",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "sphinx-favicon; extra == \"doc\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "sphinx-inline-tabs",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "sphinx-inline-tabs; extra == \"doc\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "sphinx-lint",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "sphinx-lint; extra == \"doc\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "sphinx-notfound-page",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "sphinx-notfound-page<2,>=1; extra == \"doc\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "sphinx-reredirects",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "sphinx-reredirects; extra == \"doc\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "sphinx",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "sphinx>=3.5; extra == \"doc\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "sphinxcontrib-towncrier",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "sphinxcontrib-towncrier; extra == \"doc\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "tomli-w",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "tomli-w>=1.0.0; extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "tomli",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "tomli>=2.0.1; python_version < \"3.11\" and extra == \"core\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "towncrier",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "towncrier<24.7; extra == \"doc\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "virtualenv",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "virtualenv>=13.0.0; extra == \"test\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "wheel",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "wheel>=0.43.0; extra == \"core\""
+        },
+        {
+          "disposition": "NOT_APPLICABLE",
+          "package_name": "wheel",
+          "purl": null,
+          "reason": "Marker evaluated false for windows/CPython 3.13.15 with extras ['<none>'].",
+          "requirement": "wheel>=0.44.0; extra == \"test\""
+        }
+      ],
+      "direct": false,
+      "filename": "setuptools-84.0.0-py3-none-any.whl",
+      "license_expression": "MIT",
+      "license_files": [
+        {
+          "relative_path": "setuptools-84.0.0.dist-info/licenses/LICENSE",
+          "sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741"
+        },
+        {
+          "relative_path": "setuptools/config/NOTICE",
+          "sha256": "2dddf08818297a3b89d43d95ff659d8da85741108c9136dfa3a4d856c0623bd8"
+        },
+        {
+          "relative_path": "setuptools/config/_validate_pyproject/NOTICE",
+          "sha256": "09c9bcea95ca086f8bc5bed174e40bc835b297d40fb5f86bbbb570fe0a5581a7"
+        }
+      ],
+      "native_artifacts": [],
+      "package_name": "setuptools",
+      "provenance": {
+        "download_url": "https://files.pythonhosted.org/packages/95/9c/c510029fc6ef33a6275cd2c5d3cecd6613dfd6aa401d57c54f1c18852ccf/setuptools-84.0.0-py3-none-any.whl",
+        "supplier": "Python Package Index upstream project maintainers",
+        "upstream_signature": null
+      },
+      "purl": "pkg:pypi/setuptools@84.0.0",
+      "sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+      "source": "https://pypi.org/project/setuptools/84.0.0/",
+      "source_index": "https://pypi.org/simple",
+      "version": "84.0.0",
+      "wheel_tags": [
+        "py3-none-any"
+      ]
+    }
+  ],
+  "schema_version": "3",
+  "scope": "WORKER_BUILD",
+  "subject_state": "CANDIDATE",
+  "target": {
+    "architecture": "x86_64",
+    "compatibility": {
+      "compatibility_engine": "pypa-packaging",
+      "compatibility_engine_version": "1",
+      "compatible_tags": [
+        "cp310-abi3-win_amd64",
+        "cp311-abi3-win_amd64",
+        "cp312-abi3-win_amd64",
+        "cp313-abi3-win_amd64",
+        "cp313-cp313-win_amd64",
+        "cp313-none-any",
+        "cp313-none-win_amd64",
+        "cp32-abi3-win_amd64",
+        "cp33-abi3-win_amd64",
+        "cp34-abi3-win_amd64",
+        "cp35-abi3-win_amd64",
+        "cp36-abi3-win_amd64",
+        "cp37-abi3-win_amd64",
+        "cp38-abi3-win_amd64",
+        "cp39-abi3-win_amd64",
+        "py3-none-any",
+        "py3-none-win_amd64",
+        "py30-none-any",
+        "py30-none-win_amd64",
+        "py31-none-any",
+        "py31-none-win_amd64",
+        "py310-none-any",
+        "py310-none-win_amd64",
+        "py311-none-any",
+        "py311-none-win_amd64",
+        "py312-none-any",
+        "py312-none-win_amd64",
+        "py313-none-any",
+        "py313-none-win_amd64",
+        "py32-none-any",
+        "py32-none-win_amd64",
+        "py33-none-any",
+        "py33-none-win_amd64",
+        "py34-none-any",
+        "py34-none-win_amd64",
+        "py35-none-any",
+        "py35-none-win_amd64",
+        "py36-none-any",
+        "py36-none-win_amd64",
+        "py37-none-any",
+        "py37-none-win_amd64",
+        "py38-none-any",
+        "py38-none-win_amd64",
+        "py39-none-any",
+        "py39-none-win_amd64"
+      ],
+      "compatible_tags_sha256": "671e2dc6b268669f9ceeb78c2ad85afcdf82592b6807acb91d71358c56407b2f",
+      "packaging_version": "25.0",
+      "tag_source": "packaging.tags.sys_tags",
+      "wheel_tag_parser": "packaging.utils.parse_wheel_filename",
+      "wheel_tag_parser_version": "25.0"
+    },
+    "implementation": "cpython",
+    "os": "windows",
+    "python_version": "3.13.15",
+    "target_descriptor_version": "1"
+  }
+}
