@@ -20,9 +20,7 @@
   },
   "raw_license_evidence": {
     "bundled_license_evidence_identity_sha256": null,
-    "classifiers": [
-      "License :: OSI Approved :: Apache Software License"
-    ],
+    "classifiers": ["License :: OSI Approved :: Apache Software License"],
     "legacy_license_value": "Apache 2.0",
     "license_files": [
       {

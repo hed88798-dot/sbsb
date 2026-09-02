@@ -1,1 +1,92 @@
-[{"distribution_role":"RUNTIME_DISTRIBUTION","path":"sentencepiece/__init__.py","sha256":"5fd32b7c347fd8d039f5e78e969c3700edaf5ad60a36e2ddba02a820d1bdd76b","usage":"DISTRIBUTED"},{"distribution_role":"RUNTIME_DISTRIBUTION","path":"sentencepiece/_sentencepiece.cp313-win_amd64.pyd","sha256":"ef25868963dc0fa56cd6f3e5477725873dd115a879e8cd070317f573442ae47c","usage":"DISTRIBUTED"},{"distribution_role":"RUNTIME_DISTRIBUTION","path":"sentencepiece/_version.py","sha256":"575d19f21c6548664433c92d54b0c4f08017f22be85dd66907d84b5c545ef7a8","usage":"DISTRIBUTED"},{"distribution_role":"RUNTIME_DISTRIBUTION","path":"sentencepiece/sentencepiece.i","sha256":"f6965b148e94b39d4ee37e5ee70bec224730dd6f9c1043e3eafbf21b2f427bac","usage":"DISTRIBUTED"},{"distribution_role":"RUNTIME_DISTRIBUTION","path":"sentencepiece/sentencepiece_model_pb2.py","sha256":"ecf0c5f9f5cf113e9464f6fe2fb6f7f03fbb7b5d077d4d76eecfc1442a692181","usage":"DISTRIBUTED"},{"distribution_role":"RUNTIME_DISTRIBUTION","path":"sentencepiece/sentencepiece_pb2.py","sha256":"7e7c2a97735eb0aad11d11c0d5fecbac103dc15d8d483183c0c372c63b01d816","usage":"DISTRIBUTED"},{"distribution_role":"RUNTIME_DISTRIBUTION","path":"sentencepiece/sentencepiece_wrap.cxx","sha256":"9f2a5a4f724891929c2d4c94b20a3f6c519f520ea4233dc675cd3e4b56e5cd35","usage":"DISTRIBUTED"},{"distribution_role":"RUNTIME_DISTRIBUTION","path":"sentencepiece/package_data/nfkc.bin","sha256":"52f11028ff8a7df3e009d94a8b6a54d4a8a17132efb4ccc1c9a0a41e432bd91e","usage":"DISTRIBUTED"},{"distribution_role":"RUNTIME_DISTRIBUTION","path":"sentencepiece/package_data/nfkc_cf.bin","sha256":"60833ec11201446659c3549c183b18f024c4007628cc6b3a4e91ae007697b826","usage":"DISTRIBUTED"},{"distribution_role":"RUNTIME_DISTRIBUTION","path":"sentencepiece/package_data/nmt_nfkc.bin","sha256":"79372c41389c2b9b29bc171017ab5400e352debd686b02670a42bec709015074","usage":"DISTRIBUTED"},{"distribution_role":"RUNTIME_DISTRIBUTION","path":"sentencepiece/package_data/nmt_nfkc_cf.bin","sha256":"22c292c76f503795f30c85d79d30a7f572fff4f49e00392d2d60f4f93e941a1e","usage":"DISTRIBUTED"},{"distribution_role":"RUNTIME_DISTRIBUTION","path":"sentencepiece-0.2.1.dist-info/METADATA","sha256":"3de0de19c0bf383a6946bc0494b5c428e7216cb7d94a4607db4cb430f5e23abb","usage":"DISTRIBUTED"},{"distribution_role":"RUNTIME_DISTRIBUTION","path":"sentencepiece-0.2.1.dist-info/WHEEL","sha256":"a95d0420f9638f55c2fefb926ad4568e7d369d9233dcdd6df23b19cfb1c1af65","usage":"DISTRIBUTED"},{"distribution_role":"RUNTIME_DISTRIBUTION","path":"sentencepiece-0.2.1.dist-info/top_level.txt","sha256":"3485d52a6b2afb1759e4a44e3071d5d2090b0377ef6cd4dbd60d4ab6089814e9","usage":"DISTRIBUTED"},{"distribution_role":"RUNTIME_DISTRIBUTION","path":"sentencepiece-0.2.1.dist-info/RECORD","sha256":"c40c6eb64af9c0c6e1277c8269b5c0522b6ac3c53a4241d3fad8548695e24062","usage":"DISTRIBUTED"}]
+[
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/__init__.py",
+    "sha256": "5fd32b7c347fd8d039f5e78e969c3700edaf5ad60a36e2ddba02a820d1bdd76b",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/_sentencepiece.cp313-win_amd64.pyd",
+    "sha256": "ef25868963dc0fa56cd6f3e5477725873dd115a879e8cd070317f573442ae47c",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/_version.py",
+    "sha256": "575d19f21c6548664433c92d54b0c4f08017f22be85dd66907d84b5c545ef7a8",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/sentencepiece.i",
+    "sha256": "f6965b148e94b39d4ee37e5ee70bec224730dd6f9c1043e3eafbf21b2f427bac",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/sentencepiece_model_pb2.py",
+    "sha256": "ecf0c5f9f5cf113e9464f6fe2fb6f7f03fbb7b5d077d4d76eecfc1442a692181",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/sentencepiece_pb2.py",
+    "sha256": "7e7c2a97735eb0aad11d11c0d5fecbac103dc15d8d483183c0c372c63b01d816",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/sentencepiece_wrap.cxx",
+    "sha256": "9f2a5a4f724891929c2d4c94b20a3f6c519f520ea4233dc675cd3e4b56e5cd35",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/package_data/nfkc.bin",
+    "sha256": "52f11028ff8a7df3e009d94a8b6a54d4a8a17132efb4ccc1c9a0a41e432bd91e",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/package_data/nfkc_cf.bin",
+    "sha256": "60833ec11201446659c3549c183b18f024c4007628cc6b3a4e91ae007697b826",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/package_data/nmt_nfkc.bin",
+    "sha256": "79372c41389c2b9b29bc171017ab5400e352debd686b02670a42bec709015074",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece/package_data/nmt_nfkc_cf.bin",
+    "sha256": "22c292c76f503795f30c85d79d30a7f572fff4f49e00392d2d60f4f93e941a1e",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece-0.2.1.dist-info/METADATA",
+    "sha256": "3de0de19c0bf383a6946bc0494b5c428e7216cb7d94a4607db4cb430f5e23abb",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece-0.2.1.dist-info/WHEEL",
+    "sha256": "a95d0420f9638f55c2fefb926ad4568e7d369d9233dcdd6df23b19cfb1c1af65",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece-0.2.1.dist-info/top_level.txt",
+    "sha256": "3485d52a6b2afb1759e4a44e3071d5d2090b0377ef6cd4dbd60d4ab6089814e9",
+    "usage": "DISTRIBUTED"
+  },
+  {
+    "distribution_role": "RUNTIME_DISTRIBUTION",
+    "path": "sentencepiece-0.2.1.dist-info/RECORD",
+    "sha256": "c40c6eb64af9c0c6e1277c8269b5c0522b6ac3c53a4241d3fad8548695e24062",
+    "usage": "DISTRIBUTED"
+  }
+]

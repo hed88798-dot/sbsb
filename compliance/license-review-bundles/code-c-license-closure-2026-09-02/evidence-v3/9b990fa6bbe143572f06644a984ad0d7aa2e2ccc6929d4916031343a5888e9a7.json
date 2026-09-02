@@ -20,9 +20,7 @@
   },
   "raw_license_evidence": {
     "bundled_license_evidence_identity_sha256": null,
-    "classifiers": [
-      "License :: OSI Approved :: GNU General Public License v2 (GPLv2)"
-    ],
+    "classifiers": ["License :: OSI Approved :: GNU General Public License v2 (GPLv2)"],
     "legacy_license_value": "GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones)",
     "license_files": [
       {

@@ -16,9 +16,7 @@
   "machine_suggestion": null,
   "raw_license_evidence": {
     "bundled_license_evidence_identity_sha256": null,
-    "classifiers": [
-      "License :: OSI Approved :: MIT License"
-    ],
+    "classifiers": ["License :: OSI Approved :: MIT License"],
     "legacy_license_value": null,
     "license_files": [
       {

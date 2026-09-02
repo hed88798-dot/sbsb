@@ -20,9 +20,7 @@
   },
   "raw_license_evidence": {
     "bundled_license_evidence_identity_sha256": null,
-    "classifiers": [
-      "License :: OSI Approved :: BSD License"
-    ],
+    "classifiers": ["License :: OSI Approved :: BSD License"],
     "legacy_license_value": null,
     "license_files": [
       {

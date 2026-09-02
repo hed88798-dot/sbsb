@@ -7,9 +7,7 @@
       "package": "scenedetect-headless",
       "policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "BSD-3-Clause"
-          ],
+          "acceptable_or_branches": ["BSD-3-Clause"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "0594131cf2da278ac9f9442e1ce2a8fe6ccb25ab83a0899f349784e688d304c6",
           "artifact_type": "PYTHON_WHEEL",
@@ -30,11 +28,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "BSD-3-Clause",
           "notice_required": true,
-          "obligations": [
-            "NO_ENDORSEMENT",
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["NO_ENDORSEMENT", "PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "scenedetect-headless",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -50,9 +44,7 @@
           "version": "0.7.1"
         },
         {
-          "acceptable_or_branches": [
-            "BSD-3-Clause"
-          ],
+          "acceptable_or_branches": ["BSD-3-Clause"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "0594131cf2da278ac9f9442e1ce2a8fe6ccb25ab83a0899f349784e688d304c6",
           "artifact_type": "PYTHON_WHEEL",
@@ -73,11 +65,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "BSD-3-Clause",
           "notice_required": true,
-          "obligations": [
-            "NO_ENDORSEMENT",
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["NO_ENDORSEMENT", "PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "scenedetect-headless",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -97,14 +85,9 @@
       "policy_sha256": "9239adf47e2607b9404dd60fd7266ab628dd3d27a4715885b20a9834d8494518",
       "policy_version": "2026.09.02.1",
       "reported_expression": "BSD-3-Clause",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "0594131cf2da278ac9f9442e1ce2a8fe6ccb25ab83a0899f349784e688d304c6",
-      "targets": [
-        "linux",
-        "windows"
-      ],
+      "targets": ["linux", "windows"],
       "version": "0.7.1"
     },
     {
@@ -114,9 +97,7 @@
       "package": "pillow",
       "policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "MIT-CMU"
-          ],
+          "acceptable_or_branches": ["MIT-CMU"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3",
           "artifact_type": "PYTHON_WHEEL",
@@ -168,13 +149,9 @@
       "policy_sha256": "9239adf47e2607b9404dd60fd7266ab628dd3d27a4715885b20a9834d8494518",
       "policy_version": "2026.09.02.1",
       "reported_expression": "MIT-CMU",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3",
-      "targets": [
-        "linux"
-      ],
+      "targets": ["linux"],
       "version": "12.3.0"
     },
     {
@@ -184,9 +161,7 @@
       "package": "pillow",
       "policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "MIT-CMU"
-          ],
+          "acceptable_or_branches": ["MIT-CMU"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
           "artifact_type": "PYTHON_WHEEL",
@@ -238,13 +213,9 @@
       "policy_sha256": "9239adf47e2607b9404dd60fd7266ab628dd3d27a4715885b20a9834d8494518",
       "policy_version": "2026.09.02.1",
       "reported_expression": "MIT-CMU",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
-      "targets": [
-        "windows"
-      ],
+      "targets": ["windows"],
       "version": "12.3.0"
     },
     {
@@ -397,14 +368,9 @@
       "policy_sha256": "9239adf47e2607b9404dd60fd7266ab628dd3d27a4715885b20a9834d8494518",
       "policy_version": "2026.09.02.1",
       "reported_expression": "Apache-2.0 AND GPL-2.0-or-later",
-      "scopes": [
-        "WORKER_BUILD"
-      ],
+      "scopes": ["WORKER_BUILD"],
       "sha256": "24257a04c7a5a7a034cf28e39dcee20fbeeb9f043076729480f2e1b69904408a",
-      "targets": [
-        "linux",
-        "windows"
-      ],
+      "targets": ["linux", "windows"],
       "version": "2026.7"
     },
     {
@@ -414,9 +380,7 @@
       "package": "click",
       "policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "BSD-3-Clause"
-          ],
+          "acceptable_or_branches": ["BSD-3-Clause"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360",
           "artifact_type": "PYTHON_WHEEL",
@@ -437,11 +401,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "BSD-3-Clause",
           "notice_required": true,
-          "obligations": [
-            "NO_ENDORSEMENT",
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["NO_ENDORSEMENT", "PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "click",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -457,9 +417,7 @@
           "version": "8.5.0"
         },
         {
-          "acceptable_or_branches": [
-            "BSD-3-Clause"
-          ],
+          "acceptable_or_branches": ["BSD-3-Clause"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360",
           "artifact_type": "PYTHON_WHEEL",
@@ -480,11 +438,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "BSD-3-Clause",
           "notice_required": true,
-          "obligations": [
-            "NO_ENDORSEMENT",
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["NO_ENDORSEMENT", "PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "click",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -504,14 +458,9 @@
       "policy_sha256": "9239adf47e2607b9404dd60fd7266ab628dd3d27a4715885b20a9834d8494518",
       "policy_version": "2026.09.02.1",
       "reported_expression": "BSD-3-Clause",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360",
-      "targets": [
-        "linux",
-        "windows"
-      ],
+      "targets": ["linux", "windows"],
       "version": "8.5.0"
     },
     {
@@ -521,9 +470,7 @@
       "package": "setuptools",
       "policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "MIT"
-          ],
+          "acceptable_or_branches": ["MIT"],
           "artifact_role": "PYTHON_BUILD_DEPENDENCY",
           "artifact_sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
           "artifact_type": "PYTHON_WHEEL",
@@ -544,10 +491,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "MIT",
           "notice_required": true,
-          "obligations": [
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "setuptools",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -563,9 +507,7 @@
           "version": "84.0.0"
         },
         {
-          "acceptable_or_branches": [
-            "MIT"
-          ],
+          "acceptable_or_branches": ["MIT"],
           "artifact_role": "PYTHON_BUILD_DEPENDENCY",
           "artifact_sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
           "artifact_type": "PYTHON_WHEEL",
@@ -586,10 +528,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "MIT",
           "notice_required": true,
-          "obligations": [
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "setuptools",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -609,14 +548,9 @@
       "policy_sha256": "9239adf47e2607b9404dd60fd7266ab628dd3d27a4715885b20a9834d8494518",
       "policy_version": "2026.09.02.1",
       "reported_expression": "MIT",
-      "scopes": [
-        "WORKER_BUILD"
-      ],
+      "scopes": ["WORKER_BUILD"],
       "sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
-      "targets": [
-        "linux",
-        "windows"
-      ],
+      "targets": ["linux", "windows"],
       "version": "84.0.0"
     },
     {
@@ -626,10 +560,7 @@
       "package": "packaging",
       "policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "Apache-2.0",
-            "BSD-2-Clause"
-          ],
+          "acceptable_or_branches": ["Apache-2.0", "BSD-2-Clause"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
           "artifact_type": "PYTHON_WHEEL",
@@ -646,10 +577,7 @@
             },
             {
               "expression": "BSD-2-Clause",
-              "obligations": [
-                "PRESERVE_COPYRIGHT_NOTICE",
-                "PRESERVE_LICENSE_TEXT"
-              ],
+              "obligations": ["PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
               "policy_result": "PASS"
             }
           ],
@@ -690,10 +618,7 @@
           "version": "26.3"
         },
         {
-          "acceptable_or_branches": [
-            "Apache-2.0",
-            "BSD-2-Clause"
-          ],
+          "acceptable_or_branches": ["Apache-2.0", "BSD-2-Clause"],
           "artifact_role": "PYTHON_BUILD_DEPENDENCY",
           "artifact_sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
           "artifact_type": "PYTHON_WHEEL",
@@ -710,10 +635,7 @@
             },
             {
               "expression": "BSD-2-Clause",
-              "obligations": [
-                "PRESERVE_COPYRIGHT_NOTICE",
-                "PRESERVE_LICENSE_TEXT"
-              ],
+              "obligations": ["PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
               "policy_result": "PASS"
             }
           ],
@@ -754,10 +676,7 @@
           "version": "26.3"
         },
         {
-          "acceptable_or_branches": [
-            "Apache-2.0",
-            "BSD-2-Clause"
-          ],
+          "acceptable_or_branches": ["Apache-2.0", "BSD-2-Clause"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
           "artifact_type": "PYTHON_WHEEL",
@@ -774,10 +693,7 @@
             },
             {
               "expression": "BSD-2-Clause",
-              "obligations": [
-                "PRESERVE_COPYRIGHT_NOTICE",
-                "PRESERVE_LICENSE_TEXT"
-              ],
+              "obligations": ["PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
               "policy_result": "PASS"
             }
           ],
@@ -818,10 +734,7 @@
           "version": "26.3"
         },
         {
-          "acceptable_or_branches": [
-            "Apache-2.0",
-            "BSD-2-Clause"
-          ],
+          "acceptable_or_branches": ["Apache-2.0", "BSD-2-Clause"],
           "artifact_role": "PYTHON_BUILD_DEPENDENCY",
           "artifact_sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
           "artifact_type": "PYTHON_WHEEL",
@@ -838,10 +751,7 @@
             },
             {
               "expression": "BSD-2-Clause",
-              "obligations": [
-                "PRESERVE_COPYRIGHT_NOTICE",
-                "PRESERVE_LICENSE_TEXT"
-              ],
+              "obligations": ["PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
               "policy_result": "PASS"
             }
           ],
@@ -886,15 +796,9 @@
       "policy_sha256": "9239adf47e2607b9404dd60fd7266ab628dd3d27a4715885b20a9834d8494518",
       "policy_version": "2026.09.02.1",
       "reported_expression": "Apache-2.0 OR BSD-2-Clause",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME",
-        "WORKER_BUILD"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME", "WORKER_BUILD"],
       "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
-      "targets": [
-        "linux",
-        "windows"
-      ],
+      "targets": ["linux", "windows"],
       "version": "26.3"
     },
     {
@@ -904,9 +808,7 @@
       "package": "platformdirs",
       "policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "MIT"
-          ],
+          "acceptable_or_branches": ["MIT"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "e34ff91a24bcddc6d939b878bdf3f5c437c9c46fe9e212b1bf455fdf1ee57586",
           "artifact_type": "PYTHON_WHEEL",
@@ -927,10 +829,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "MIT",
           "notice_required": true,
-          "obligations": [
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "platformdirs",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -946,9 +845,7 @@
           "version": "4.11.4"
         },
         {
-          "acceptable_or_branches": [
-            "MIT"
-          ],
+          "acceptable_or_branches": ["MIT"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "e34ff91a24bcddc6d939b878bdf3f5c437c9c46fe9e212b1bf455fdf1ee57586",
           "artifact_type": "PYTHON_WHEEL",
@@ -969,10 +866,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "MIT",
           "notice_required": true,
-          "obligations": [
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "platformdirs",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -992,18 +886,13 @@
       "policy_sha256": "9239adf47e2607b9404dd60fd7266ab628dd3d27a4715885b20a9834d8494518",
       "policy_version": "2026.09.02.1",
       "reported_expression": "MIT",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "e34ff91a24bcddc6d939b878bdf3f5c437c9c46fe9e212b1bf455fdf1ee57586",
-      "targets": [
-        "linux",
-        "windows"
-      ],
+      "targets": ["linux", "windows"],
       "version": "4.11.4"
     }
   ],
-  "bundle_identity_sha256": "13912bd384a1be6ef0a3efdcbf25d550049db34cd062815827817d2ccb417612",
+  "bundle_identity_sha256": "a7c5372bdfbe53a38d6b5f602ae0ce87b681ad7cb69d18bee52b4104ebdff825",
   "bundle_semantics": "REVIEW_REQUEST_CONTAINER_NOT_BLANKET_APPROVAL",
   "classification_complete_and_exclusive": true,
   "contracts": {
@@ -1032,7 +921,7 @@
     "hard_block_diagnostics": [],
     "license_closure_rebind": {
       "current_main_quality_baseline_sha": "3609d6349bc0f4e78a5270db0e6ae2da583bb26e",
-      "evaluator_head_sha": "6381a07c6f7ffaf7592699792933a6fe513190b7",
+      "evaluator_head_sha": "81582dc91f5e72be6fa8ac41065f31794516d099",
       "target_evidence_code_c_head_sha": "024a84c1e6346bdf9539aab7211c82e427425f7f",
       "target_evidence_main_quality_baseline_sha": "e00abb61a5f493ec02cfeea0ee6e4d3e5a0f99b0",
       "target_evidence_rebound_without_worker_rebuild": true
@@ -1054,17 +943,13 @@
             "e41ea83ebd0e286345a1a654f46cb8ef7f548911638cd48f6d3ec21256bbb39f"
           ],
           "covered_member_count": 4,
-          "effective_license_expressions": [
-            "Apache-2.0"
-          ],
+          "effective_license_expressions": ["Apache-2.0"],
           "error": null,
           "exact_artifact_match": false,
           "fixture_id": "sentencepiece-linux-v0.2.1-license-coverage",
           "fixture_name": "sentencepiece-linux",
           "fixture_scope": "REGRESSION_ONLY_NOT_RELEASE_APPROVAL",
-          "identity_mismatch_fields": [
-            "filename"
-          ],
+          "identity_mismatch_fields": ["filename"],
           "member_count": 4,
           "member_manifest_sha256": "1f16dd1c8aff72f32874ed96d6c235d6e8561b22fdad77c19a0f01a66a949c22",
           "production_identity": {
@@ -1074,9 +959,7 @@
             "sha256": "c7f0fd2f2693309e6628aeeb2e2faf6edd221134dfccac3308ca0de01f8dab47",
             "version": "0.2.1"
           },
-          "review_statuses": [
-            "REQUIRES_REVIEW"
-          ],
+          "review_statuses": ["REQUIRES_REVIEW"],
           "status": "PASS",
           "upstream_binding_assurance": "BUILD_PROVENANCE_VERIFIED",
           "upstream_binding_id": "sentencepiece-linux-release-v0.2.1",
@@ -1098,9 +981,7 @@
             "eca543d314de2e7680bd839d2996349937b72bfab5db916dcc9e008a4cca872f"
           ],
           "covered_member_count": 4,
-          "effective_license_expressions": [
-            "Apache-2.0"
-          ],
+          "effective_license_expressions": ["Apache-2.0"],
           "error": null,
           "exact_artifact_match": true,
           "fixture_id": "sentencepiece-windows-v0.2.1-license-coverage",
@@ -1116,9 +997,7 @@
             "sha256": "10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b",
             "version": "0.2.1"
           },
-          "review_statuses": [
-            "REQUIRES_REVIEW"
-          ],
+          "review_statuses": ["REQUIRES_REVIEW"],
           "status": "PASS",
           "upstream_binding_assurance": "OFFICIAL_PUBLICATION_EXACT_BYTES",
           "upstream_binding_id": "sentencepiece-windows-release-v0.2.1",
@@ -1141,10 +1020,7 @@
             "60e9c880331dc07d60ebd5fa76efe18ebe2f74fd7005df42164b5a28d48e1f81"
           ],
           "covered_member_count": 3,
-          "effective_license_expressions": [
-            "GPL-2.0-or-later",
-            "Apache-2.0"
-          ],
+          "effective_license_expressions": ["GPL-2.0-or-later", "Apache-2.0"],
           "error": null,
           "exact_artifact_match": true,
           "fixture_id": "pyinstaller-hooks-contrib-2026.7-component-path-coverage",
@@ -1160,9 +1036,7 @@
             "sha256": "24257a04c7a5a7a034cf28e39dcee20fbeeb9f043076729480f2e1b69904408a",
             "version": "2026.7"
           },
-          "review_statuses": [
-            "REGRESSION_APPROVED"
-          ],
+          "review_statuses": ["REGRESSION_APPROVED"],
           "status": "PASS",
           "upstream_binding_assurance": null,
           "upstream_binding_id": null,
@@ -1184,9 +1058,7 @@
             "57fd9f0dcacacd99c626300ab8725582ae3b1af345ffc370941a11c4b47ce079"
           ],
           "covered_member_count": 18,
-          "effective_license_expressions": [
-            "Apache-2.0"
-          ],
+          "effective_license_expressions": ["Apache-2.0"],
           "error": null,
           "exact_artifact_match": true,
           "fixture_id": null,
@@ -1201,9 +1073,7 @@
             "sha256": "c7f0fd2f2693309e6628aeeb2e2faf6edd221134dfccac3308ca0de01f8dab47",
             "version": "0.2.1"
           },
-          "review_statuses": [
-            "REQUIRES_REVIEW"
-          ],
+          "review_statuses": ["REQUIRES_REVIEW"],
           "status": "PASS",
           "upstream_binding_assurance": "BUILD_PROVENANCE_VERIFIED",
           "upstream_binding_id": "sentencepiece-linux-release-v0.2.1-production",
@@ -1225,9 +1095,7 @@
             "08cd8bde4876fe9f9986fa410c621966912a3b69fc9ac3f8d1ef2e507db0f13a"
           ],
           "covered_member_count": 15,
-          "effective_license_expressions": [
-            "Apache-2.0"
-          ],
+          "effective_license_expressions": ["Apache-2.0"],
           "error": null,
           "exact_artifact_match": true,
           "fixture_id": null,
@@ -1242,9 +1110,7 @@
             "sha256": "10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b",
             "version": "0.2.1"
           },
-          "review_statuses": [
-            "REQUIRES_REVIEW"
-          ],
+          "review_statuses": ["REQUIRES_REVIEW"],
           "status": "PASS",
           "upstream_binding_assurance": "OFFICIAL_PUBLICATION_EXACT_BYTES",
           "upstream_binding_id": "sentencepiece-windows-release-v0.2.1-production",
@@ -1287,7 +1153,7 @@
   "f_license_review": "PENDING",
   "graph_binding": {
     "baseline_semantics": "MINIMUM_CAPABILITY_FLOOR",
-    "code_c_head_sha": "6381a07c6f7ffaf7592699792933a6fe513190b7",
+    "code_c_head_sha": "81582dc91f5e72be6fa8ac41065f31794516d099",
     "license_target_subject_sets": [
       {
         "approval_subject_set_sha256": "e4c2c10e34c1014867e7d89ecf13ab9454c58b9f626bd9f52cd8d1bf56a153af",
@@ -2104,7 +1970,7 @@
     "id": "inspect-wheel.py/exact-license-evidence/v1",
     "sha256": "cbbb83e290ce2e9f0b130617d381cbe0928fc24548c365bcb28e2c445b9a0318"
   },
-  "license_review_bundle_id": "code-c-artifact-license-review-13912bd384a1be6ef0a3efdc",
+  "license_review_bundle_id": "code-c-artifact-license-review-a7c5372bdfbe53a38d6b5f60",
   "license_review_bundle_status": "READY_FOR_CODE_F_REVIEW",
   "license_review_graph_reconciliation": "NOT_STARTED",
   "license_subject_closure_sha256": "e21b50df657121ae49911a6cef0b917b6610db530cc5856edc3bc76ed3b17127",
@@ -2121,9 +1987,7 @@
       "exact_artifact_evidence_v2_path": "compliance/license-evidence/pyinstaller-6.22.2/linux-x86_64.scan.json",
       "exact_artifact_evidence_v2_sha256": "742039e54b528121f2c5281ef30c4de43029e06e2ac5031128efd477e5bd603c",
       "policy_decision": {
-        "acceptable_or_branches": [
-          "GPL-2.0-or-later WITH Bootloader-exception"
-        ],
+        "acceptable_or_branches": ["GPL-2.0-or-later WITH Bootloader-exception"],
         "artifact_role": "PYINSTALLER_BUILD_TOOL",
         "artifact_sha256": "9622686ecc5d5fa492fe6cde29d47df9dd41138cff8177be9f901ca3260f2096",
         "artifact_type": "PYTHON_WHEEL",
@@ -2228,9 +2092,7 @@
       "exact_artifact_evidence_v2_path": "compliance/license-evidence/pyinstaller-6.22.2/windows-x86_64.scan.json",
       "exact_artifact_evidence_v2_sha256": "0672843d4ee798304d3cb3a7891e1520af8cd375a0d084b7a97ad1b287f1b5a4",
       "policy_decision": {
-        "acceptable_or_branches": [
-          "GPL-2.0-or-later WITH Bootloader-exception"
-        ],
+        "acceptable_or_branches": ["GPL-2.0-or-later WITH Bootloader-exception"],
         "artifact_role": "PYINSTALLER_BUILD_TOOL",
         "artifact_sha256": "9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7",
         "artifact_type": "PYTHON_WHEEL",
@@ -2332,9 +2194,7 @@
   "regression_fixture_used_as_production_approval": false,
   "required_review_artifacts": [
     {
-      "artifact_roles": [
-        "RUNTIME_WHEEL"
-      ],
+      "artifact_roles": ["RUNTIME_WHEEL"],
       "bundled_license_evidence": [
         {
           "kind": "LICENSE",
@@ -2361,28 +2221,15 @@
           "size": 3582
         }
       ],
-      "classifier_evidence": [
-        "License :: OSI Approved :: BSD License"
-      ],
+      "classifier_evidence": ["License :: OSI Approved :: BSD License"],
       "dependency_paths": [
         {
           "inventory_id": "code-c-windows-runtime-py31315",
           "paths": [
-            [
-              "pkg:pypi/numpy@2.3.5"
-            ],
-            [
-              "pkg:pypi/onnxruntime@1.29.0",
-              "pkg:pypi/numpy@2.3.5"
-            ],
-            [
-              "pkg:pypi/opencv-python-headless@4.14.0.94",
-              "pkg:pypi/numpy@2.3.5"
-            ],
-            [
-              "pkg:pypi/scenedetect-headless@0.7.1",
-              "pkg:pypi/numpy@2.3.5"
-            ],
+            ["pkg:pypi/numpy@2.3.5"],
+            ["pkg:pypi/onnxruntime@1.29.0", "pkg:pypi/numpy@2.3.5"],
+            ["pkg:pypi/opencv-python-headless@4.14.0.94", "pkg:pypi/numpy@2.3.5"],
+            ["pkg:pypi/scenedetect-headless@0.7.1", "pkg:pypi/numpy@2.3.5"],
             [
               "pkg:pypi/scenedetect-headless@0.7.1",
               "pkg:pypi/opencv-python-headless@4.14.0.94",
@@ -2406,9 +2253,7 @@
       "package": "numpy",
       "projected_policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "BSD-3-Clause"
-          ],
+          "acceptable_or_branches": ["BSD-3-Clause"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
           "artifact_type": "PYTHON_WHEEL",
@@ -2429,11 +2274,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "BSD-3-Clause",
           "notice_required": true,
-          "obligations": [
-            "NO_ENDORSEMENT",
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["NO_ENDORSEMENT", "PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "numpy",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -2456,24 +2297,18 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
       "specialized_existing_evidence": null,
       "suggested_spdx_expression": "BSD-3-Clause",
       "suggestion_rationale": "Suggestion was produced by the pinned exact-wheel evidence extractor.",
       "suggestion_source": "EXACT_ARTIFACT_ARCHIVE_BYTES",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "windows"
-      ],
+      "targets": ["windows"],
       "version": "2.3.5"
     },
     {
-      "artifact_roles": [
-        "RUNTIME_WHEEL"
-      ],
+      "artifact_roles": ["RUNTIME_WHEEL"],
       "bundled_license_evidence": [],
       "classifier_evidence": [],
       "coverage_evidence": {
@@ -2490,11 +2325,7 @@
       "dependency_paths": [
         {
           "inventory_id": "code-c-windows-runtime-py31315",
-          "paths": [
-            [
-              "pkg:pypi/sentencepiece@0.2.1"
-            ]
-          ],
+          "paths": [["pkg:pypi/sentencepiece@0.2.1"]],
           "scope": "PRODUCTION_WORKER_RUNTIME",
           "target": "windows"
         }
@@ -2515,23 +2346,17 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b",
       "suggested_spdx_expression": "Apache-2.0",
       "suggestion_rationale": "Whole-artifact License Coverage v1 and Upstream Release Binding v1 account for the exact artifact; commercial-policy approval remains pending.",
       "suggestion_source": "LICENSE_COVERAGE_V1_UPSTREAM_RELEASE",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "windows"
-      ],
+      "targets": ["windows"],
       "version": "0.2.1"
     },
     {
-      "artifact_roles": [
-        "RUNTIME_WHEEL"
-      ],
+      "artifact_roles": ["RUNTIME_WHEEL"],
       "bundled_license_evidence": [
         {
           "kind": "LICENSE",
@@ -2558,28 +2383,15 @@
           "size": 3511
         }
       ],
-      "classifier_evidence": [
-        "License :: OSI Approved :: BSD License"
-      ],
+      "classifier_evidence": ["License :: OSI Approved :: BSD License"],
       "dependency_paths": [
         {
           "inventory_id": "code-c-linux-runtime-py31315",
           "paths": [
-            [
-              "pkg:pypi/numpy@2.3.5"
-            ],
-            [
-              "pkg:pypi/onnxruntime@1.29.0",
-              "pkg:pypi/numpy@2.3.5"
-            ],
-            [
-              "pkg:pypi/opencv-python-headless@4.14.0.94",
-              "pkg:pypi/numpy@2.3.5"
-            ],
-            [
-              "pkg:pypi/scenedetect-headless@0.7.1",
-              "pkg:pypi/numpy@2.3.5"
-            ],
+            ["pkg:pypi/numpy@2.3.5"],
+            ["pkg:pypi/onnxruntime@1.29.0", "pkg:pypi/numpy@2.3.5"],
+            ["pkg:pypi/opencv-python-headless@4.14.0.94", "pkg:pypi/numpy@2.3.5"],
+            ["pkg:pypi/scenedetect-headless@0.7.1", "pkg:pypi/numpy@2.3.5"],
             [
               "pkg:pypi/scenedetect-headless@0.7.1",
               "pkg:pypi/opencv-python-headless@4.14.0.94",
@@ -2603,9 +2415,7 @@
       "package": "numpy",
       "projected_policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "BSD-3-Clause"
-          ],
+          "acceptable_or_branches": ["BSD-3-Clause"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017",
           "artifact_type": "PYTHON_WHEEL",
@@ -2626,11 +2436,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "BSD-3-Clause",
           "notice_required": true,
-          "obligations": [
-            "NO_ENDORSEMENT",
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["NO_ENDORSEMENT", "PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "numpy",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -2653,24 +2459,18 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017",
       "specialized_existing_evidence": null,
       "suggested_spdx_expression": "BSD-3-Clause",
       "suggestion_rationale": "Suggestion was produced by the pinned exact-wheel evidence extractor.",
       "suggestion_source": "EXACT_ARTIFACT_ARCHIVE_BYTES",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "linux"
-      ],
+      "targets": ["linux"],
       "version": "2.3.5"
     },
     {
-      "artifact_roles": [
-        "RUNTIME_WHEEL"
-      ],
+      "artifact_roles": ["RUNTIME_WHEEL"],
       "bundled_license_evidence": [
         {
           "kind": "LICENSE",
@@ -2683,12 +2483,7 @@
       "dependency_paths": [
         {
           "inventory_id": "code-c-windows-runtime-py31315",
-          "paths": [
-            [
-              "pkg:pypi/onnxruntime@1.29.0",
-              "pkg:pypi/protobuf@7.36.0"
-            ]
-          ],
+          "paths": [["pkg:pypi/onnxruntime@1.29.0", "pkg:pypi/protobuf@7.36.0"]],
           "scope": "PRODUCTION_WORKER_RUNTIME",
           "target": "windows"
         }
@@ -2702,9 +2497,7 @@
       "package": "protobuf",
       "projected_policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "BSD-3-Clause"
-          ],
+          "acceptable_or_branches": ["BSD-3-Clause"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "1781cc1de61249b750848029bca452c0a8b7e990080316b9bbc2518b2117b488",
           "artifact_type": "PYTHON_WHEEL",
@@ -2725,11 +2518,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "BSD-3-Clause",
           "notice_required": true,
-          "obligations": [
-            "NO_ENDORSEMENT",
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["NO_ENDORSEMENT", "PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "protobuf",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -2752,24 +2541,18 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "1781cc1de61249b750848029bca452c0a8b7e990080316b9bbc2518b2117b488",
       "specialized_existing_evidence": null,
       "suggested_spdx_expression": "BSD-3-Clause",
       "suggestion_rationale": "Suggestion was produced by the pinned exact-wheel evidence extractor.",
       "suggestion_source": "EXACT_ARTIFACT_ARCHIVE_BYTES",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "windows"
-      ],
+      "targets": ["windows"],
       "version": "7.36.0"
     },
     {
-      "artifact_roles": [
-        "RUNTIME_WHEEL"
-      ],
+      "artifact_roles": ["RUNTIME_WHEEL"],
       "bundled_license_evidence": [
         {
           "kind": "LICENSE",
@@ -2796,20 +2579,13 @@
           "size": 1070
         }
       ],
-      "classifier_evidence": [
-        "License :: OSI Approved :: Apache Software License"
-      ],
+      "classifier_evidence": ["License :: OSI Approved :: Apache Software License"],
       "dependency_paths": [
         {
           "inventory_id": "code-c-linux-runtime-py31315",
           "paths": [
-            [
-              "pkg:pypi/opencv-python-headless@4.14.0.94"
-            ],
-            [
-              "pkg:pypi/scenedetect-headless@0.7.1",
-              "pkg:pypi/opencv-python-headless@4.14.0.94"
-            ]
+            ["pkg:pypi/opencv-python-headless@4.14.0.94"],
+            ["pkg:pypi/scenedetect-headless@0.7.1", "pkg:pypi/opencv-python-headless@4.14.0.94"]
           ],
           "scope": "PRODUCTION_WORKER_RUNTIME",
           "target": "linux"
@@ -2828,9 +2604,7 @@
       "package": "opencv-python-headless",
       "projected_policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "Apache-2.0"
-          ],
+          "acceptable_or_branches": ["Apache-2.0"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527",
           "artifact_type": "PYTHON_WHEEL",
@@ -2878,24 +2652,18 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527",
       "specialized_existing_evidence": null,
       "suggested_spdx_expression": "Apache-2.0",
       "suggestion_rationale": "Suggestion was produced by the pinned exact-wheel evidence extractor.",
       "suggestion_source": "EXACT_ARTIFACT_ARCHIVE_BYTES",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "linux"
-      ],
+      "targets": ["linux"],
       "version": "4.14.0.94"
     },
     {
-      "artifact_roles": [
-        "RUNTIME_WHEEL"
-      ],
+      "artifact_roles": ["RUNTIME_WHEEL"],
       "bundled_license_evidence": [
         {
           "kind": "LICENSE",
@@ -2904,17 +2672,11 @@
           "size": 1094
         }
       ],
-      "classifier_evidence": [
-        "License :: OSI Approved :: MIT License"
-      ],
+      "classifier_evidence": ["License :: OSI Approved :: MIT License"],
       "dependency_paths": [
         {
           "inventory_id": "code-c-windows-runtime-py31315",
-          "paths": [
-            [
-              "pkg:pypi/onnxruntime@1.29.0"
-            ]
-          ],
+          "paths": [["pkg:pypi/onnxruntime@1.29.0"]],
           "scope": "PRODUCTION_WORKER_RUNTIME",
           "target": "windows"
         }
@@ -2929,9 +2691,7 @@
       "package": "onnxruntime",
       "projected_policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "MIT"
-          ],
+          "acceptable_or_branches": ["MIT"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "2945e1f82f81f27e88decea88c7861f45baea23818950d467bf3909aa303119e",
           "artifact_type": "PYTHON_WHEEL",
@@ -2952,10 +2712,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "MIT",
           "notice_required": true,
-          "obligations": [
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "onnxruntime",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -2978,24 +2735,18 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "2945e1f82f81f27e88decea88c7861f45baea23818950d467bf3909aa303119e",
       "specialized_existing_evidence": null,
       "suggested_spdx_expression": "MIT",
       "suggestion_rationale": "Suggestion was produced by the pinned exact-wheel evidence extractor.",
       "suggestion_source": "EXACT_ARTIFACT_ARCHIVE_BYTES",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "windows"
-      ],
+      "targets": ["windows"],
       "version": "1.29.0"
     },
     {
-      "artifact_roles": [
-        "RUNTIME_WHEEL"
-      ],
+      "artifact_roles": ["RUNTIME_WHEEL"],
       "bundled_license_evidence": [
         {
           "kind": "LICENSE",
@@ -3004,9 +2755,7 @@
           "size": 1491
         }
       ],
-      "classifier_evidence": [
-        "License :: OSI Approved :: BSD License"
-      ],
+      "classifier_evidence": ["License :: OSI Approved :: BSD License"],
       "dependency_paths": [
         {
           "inventory_id": "code-c-windows-runtime-py31315",
@@ -3030,9 +2779,7 @@
       "package": "colorama",
       "projected_policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "BSD-3-Clause"
-          ],
+          "acceptable_or_branches": ["BSD-3-Clause"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6",
           "artifact_type": "PYTHON_WHEEL",
@@ -3053,11 +2800,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "BSD-3-Clause",
           "notice_required": true,
-          "obligations": [
-            "NO_ENDORSEMENT",
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["NO_ENDORSEMENT", "PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "colorama",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -3080,24 +2823,18 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6",
       "specialized_existing_evidence": null,
       "suggested_spdx_expression": "BSD-3-Clause",
       "suggestion_rationale": "Suggestion was produced by the pinned exact-wheel evidence extractor.",
       "suggestion_source": "EXACT_ARTIFACT_ARCHIVE_BYTES",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "windows"
-      ],
+      "targets": ["windows"],
       "version": "0.4.6"
     },
     {
-      "artifact_roles": [
-        "RUNTIME_WHEEL"
-      ],
+      "artifact_roles": ["RUNTIME_WHEEL"],
       "bundled_license_evidence": [
         {
           "kind": "LICENSE",
@@ -3110,12 +2847,7 @@
       "dependency_paths": [
         {
           "inventory_id": "code-c-linux-runtime-py31315",
-          "paths": [
-            [
-              "pkg:pypi/onnxruntime@1.29.0",
-              "pkg:pypi/protobuf@7.36.0"
-            ]
-          ],
+          "paths": [["pkg:pypi/onnxruntime@1.29.0", "pkg:pypi/protobuf@7.36.0"]],
           "scope": "PRODUCTION_WORKER_RUNTIME",
           "target": "linux"
         }
@@ -3129,9 +2861,7 @@
       "package": "protobuf",
       "projected_policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "BSD-3-Clause"
-          ],
+          "acceptable_or_branches": ["BSD-3-Clause"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "70f5ec8eb0da81a44360c0dc0beac99a0d78071d21956a7076bae8bd2051841b",
           "artifact_type": "PYTHON_WHEEL",
@@ -3152,11 +2882,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "BSD-3-Clause",
           "notice_required": true,
-          "obligations": [
-            "NO_ENDORSEMENT",
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["NO_ENDORSEMENT", "PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "protobuf",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -3179,64 +2905,41 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "70f5ec8eb0da81a44360c0dc0beac99a0d78071d21956a7076bae8bd2051841b",
       "specialized_existing_evidence": null,
       "suggested_spdx_expression": "BSD-3-Clause",
       "suggestion_rationale": "Suggestion was produced by the pinned exact-wheel evidence extractor.",
       "suggestion_source": "EXACT_ARTIFACT_ARCHIVE_BYTES",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "linux"
-      ],
+      "targets": ["linux"],
       "version": "7.36.0"
     },
     {
-      "artifact_roles": [
-        "RUNTIME_WHEEL"
-      ],
+      "artifact_roles": ["RUNTIME_WHEEL"],
       "bundled_license_evidence": [],
-      "classifier_evidence": [
-        "License :: OSI Approved :: Apache Software License"
-      ],
+      "classifier_evidence": ["License :: OSI Approved :: Apache Software License"],
       "dependency_paths": [
         {
           "inventory_id": "code-c-linux-runtime-py31315",
-          "paths": [
-            [
-              "pkg:pypi/onnxruntime@1.29.0",
-              "pkg:pypi/flatbuffers@25.12.19"
-            ]
-          ],
+          "paths": [["pkg:pypi/onnxruntime@1.29.0", "pkg:pypi/flatbuffers@25.12.19"]],
           "scope": "PRODUCTION_WORKER_RUNTIME",
           "target": "linux"
         },
         {
           "inventory_id": "code-c-windows-runtime-py31315",
-          "paths": [
-            [
-              "pkg:pypi/onnxruntime@1.29.0",
-              "pkg:pypi/flatbuffers@25.12.19"
-            ]
-          ],
+          "paths": [["pkg:pypi/onnxruntime@1.29.0", "pkg:pypi/flatbuffers@25.12.19"]],
           "scope": "PRODUCTION_WORKER_RUNTIME",
           "target": "windows"
         }
       ],
-      "evidence_references": [
-        "raw:legacy-license",
-        "raw:license-classifier:0"
-      ],
+      "evidence_references": ["raw:legacy-license", "raw:license-classifier:0"],
       "evidence_snapshot_sha256": "514cbe997880e3c5a5105d4882738062b14d5393df9f3e533c1ec48f35fe9926",
       "filename": "flatbuffers-25.12.19-py2.py3-none-any.whl",
       "package": "flatbuffers",
       "projected_policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "Apache-2.0"
-          ],
+          "acceptable_or_branches": ["Apache-2.0"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4",
           "artifact_type": "PYTHON_WHEEL",
@@ -3277,9 +2980,7 @@
           "version": "25.12.19"
         },
         {
-          "acceptable_or_branches": [
-            "Apache-2.0"
-          ],
+          "acceptable_or_branches": ["Apache-2.0"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4",
           "artifact_type": "PYTHON_WHEEL",
@@ -3327,25 +3028,18 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4",
       "specialized_existing_evidence": null,
       "suggested_spdx_expression": "Apache-2.0",
       "suggestion_rationale": "Suggestion was produced by the pinned exact-wheel evidence extractor.",
       "suggestion_source": "EXACT_ARTIFACT_ARCHIVE_BYTES",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "linux",
-        "windows"
-      ],
+      "targets": ["linux", "windows"],
       "version": "25.12.19"
     },
     {
-      "artifact_roles": [
-        "PYTHON_BUILD_DEPENDENCY"
-      ],
+      "artifact_roles": ["PYTHON_BUILD_DEPENDENCY"],
       "bundled_license_evidence": [
         {
           "kind": "LICENSE",
@@ -3358,12 +3052,7 @@
       "dependency_paths": [
         {
           "inventory_id": "code-c-windows-worker-build-py31315",
-          "paths": [
-            [
-              "pkg:pypi/pyinstaller@6.22.2",
-              "pkg:pypi/pefile@2024.8.26"
-            ]
-          ],
+          "paths": [["pkg:pypi/pyinstaller@6.22.2", "pkg:pypi/pefile@2024.8.26"]],
           "scope": "WORKER_BUILD",
           "target": "windows"
         }
@@ -3377,9 +3066,7 @@
       "package": "pefile",
       "projected_policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "MIT"
-          ],
+          "acceptable_or_branches": ["MIT"],
           "artifact_role": "PYTHON_BUILD_DEPENDENCY",
           "artifact_sha256": "76f8b485dcd3b1bb8166f1128d395fa3d87af26360c2358fb75b80019b957c6f",
           "artifact_type": "PYTHON_WHEEL",
@@ -3400,10 +3087,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "MIT",
           "notice_required": true,
-          "obligations": [
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "pefile",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -3426,24 +3110,18 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "WORKER_BUILD"
-      ],
+      "scopes": ["WORKER_BUILD"],
       "sha256": "76f8b485dcd3b1bb8166f1128d395fa3d87af26360c2358fb75b80019b957c6f",
       "specialized_existing_evidence": null,
       "suggested_spdx_expression": "MIT",
       "suggestion_rationale": "Suggestion was produced by the pinned exact-wheel evidence extractor.",
       "suggestion_source": "EXACT_ARTIFACT_ARCHIVE_BYTES",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "windows"
-      ],
+      "targets": ["windows"],
       "version": "2024.8.26"
     },
     {
-      "artifact_roles": [
-        "RUNTIME_WHEEL"
-      ],
+      "artifact_roles": ["RUNTIME_WHEEL"],
       "bundled_license_evidence": [
         {
           "kind": "LICENSE",
@@ -3456,23 +3134,13 @@
       "dependency_paths": [
         {
           "inventory_id": "code-c-linux-runtime-py31315",
-          "paths": [
-            [
-              "pkg:pypi/scenedetect-headless@0.7.1",
-              "pkg:pypi/tqdm@4.70.0"
-            ]
-          ],
+          "paths": [["pkg:pypi/scenedetect-headless@0.7.1", "pkg:pypi/tqdm@4.70.0"]],
           "scope": "PRODUCTION_WORKER_RUNTIME",
           "target": "linux"
         },
         {
           "inventory_id": "code-c-windows-runtime-py31315",
-          "paths": [
-            [
-              "pkg:pypi/scenedetect-headless@0.7.1",
-              "pkg:pypi/tqdm@4.70.0"
-            ]
-          ],
+          "paths": [["pkg:pypi/scenedetect-headless@0.7.1", "pkg:pypi/tqdm@4.70.0"]],
           "scope": "PRODUCTION_WORKER_RUNTIME",
           "target": "windows"
         }
@@ -3494,17 +3162,12 @@
           "branch_evaluations": [
             {
               "expression": "MPL-2.0",
-              "obligations": [
-                "FILE_LEVEL_SOURCE_DISTRIBUTION_REVIEW_REQUIRED"
-              ],
+              "obligations": ["FILE_LEVEL_SOURCE_DISTRIBUTION_REVIEW_REQUIRED"],
               "policy_result": "MANUAL_REVIEW"
             },
             {
               "expression": "MIT",
-              "obligations": [
-                "PRESERVE_COPYRIGHT_NOTICE",
-                "PRESERVE_LICENSE_TEXT"
-              ],
+              "obligations": ["PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
               "policy_result": "PASS"
             }
           ],
@@ -3551,17 +3214,12 @@
           "branch_evaluations": [
             {
               "expression": "MPL-2.0",
-              "obligations": [
-                "FILE_LEVEL_SOURCE_DISTRIBUTION_REVIEW_REQUIRED"
-              ],
+              "obligations": ["FILE_LEVEL_SOURCE_DISTRIBUTION_REVIEW_REQUIRED"],
               "policy_result": "MANUAL_REVIEW"
             },
             {
               "expression": "MIT",
-              "obligations": [
-                "PRESERVE_COPYRIGHT_NOTICE",
-                "PRESERVE_LICENSE_TEXT"
-              ],
+              "obligations": ["PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
               "policy_result": "PASS"
             }
           ],
@@ -3607,25 +3265,18 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "7f585706bfddbdebf89daac705b2dfcc16890130727d3197ca62c732b4310953",
       "specialized_existing_evidence": null,
       "suggested_spdx_expression": "MPL-2.0 AND MIT",
       "suggestion_rationale": "Suggestion was produced by the pinned exact-wheel evidence extractor.",
       "suggestion_source": "EXACT_ARTIFACT_ARCHIVE_BYTES",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "linux",
-        "windows"
-      ],
+      "targets": ["linux", "windows"],
       "version": "4.70.0"
     },
     {
-      "artifact_roles": [
-        "PYTHON_BUILD_DEPENDENCY"
-      ],
+      "artifact_roles": ["PYTHON_BUILD_DEPENDENCY"],
       "bundled_license_evidence": [
         {
           "kind": "LICENSE",
@@ -3638,12 +3289,7 @@
       "dependency_paths": [
         {
           "inventory_id": "code-c-windows-worker-build-py31315",
-          "paths": [
-            [
-              "pkg:pypi/pyinstaller@6.22.2",
-              "pkg:pypi/pywin32-ctypes@0.2.3"
-            ]
-          ],
+          "paths": [["pkg:pypi/pyinstaller@6.22.2", "pkg:pypi/pywin32-ctypes@0.2.3"]],
           "scope": "WORKER_BUILD",
           "target": "windows"
         }
@@ -3657,9 +3303,7 @@
       "package": "pywin32-ctypes",
       "projected_policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "BSD-3-Clause"
-          ],
+          "acceptable_or_branches": ["BSD-3-Clause"],
           "artifact_role": "PYTHON_BUILD_DEPENDENCY",
           "artifact_sha256": "8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8",
           "artifact_type": "PYTHON_WHEEL",
@@ -3680,11 +3324,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "BSD-3-Clause",
           "notice_required": true,
-          "obligations": [
-            "NO_ENDORSEMENT",
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["NO_ENDORSEMENT", "PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "pywin32-ctypes",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -3707,24 +3347,18 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "WORKER_BUILD"
-      ],
+      "scopes": ["WORKER_BUILD"],
       "sha256": "8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8",
       "specialized_existing_evidence": null,
       "suggested_spdx_expression": "BSD-3-Clause",
       "suggestion_rationale": "Suggestion was produced by the pinned exact-wheel evidence extractor.",
       "suggestion_source": "EXACT_ARTIFACT_ARCHIVE_BYTES",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "windows"
-      ],
+      "targets": ["windows"],
       "version": "0.2.3"
     },
     {
-      "artifact_roles": [
-        "PYTHON_BUILD_DEPENDENCY"
-      ],
+      "artifact_roles": ["PYTHON_BUILD_DEPENDENCY"],
       "bundled_license_evidence": [
         {
           "kind": "COPYING",
@@ -3733,17 +3367,11 @@
           "size": 32138
         }
       ],
-      "classifier_evidence": [
-        "License :: OSI Approved :: GNU General Public License v2 (GPLv2)"
-      ],
+      "classifier_evidence": ["License :: OSI Approved :: GNU General Public License v2 (GPLv2)"],
       "dependency_paths": [
         {
           "inventory_id": "code-c-linux-worker-build-py31315",
-          "paths": [
-            [
-              "pkg:pypi/pyinstaller@6.22.2"
-            ]
-          ],
+          "paths": [["pkg:pypi/pyinstaller@6.22.2"]],
           "scope": "WORKER_BUILD",
           "target": "linux"
         }
@@ -3758,9 +3386,7 @@
       "package": "pyinstaller",
       "projected_policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "GPL-2.0-or-later WITH Bootloader-exception"
-          ],
+          "acceptable_or_branches": ["GPL-2.0-or-later WITH Bootloader-exception"],
           "artifact_role": "PYINSTALLER_BUILD_TOOL",
           "artifact_sha256": "9622686ecc5d5fa492fe6cde29d47df9dd41138cff8177be9f901ca3260f2096",
           "artifact_type": "PYTHON_WHEEL",
@@ -3863,14 +3489,12 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "WORKER_BUILD"
-      ],
+      "scopes": ["WORKER_BUILD"],
       "sha256": "9622686ecc5d5fa492fe6cde29d47df9dd41138cff8177be9f901ca3260f2096",
       "specialized_existing_evidence": {
         "context_bound_usage_gate_still_required": true,
         "expression": "GPL-2.0-or-later WITH Bootloader-exception",
-        "path": "/Users/sungaoang/ai-video-platform-code-c/compliance/license-evidence/pyinstaller-6.22.2/linux-x86_64.scan.json",
+        "path": "compliance/license-evidence/pyinstaller-6.22.2/linux-x86_64.scan.json",
         "schema_version": "2",
         "sha256": "742039e54b528121f2c5281ef30c4de43029e06e2ac5031128efd477e5bd603c"
       },
@@ -3878,15 +3502,11 @@
       "suggestion_rationale": "Suggestion was produced by the pinned exact-wheel evidence extractor.",
       "suggestion_source": "EXACT_ARTIFACT_ARCHIVE_BYTES",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "linux"
-      ],
+      "targets": ["linux"],
       "version": "6.22.2"
     },
     {
-      "artifact_roles": [
-        "PYTHON_BUILD_DEPENDENCY"
-      ],
+      "artifact_roles": ["PYTHON_BUILD_DEPENDENCY"],
       "bundled_license_evidence": [
         {
           "kind": "COPYING",
@@ -3895,17 +3515,11 @@
           "size": 32138
         }
       ],
-      "classifier_evidence": [
-        "License :: OSI Approved :: GNU General Public License v2 (GPLv2)"
-      ],
+      "classifier_evidence": ["License :: OSI Approved :: GNU General Public License v2 (GPLv2)"],
       "dependency_paths": [
         {
           "inventory_id": "code-c-windows-worker-build-py31315",
-          "paths": [
-            [
-              "pkg:pypi/pyinstaller@6.22.2"
-            ]
-          ],
+          "paths": [["pkg:pypi/pyinstaller@6.22.2"]],
           "scope": "WORKER_BUILD",
           "target": "windows"
         }
@@ -3920,9 +3534,7 @@
       "package": "pyinstaller",
       "projected_policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "GPL-2.0-or-later WITH Bootloader-exception"
-          ],
+          "acceptable_or_branches": ["GPL-2.0-or-later WITH Bootloader-exception"],
           "artifact_role": "PYINSTALLER_BUILD_TOOL",
           "artifact_sha256": "9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7",
           "artifact_type": "PYTHON_WHEEL",
@@ -4025,14 +3637,12 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "WORKER_BUILD"
-      ],
+      "scopes": ["WORKER_BUILD"],
       "sha256": "9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7",
       "specialized_existing_evidence": {
         "context_bound_usage_gate_still_required": true,
         "expression": "GPL-2.0-or-later WITH Bootloader-exception",
-        "path": "/Users/sungaoang/ai-video-platform-code-c/compliance/license-evidence/pyinstaller-6.22.2/windows-x86_64.scan.json",
+        "path": "compliance/license-evidence/pyinstaller-6.22.2/windows-x86_64.scan.json",
         "schema_version": "2",
         "sha256": "0672843d4ee798304d3cb3a7891e1520af8cd375a0d084b7a97ad1b287f1b5a4"
       },
@@ -4040,15 +3650,11 @@
       "suggestion_rationale": "Suggestion was produced by the pinned exact-wheel evidence extractor.",
       "suggestion_source": "EXACT_ARTIFACT_ARCHIVE_BYTES",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "windows"
-      ],
+      "targets": ["windows"],
       "version": "6.22.2"
     },
     {
-      "artifact_roles": [
-        "RUNTIME_WHEEL"
-      ],
+      "artifact_roles": ["RUNTIME_WHEEL"],
       "bundled_license_evidence": [],
       "classifier_evidence": [],
       "coverage_evidence": {
@@ -4065,11 +3671,7 @@
       "dependency_paths": [
         {
           "inventory_id": "code-c-linux-runtime-py31315",
-          "paths": [
-            [
-              "pkg:pypi/sentencepiece@0.2.1"
-            ]
-          ],
+          "paths": [["pkg:pypi/sentencepiece@0.2.1"]],
           "scope": "PRODUCTION_WORKER_RUNTIME",
           "target": "linux"
         }
@@ -4090,23 +3692,17 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "c7f0fd2f2693309e6628aeeb2e2faf6edd221134dfccac3308ca0de01f8dab47",
       "suggested_spdx_expression": "Apache-2.0",
       "suggestion_rationale": "Whole-artifact License Coverage v1 and Upstream Release Binding v1 account for the exact artifact; commercial-policy approval remains pending.",
       "suggestion_source": "LICENSE_COVERAGE_V1_UPSTREAM_RELEASE",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "linux"
-      ],
+      "targets": ["linux"],
       "version": "0.2.1"
     },
     {
-      "artifact_roles": [
-        "RUNTIME_WHEEL"
-      ],
+      "artifact_roles": ["RUNTIME_WHEEL"],
       "bundled_license_evidence": [
         {
           "kind": "LICENSE",
@@ -4133,20 +3729,13 @@
           "size": 1090
         }
       ],
-      "classifier_evidence": [
-        "License :: OSI Approved :: Apache Software License"
-      ],
+      "classifier_evidence": ["License :: OSI Approved :: Apache Software License"],
       "dependency_paths": [
         {
           "inventory_id": "code-c-windows-runtime-py31315",
           "paths": [
-            [
-              "pkg:pypi/opencv-python-headless@4.14.0.94"
-            ],
-            [
-              "pkg:pypi/scenedetect-headless@0.7.1",
-              "pkg:pypi/opencv-python-headless@4.14.0.94"
-            ]
+            ["pkg:pypi/opencv-python-headless@4.14.0.94"],
+            ["pkg:pypi/scenedetect-headless@0.7.1", "pkg:pypi/opencv-python-headless@4.14.0.94"]
           ],
           "scope": "PRODUCTION_WORKER_RUNTIME",
           "target": "windows"
@@ -4165,9 +3754,7 @@
       "package": "opencv-python-headless",
       "projected_policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "Apache-2.0"
-          ],
+          "acceptable_or_branches": ["Apache-2.0"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "cbed65415b8f6a9541c705afe3e64795840524d0ff3bc58f507826284a1dc64b",
           "artifact_type": "PYTHON_WHEEL",
@@ -4215,24 +3802,18 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "cbed65415b8f6a9541c705afe3e64795840524d0ff3bc58f507826284a1dc64b",
       "specialized_existing_evidence": null,
       "suggested_spdx_expression": "Apache-2.0",
       "suggestion_rationale": "Suggestion was produced by the pinned exact-wheel evidence extractor.",
       "suggestion_source": "EXACT_ARTIFACT_ARCHIVE_BYTES",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "windows"
-      ],
+      "targets": ["windows"],
       "version": "4.14.0.94"
     },
     {
-      "artifact_roles": [
-        "RUNTIME_WHEEL"
-      ],
+      "artifact_roles": ["RUNTIME_WHEEL"],
       "bundled_license_evidence": [
         {
           "kind": "LICENSE",
@@ -4241,17 +3822,11 @@
           "size": 1073
         }
       ],
-      "classifier_evidence": [
-        "License :: OSI Approved :: MIT License"
-      ],
+      "classifier_evidence": ["License :: OSI Approved :: MIT License"],
       "dependency_paths": [
         {
           "inventory_id": "code-c-linux-runtime-py31315",
-          "paths": [
-            [
-              "pkg:pypi/onnxruntime@1.29.0"
-            ]
-          ],
+          "paths": [["pkg:pypi/onnxruntime@1.29.0"]],
           "scope": "PRODUCTION_WORKER_RUNTIME",
           "target": "linux"
         }
@@ -4266,9 +3841,7 @@
       "package": "onnxruntime",
       "projected_policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "MIT"
-          ],
+          "acceptable_or_branches": ["MIT"],
           "artifact_role": "RUNTIME_WHEEL",
           "artifact_sha256": "e2128f31f449e922c62dbe5d8b6b7b079f0bcaf2d56a102fa203cb6e5bb5ab19",
           "artifact_type": "PYTHON_WHEEL",
@@ -4289,10 +3862,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "MIT",
           "notice_required": true,
-          "obligations": [
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "onnxruntime",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -4315,24 +3885,18 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "PRODUCTION_WORKER_RUNTIME"
-      ],
+      "scopes": ["PRODUCTION_WORKER_RUNTIME"],
       "sha256": "e2128f31f449e922c62dbe5d8b6b7b079f0bcaf2d56a102fa203cb6e5bb5ab19",
       "specialized_existing_evidence": null,
       "suggested_spdx_expression": "MIT",
       "suggestion_rationale": "Suggestion was produced by the pinned exact-wheel evidence extractor.",
       "suggestion_source": "EXACT_ARTIFACT_ARCHIVE_BYTES",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "linux"
-      ],
+      "targets": ["linux"],
       "version": "1.29.0"
     },
     {
-      "artifact_roles": [
-        "PYTHON_BUILD_DEPENDENCY"
-      ],
+      "artifact_roles": ["PYTHON_BUILD_DEPENDENCY"],
       "bundled_license_evidence": [
         {
           "kind": "LICENSE",
@@ -4341,29 +3905,17 @@
           "size": 1002
         }
       ],
-      "classifier_evidence": [
-        "License :: OSI Approved :: MIT License"
-      ],
+      "classifier_evidence": ["License :: OSI Approved :: MIT License"],
       "dependency_paths": [
         {
           "inventory_id": "code-c-linux-worker-build-py31315",
-          "paths": [
-            [
-              "pkg:pypi/pyinstaller@6.22.2",
-              "pkg:pypi/altgraph@0.17.5"
-            ]
-          ],
+          "paths": [["pkg:pypi/pyinstaller@6.22.2", "pkg:pypi/altgraph@0.17.5"]],
           "scope": "WORKER_BUILD",
           "target": "linux"
         },
         {
           "inventory_id": "code-c-windows-worker-build-py31315",
-          "paths": [
-            [
-              "pkg:pypi/pyinstaller@6.22.2",
-              "pkg:pypi/altgraph@0.17.5"
-            ]
-          ],
+          "paths": [["pkg:pypi/pyinstaller@6.22.2", "pkg:pypi/altgraph@0.17.5"]],
           "scope": "WORKER_BUILD",
           "target": "windows"
         }
@@ -4378,9 +3930,7 @@
       "package": "altgraph",
       "projected_policy_decisions": [
         {
-          "acceptable_or_branches": [
-            "MIT"
-          ],
+          "acceptable_or_branches": ["MIT"],
           "artifact_role": "PYTHON_BUILD_DEPENDENCY",
           "artifact_sha256": "f3a22400bce1b0c701683820ac4f3b159cd301acab067c51c653e06961600597",
           "artifact_type": "PYTHON_WHEEL",
@@ -4401,10 +3951,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "MIT",
           "notice_required": true,
-          "obligations": [
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "altgraph",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -4420,9 +3967,7 @@
           "version": "0.17.5"
         },
         {
-          "acceptable_or_branches": [
-            "MIT"
-          ],
+          "acceptable_or_branches": ["MIT"],
           "artifact_role": "PYTHON_BUILD_DEPENDENCY",
           "artifact_sha256": "f3a22400bce1b0c701683820ac4f3b159cd301acab067c51c653e06961600597",
           "artifact_type": "PYTHON_WHEEL",
@@ -4443,10 +3988,7 @@
           "no_publicity_name_use_without_permission": false,
           "normalized_expression": "MIT",
           "notice_required": true,
-          "obligations": [
-            "PRESERVE_COPYRIGHT_NOTICE",
-            "PRESERVE_LICENSE_TEXT"
-          ],
+          "obligations": ["PRESERVE_COPYRIGHT_NOTICE", "PRESERVE_LICENSE_TEXT"],
           "package": "altgraph",
           "parser_name": "spdx-expression-parse",
           "parser_version": "5.0.0",
@@ -4469,19 +4011,14 @@
       "requested_action": "APPROVE",
       "requested_review_contract": "Artifact License Review v1",
       "review_status": "PENDING",
-      "scopes": [
-        "WORKER_BUILD"
-      ],
+      "scopes": ["WORKER_BUILD"],
       "sha256": "f3a22400bce1b0c701683820ac4f3b159cd301acab067c51c653e06961600597",
       "specialized_existing_evidence": null,
       "suggested_spdx_expression": "MIT",
       "suggestion_rationale": "Suggestion was produced by the pinned exact-wheel evidence extractor.",
       "suggestion_source": "EXACT_ARTIFACT_ARCHIVE_BYTES",
       "suggestion_status": "MACHINE_SUGGESTION_NOT_APPROVAL",
-      "targets": [
-        "linux",
-        "windows"
-      ],
+      "targets": ["linux", "windows"],
       "version": "0.17.5"
     }
   ],
