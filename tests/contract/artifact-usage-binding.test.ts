@@ -222,7 +222,7 @@ describe('PyInstaller artifact identity and worker-build usage binding', () => {
       artifact_identity_reconciled: true,
       exception_binding_valid: true,
       policy_result: 'PASS',
-      license_policy_version: '2026.08.29.1',
+      license_policy_version: '2026.09.02.1',
     });
     expect(
       result.scope_decisions.map((decision: { policy_result: string }) => decision.policy_result),
@@ -354,6 +354,27 @@ describe('PyInstaller artifact identity and worker-build usage binding', () => {
     expect(evaluate(bare, usage, build).policy_result).toBe('FAIL');
   });
 
+  it('requires a complete usage-policy context to be embedded in the binding', () => {
+    const build = buildContext(windowsEvidence);
+    const context = {
+      BUILD_ONLY_USAGE_BINDING: 'PASS',
+      GPL_COMPONENT_DISTRIBUTED: 'NO',
+      GPL_COMPONENT_MEMBERS_IN_FINAL_ARTIFACT: 0,
+      COMPONENT_COVERAGE: 'COMPLETE',
+      FINAL_ARTIFACT_RECONCILIATION: 'PASS',
+      GPL_COVERED_CODE_COPIED_OR_INJECTED_INTO_FINAL_OUTPUT: 'NO',
+    };
+    const usage = binding(windowsEvidence, build, { usage_policy_context: context });
+    expect(validateArtifactUsageBindingV1(usage)).toBe(usage);
+    expect(evaluate(windowsEvidence, usage, build).policy_result).toBe('PASS');
+    expect(() =>
+      validateArtifactUsageBindingV1({
+        ...usage,
+        usage_policy_context: { ...context, COMPONENT_COVERAGE: 'PARTIAL' },
+      }),
+    ).toThrow(/schema invalid/u);
+  });
+
   it('separates build/runtime SBOM and internal/customer notice reachability', () => {
     const build = buildContext(windowsEvidence);
     const usage = binding(windowsEvidence, build);
@@ -448,7 +469,7 @@ describe('PyInstaller artifact identity and worker-build usage binding', () => {
         'utf8',
       ),
     );
-    expect(current.document.license_policy_version).toBe('2026.08.29.1');
+    expect(current.document.license_policy_version).toBe('2026.09.02.1');
     expect(old.license_policy_version).toBe('2026.08.28.2');
     expect(licenseIdentityHash(old)).toBe(
       '0d708d719c70a219f80961c9bc1be6162ee0a34cb9ca0cbca5acd56e4f8264ac',

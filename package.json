@@ -28,6 +28,7 @@
     "vulnerability:scan": "pnpm audit --audit-level moderate",
     "compliance:python:tooling:install": "node tools/python-supply-chain/quality-tooling.mjs",
     "compliance:license-policy:verify": "node tools/license-policy/verify-quality-tooling.mjs",
+    "compliance:license-policy:replay": "node tools/license-policy/re-evaluate-usage-universe.mjs --input tests/fixtures/license-policy/current-universe-v1.json",
     "compliance:artifact-license:verify": "node tools/license-policy/verify-artifact-license-records.mjs",
     "compliance:license-coverage:verify": "node tools/license-policy/coverage.mjs verify-fixtures",
     "compliance:runtime-prerequisite:verify": "node tools/runtime-prerequisite/verify-runtime-prerequisites.mjs",

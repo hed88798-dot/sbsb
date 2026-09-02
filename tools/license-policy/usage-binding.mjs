@@ -165,7 +165,7 @@ function withoutEvidenceId(entry) {
   return copy;
 }
 
-function policyEvidence(evidence, binding, expression, evidenceSources) {
+function policyEvidence(evidence, binding, expression, evidenceSources, usagePolicyContext) {
   return {
     artifact_sha256: evidence.artifact.sha256,
     package: evidence.artifact.package,
@@ -190,6 +190,7 @@ function policyEvidence(evidence, binding, expression, evidenceSources) {
           entry.evidence_type === 'LICENSE_FILE' || entry.evidence_type === 'EXCEPTION_SOURCE',
       )
       .map(withoutEvidenceId),
+    ...(usagePolicyContext ? { usage_policy_context: usagePolicyContext } : {}),
   };
 }
 
@@ -214,7 +215,12 @@ function expectedBuildOnlyReachability(binding) {
 export function evaluateArtifactUsageBinding(
   artifactEvidence,
   usageBinding,
-  { buildProvenance, toolchainInventory, policy: loadedPolicy = loadLicensePolicy() },
+  {
+    buildProvenance,
+    toolchainInventory,
+    usagePolicyContext = null,
+    policy: loadedPolicy = loadLicensePolicy(),
+  },
 ) {
   const policy = loadedPolicy.document
     ? loadedPolicy
@@ -225,6 +231,18 @@ export function evaluateArtifactUsageBinding(
   validateArtifactLicenseEvidenceV2(artifactEvidence);
   validateArtifactUsageBindingV1(usageBinding);
   const report = baseReport(artifactEvidence, usageBinding, buildProvenance, policy);
+  const boundUsagePolicyContext = usageBinding.usage_policy_context ?? usagePolicyContext;
+  if (usagePolicyContext && !usageBinding.usage_policy_context) {
+    return failed(report, ['usage policy context must be embedded in the usage binding']);
+  }
+  if (
+    usagePolicyContext &&
+    usageBinding.usage_policy_context &&
+    licenseIdentityHash(usagePolicyContext) !==
+      licenseIdentityHash(usageBinding.usage_policy_context)
+  ) {
+    return failed(report, ['usage policy context is not exactly bound to the usage binding']);
+  }
   const failures = [];
   const artifactHash = artifactEvidence.artifact.sha256;
   const allArtifactReferences = [
@@ -326,6 +344,7 @@ export function evaluateArtifactUsageBinding(
       usageBinding,
       artifactEvidence.package_license.expression,
       exceptionSources,
+      boundUsagePolicyContext,
     ),
     { policy },
   );
@@ -334,7 +353,13 @@ export function evaluateArtifactUsageBinding(
     relationship: scope.relationship,
     files: scope.files.map((entry) => entry.relative_path),
     ...evaluateLicenseEvidence(
-      policyEvidence(artifactEvidence, usageBinding, scope.expression, scope.evidence_sources),
+      policyEvidence(
+        artifactEvidence,
+        usageBinding,
+        scope.expression,
+        scope.evidence_sources,
+        boundUsagePolicyContext,
+      ),
       { policy },
     ),
   }));

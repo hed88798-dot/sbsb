@@ -121,6 +121,28 @@
         "internal_compliance": { "enum": ["RETAINED", "EXCLUDED"] },
         "customer_notice": { "enum": ["INCLUDED", "EXCLUDED_BUILD_ONLY"] }
       }
+    },
+    "usage_policy_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "BUILD_ONLY_USAGE_BINDING",
+        "GPL_COMPONENT_DISTRIBUTED",
+        "GPL_COMPONENT_MEMBERS_IN_FINAL_ARTIFACT",
+        "COMPONENT_COVERAGE",
+        "FINAL_ARTIFACT_RECONCILIATION",
+        "GPL_COVERED_CODE_COPIED_OR_INJECTED_INTO_FINAL_OUTPUT"
+      ],
+      "properties": {
+        "BUILD_ONLY_USAGE_BINDING": { "const": "PASS" },
+        "GPL_COMPONENT_DISTRIBUTED": { "enum": ["YES", "NO"] },
+        "GPL_COMPONENT_MEMBERS_IN_FINAL_ARTIFACT": { "type": "integer", "minimum": 0 },
+        "COMPONENT_COVERAGE": { "enum": ["COMPLETE", "INCOMPLETE"] },
+        "FINAL_ARTIFACT_RECONCILIATION": { "enum": ["PASS", "FAIL"] },
+        "GPL_COVERED_CODE_COPIED_OR_INJECTED_INTO_FINAL_OUTPUT": {
+          "enum": ["YES", "NO"]
+        }
+      }
     }
   },
   "$defs": {

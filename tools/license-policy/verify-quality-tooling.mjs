@@ -155,6 +155,51 @@ export function verifySpdxQualityTooling() {
       failures.push(`${evidence.rule_id}: policy rule evidence identity mismatch`);
     }
   }
+  const buildOnlyCopyleftRules = policy.usage_policy_rules ?? [];
+  const genericBuildOnlyRule = buildOnlyCopyleftRules.find(
+    (rule) => rule.rule_id === 'COPYLEFT_BUILD_ONLY_USE-v1',
+  );
+  if (!genericBuildOnlyRule) {
+    failures.push('generic build-only copyleft policy rule is missing');
+  } else {
+    if (
+      genericBuildOnlyRule.policy_result !== 'PASS' ||
+      genericBuildOnlyRule.disposition !== 'ALLOW_WITH_CONDITIONS' ||
+      !Array.isArray(genericBuildOnlyRule.license_ids) ||
+      !genericBuildOnlyRule.license_ids.includes('GPL-2.0-or-later') ||
+      !genericBuildOnlyRule.artifact_roles?.includes('PYTHON_BUILD_DEPENDENCY') ||
+      !genericBuildOnlyRule.distribution_roles?.includes('BUILD_ONLY_USE')
+    ) {
+      failures.push('generic build-only copyleft policy rule semantics are invalid');
+    }
+    const forbiddenIdentityFields = [
+      'package',
+      'package_name',
+      'artifact_sha256',
+      'artifact_id',
+      'filename',
+    ];
+    if (forbiddenIdentityFields.some((field) => Object.hasOwn(genericBuildOnlyRule, field))) {
+      failures.push(
+        'generic build-only copyleft rule contains package/artifact allowlist identity',
+      );
+    }
+    const requiredConditions = [
+      'BUILD_ONLY_USAGE_BINDING',
+      'GPL_COMPONENT_DISTRIBUTED',
+      'GPL_COMPONENT_MEMBERS_IN_FINAL_ARTIFACT',
+      'COMPONENT_COVERAGE',
+      'FINAL_ARTIFACT_RECONCILIATION',
+      'GPL_COVERED_CODE_COPIED_OR_INJECTED_INTO_FINAL_OUTPUT',
+    ];
+    if (
+      requiredConditions.some(
+        (condition) => !Object.hasOwn(genericBuildOnlyRule.required_conditions ?? {}, condition),
+      )
+    ) {
+      failures.push('generic build-only copyleft rule is missing a required condition');
+    }
+  }
   for (const review of policy.artifact_bundled_license_reviews ?? []) {
     try {
       const scan = loadBundledLicenseEvidence(resolve(repositoryRoot, review.scan_relative_path));

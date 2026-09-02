@@ -44,6 +44,54 @@ function unique(values) {
   return [...new Set(values)].sort();
 }
 
+function valuesEqual(left, right) {
+  return canonicalLicenseJson(left) === canonicalLicenseJson(right);
+}
+
+function usagePolicyRuleFor(node, context) {
+  return (context.policy.usage_policy_rules ?? []).find(
+    (candidate) =>
+      candidate.license_ids?.includes(node.license_id) &&
+      candidate.artifact_roles?.includes(context.evidence.artifact_role) &&
+      candidate.distribution_roles?.includes(context.evidence.distribution_role),
+  );
+}
+
+function usagePolicyLeafResult(node, context, rule) {
+  const usageContext = context.evidence.usage_policy_context;
+  const missing = Object.entries(rule.required_conditions ?? {})
+    .filter(([key, expected]) => !usageContext || !valuesEqual(usageContext[key], expected))
+    .map(([key]) => key);
+  if (missing.length > 0) {
+    return {
+      expression: renderSpdxAst(node),
+      policy_result: 'FAIL',
+      obligations: unique([
+        'ADDITIONAL_ENGINEERING_EVIDENCE_REQUIRED',
+        'COPYLEFT_SOURCE_DISTRIBUTION_REVIEW_REQUIRED',
+        'GPL_COVERED_CODE_COPY_OR_INJECTION_PROHIBITED',
+      ]),
+      policy_rule_id: rule.rule_id,
+      policy_disposition: null,
+      acceptable_or_branches: [],
+      branch_evaluations: [],
+      exceptions: [],
+      reason: `generic build-only copyleft rule requires exact conditions: ${missing.join(', ')}`,
+    };
+  }
+  return {
+    expression: renderSpdxAst(node),
+    policy_result: rule.policy_result,
+    policy_rule_id: rule.rule_id,
+    policy_disposition: rule.disposition,
+    obligations: unique(rule.obligations ?? []),
+    acceptable_or_branches: rule.policy_result === 'PASS' ? [renderSpdxAst(node)] : [],
+    branch_evaluations: [],
+    exceptions: [],
+    reason: 'generic build-only copyleft rule matched exact usage and final-artifact conditions',
+  };
+}
+
 function combineFlags(obligations) {
   const values = new Set(obligations);
   return {
@@ -170,6 +218,8 @@ function leafResult(node, context) {
         : 'exception is not approved for this artifact/distribution role pair',
     };
   }
+  const usagePolicyRule = usagePolicyRuleFor(node, context);
+  if (usagePolicyRule) return usagePolicyLeafResult(node, context, usagePolicyRule);
   const rule = context.policy.license_rules[node.license_id];
   if (!rule) {
     return {
@@ -378,6 +428,7 @@ export function evaluateLicenseEvidence(
     policy_result: policyResult,
     obligations: nodeResult.obligations,
     policy_rule_id: nodeResult.policy_rule_id ?? null,
+    policy_disposition: nodeResult.policy_disposition ?? null,
     commercial_use: nodeResult.commercial_use ?? null,
     distribution: nodeResult.distribution ?? null,
     copyright_holders: nodeResult.copyright_holders ?? [],
