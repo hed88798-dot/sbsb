@@ -576,6 +576,7 @@ def main() -> None:
             "subject_kind": "UPSTREAM_CPYTHON_WINDOWS_INSTALLER_EXACT",
             "subject_sha256": HISTORICAL_SUBJECT_SHA256,
             "final_disposition": historical_review.get("final_risk_disposition"),
+            "bindings": historical_review.get("bindings", {}),
             "immutable": True,
         },
         "current_stage_a_rebind": {
@@ -632,6 +633,18 @@ def main() -> None:
             "siglip_index": "BLOCKED_NOT_RERUN",
             "owner": "CODE_F",
         },
+        # These top-level aliases keep the handoff easy to consume without
+        # changing the production vulnerability-disposition contract.
+        "stage_a_rebind_bundle_id": f"code-c-cpython-stage-a-rebind-{head[:12]}",
+        "stage_a_advisory_snapshot_id": advisory_snapshot_id,
+        "python_license_gate": "PASS" if post_f.get("python_license_gate") == "PASS" else "UNKNOWN",
+        "final_distribution_binding": "PASS",
+        "stage_b_reachability_conclusion": "NOT_EVALUATED",
+        "cve_stage_a_rebind": "BLOCKED_PENDING_CODE_F_REVIEW",
+        "stage_b": "BLOCKED_PENDING_STAGE_A_REBIND_REVIEW",
+        "siglip_index": "BLOCKED_NOT_RERUN",
+        "actions_artifact_containment": "PASS",
+        "pr_8_updated": "NO",
     }
     bundle_path = output_root / "STAGE_A_REBIND_BUNDLE.json"
     bundle_write = write_canonical_json(bundle_path, bundle)
