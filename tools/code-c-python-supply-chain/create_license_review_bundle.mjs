@@ -48,6 +48,54 @@ function optionalArgument(name) {
   return index >= 0 ? (process.argv[index + 1] ?? null) : null;
 }
 
+function loadUsagePolicyContextSnapshot(snapshotPath) {
+  const snapshot = JSON.parse(readFileSync(snapshotPath, 'utf8'));
+  if (snapshot.schema_version !== '1' || !Array.isArray(snapshot.target_usages)) {
+    throw new Error(`${snapshotPath}: unsupported usage policy context snapshot`);
+  }
+  const contexts = new Map();
+  for (const usage of snapshot.target_usages) {
+    if (usage.expected_policy_result !== 'PASS' || !usage.usage_policy_context) {
+      throw new Error(`${snapshotPath}: target usage is not an approved policy-context replay`);
+    }
+    if (contexts.has(usage.usage_binding_id)) {
+      throw new Error(`${snapshotPath}: duplicate usage binding ${usage.usage_binding_id}`);
+    }
+    contexts.set(usage.usage_binding_id, usage);
+  }
+  return {
+    source_snapshot_id: snapshot.source_snapshot_id ?? null,
+    total_usage: snapshot.total_usage ?? null,
+    contexts,
+  };
+}
+
+function attachUsagePolicyContext(artifact, use, snapshot) {
+  if (!snapshot) return use;
+  const usageId = use.usage_binding_id ?? use.inventory_id;
+  const replay = snapshot.contexts.get(usageId);
+  if (!replay || replay.artifact_sha256 !== artifact.sha256) return use;
+  for (const [actual, expected, label] of [
+    [replay.artifact_sha256, artifact.sha256, 'artifact SHA-256'],
+    [replay.package, artifact.package, 'package'],
+    [replay.version, artifact.version, 'version'],
+    [replay.artifact_role, use.artifact_role, 'artifact role'],
+    [replay.distribution_role, use.distribution_role, 'distribution role'],
+  ]) {
+    if (actual !== expected) {
+      throw new Error(`${usageId}: usage policy context ${label} mismatch`);
+    }
+  }
+  if (
+    use.usage_policy_context &&
+    licenseIdentityHash(use.usage_policy_context) !==
+      licenseIdentityHash(replay.usage_policy_context)
+  ) {
+    throw new Error(`${usageId}: usage policy context conflicts with the replay snapshot`);
+  }
+  return { ...use, usage_policy_context: replay.usage_policy_context };
+}
+
 function compactText(value) {
   return value?.trim().replaceAll(/\s+/gu, ' ') ?? '';
 }
@@ -164,6 +212,7 @@ function roleDecision(artifact, expression, use, status, extra = {}) {
     evidence_status: status,
     evidence_sources: [],
     exception_evidence: extra.exceptionEvidence ?? [],
+    ...(use.usage_policy_context ? { usage_policy_context: use.usage_policy_context } : {}),
   });
 }
 
@@ -477,6 +526,13 @@ async function main() {
   const productionCoverageRoot = productionCoverageRootArgument
     ? resolve(productionCoverageRootArgument)
     : null;
+  const usagePolicySnapshotArgument = optionalArgument('--usage-policy-context-snapshot');
+  const usagePolicySnapshotPath = usagePolicySnapshotArgument
+    ? resolve(usagePolicySnapshotArgument)
+    : null;
+  const usagePolicySnapshot = usagePolicySnapshotPath
+    ? loadUsagePolicyContextSnapshot(usagePolicySnapshotPath)
+    : null;
   const requestedBaseline = optionalArgument('--current-main-quality-baseline');
   const requestedEvaluatorHead = optionalArgument('--current-license-evaluator-head');
   const targets = ['linux', 'windows'].map((target) =>
@@ -532,7 +588,7 @@ async function main() {
         }
         existing.uses.push(
           ...artifact.uses.map((use) => ({
-            ...use,
+            ...attachUsagePolicyContext(artifact, use, usagePolicySnapshot),
             usage_binding_id: use.usage_binding_id ?? use.inventory_id ?? null,
             usage_binding_sha256:
               use.usage_binding_sha256 ?? inventoryHashes.get(use.inventory_id) ?? null,
@@ -543,7 +599,7 @@ async function main() {
           artifact,
           evidence,
           uses: artifact.uses.map((use) => ({
-            ...use,
+            ...attachUsagePolicyContext(artifact, use, usagePolicySnapshot),
             usage_binding_id: use.usage_binding_id ?? use.inventory_id ?? null,
             usage_binding_sha256:
               use.usage_binding_sha256 ?? inventoryHashes.get(use.inventory_id) ?? null,
@@ -694,22 +750,44 @@ async function main() {
             specializedDecision(artifact, suggestion.expression, use, specialized) ??
             roleDecision(artifact, suggestion.expression, use, 'PASS'),
         );
+        const conditionallyAutoApproved =
+          uses.every((use) => Boolean(use.usage_policy_context)) &&
+          decisions.every((decision) => decision.policy_result === 'PASS');
         usageEvaluations.push(
           ...decisions.map((decision, index) =>
             usageEvaluation(
               artifact,
               uses[index],
               decision,
-              decision.policy_result === 'PASS'
-                ? 'NEW_REQUIRED_REVIEW'
-                : decision.policy_result === 'MANUAL_REVIEW'
+              conditionallyAutoApproved
+                ? 'AUTO_POLICY_PASS'
+                : decision.policy_result === 'PASS'
                   ? 'NEW_REQUIRED_REVIEW'
-                  : 'HARD_BLOCKED',
+                  : decision.policy_result === 'MANUAL_REVIEW'
+                    ? 'NEW_REQUIRED_REVIEW'
+                    : 'HARD_BLOCKED',
               'suggested exact-artifact license fact evaluated by the pinned policy',
             ),
           ),
         );
-        if (decisions.every((decision) => decision.policy_result !== 'FAIL')) {
+        if (conditionallyAutoApproved) {
+          autoApproved.push({
+            package: artifact.package,
+            version: artifact.version,
+            filename: artifact.filename,
+            sha256: artifact.sha256,
+            targets: [...new Set(uses.map((use) => use.target))].sort(),
+            scopes: [...new Set(uses.map((use) => use.scope))].sort(),
+            decision_source: 'CURRENT_POLICY_USAGE_CONTEXT',
+            reported_expression: suggestion.expression,
+            evidence_snapshot_sha256: evidence.evidence_snapshot_sha256,
+            policy_version: policy.document.license_policy_version,
+            policy_sha256: policy.sha256,
+            policy_result: 'PASS',
+            policy_disposition: 'ALLOW_WITH_CONDITIONS',
+            policy_decisions: decisions,
+          });
+        } else if (decisions.every((decision) => decision.policy_result !== 'FAIL')) {
           const request = requiredReviewRecord({ artifact, evidence, uses, suggestion, decisions });
           request.specialized_existing_evidence = specialized
             ? {
@@ -1011,9 +1089,20 @@ async function main() {
         distribution_role: use.distribution_role,
         target: use.target,
         scope: use.scope,
+        usage_policy_context_bound: Boolean(use.usage_policy_context),
       })),
       hard_block_diagnostics: hardBlocked,
       license_coverage_revalidation: coverageRevalidation,
+      usage_policy_context_replay: {
+        status: usagePolicySnapshot ? 'PASS' : 'NOT_RUN',
+        source_snapshot_id: usagePolicySnapshot?.source_snapshot_id ?? null,
+        total_usage: usagePolicySnapshot?.total_usage ?? null,
+        target_context_count: usagePolicySnapshot?.contexts.size ?? 0,
+        applied_usage_count: [...artifactsByHash.values()].reduce(
+          (count, entry) => count + entry.uses.filter((use) => use.usage_policy_context).length,
+          0,
+        ),
+      },
       license_closure_rebind: {
         target_evidence_code_c_head_sha: head,
         target_evidence_main_quality_baseline_sha: targetGraphBaseline,
@@ -1036,7 +1125,7 @@ async function main() {
       hardBlocked.length > 0
         ? 'FAIL'
         : requiredReview.length > 0
-          ? 'BLOCKED_PENDING_ARTIFACT_LICENSE_REVIEW'
+          ? 'BLOCKED_PENDING_CODE_F_LICENSE_REVIEW'
           : 'PASS',
     f_license_review: requiredReview.length > 0 ? 'PENDING' : 'NOT_REQUIRED',
     license_review_bundle_status:
