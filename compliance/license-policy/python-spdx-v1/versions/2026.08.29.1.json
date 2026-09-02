@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "license_policy_version": "2026.09.02.1",
+  "license_policy_version": "2026.08.29.1",
   "policy_name": "Python artifact and toolchain commercial distribution policy",
   "or_branch_selection_required": false,
   "artifact_roles": [
@@ -178,34 +178,6 @@
           "policy_result": "MANUAL_REVIEW"
         }
       ]
-    }
-  ],
-  "usage_policy_rules": [
-    {
-      "rule_id": "COPYLEFT_BUILD_ONLY_USE-v1",
-      "description": "A GPL-covered build dependency may be used only when it is fully bound to a non-distributed build-only use and the final output contains no GPL-covered members or copied/injected GPL-covered code.",
-      "license_ids": ["GPL-2.0-only", "GPL-2.0-or-later", "GPL-3.0-only", "GPL-3.0-or-later"],
-      "artifact_roles": ["PYTHON_BUILD_DEPENDENCY"],
-      "distribution_roles": ["BUILD_ONLY_USE"],
-      "required_conditions": {
-        "BUILD_ONLY_USAGE_BINDING": "PASS",
-        "GPL_COMPONENT_DISTRIBUTED": "NO",
-        "GPL_COMPONENT_MEMBERS_IN_FINAL_ARTIFACT": 0,
-        "COMPONENT_COVERAGE": "COMPLETE",
-        "FINAL_ARTIFACT_RECONCILIATION": "PASS",
-        "GPL_COVERED_CODE_COPIED_OR_INJECTED_INTO_FINAL_OUTPUT": "NO"
-      },
-      "policy_result": "PASS",
-      "disposition": "ALLOW_WITH_CONDITIONS",
-      "obligations": [
-        "BUILD_ONLY_USAGE_BINDING",
-        "COMPONENT_COVERAGE_COMPLETE",
-        "FINAL_ARTIFACT_RECONCILIATION_REQUIRED",
-        "GPL_COMPONENT_NOT_DISTRIBUTED",
-        "GPL_OUTPUT_MEMBERS_MUST_BE_ZERO",
-        "GPL_COVERED_CODE_COPY_OR_INJECTION_PROHIBITED"
-      ],
-      "additional_engineering_evidence_required_when_missing": true
     }
   ],
   "artifact_bundled_license_reviews": [

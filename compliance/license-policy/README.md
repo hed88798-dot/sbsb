@@ -7,13 +7,16 @@ CI is verify-only. It must not download a current SPDX License List, Exception L
 - parser: `spdx-expression-parse@5.0.0`
 - license identifiers: `spdx-license-ids@3.0.23`, SPDX License List 3.28.0
 - exception identifiers: `spdx-exceptions@2.5.0`, SPDX Exception List 3.23
-- policy: `2026.08.29.1`
+- policy: `2026.09.02.1`
 
-Policies `2026.08.28.1` and `2026.08.28.2` are archived byte-for-byte under
+Policies `2026.08.28.1`, `2026.08.28.2`, and `2026.08.29.1` are archived byte-for-byte under
 `python-spdx-v1/versions/`. The first continues to reproduce `MIT-CMU` as a missing-rule failure;
-the second introduced the identifier-level `MIT-CMU-commercial-v1` decision. Current policy
-`2026.08.29.1` identifies the context-bound Artifact Usage Binding evaluation. It does not broaden
-the underlying SPDX license or exception rules.
+the second introduced the identifier-level `MIT-CMU-commercial-v1` decision. Policy `2026.08.29.1`
+is the prior context-bound Artifact Usage Binding policy. Current policy `2026.09.02.1` adds the
+generic `COPYLEFT_BUILD_ONLY_USE-v1` semantic: GPL build dependencies are
+`ALLOW_WITH_CONDITIONS` only when exact build-only, coverage, reconciliation, non-distribution,
+zero-final-member, and no-copy/no-injection facts are present. Missing facts remain fail-closed;
+the bare SPDX license rules remain hard-fail outside that fully bound usage context.
 
 Artifact License Evidence v2 separates immutable SHA-bound package/file-level license facts from
 Artifact Usage Binding v1. A usage binding references Build Artifact Provenance v1 and independently

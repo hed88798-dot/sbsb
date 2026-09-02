@@ -95,6 +95,35 @@ ARCHITECTURE_QUESTIONS:
 NONE
 ```
 
+## GPL build-only policy update — 2026-09-02
+
+```text
+CODE_F_GPL_BUILD_ONLY_POLICY_UPDATE: PASS — generic versioned policy and full current-universe replay
+OLD_LICENSE_POLICY_VERSION: 2026.08.29.1
+NEW_LICENSE_POLICY_VERSION: 2026.09.02.1
+NEW_LICENSE_POLICY_SHA256: 9239adf47e2607b9404dd60fd7266ab628dd3d27a4715885b20a9834d8494518
+POLICY_DECISION: ALLOW_WITH_CONDITIONS
+POLICY_DECISION_SCOPE: GENERIC
+PACKAGE_SPECIFIC_EXCEPTION: NO
+BUILD_ONLY_GPL_POLICY_REGRESSION: PASS
+DISTRIBUTED_GPL_FAIL_CLOSED: PASS
+GPL_OUTPUT_INJECTION_FAIL_CLOSED: PASS
+CROSS_USAGE_NON_INHERITANCE: PASS
+FULL_37_USAGE_REEVALUATION: PASS
+TOTAL_USAGE_REEVALUATED: 37
+TARGET_HOOKS_USAGE_DISPOSITION_CHANGE_COUNT: 2
+NON_TARGET_POLICY_DISPOSITION_DRIFT_COUNT: 0
+LICENSE_DISPOSITION_PARTITION: PASS
+CURRENT_REQUIRED_REVIEWS: UNCHANGED
+LICENSE_REVIEW_PERFORMED_THIS_ROUND: NO
+OWNER_OF_NEXT_FIX: CODE_C_LICENSE_CLOSURE_REVALIDATION
+```
+
+The two `pyinstaller-hooks-contrib==2026.7` worker-build usages are the only
+disposition changes. Code C must sync the resulting main baseline and rerun
+the complete 37-usage License Closure; this update does not approve the other
+21 required reviews or authorize CVE/Stage B work.
+
 ## Verification evidence
 
 - Fixed toolchain gate: Node `24.19.0`, pnpm `11.19.0`, Python `3.12.10` (the final CPython 3.12 release with cross-platform binary installers).

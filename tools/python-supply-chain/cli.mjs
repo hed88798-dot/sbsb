@@ -68,6 +68,7 @@ function parseArguments(values) {
     else if (value === '--artifact-license-review')
       options.artifactLicenseReviews.push(values[++index]);
     else if (value === '--artifact-usage-binding') options.artifactUsageBinding = values[++index];
+    else if (value === '--usage-policy-context') options.usagePolicyContext = values[++index];
     else if (value === '--build-root') options.buildRoot = values[++index];
     else if (value === '--final-artifact') options.finalArtifact = values[++index];
     else if (value === '--vulnerability-review') options.vulnerabilityReview = values[++index];
@@ -201,9 +202,13 @@ function artifactUsageEvaluation(options) {
   const binding = loadArtifactUsageBindingV1(options.artifactUsageBinding);
   const build = loadBuildProvenance(options.buildProvenance);
   const toolchain = loadToolchainInventory(options.toolchainInventory);
+  const usagePolicyContext = options.usagePolicyContext
+    ? JSON.parse(readFileSync(resolve(options.usagePolicyContext), 'utf8'))
+    : null;
   return evaluateArtifactUsageBinding(evidence.document, binding.document, {
     buildProvenance: build.document,
     toolchainInventory: toolchain.document,
+    usagePolicyContext,
   });
 }
 
