@@ -1,0 +1,41 @@
+{
+  "action": "APPROVE",
+  "artifact": {
+    "filename": "sentencepiece-0.2.1-cp313-cp313-win_amd64.whl",
+    "package": "sentencepiece",
+    "sha256": "10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b",
+    "version": "0.2.1"
+  },
+  "evidence_references": [
+    "license-coverage-production:sentencepiece-windows-v0.2.1-production-license-coverage",
+    "coverage-record:08cd8bde4876fe9f9986fa410c621966912a3b69fc9ac3f8d1ef2e507db0f13a",
+    "upstream-binding:sentencepiece-windows-release-v0.2.1-production"
+  ],
+  "evidence_snapshot_sha256": "7864ff0f133dfcb220af3ca8fa41b140a1eea796f5318462e42d25c1bb54ea25",
+  "review_id": "code-f-sentencepiece-license-review-10ed3dab2044c47f",
+  "review_policy": {
+    "policy_id": "artifact-license-review-authority",
+    "policy_sha256": "2330eebf7d9bcc5838ace31cb355fd917b37c63ecf00e7630143f3098de176a8",
+    "tool_version": "1",
+    "version": "2026.08.29.1"
+  },
+  "review_reason": "ORIGINAL_REVIEW_TRIGGER=INSUFFICIENT_EXACT_ARTIFACT_LICENSE_EVIDENCE REVIEW_CATEGORY=UPSTREAM_RELEASE_COVERAGE REVIEW_TRIGGER_RESOLUTION=RESOLVED REVIEW_DECISION=APPROVED Code F approves the exact sentencepiece 0.2.1 wheel (10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b) from production whole-artifact coverage sentencepiece-windows-v0.2.1-production-license-coverage and upstream binding sentencepiece-windows-release-v0.2.1-production. The reviewed SPDX fact is Apache-2.0; machine suggestions are not used as approval. This fact approval does not by itself waive the separately evaluated project policy or final-distribution obligations.",
+  "review_record_sha256": "4cd2ab0ca1ce38d06123e7f7ce10f55326cc001dece2847b9d79ab7c5a4bfb42",
+  "reviewed_spdx_expression": "Apache-2.0",
+  "reviewer": {
+    "approval_method": "CONTROLLED_PULL_REQUEST_REQUIRED_REVIEW",
+    "approval_reference": {
+      "approval_event_id": "github-review:solo-maintainer-authorized-2026-09-02",
+      "approved_commit_sha": "e4301f864675cd8991f030e8f6ffdf96e131e9bc",
+      "pull_request": 31,
+      "repository": "hed88798-dot/ai-video-platform"
+    },
+    "approval_timestamp": "2026-09-02T13:00:00Z",
+    "authority_id": "code-f-quality-release-compliance",
+    "identity": "github:hed88798-dot",
+    "role": "LICENSE_COMPLIANCE_APPROVER"
+  },
+  "revokes_review_id": null,
+  "schema_version": "1",
+  "supersedes_review_id": null
+}

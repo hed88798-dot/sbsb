@@ -1,0 +1,457 @@
+{
+  "assessments": [
+    {
+      "artifact": {
+        "filename": "numpy-2.3.5-cp313-cp313-win_amd64.whl",
+        "package": "numpy",
+        "sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+        "version": "2.3.5"
+      },
+      "assessment_id": "code-f-numpy-license-assessment-00dc4e846108a382",
+      "assessment_sha256": "31f782db6970ac0a71ade8deb795d62a3e3b72a5223151c5ae67514a4742675d",
+      "evidence_references": [
+        "raw:legacy-license",
+        "raw:license-classifier:0",
+        "raw:license:numpy-2.3.5.dist-info/LICENSE.txt",
+        "raw:license:numpy/_core/include/numpy/random/LICENSE.txt",
+        "raw:license:numpy/ma/LICENSE",
+        "raw:license:numpy/random/LICENSE.md"
+      ],
+      "evidence_snapshot_sha256": "0c2b3042f73b9f0a49a2b7fadb51b2df6e151e41577d0139ef31f9d92f78e5d3",
+      "original_review_trigger": "LEGACY_OR_AMBIGUOUS_LICENSE_FACT_REQUIRES_EXACT_ARTIFACT_REVIEW",
+      "rationale": "Exact wheel bytes, metadata, classifiers, and declared license-file identities are preserved in the immutable v3 evidence snapshot; the reviewed SPDX expression is a fact assertion, not a machine-suggestion shortcut.",
+      "review_category": "LEGACY_SPDX_CANONICALIZATION",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-numpy-license-review-00dc4e846108a382",
+      "review_record_sha256": "c1cb48f7e615ee504916e7f2d9086bb231bd5e1a5460ea39483543af1bf3395c",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "BSD-3-Clause",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "sentencepiece-0.2.1-cp313-cp313-win_amd64.whl",
+        "package": "sentencepiece",
+        "sha256": "10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b",
+        "version": "0.2.1"
+      },
+      "assessment_id": "code-f-sentencepiece-license-assessment-10ed3dab2044c47f",
+      "assessment_sha256": "9e172357296a1a09007f723942bff62edffc2b5b145499976bd1ecfb5e17f40d",
+      "evidence_references": [
+        "license-coverage-production:sentencepiece-windows-v0.2.1-production-license-coverage",
+        "coverage-record:08cd8bde4876fe9f9986fa410c621966912a3b69fc9ac3f8d1ef2e507db0f13a",
+        "upstream-binding:sentencepiece-windows-release-v0.2.1-production"
+      ],
+      "evidence_snapshot_sha256": "7864ff0f133dfcb220af3ca8fa41b140a1eea796f5318462e42d25c1bb54ea25",
+      "original_review_trigger": "INSUFFICIENT_EXACT_ARTIFACT_LICENSE_EVIDENCE",
+      "rationale": "Exact artifact is covered by sentencepiece-windows-v0.2.1-production-license-coverage and sentencepiece-windows-release-v0.2.1-production; the coverage assertion and upstream release identity are independently verified.",
+      "review_category": "UPSTREAM_RELEASE_COVERAGE",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-sentencepiece-license-review-10ed3dab2044c47f",
+      "review_record_sha256": "4cd2ab0ca1ce38d06123e7f7ce10f55326cc001dece2847b9d79ab7c5a4bfb42",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "Apache-2.0",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "numpy-2.3.5-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+        "package": "numpy",
+        "sha256": "11e06aa0af8c0f05104d56450d6093ee639e15f24ecf62d417329d06e522e017",
+        "version": "2.3.5"
+      },
+      "assessment_id": "code-f-numpy-license-assessment-11e06aa0af8c0f05",
+      "assessment_sha256": "9cce3619aa5d007b85cd84a03df0a76f98593b63600a9b954bf140376494cf4f",
+      "evidence_references": [
+        "raw:legacy-license",
+        "raw:license-classifier:0",
+        "raw:license:numpy-2.3.5.dist-info/LICENSE.txt",
+        "raw:license:numpy/_core/include/numpy/random/LICENSE.txt",
+        "raw:license:numpy/ma/LICENSE",
+        "raw:license:numpy/random/LICENSE.md"
+      ],
+      "evidence_snapshot_sha256": "8e07e92ee1f0a7d869df4d7fa32359c92a0bc260def2b922db4e2fe8075220fb",
+      "original_review_trigger": "LEGACY_OR_AMBIGUOUS_LICENSE_FACT_REQUIRES_EXACT_ARTIFACT_REVIEW",
+      "rationale": "Exact wheel bytes, metadata, classifiers, and declared license-file identities are preserved in the immutable v3 evidence snapshot; the reviewed SPDX expression is a fact assertion, not a machine-suggestion shortcut.",
+      "review_category": "LEGACY_SPDX_CANONICALIZATION",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-numpy-license-review-11e06aa0af8c0f05",
+      "review_record_sha256": "172064919afb65f3778113c9ceb57bd31948c30c52be8010af5700311c451f49",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "BSD-3-Clause",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "protobuf-7.36.0-cp310-abi3-win_amd64.whl",
+        "package": "protobuf",
+        "sha256": "1781cc1de61249b750848029bca452c0a8b7e990080316b9bbc2518b2117b488",
+        "version": "7.36.0"
+      },
+      "assessment_id": "code-f-protobuf-license-assessment-1781cc1de61249b7",
+      "assessment_sha256": "e31a011fe490781fb9c15111f793475c9ea2518b291b68cfcc407ccc2f04bd78",
+      "evidence_references": [
+        "raw:legacy-license",
+        "raw:license:protobuf-7.36.0.dist-info/LICENSE"
+      ],
+      "evidence_snapshot_sha256": "bd96de0d28bdaa0434f9308bf0fccb2dc07e4785c082b7f7cd2710f9b67582c8",
+      "original_review_trigger": "LEGACY_OR_AMBIGUOUS_LICENSE_FACT_REQUIRES_EXACT_ARTIFACT_REVIEW",
+      "rationale": "Exact wheel bytes, metadata, classifiers, and declared license-file identities are preserved in the immutable v3 evidence snapshot; the reviewed SPDX expression is a fact assertion, not a machine-suggestion shortcut.",
+      "review_category": "LEGACY_SPDX_CANONICALIZATION",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-protobuf-license-review-1781cc1de61249b7",
+      "review_record_sha256": "1af4746575d3a2fe687f7862ed119e372e23dd93eefdd9faea7aa078c79df7ae",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "BSD-3-Clause",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "opencv_python_headless-4.14.0.94-cp37-abi3-manylinux_2_28_x86_64.whl",
+        "package": "opencv-python-headless",
+        "sha256": "211e581f5a4670acbbe08fff36a35e9946039d2eea28b80394632d036d1be527",
+        "version": "4.14.0.94"
+      },
+      "assessment_id": "code-f-opencv-python-headless-license-assessment-211e581f5a4670ac",
+      "assessment_sha256": "f497d3e5c945f4fa52b56a8522b509a140fb2c257445348e3aa89d1e3064273d",
+      "evidence_references": [
+        "raw:legacy-license",
+        "raw:license-classifier:0",
+        "raw:license:cv2/LICENSE-3RD-PARTY.txt",
+        "raw:license:cv2/LICENSE.txt",
+        "raw:license:opencv_python_headless-4.14.0.94.dist-info/LICENSE-3RD-PARTY.txt",
+        "raw:license:opencv_python_headless-4.14.0.94.dist-info/LICENSE.txt"
+      ],
+      "evidence_snapshot_sha256": "9ba74d12edbffc31458bce2237c6529f534b54eb9f45e449484a94ef0869b9da",
+      "original_review_trigger": "LEGACY_OR_AMBIGUOUS_LICENSE_FACT_REQUIRES_EXACT_ARTIFACT_REVIEW",
+      "rationale": "Exact wheel bytes, metadata, classifiers, and declared license-file identities are preserved in the immutable v3 evidence snapshot; the reviewed SPDX expression is a fact assertion, not a machine-suggestion shortcut.",
+      "review_category": "LEGACY_SPDX_CANONICALIZATION",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-opencv-python-headless-license-review-211e581f5a4670ac",
+      "review_record_sha256": "2fe20042358cc3a7b539480698a93876dd47dccf91d21b91d0ac18f74b7b2798",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "Apache-2.0",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "onnxruntime-1.29.0-cp313-cp313-win_amd64.whl",
+        "package": "onnxruntime",
+        "sha256": "2945e1f82f81f27e88decea88c7861f45baea23818950d467bf3909aa303119e",
+        "version": "1.29.0"
+      },
+      "assessment_id": "code-f-onnxruntime-license-assessment-2945e1f82f81f27e",
+      "assessment_sha256": "f012fe380ca860f0dd72e30123f7bb7fe36c80d76c03449f689df1c27e931078",
+      "evidence_references": [
+        "raw:legacy-license",
+        "raw:license-classifier:0",
+        "raw:license:onnxruntime/LICENSE"
+      ],
+      "evidence_snapshot_sha256": "58e9df61d3cdb4a6fd9c0df5d3c507c14ac6b289f82b953d2dc160d704a50721",
+      "original_review_trigger": "LEGACY_OR_AMBIGUOUS_LICENSE_FACT_REQUIRES_EXACT_ARTIFACT_REVIEW",
+      "rationale": "Exact wheel bytes, metadata, classifiers, and declared license-file identities are preserved in the immutable v3 evidence snapshot; the reviewed SPDX expression is a fact assertion, not a machine-suggestion shortcut.",
+      "review_category": "LEGACY_SPDX_CANONICALIZATION",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-onnxruntime-license-review-2945e1f82f81f27e",
+      "review_record_sha256": "b47e0e53bc0235a2348f944312d2c28f353dc3f1e1e579bfa022182d713022ce",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "MIT",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "colorama-0.4.6-py2.py3-none-any.whl",
+        "package": "colorama",
+        "sha256": "4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6",
+        "version": "0.4.6"
+      },
+      "assessment_id": "code-f-colorama-license-assessment-4f1d9991f5acc0ca",
+      "assessment_sha256": "f6de4810e0ea5cb08dba48d6457037cd41013e7652b580bd472be7d95fc1ce87",
+      "evidence_references": [
+        "raw:license-classifier:0",
+        "raw:license:colorama-0.4.6.dist-info/licenses/LICENSE.txt"
+      ],
+      "evidence_snapshot_sha256": "f906f1434a1fa43196295f43df30ff0d461a3c924e6323741d1317e3deb06050",
+      "original_review_trigger": "LICENSE_ASSERTION_REQUIRES_EXACT_ARTIFACT_COMPANION_REVIEW",
+      "rationale": "Exact wheel bytes, metadata, classifiers, and declared license-file identities are preserved in the immutable v3 evidence snapshot; the reviewed SPDX expression is a fact assertion, not a machine-suggestion shortcut.",
+      "review_category": "AMBIGUOUS_LICENSE_EVIDENCE",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-colorama-license-review-4f1d9991f5acc0ca",
+      "review_record_sha256": "ea30c6cfa5a17f22ea2906245f957532cbd8848337dd5b5f66ed376db592c140",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "BSD-3-Clause",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "protobuf-7.36.0-cp310-abi3-manylinux2014_x86_64.whl",
+        "package": "protobuf",
+        "sha256": "70f5ec8eb0da81a44360c0dc0beac99a0d78071d21956a7076bae8bd2051841b",
+        "version": "7.36.0"
+      },
+      "assessment_id": "code-f-protobuf-license-assessment-70f5ec8eb0da81a4",
+      "assessment_sha256": "77d307b8c444ec04d6a0b4e7e7734cd23832a489f8192f536639ddae41b46639",
+      "evidence_references": [
+        "raw:legacy-license",
+        "raw:license:protobuf-7.36.0.dist-info/LICENSE"
+      ],
+      "evidence_snapshot_sha256": "d871d17589f75bc9ffc320821a6b58e3f2a0647d278d9c5517d978927a7c03a8",
+      "original_review_trigger": "LEGACY_OR_AMBIGUOUS_LICENSE_FACT_REQUIRES_EXACT_ARTIFACT_REVIEW",
+      "rationale": "Exact wheel bytes, metadata, classifiers, and declared license-file identities are preserved in the immutable v3 evidence snapshot; the reviewed SPDX expression is a fact assertion, not a machine-suggestion shortcut.",
+      "review_category": "LEGACY_SPDX_CANONICALIZATION",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-protobuf-license-review-70f5ec8eb0da81a4",
+      "review_record_sha256": "fd79bc96695d5063789bff61be328e93e85d1644882538c39f350a181e75294b",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "BSD-3-Clause",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "flatbuffers-25.12.19-py2.py3-none-any.whl",
+        "package": "flatbuffers",
+        "sha256": "7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4",
+        "version": "25.12.19"
+      },
+      "assessment_id": "code-f-flatbuffers-license-assessment-7634f50c427838bb",
+      "assessment_sha256": "8ee99940616971672fb94c3e48be8edb4d84352ee5d771dc0e0ce76193de0d62",
+      "evidence_references": ["raw:legacy-license", "raw:license-classifier:0"],
+      "evidence_snapshot_sha256": "514cbe997880e3c5a5105d4882738062b14d5393df9f3e533c1ec48f35fe9926",
+      "original_review_trigger": "LEGACY_OR_AMBIGUOUS_LICENSE_FACT_REQUIRES_EXACT_ARTIFACT_REVIEW",
+      "rationale": "Exact wheel bytes, metadata, classifiers, and declared license-file identities are preserved in the immutable v3 evidence snapshot; the reviewed SPDX expression is a fact assertion, not a machine-suggestion shortcut.",
+      "review_category": "LEGACY_SPDX_CANONICALIZATION",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-flatbuffers-license-review-7634f50c427838bb",
+      "review_record_sha256": "23159715dcef16a5d9b730805f5ebefa6e42746b2c04a550d709d87dcb4bac07",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "Apache-2.0",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "pefile-2024.8.26-py3-none-any.whl",
+        "package": "pefile",
+        "sha256": "76f8b485dcd3b1bb8166f1128d395fa3d87af26360c2358fb75b80019b957c6f",
+        "version": "2024.8.26"
+      },
+      "assessment_id": "code-f-pefile-license-assessment-76f8b485dcd3b1bb",
+      "assessment_sha256": "ae68051813132f2dcb9982a87edb10c9ceb8edb1c3175ecd606ad9d08c42808d",
+      "evidence_references": [
+        "raw:legacy-license",
+        "raw:license:pefile-2024.8.26.dist-info/LICENSE"
+      ],
+      "evidence_snapshot_sha256": "7ad13b94bc781e1e41445c46245176f56be56b75ae7711689a1085f8f1b96319",
+      "original_review_trigger": "LEGACY_OR_AMBIGUOUS_LICENSE_FACT_REQUIRES_EXACT_ARTIFACT_REVIEW",
+      "rationale": "Exact wheel bytes, metadata, classifiers, and declared license-file identities are preserved in the immutable v3 evidence snapshot; the reviewed SPDX expression is a fact assertion, not a machine-suggestion shortcut.",
+      "review_category": "LEGACY_SPDX_CANONICALIZATION",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-pefile-license-review-76f8b485dcd3b1bb",
+      "review_record_sha256": "61ed21d1f03d51761574e808f75a9ccd2d8031a7b032b73416f07ccd2c8035a3",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "MIT",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "tqdm-4.70.0-py3-none-any.whl",
+        "package": "tqdm",
+        "sha256": "7f585706bfddbdebf89daac705b2dfcc16890130727d3197ca62c732b4310953",
+        "version": "4.70.0"
+      },
+      "assessment_id": "code-f-tqdm-license-assessment-7f585706bfddbdeb",
+      "assessment_sha256": "a94c95341baad2e3ee34513aa41a62f2bee614164c93509230e749a4619ee3ff",
+      "evidence_references": [
+        "raw:legacy-license",
+        "raw:license:tqdm-4.70.0.dist-info/licenses/LICENCE"
+      ],
+      "evidence_snapshot_sha256": "b216e1fb7232603102a3c884bf92fa2464c12ce4edf75013670a163824ee421f",
+      "original_review_trigger": "MULTI_LICENSE_EXPRESSION_REQUIRES_BRANCH_REVIEW",
+      "rationale": "Exact wheel bytes, metadata, classifiers, and declared license-file identities are preserved in the immutable v3 evidence snapshot; the reviewed SPDX expression is a fact assertion, not a machine-suggestion shortcut.",
+      "review_category": "MULTI_LICENSE_RELATIONSHIP",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-tqdm-license-review-7f585706bfddbdeb",
+      "review_record_sha256": "a0b05f0d75838537c2d5781d66a0adf5bdad9e3e607462e34a6ecc70b47899cb",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "MPL-2.0 AND MIT",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "pywin32_ctypes-0.2.3-py3-none-any.whl",
+        "package": "pywin32-ctypes",
+        "sha256": "8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8",
+        "version": "0.2.3"
+      },
+      "assessment_id": "code-f-pywin32-ctypes-license-assessment-8a1513379d709975",
+      "assessment_sha256": "2180e740a540682213848e0a6a079678503fa2f25ec60d307936821417e3e5ed",
+      "evidence_references": [
+        "raw:legacy-license",
+        "raw:license:pywin32_ctypes-0.2.3.dist-info/LICENSE.txt"
+      ],
+      "evidence_snapshot_sha256": "bdbb231ff9722af3d63889ed9627e56a0075e6b09117cf895264fc2fc1e386e8",
+      "original_review_trigger": "LEGACY_OR_AMBIGUOUS_LICENSE_FACT_REQUIRES_EXACT_ARTIFACT_REVIEW",
+      "rationale": "Exact wheel bytes, metadata, classifiers, and declared license-file identities are preserved in the immutable v3 evidence snapshot; the reviewed SPDX expression is a fact assertion, not a machine-suggestion shortcut.",
+      "review_category": "LEGACY_SPDX_CANONICALIZATION",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-pywin32-ctypes-license-review-8a1513379d709975",
+      "review_record_sha256": "22162377b8305d8d2aa9958b5cdbfcadf8c243c0c4b7b4db33b5327057188c5d",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "BSD-3-Clause",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "pyinstaller-6.22.2-py3-none-manylinux2014_x86_64.whl",
+        "package": "pyinstaller",
+        "sha256": "9622686ecc5d5fa492fe6cde29d47df9dd41138cff8177be9f901ca3260f2096",
+        "version": "6.22.2"
+      },
+      "assessment_id": "code-f-pyinstaller-license-assessment-9622686ecc5d5fa4",
+      "assessment_sha256": "23becd1e88c96b013574ee18263eb67b2ba525526d9bda4d8d26d20f13b493d2",
+      "evidence_references": [
+        "raw:legacy-license",
+        "raw:license-classifier:0",
+        "raw:copying:pyinstaller-6.22.2.dist-info/licenses/COPYING.txt"
+      ],
+      "evidence_snapshot_sha256": "eee59425636dffc8a7304242601d99f2041ab812b7e2878c1e670e1f108329a3",
+      "original_review_trigger": "LEGACY_LICENSE_TEXT_WITH_BOOTLOADER_EXCEPTION",
+      "rationale": "Exact wheel bytes, metadata, classifiers, and declared license-file identities are preserved in the immutable v3 evidence snapshot; the reviewed SPDX expression is a fact assertion, not a machine-suggestion shortcut.",
+      "review_category": "AMBIGUOUS_LICENSE_EVIDENCE",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-pyinstaller-license-review-9622686ecc5d5fa4",
+      "review_record_sha256": "0086c43ee74bb6c730bcf23c3855c051222187399acb55ec4b06b4b6869a5cf6",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "GPL-2.0-or-later WITH Bootloader-exception",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "pyinstaller-6.22.2-py3-none-win_amd64.whl",
+        "package": "pyinstaller",
+        "sha256": "9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7",
+        "version": "6.22.2"
+      },
+      "assessment_id": "code-f-pyinstaller-license-assessment-9b990fa6bbe14357",
+      "assessment_sha256": "195478f230801acc5cb68d8ae12dc68f0ef374fdcd7c3cc3aa3afa8d5fb290a1",
+      "evidence_references": [
+        "raw:legacy-license",
+        "raw:license-classifier:0",
+        "raw:copying:pyinstaller-6.22.2.dist-info/licenses/COPYING.txt"
+      ],
+      "evidence_snapshot_sha256": "c754d3538d645d66a750b35d69190a6488b234899bf7a10cbbcf72fd5ec12eb8",
+      "original_review_trigger": "LEGACY_LICENSE_TEXT_WITH_BOOTLOADER_EXCEPTION",
+      "rationale": "Exact wheel bytes, metadata, classifiers, and declared license-file identities are preserved in the immutable v3 evidence snapshot; the reviewed SPDX expression is a fact assertion, not a machine-suggestion shortcut.",
+      "review_category": "AMBIGUOUS_LICENSE_EVIDENCE",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-pyinstaller-license-review-9b990fa6bbe14357",
+      "review_record_sha256": "b6749e89cabc9763e6a0ade43cd5107e9c71a8a3f0824f65b9591405379cd5f4",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "GPL-2.0-or-later WITH Bootloader-exception",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "sentencepiece-0.2.1-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+        "package": "sentencepiece",
+        "sha256": "c7f0fd2f2693309e6628aeeb2e2faf6edd221134dfccac3308ca0de01f8dab47",
+        "version": "0.2.1"
+      },
+      "assessment_id": "code-f-sentencepiece-license-assessment-c7f0fd2f2693309e",
+      "assessment_sha256": "3e27e9695764221b6514eb59781efce16dc9c18f1135e65051572b2e27d73e78",
+      "evidence_references": [
+        "license-coverage-production:sentencepiece-linux-v0.2.1-production-license-coverage",
+        "coverage-record:57fd9f0dcacacd99c626300ab8725582ae3b1af345ffc370941a11c4b47ce079",
+        "upstream-binding:sentencepiece-linux-release-v0.2.1-production"
+      ],
+      "evidence_snapshot_sha256": "ad2ade3995395fd597d76ac364c94d0c71ccc51cd51d46ef3b8f5a53361aa365",
+      "original_review_trigger": "INSUFFICIENT_EXACT_ARTIFACT_LICENSE_EVIDENCE",
+      "rationale": "Exact artifact is covered by sentencepiece-linux-v0.2.1-production-license-coverage and sentencepiece-linux-release-v0.2.1-production; the coverage assertion and upstream release identity are independently verified.",
+      "review_category": "UPSTREAM_RELEASE_COVERAGE",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-sentencepiece-license-review-c7f0fd2f2693309e",
+      "review_record_sha256": "9456a09a83ccd8a334fb43447747736141b25b1541a93bc9db083b8760164139",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "Apache-2.0",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "opencv_python_headless-4.14.0.94-cp37-abi3-win_amd64.whl",
+        "package": "opencv-python-headless",
+        "sha256": "cbed65415b8f6a9541c705afe3e64795840524d0ff3bc58f507826284a1dc64b",
+        "version": "4.14.0.94"
+      },
+      "assessment_id": "code-f-opencv-python-headless-license-assessment-cbed65415b8f6a95",
+      "assessment_sha256": "7e537d224010002d875453a60e51218a58cfa01258f0fee8bacbc2a0b48b34f9",
+      "evidence_references": [
+        "raw:legacy-license",
+        "raw:license-classifier:0",
+        "raw:license:cv2/LICENSE-3RD-PARTY.txt",
+        "raw:license:cv2/LICENSE.txt",
+        "raw:license:opencv_python_headless-4.14.0.94.dist-info/LICENSE-3RD-PARTY.txt",
+        "raw:license:opencv_python_headless-4.14.0.94.dist-info/LICENSE.txt"
+      ],
+      "evidence_snapshot_sha256": "7e7ddb0b30c841867cea5f5ab035d13382bf510f5209e99b82b84a21433a4e07",
+      "original_review_trigger": "LEGACY_OR_AMBIGUOUS_LICENSE_FACT_REQUIRES_EXACT_ARTIFACT_REVIEW",
+      "rationale": "Exact wheel bytes, metadata, classifiers, and declared license-file identities are preserved in the immutable v3 evidence snapshot; the reviewed SPDX expression is a fact assertion, not a machine-suggestion shortcut.",
+      "review_category": "LEGACY_SPDX_CANONICALIZATION",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-opencv-python-headless-license-review-cbed65415b8f6a95",
+      "review_record_sha256": "2fe9a674ba5b26ef9c07213cb2934de64ae93165b5609abe0459a779f6abdb51",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "Apache-2.0",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "onnxruntime-1.29.0-cp313-cp313-manylinux_2_28_x86_64.whl",
+        "package": "onnxruntime",
+        "sha256": "e2128f31f449e922c62dbe5d8b6b7b079f0bcaf2d56a102fa203cb6e5bb5ab19",
+        "version": "1.29.0"
+      },
+      "assessment_id": "code-f-onnxruntime-license-assessment-e2128f31f449e922",
+      "assessment_sha256": "92bc308f711ee81156dc96ae362e662f7d291e2310768bbaa68277d6ac121d4c",
+      "evidence_references": [
+        "raw:legacy-license",
+        "raw:license-classifier:0",
+        "raw:license:onnxruntime/LICENSE"
+      ],
+      "evidence_snapshot_sha256": "0e85c4c3490370ad2a9efec8a565535aaad888100a06b6ffd8ec3bc5e2bf30fc",
+      "original_review_trigger": "LEGACY_OR_AMBIGUOUS_LICENSE_FACT_REQUIRES_EXACT_ARTIFACT_REVIEW",
+      "rationale": "Exact wheel bytes, metadata, classifiers, and declared license-file identities are preserved in the immutable v3 evidence snapshot; the reviewed SPDX expression is a fact assertion, not a machine-suggestion shortcut.",
+      "review_category": "LEGACY_SPDX_CANONICALIZATION",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-onnxruntime-license-review-e2128f31f449e922",
+      "review_record_sha256": "f06742ffdfefb55752d89d79582f947fd9692d8a4af6a35f1b75e09e9265cb28",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "MIT",
+      "schema_version": "1"
+    },
+    {
+      "artifact": {
+        "filename": "altgraph-0.17.5-py2.py3-none-any.whl",
+        "package": "altgraph",
+        "sha256": "f3a22400bce1b0c701683820ac4f3b159cd301acab067c51c653e06961600597",
+        "version": "0.17.5"
+      },
+      "assessment_id": "code-f-altgraph-license-assessment-f3a22400bce1b0c7",
+      "assessment_sha256": "f67ac793437b7bba02b736b392f8130d9e802eda558badfdcb24c06f7aca3544",
+      "evidence_references": [
+        "raw:legacy-license",
+        "raw:license-classifier:0",
+        "raw:license:altgraph-0.17.5.dist-info/LICENSE"
+      ],
+      "evidence_snapshot_sha256": "e71c5703ff67064d4a6180d31966d146dd11be94788097bacc1334956d2a71c6",
+      "original_review_trigger": "LEGACY_OR_AMBIGUOUS_LICENSE_FACT_REQUIRES_EXACT_ARTIFACT_REVIEW",
+      "rationale": "Exact wheel bytes, metadata, classifiers, and declared license-file identities are preserved in the immutable v3 evidence snapshot; the reviewed SPDX expression is a fact assertion, not a machine-suggestion shortcut.",
+      "review_category": "LEGACY_SPDX_CANONICALIZATION",
+      "review_decision": "APPROVED",
+      "review_id": "code-f-altgraph-license-review-f3a22400bce1b0c7",
+      "review_record_sha256": "51ca4dcf3b203c73e378ce5cc0d7a7960653d037d826e880637ae69d26e85175",
+      "review_trigger_resolution": "RESOLVED",
+      "reviewed_spdx_expression": "MIT",
+      "schema_version": "1"
+    }
+  ],
+  "schema_version": "1"
+}

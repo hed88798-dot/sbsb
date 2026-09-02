@@ -1,0 +1,44 @@
+{
+  "action": "APPROVE",
+  "artifact": {
+    "filename": "numpy-2.3.5-cp313-cp313-win_amd64.whl",
+    "package": "numpy",
+    "sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+    "version": "2.3.5"
+  },
+  "evidence_references": [
+    "raw:legacy-license",
+    "raw:license-classifier:0",
+    "raw:license:numpy-2.3.5.dist-info/LICENSE.txt",
+    "raw:license:numpy/_core/include/numpy/random/LICENSE.txt",
+    "raw:license:numpy/ma/LICENSE",
+    "raw:license:numpy/random/LICENSE.md"
+  ],
+  "evidence_snapshot_sha256": "0c2b3042f73b9f0a49a2b7fadb51b2df6e151e41577d0139ef31f9d92f78e5d3",
+  "review_id": "code-f-numpy-license-review-00dc4e846108a382",
+  "review_policy": {
+    "policy_id": "artifact-license-review-authority",
+    "policy_sha256": "2330eebf7d9bcc5838ace31cb355fd917b37c63ecf00e7630143f3098de176a8",
+    "tool_version": "1",
+    "version": "2026.08.29.1"
+  },
+  "review_reason": "ORIGINAL_REVIEW_TRIGGER=LEGACY_OR_AMBIGUOUS_LICENSE_FACT_REQUIRES_EXACT_ARTIFACT_REVIEW REVIEW_CATEGORY=LEGACY_SPDX_CANONICALIZATION REVIEW_TRIGGER_RESOLUTION=RESOLVED REVIEW_DECISION=APPROVED Code F approves the exact numpy 2.3.5 wheel (00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b) from raw exact-wheel evidence snapshot 0c2b3042f73b9f0a49a2b7fadb51b2df6e151e41577d0139ef31f9d92f78e5d3. The reviewed SPDX fact is BSD-3-Clause; machine suggestions are not used as approval. This fact approval does not by itself waive the separately evaluated project policy or final-distribution obligations.",
+  "review_record_sha256": "c1cb48f7e615ee504916e7f2d9086bb231bd5e1a5460ea39483543af1bf3395c",
+  "reviewed_spdx_expression": "BSD-3-Clause",
+  "reviewer": {
+    "approval_method": "CONTROLLED_PULL_REQUEST_REQUIRED_REVIEW",
+    "approval_reference": {
+      "approval_event_id": "github-review:solo-maintainer-authorized-2026-09-02",
+      "approved_commit_sha": "e4301f864675cd8991f030e8f6ffdf96e131e9bc",
+      "pull_request": 31,
+      "repository": "hed88798-dot/ai-video-platform"
+    },
+    "approval_timestamp": "2026-09-02T13:00:00Z",
+    "authority_id": "code-f-quality-release-compliance",
+    "identity": "github:hed88798-dot",
+    "role": "LICENSE_COMPLIANCE_APPROVER"
+  },
+  "revokes_review_id": null,
+  "schema_version": "1",
+  "supersedes_review_id": null
+}

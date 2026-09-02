@@ -1,0 +1,37 @@
+{
+  "action": "APPROVE",
+  "artifact": {
+    "filename": "protobuf-7.36.0-cp310-abi3-win_amd64.whl",
+    "package": "protobuf",
+    "sha256": "1781cc1de61249b750848029bca452c0a8b7e990080316b9bbc2518b2117b488",
+    "version": "7.36.0"
+  },
+  "evidence_references": ["raw:legacy-license", "raw:license:protobuf-7.36.0.dist-info/LICENSE"],
+  "evidence_snapshot_sha256": "bd96de0d28bdaa0434f9308bf0fccb2dc07e4785c082b7f7cd2710f9b67582c8",
+  "review_id": "code-f-protobuf-license-review-1781cc1de61249b7",
+  "review_policy": {
+    "policy_id": "artifact-license-review-authority",
+    "policy_sha256": "2330eebf7d9bcc5838ace31cb355fd917b37c63ecf00e7630143f3098de176a8",
+    "tool_version": "1",
+    "version": "2026.08.29.1"
+  },
+  "review_reason": "ORIGINAL_REVIEW_TRIGGER=LEGACY_OR_AMBIGUOUS_LICENSE_FACT_REQUIRES_EXACT_ARTIFACT_REVIEW REVIEW_CATEGORY=LEGACY_SPDX_CANONICALIZATION REVIEW_TRIGGER_RESOLUTION=RESOLVED REVIEW_DECISION=APPROVED Code F approves the exact protobuf 7.36.0 wheel (1781cc1de61249b750848029bca452c0a8b7e990080316b9bbc2518b2117b488) from raw exact-wheel evidence snapshot bd96de0d28bdaa0434f9308bf0fccb2dc07e4785c082b7f7cd2710f9b67582c8. The reviewed SPDX fact is BSD-3-Clause; machine suggestions are not used as approval. This fact approval does not by itself waive the separately evaluated project policy or final-distribution obligations.",
+  "review_record_sha256": "1af4746575d3a2fe687f7862ed119e372e23dd93eefdd9faea7aa078c79df7ae",
+  "reviewed_spdx_expression": "BSD-3-Clause",
+  "reviewer": {
+    "approval_method": "CONTROLLED_PULL_REQUEST_REQUIRED_REVIEW",
+    "approval_reference": {
+      "approval_event_id": "github-review:solo-maintainer-authorized-2026-09-02",
+      "approved_commit_sha": "e4301f864675cd8991f030e8f6ffdf96e131e9bc",
+      "pull_request": 31,
+      "repository": "hed88798-dot/ai-video-platform"
+    },
+    "approval_timestamp": "2026-09-02T13:00:00Z",
+    "authority_id": "code-f-quality-release-compliance",
+    "identity": "github:hed88798-dot",
+    "role": "LICENSE_COMPLIANCE_APPROVER"
+  },
+  "revokes_review_id": null,
+  "schema_version": "1",
+  "supersedes_review_id": null
+}
