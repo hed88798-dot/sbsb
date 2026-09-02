@@ -610,6 +610,9 @@ async function main() {
   }
 
   const policy = loadLicensePolicy();
+  const usagePolicySnapshotSha256 = usagePolicySnapshotPath
+    ? await sha256File(usagePolicySnapshotPath)
+    : null;
   const autoApproved = [];
   const requiredReview = [];
   const hardBlocked = [];
@@ -1096,6 +1099,7 @@ async function main() {
       usage_policy_context_replay: {
         status: usagePolicySnapshot ? 'PASS' : 'NOT_RUN',
         source_snapshot_id: usagePolicySnapshot?.source_snapshot_id ?? null,
+        source_snapshot_sha256: usagePolicySnapshotSha256,
         total_usage: usagePolicySnapshot?.total_usage ?? null,
         target_context_count: usagePolicySnapshot?.contexts.size ?? 0,
         applied_usage_count: [...artifactsByHash.values()].reduce(
