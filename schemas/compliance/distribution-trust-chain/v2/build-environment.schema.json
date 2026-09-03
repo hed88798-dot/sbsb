@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/distribution-trust-chain/v2/build-environment.schema.json",
+  "title": "Distribution Build Environment Descriptor v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "descriptor_id",
+    "descriptor_sha256",
+    "descriptor_bytes_retained",
+    "platform",
+    "os",
+    "runtime_tools",
+    "python_executable",
+    "pyinstaller",
+    "native_toolchain",
+    "locale",
+    "timezone",
+    "relevant_environment_variables",
+    "runner_image_identity",
+    "storage"
+  ],
+  "properties": {
+    "schema_version": { "const": "2" },
+    "descriptor_id": { "$ref": "#/$defs/id" },
+    "descriptor_sha256": { "$ref": "#/$defs/sha256" },
+    "descriptor_bytes_retained": { "const": true },
+    "platform": { "$ref": "#/$defs/platform" },
+    "os": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "build"],
+      "properties": {
+        "name": { "enum": ["windows", "linux"] },
+        "version": { "type": "string", "minLength": 1 },
+        "build": { "type": "string", "minLength": 1 }
+      }
+    },
+    "runtime_tools": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "pnpm", "python", "electron"],
+      "properties": {
+        "node": { "type": "string", "minLength": 1 },
+        "pnpm": { "type": "string", "minLength": 1 },
+        "python": { "type": "string", "minLength": 1 },
+        "electron": { "type": "string", "minLength": 1 }
+      }
+    },
+    "python_executable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "version", "sha256"],
+      "properties": {
+        "identity": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "pyinstaller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "artifact_id", "artifact_sha256"],
+      "properties": {
+        "version": { "type": "string", "minLength": 1 },
+        "artifact_id": { "$ref": "#/$defs/id" },
+        "artifact_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "native_toolchain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["compiler", "version", "sdk", "identity"],
+      "properties": {
+        "compiler": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "sdk": { "type": "string", "minLength": 1 },
+        "identity": { "type": "string", "minLength": 1 }
+      }
+    },
+    "locale": { "type": "string", "minLength": 1 },
+    "timezone": { "type": "string", "minLength": 1 },
+    "relevant_environment_variables": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "runner_image_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "image", "image_digest"],
+      "properties": {
+        "provider": { "type": "string", "minLength": 1 },
+        "image": { "type": "string", "minLength": 1 },
+        "image_digest": { "type": "string", "minLength": 1 }
+      }
+    },
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["channel_class", "portable_logical_locator"],
+      "properties": {
+        "channel_class": { "const": "PROJECT_CONTROLLED_LOCAL_COLD_ARCHIVE" },
+        "portable_logical_locator": { "$ref": "#/$defs/portableLocator" }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]{2,191}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "architecture"],
+      "properties": {
+        "os": { "enum": ["windows", "linux"] },
+        "architecture": { "enum": ["x86_64", "arm64"] }
+      }
+    },
+    "portableLocator": {
+      "type": "string",
+      "pattern": "^cold-archive://[a-z0-9._/-]+$"
+    }
+  }
+}

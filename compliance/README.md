@@ -29,9 +29,11 @@ artifact/source/graph/capability/policy 变化失效。示例正式记录位于
 `compliance/vulnerability-reviews/cpython-3.13.15-windows-x64/`。
 
 新的分发候选必须先通过 `docs/quality/CODE_F_NEW_DISTRIBUTION_TRUST_CHAIN_CHECKPOINT.md`：Build Recipe、
-Linux/Windows Environment Descriptor、Build Context、Candidate Identity、双份冷归档 Retention Receipt
-和 Recovery Drill 都必须是可移植、哈希绑定的记录。`FROZEN_CANDIDATE` 只有在主副本恢复演练和副本可用性
-检查均通过后才允许出现；完整 Worker/CArchive 不进入 Git 或 GitHub Actions。
+Linux/Windows Environment Descriptor、Build Context、Candidate Identity、Candidate Transfer Manifest、
+本地文件夹 Retention Receipt 和 Recovery Drill 都必须是可移植、哈希绑定的记录。GitHub Actions 只能以
+`retention_days: 1` 的 `TRANSPORT_ONLY` Artifact 临时搬运完整 Worker/CArchive，不能作为最终 Retention Authority。
+`FROZEN_CANDIDATE` 只有在 Mac 项目文件夹 `frozen-candidates/<candidate-id>/<platform>/` 的单份副本通过本地
+Recovery Drill 后才允许出现；不要求第二份永久副本，完整 Worker/CArchive 仍不进入 Git。
 
 模板规则：
 

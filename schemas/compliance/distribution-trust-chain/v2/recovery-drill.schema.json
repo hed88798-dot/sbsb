@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/distribution-trust-chain/v2/recovery-drill.schema.json",
+  "title": "Frozen Candidate Recovery Drill Evidence v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "drill_id",
+    "drill_sha256",
+    "candidate_id",
+    "retention_receipt_id",
+    "procedure_version",
+    "recovery_location",
+    "local_recovery",
+    "status",
+    "verified_at"
+  ],
+  "properties": {
+    "schema_version": { "const": "2" },
+    "drill_id": { "$ref": "#/$defs/id" },
+    "drill_sha256": { "$ref": "#/$defs/sha256" },
+    "candidate_id": { "$ref": "#/$defs/id" },
+    "retention_receipt_id": { "$ref": "#/$defs/id" },
+    "procedure_version": { "type": "string", "minLength": 1 },
+    "recovery_location": { "$ref": "#/$defs/portableLocator" },
+    "local_recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_copy_id",
+        "worker_sha256",
+        "carchive_sha256",
+        "worker_size_bytes",
+        "carchive_size_bytes",
+        "status"
+      ],
+      "properties": {
+        "source_copy_id": { "$ref": "#/$defs/id" },
+        "worker_sha256": { "$ref": "#/$defs/sha256" },
+        "carchive_sha256": { "$ref": "#/$defs/sha256" },
+        "worker_size_bytes": { "type": "integer", "minimum": 1 },
+        "carchive_size_bytes": { "type": "integer", "minimum": 1 },
+        "status": { "const": "PASS" }
+      }
+    },
+    "status": { "const": "PASS" },
+    "verified_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]{2,191}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "portableLocator": {
+      "type": "string",
+      "pattern": "^(?:frozen-candidates/[a-z0-9][a-z0-9._:-]{2,191}/(?:linux|windows)/|local-validation://[a-z0-9._/-]+)$"
+    }
+  }
+}

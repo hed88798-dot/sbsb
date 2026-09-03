@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/distribution-trust-chain/v2/candidate-transfer-manifest.schema.json",
+  "title": "Candidate Transfer Manifest v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "manifest_id",
+    "manifest_sha256",
+    "candidate_id",
+    "platform",
+    "worker",
+    "carchive",
+    "build_recipe",
+    "environment_descriptor",
+    "build_context",
+    "transfer_role",
+    "actions_artifact",
+    "final_retention",
+    "generated_at"
+  ],
+  "properties": {
+    "schema_version": { "const": "2" },
+    "manifest_id": { "$ref": "#/$defs/id" },
+    "manifest_sha256": { "$ref": "#/$defs/sha256" },
+    "candidate_id": { "$ref": "#/$defs/id" },
+    "platform": { "$ref": "#/$defs/platform" },
+    "worker": { "$ref": "#/$defs/output" },
+    "carchive": { "$ref": "#/$defs/output" },
+    "build_recipe": { "$ref": "#/$defs/binding" },
+    "environment_descriptor": { "$ref": "#/$defs/binding" },
+    "build_context": { "$ref": "#/$defs/binding" },
+    "transfer_role": { "const": "TRANSIENT_ACTIONS_TRANSFER" },
+    "actions_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "retention_days", "authority_role"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "retention_days": { "const": 1 },
+        "authority_role": { "const": "TRANSPORT_ONLY" }
+      }
+    },
+    "final_retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["channel", "logical_root", "secondary_copy_required"],
+      "properties": {
+        "channel": { "const": "MAC_LOCAL_PROJECT_FOLDER" },
+        "logical_root": { "const": "frozen-candidates/" },
+        "secondary_copy_required": { "const": false }
+      }
+    },
+    "generated_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]{2,191}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "architecture"],
+      "properties": {
+        "os": { "enum": ["linux", "windows"] },
+        "architecture": { "enum": ["x86_64", "arm64"] }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["filename", "sha256", "size_bytes"],
+      "properties": {
+        "filename": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "size_bytes": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sha256"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}
