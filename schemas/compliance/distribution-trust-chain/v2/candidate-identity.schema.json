@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/distribution-trust-chain/v2/candidate-identity.schema.json",
+  "title": "Distribution Candidate Identity v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "candidate_id",
+    "candidate_sha256",
+    "platform",
+    "source_identity",
+    "build_context",
+    "transfer_manifest",
+    "worker",
+    "carchive",
+    "archive_container",
+    "status",
+    "issued_at"
+  ],
+  "properties": {
+    "schema_version": { "const": "2" },
+    "candidate_id": { "$ref": "#/$defs/id" },
+    "candidate_sha256": { "$ref": "#/$defs/sha256" },
+    "platform": { "$ref": "#/$defs/platform" },
+    "source_identity": { "$ref": "#/$defs/sourceIdentity" },
+    "build_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["context_id", "context_sha256"],
+      "properties": {
+        "context_id": { "$ref": "#/$defs/id" },
+        "context_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "transfer_manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifest_id", "manifest_sha256"],
+      "properties": {
+        "manifest_id": { "$ref": "#/$defs/id" },
+        "manifest_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "worker": { "$ref": "#/$defs/output" },
+    "carchive": { "$ref": "#/$defs/output" },
+    "archive_container": { "$ref": "#/$defs/output" },
+    "status": { "enum": ["BUILT", "ARCHIVED", "RECOVERY_DRILL_PASSED", "FROZEN_CANDIDATE"] },
+    "issued_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]{2,191}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "architecture"],
+      "properties": {
+        "os": { "enum": ["linux", "windows"] },
+        "architecture": { "enum": ["x86_64", "arm64"] }
+      }
+    },
+    "sourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository_id",
+        "commit_sha",
+        "tree_sha",
+        "submodule_state",
+        "untracked_build_input_count"
+      ],
+      "properties": {
+        "repository_id": { "type": "string", "minLength": 1 },
+        "commit_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "tree_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "submodule_state": { "type": "string", "minLength": 1 },
+        "untracked_build_input_count": { "const": 0 }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["filename", "sha256", "size_bytes"],
+      "properties": {
+        "filename": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "size_bytes": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

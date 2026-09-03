@@ -33,6 +33,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm compliance:python:tooling:install
       - run: pnpm compliance:trust-chain:contract
+      - run: pnpm compliance:python:candidate:egress:policy
       - run: pnpm compliance:artifact-license:verify
       - run: pnpm compliance:license-coverage:verify
       - run: pnpm compliance:runtime-prerequisite:verify

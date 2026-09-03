@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { documentHash, verifyTrustChain } from '../../tools/python-supply-chain/trust-chain.mjs';
 
@@ -233,6 +233,115 @@ function writeBundle(overrides: Record<string, unknown> = {}) {
   return Object.fromEntries(Object.keys(records).map((name) => [name, join(root, `${name}.json`)]));
 }
 
+function rewriteHash<T extends Record<string, unknown>>(document: T, field: string): T {
+  return { ...document, [field]: documentHash({ ...document, [field]: '' }, field) };
+}
+
+function writeV2Bundle() {
+  const paths = writeBundle();
+  const read = (name: string) =>
+    JSON.parse(readFileSync(paths[name as keyof typeof paths], 'utf8'));
+  let recipe = read('recipe');
+  let environment = read('environment');
+  let context = read('context');
+  let candidate = read('candidate');
+  let retention = read('retention');
+  let recovery = read('recovery');
+  recipe.schema_version = '2';
+  environment.schema_version = '2';
+  context.schema_version = '2';
+  candidate.schema_version = '2';
+  retention.schema_version = '2';
+  recovery.schema_version = '2';
+  recipe = rewriteHash(recipe, 'recipe_sha256');
+  environment = rewriteHash(environment, 'descriptor_sha256');
+  context.build_recipe.recipe_sha256 = recipe.recipe_sha256;
+  context.environment_descriptor.descriptor_sha256 = environment.descriptor_sha256;
+  context = rewriteHash(context, 'context_sha256');
+  candidate.build_context.context_sha256 = context.context_sha256;
+  const transferManifest = rewriteHash(
+    {
+      schema_version: '2',
+      manifest_id: `${candidate.candidate_id}-transfer-${candidate.platform.os}`,
+      manifest_sha256: '',
+      candidate_id: candidate.candidate_id,
+      platform: candidate.platform,
+      worker: candidate.worker,
+      carchive: candidate.carchive,
+      build_recipe: { id: recipe.recipe_id, sha256: recipe.recipe_sha256 },
+      environment_descriptor: {
+        id: environment.descriptor_id,
+        sha256: environment.descriptor_sha256,
+      },
+      build_context: { id: context.context_id, sha256: context.context_sha256 },
+      transfer_role: 'TRANSIENT_ACTIONS_TRANSFER',
+      actions_artifact: {
+        name: `candidate-transfer-${candidate.candidate_id}-${candidate.platform.os}`,
+        retention_days: 1,
+        authority_role: 'TRANSPORT_ONLY',
+      },
+      final_retention: {
+        channel: 'MAC_LOCAL_PROJECT_FOLDER',
+        logical_root: 'frozen-candidates/',
+        secondary_copy_required: false,
+      },
+      generated_at: '2026-09-03T00:01:30Z',
+    },
+    'manifest_sha256',
+  );
+  candidate.transfer_manifest = {
+    manifest_id: transferManifest.manifest_id,
+    manifest_sha256: transferManifest.manifest_sha256,
+  };
+  candidate = rewriteHash(candidate, 'candidate_sha256');
+  retention.build_recipe.sha256 = recipe.recipe_sha256;
+  retention.environment_descriptor.sha256 = environment.descriptor_sha256;
+  retention.build_context.sha256 = context.context_sha256;
+  delete retention.primary_copy;
+  delete retention.secondary_copy;
+  retention.storage_channel_class = 'MAC_LOCAL_PROJECT_FOLDER';
+  retention.secondary_retention_copy_required = false;
+  retention.local_copy = {
+    copy_id: `${candidate.candidate_id}-${candidate.platform.os}-local`,
+    storage_locator: `frozen-candidates/${candidate.candidate_id}/${candidate.platform.os}/`,
+    storage_location_identity: 'MAC_LOCAL_PROJECT_FOLDER',
+    worker_sha256: candidate.worker.sha256,
+    carchive_sha256: candidate.carchive.sha256,
+    worker_size_bytes: candidate.worker.size_bytes,
+    carchive_size_bytes: candidate.carchive.size_bytes,
+    availability_status: 'AVAILABLE',
+  };
+  retention.recovery_procedure_version = '2-local-folder';
+  retention.retention_state = 'FROZEN_CANDIDATE';
+  retention = rewriteHash(retention, 'receipt_sha256');
+  delete recovery.primary_recovery;
+  delete recovery.secondary_availability;
+  recovery.recovery_location = `local-validation://${candidate.candidate_id}/${candidate.platform.os}`;
+  recovery.local_recovery = {
+    source_copy_id: retention.local_copy.copy_id,
+    worker_sha256: candidate.worker.sha256,
+    carchive_sha256: candidate.carchive.sha256,
+    worker_size_bytes: candidate.worker.size_bytes,
+    carchive_size_bytes: candidate.carchive.size_bytes,
+    status: 'PASS',
+  };
+  recovery.procedure_version = '2-local-folder';
+  recovery = rewriteHash(recovery, 'drill_sha256');
+  for (const [name, value] of Object.entries({
+    recipe,
+    environment,
+    context,
+    candidate,
+    retention,
+    recovery,
+  })) {
+    writeFileSync(paths[name as keyof typeof paths], `${JSON.stringify(value, null, 2)}\n`);
+  }
+  const transferPath = join(dirname(paths.candidate), 'transfer-manifest.json');
+  writeFileSync(transferPath, `${JSON.stringify(transferManifest, null, 2)}\n`);
+  return { ...paths, transferManifest: transferPath };
+}
+
 describe('distribution trust-chain checkpoint', () => {
   it('accepts a pre-build-frozen candidate with independent retention and recovery evidence', () => {
     expect(() => verifyTrustChain(writeBundle())).not.toThrow();
@@ -265,5 +374,42 @@ describe('distribution trust-chain checkpoint', () => {
     environment.descriptor_sha256 = documentHash(environment, 'descriptor_sha256');
     writeFileSync(paths.environment, `${JSON.stringify(environment, null, 2)}\n`);
     expect(() => verifyTrustChain(paths)).toThrow(/schema invalid/);
+  });
+
+  it('accepts v2 single local-folder retention with a transient transfer manifest', () => {
+    const paths = writeV2Bundle();
+    expect(() => verifyTrustChain(paths)).not.toThrow();
+  });
+
+  it('fails closed when the transient Actions artifact is not one-day transport', () => {
+    const paths = writeV2Bundle();
+    const manifest = JSON.parse(readFileSync(paths.transferManifest, 'utf8'));
+    manifest.actions_artifact.retention_days = 30;
+    writeFileSync(
+      paths.transferManifest,
+      `${JSON.stringify({ ...manifest, manifest_sha256: documentHash(manifest, 'manifest_sha256') }, null, 2)}\n`,
+    );
+    expect(() => verifyTrustChain(paths)).toThrow(/retention_days|schema invalid/);
+  });
+
+  it('fails closed when a v2 receipt attempts to add a permanent secondary copy', () => {
+    const paths = writeV2Bundle();
+    const retention = JSON.parse(readFileSync(paths.retention, 'utf8'));
+    retention.secondary_copy = retention.local_copy;
+    writeFileSync(paths.retention, `${JSON.stringify(retention, null, 2)}\n`);
+    expect(() => verifyTrustChain(paths)).toThrow(/schema invalid/);
+  });
+
+  it('fails closed when the transfer manifest Worker hash differs from the candidate', () => {
+    const paths = writeV2Bundle();
+    const manifest = JSON.parse(readFileSync(paths.transferManifest, 'utf8'));
+    manifest.worker.sha256 = digest('different-worker');
+    writeFileSync(
+      paths.transferManifest,
+      `${JSON.stringify({ ...manifest, manifest_sha256: documentHash(manifest, 'manifest_sha256') }, null, 2)}\n`,
+    );
+    expect(() => verifyTrustChain(paths)).toThrow(
+      /candidate transfer manifest hash|transfer Worker hash/,
+    );
   });
 });

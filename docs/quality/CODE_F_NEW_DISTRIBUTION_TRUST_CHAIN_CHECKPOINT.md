@@ -12,18 +12,20 @@ Build Recipe (frozen)
 → Environment Descriptor (bytes retained)
 → Build Context (frozen)
 → Build Worker / CArchive
-→ Primary + Secondary Archive
-→ Primary Recovery Drill
-→ Secondary Availability Check
+→ SHA-256 + Candidate Transfer Manifest
+→ 1-day GitHub Actions transport artifact
+→ Mac local project-folder retention
+→ Local Recovery Drill
 → FROZEN_CANDIDATE
 ```
 
-The schemas in `schemas/compliance/distribution-trust-chain/v1/` are the
-machine-readable contract. `tools/python-supply-chain/trust-chain.mjs` is the
-cross-record verifier. Hashes for the recipe, environment descriptor, build
-context, candidate identity, retention receipt and recovery drill are SHA-256 of
-canonical JSON with that record's own hash field omitted. Canonical JSON sorts
-object keys recursively and preserves array order.
+The schemas in `schemas/compliance/distribution-trust-chain/v1/` remain the
+legacy dual-copy contract. The current v2 schemas in
+`schemas/compliance/distribution-trust-chain/v2/` define the single local-copy
+retention channel and the Candidate Transfer Manifest. `tools/python-supply-chain/trust-chain.mjs`
+is the version-dispatched cross-record verifier. Hashes for every record are
+SHA-256 of canonical JSON with that record's own hash field omitted. Canonical
+JSON sorts object keys recursively and preserves array order.
 
 ## Current main baseline binding
 
@@ -32,9 +34,9 @@ baseline below. The earlier baseline is retained only as historical provenance;
 it is not the current review or required-main baseline.
 
 ```text
-CHECKPOINT_BASELINE_REFERENCE: 4ea7f1cc0ae5ec2d38c4036ca8e292963bdf751f
-CURRENT_MAIN_BASELINE: 4ea7f1cc0ae5ec2d38c4036ca8e292963bdf751f
-CURRENT_MAIN_BASELINE_ROLE: MAIN_AFTER_FASTIFY
+CHECKPOINT_BASELINE_REFERENCE: e6f18f9409e7ae4f7273dc0676c45795652b44c2
+CURRENT_MAIN_BASELINE: e6f18f9409e7ae4f7273dc0676c45795652b44c2
+CURRENT_MAIN_BASELINE_ROLE: MAIN_AFTER_TRUST_CHAIN
 ORIGINAL_BASELINE: 06c4620e8738bd63f8674e15d1158042a65c1d28 (historical only)
 CHECKPOINT_EVIDENCE_BINDS_SYNCED_HEAD: PASS
 ```
@@ -58,26 +60,43 @@ reused as a current PASS.
 3. `build-context.schema.json` independently binds the source identity, recipe,
    environment descriptor, approved subject-set digests, target, CPython artifact,
    spec and build policy. It must be created before the build.
-4. `candidate-identity.schema.json` binds the new candidate to the build context,
-   source identity and exact Worker, CArchive and archive-container bytes.
-5. `retention-receipt.schema.json` binds the candidate to independent primary and
-   secondary cold-archive copies. Both copies must be available and their archived
-   object hash must match the candidate archive-container hash.
-6. `recovery-drill.schema.json` proves that a clean location recovered the exact
-   Worker and CArchive bytes from primary and that the secondary copy is available.
+4. `candidate-transfer-manifest.schema.json` binds the candidate ID, platform,
+   Worker/CArchive SHA-256 and sizes, Build Recipe/Environment/Context hashes,
+   and declares GitHub Actions as `TRANSPORT_ONLY` with `retention_days: 1`.
+5. `candidate-identity.schema.json` binds the new candidate to the build context,
+   source identity, exact Worker/CArchive bytes and the transfer manifest hash.
+6. `retention-receipt.schema.json` binds one verified local copy under
+   `frozen-candidates/<candidate-id>/<platform>/`; a secondary permanent copy is
+   explicitly not required.
+7. `recovery-drill.schema.json` proves that a clean temporary location recovered
+   the exact Worker and CArchive bytes from the Mac local project-folder copy.
 
 ## Gate semantics
 
-`FROZEN_CANDIDATE` is prohibited until the primary recovery drill and secondary
-availability check both pass. A Worker SHA matching an historical artifact is only
-an output-byte comparison; it never proves historical recipe or environment
-reproduction.
+`FROZEN_CANDIDATE` is prohibited until the local recovery drill passes. A Worker
+SHA matching an historical artifact is only an output-byte comparison; it never
+proves historical recipe or environment reproduction.
 
-Full Worker and CArchive bytes must not be committed to Git or uploaded to GitHub
-Actions. The approved retention class is
-`PROJECT_CONTROLLED_LOCAL_COLD_ARCHIVE` with two independent locations. Repository
-records may contain only portable logical locators; local filesystem paths are not
-authority-bearing.
+Full Worker and CArchive bytes must not be committed to Git. They may be uploaded
+to GitHub Actions only as a one-day transient transport artifact, never as final
+retention authority. The final retention class is `MAC_LOCAL_PROJECT_FOLDER` under
+the logical root `frozen-candidates/`; repository records may contain only logical
+locators, never `/Users/...` or other local filesystem paths.
+
+The supported egress helper is:
+
+```text
+pnpm compliance:python:candidate:egress create-transfer-manifest ...
+pnpm compliance:python:candidate:egress verify-transfer ...
+pnpm compliance:python:candidate:egress retain-local ...
+pnpm compliance:python:candidate:egress recovery-drill ...
+```
+
+The runner creates the manifest and computes `BUILD_HOST_WORKER_SHA256` and
+`BUILD_HOST_CARCHIVE_SHA256` before upload. After downloading the transient ZIP on
+Mac, `retain-local` rechecks both hashes, writes `manifest.json` beside the retained
+files, performs the local Recovery Drill, and emits the hash-bound v2 retention and
+recovery records. A failed or mismatched transfer is fail-closed.
 
 Artifact-level inventory, toolchain and license approvals may be reused only when
 their exact subject hashes, evidence snapshots, active status and policy version
@@ -93,7 +112,7 @@ The contract regression is part of the normal quality check:
 pnpm compliance:trust-chain:contract
 ```
 
-For a real candidate, Code C must pass all six records to the verifier:
+For a real v2 candidate, Code C must pass all seven records to the verifier:
 
 ```text
 node tools/python-supply-chain/trust-chain.mjs \
@@ -102,7 +121,8 @@ node tools/python-supply-chain/trust-chain.mjs \
   --context <context.json> \
   --candidate <candidate.json> \
   --retention <retention-receipt.json> \
-  --recovery <recovery-drill.json>
+  --recovery <recovery-drill.json> \
+  --transfer-manifest <candidate-transfer-manifest.json>
 ```
 
 This checkpoint is a release-infrastructure gate only. It does not approve a
