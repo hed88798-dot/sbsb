@@ -15,7 +15,7 @@ function sha256(value: string) {
 
 describe('candidate egress and local retention', () => {
   it('hashes runner outputs, transfers transiently and freezes one local copy after recovery', () => {
-    const directory = mkdtempSync(join(tmpdir(), 'candidate-egress-test-'));
+    const directory = mkdtempSync(join(tmpdir(), 'candidate-egress test-'));
     const worker = join(directory, 'worker');
     const carchive = join(directory, 'worker.carchive');
     const transferManifest = join(directory, 'candidate-transfer-manifest.json');
@@ -100,7 +100,7 @@ describe('candidate egress and local retention', () => {
   });
 
   it('fails closed when a runner output changes after manifest creation', () => {
-    const directory = mkdtempSync(join(tmpdir(), 'candidate-egress-mismatch-'));
+    const directory = mkdtempSync(join(tmpdir(), 'candidate-egress mismatch-'));
     const worker = join(directory, 'worker');
     const carchive = join(directory, 'carchive');
     const manifest = join(directory, 'manifest.json');

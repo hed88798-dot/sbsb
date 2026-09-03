@@ -12,6 +12,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { documentHash } from './trust-chain.mjs';
 
 const repositoryRoot = resolve(import.meta.dirname, '../..');
@@ -421,7 +422,7 @@ async function main() {
   );
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
   main().catch((error) => {
     console.error(`candidate-egress: FAIL\n${error.message}`);
     process.exitCode = 1;
