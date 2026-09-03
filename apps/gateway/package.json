@@ -19,7 +19,7 @@
     "@app/contracts": "workspace:*",
     "@app/provider-adapters": "workspace:*",
     "better-sqlite3": "13.0.3",
-    "fastify": "5.8.5"
+    "fastify": "5.12.1"
   },
   "devDependencies": {
     "@types/better-sqlite3": "7.6.13"
