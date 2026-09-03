@@ -32,6 +32,7 @@ jobs:
           python-version: '3.12.10'
       - run: pnpm install --frozen-lockfile
       - run: pnpm compliance:python:tooling:install
+      - run: pnpm compliance:trust-chain:contract
       - run: pnpm compliance:artifact-license:verify
       - run: pnpm compliance:license-coverage:verify
       - run: pnpm compliance:runtime-prerequisite:verify

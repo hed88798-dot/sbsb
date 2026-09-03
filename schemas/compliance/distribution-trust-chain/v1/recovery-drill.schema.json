@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/distribution-trust-chain/v1/recovery-drill.schema.json",
+  "title": "Frozen Candidate Recovery Drill Evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "drill_id",
+    "drill_sha256",
+    "candidate_id",
+    "retention_receipt_id",
+    "procedure_version",
+    "recovery_location",
+    "primary_recovery",
+    "secondary_availability",
+    "status",
+    "verified_at"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "drill_id": { "$ref": "#/$defs/id" },
+    "drill_sha256": { "$ref": "#/$defs/sha256" },
+    "candidate_id": { "$ref": "#/$defs/id" },
+    "retention_receipt_id": { "$ref": "#/$defs/id" },
+    "procedure_version": { "type": "string", "minLength": 1 },
+    "recovery_location": { "$ref": "#/$defs/portableLocator" },
+    "primary_recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_copy_id", "worker_sha256", "carchive_sha256", "status"],
+      "properties": {
+        "source_copy_id": { "$ref": "#/$defs/id" },
+        "worker_sha256": { "$ref": "#/$defs/sha256" },
+        "carchive_sha256": { "$ref": "#/$defs/sha256" },
+        "status": { "const": "PASS" }
+      }
+    },
+    "secondary_availability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["copy_id", "status", "verified_at"],
+      "properties": {
+        "copy_id": { "$ref": "#/$defs/id" },
+        "status": { "const": "PASS" },
+        "verified_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "status": { "const": "PASS" },
+    "verified_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]{2,191}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "portableLocator": { "type": "string", "pattern": "^cold-archive://[a-z0-9._/-]+$" }
+  }
+}

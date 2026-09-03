@@ -28,6 +28,11 @@ Stage B 才能形成绑定 final Worker 的正式风险结论；所有 review �
 artifact/source/graph/capability/policy 变化失效。示例正式记录位于
 `compliance/vulnerability-reviews/cpython-3.13.15-windows-x64/`。
 
+新的分发候选必须先通过 `docs/quality/CODE_F_NEW_DISTRIBUTION_TRUST_CHAIN_CHECKPOINT.md`：Build Recipe、
+Linux/Windows Environment Descriptor、Build Context、Candidate Identity、双份冷归档 Retention Receipt
+和 Recovery Drill 都必须是可移植、哈希绑定的记录。`FROZEN_CANDIDATE` 只有在主副本恢复演练和副本可用性
+检查均通过后才允许出现；完整 Worker/CArchive 不进入 Git 或 GitHub Actions。
+
 模板规则：
 
 - `completeness` 为 `SCAFFOLD` 的文件一律不能通过 stable Gate。
