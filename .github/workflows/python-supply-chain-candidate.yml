@@ -84,7 +84,7 @@ jobs:
           mkdir -p artifacts/python-supply-chain/evidence
           node tools/code-c-python-supply-chain/verify_build_approval_binding.mjs \
             --code-c-head "$GITHUB_SHA" \
-            --main-quality-baseline e6f18f9409e7ae4f7273dc0676c45795652b44c \
+            --main-quality-baseline d4909631456029b50c8c6bd6011719fd69ddef95 \
             --review-snapshot compliance/approval/review-snapshot-v2/review-snapshot-code-c-python-inventory-v3-v2-20260901.json \
             --approval-contract schemas/compliance/artifact-approval-provenance/v2/approval.schema.json \
             --authority-policy compliance/approval/authority-policy-v1.json \
@@ -314,7 +314,7 @@ jobs:
             --pyinstaller-wheel artifacts/python-supply-chain/toolchain/${{ matrix.target }}/pyinstaller/${{ matrix.pyinstaller_wheel }} \
             --approval-binding artifacts/python-supply-chain/evidence/build-approval-binding.json \
             --build-input-closure artifacts/python-supply-chain/evidence/${{ matrix.target }}-build-input-closure.json \
-            --main-quality-baseline e6f18f9409e7ae4f7273dc0676c45795652b44c \
+            --main-quality-baseline d4909631456029b50c8c6bd6011719fd69ddef95 \
             "${environment_args[@]}" \
             --output artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
 

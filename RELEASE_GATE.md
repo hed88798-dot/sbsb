@@ -26,6 +26,7 @@ suggestions and package-name mappings are never approvals.
 全部条件为真才可进入 beta：
 
 - candidate 来自 clean `main`，metadata 含 commit、run ID、timestamp、固定 Node/pnpm/Electron、DB/IPC/sidecar/model/native versions；
+- Full Candidate 从 GitHub-hosted runner 以 `retention_days: 1` 的 `TRANSPORT_ONLY` Actions artifact 临时传输到 Mac 项目目录；`frozen-candidates/<candidate-id>/<platform>/` 单份副本和本地 recovery drill 均通过后才可标记 `FROZEN_CANDIDATE`，Actions artifact 不作为最终 retention authority；
 - External Runtime Prerequisite 的 exact bootstrap、Authenticode、真实安装 closure、兼容策略、许可与未过期审批全部 PASS；release job 必须执行 `compliance:runtime-prerequisite:release`；
 - installer SHA-256 已生成并验证，Authenticode 有效；
 - Windows 10/11 clean VM 的 install/launch/product/copywriting/update/relaunch/data retention/uninstall 通过；

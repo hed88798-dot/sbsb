@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "pnpm -r --if-present build",
-    "check": "pnpm compliance:license-policy:verify && pnpm compliance:artifact-license:verify && pnpm compliance:license-coverage:verify && pnpm compliance:runtime-prerequisite:verify && pnpm compliance:python:tooling:install && pnpm compliance:trust-chain:contract && pnpm ci:prepare && pnpm format:check && pnpm lint && pnpm ci:typecheck && pnpm ci:test && pnpm dependency:check && pnpm portability:check && pnpm workflow:security && pnpm secret:scan && pnpm license:scan && pnpm vulnerability:scan && pnpm compliance:python:verify && pnpm compliance:python:target:verify && pnpm golden:verify",
+    "check": "pnpm compliance:license-policy:verify && pnpm compliance:artifact-license:verify && pnpm compliance:license-coverage:verify && pnpm compliance:runtime-prerequisite:verify && pnpm compliance:python:tooling:install && pnpm compliance:trust-chain:contract && pnpm compliance:python:candidate:egress:policy && pnpm ci:prepare && pnpm format:check && pnpm lint && pnpm ci:typecheck && pnpm ci:test && pnpm dependency:check && pnpm portability:check && pnpm workflow:security && pnpm secret:scan && pnpm license:scan && pnpm vulnerability:scan && pnpm compliance:python:verify && pnpm compliance:python:target:verify && pnpm golden:verify",
     "ci:prepare": "pnpm --filter @app/desktop... --filter @app/gateway... build",
     "ci:test": "vitest run",
     "ci:typecheck": "pnpm -r --if-present typecheck",
@@ -40,6 +40,8 @@
     "compliance:python:inventory": "node tools/python-supply-chain/cli.mjs verify",
     "compliance:python:schema": "node tools/python-supply-chain/cli.mjs validate",
     "compliance:python:candidate": "node tools/python-supply-chain/create-candidate.mjs",
+    "compliance:python:candidate:egress": "node tools/python-supply-chain/candidate-egress.mjs",
+    "compliance:python:candidate:egress:policy": "node tools/python-supply-chain/verify-candidate-egress-policy.mjs",
     "compliance:python:target": "node tools/python-supply-chain/target-descriptor.mjs",
     "compliance:python:migrate:v2": "node tools/python-supply-chain/migrate-v1-to-v2.mjs",
     "compliance:python:require-hashes": "node tools/python-supply-chain/generate-require-hashes.mjs",

@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/compliance/distribution-trust-chain/v2/build-context.schema.json",
+  "title": "Distribution Build Context v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "context_id",
+    "context_sha256",
+    "created_before_build",
+    "status",
+    "source_identity",
+    "build_recipe",
+    "environment_descriptor",
+    "inventory_approved_subject_set_sha256",
+    "toolchain_approved_subject_set_sha256",
+    "target_descriptor",
+    "cpython_exact_artifact_sha256",
+    "pyinstaller_spec",
+    "build_policy",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": { "const": "2" },
+    "context_id": { "$ref": "#/$defs/id" },
+    "context_sha256": { "$ref": "#/$defs/sha256" },
+    "created_before_build": { "const": true },
+    "status": { "const": "FROZEN_BEFORE_BUILD" },
+    "source_identity": { "$ref": "#/$defs/sourceIdentity" },
+    "build_recipe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recipe_id", "recipe_sha256"],
+      "properties": {
+        "recipe_id": { "$ref": "#/$defs/id" },
+        "recipe_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "environment_descriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["descriptor_id", "descriptor_sha256"],
+      "properties": {
+        "descriptor_id": { "$ref": "#/$defs/id" },
+        "descriptor_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "inventory_approved_subject_set_sha256": { "$ref": "#/$defs/sha256" },
+    "toolchain_approved_subject_set_sha256": { "$ref": "#/$defs/sha256" },
+    "target_descriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["descriptor_id", "descriptor_sha256"],
+      "properties": {
+        "descriptor_id": { "$ref": "#/$defs/id" },
+        "descriptor_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "cpython_exact_artifact_sha256": { "$ref": "#/$defs/sha256" },
+    "pyinstaller_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "build_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dependency_resolution", "network", "sdist_build", "unapproved_download"],
+      "properties": {
+        "dependency_resolution": { "const": "LOCKFILE_EXACT_NO_NEW_RESOLUTION" },
+        "network": { "enum": ["NO_NETWORK", "DECLARED_READ_ONLY_ALLOWLIST"] },
+        "sdist_build": { "const": "FORBIDDEN" },
+        "unapproved_download": { "const": "FORBIDDEN" }
+      }
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]{2,191}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "sourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository_id",
+        "commit_sha",
+        "tree_sha",
+        "submodule_state",
+        "untracked_build_input_count"
+      ],
+      "properties": {
+        "repository_id": { "type": "string", "minLength": 1 },
+        "commit_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "tree_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "submodule_state": { "type": "string", "minLength": 1 },
+        "untracked_build_input_count": { "const": 0 }
+      }
+    }
+  }
+}

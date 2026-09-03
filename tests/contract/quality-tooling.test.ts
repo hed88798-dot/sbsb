@@ -12,6 +12,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { inspectWorkflowDirectory } from '../../tools/python-supply-chain/verify-candidate-egress-policy.mjs';
 
 const repositoryRoot = resolve(import.meta.dirname, '../..');
 const secretScanner = join(repositoryRoot, 'tools/secret-scan.mjs');
@@ -118,7 +119,34 @@ describe('Code F quality tooling', () => {
     expect(workflowText).toContain('compliance:python:tooling:install');
     expect(workflowText).toContain('compliance:python:target:verify');
     expect(workflowText).not.toContain('golden:update');
-    expect(workflowText).not.toContain('compliance:python:candidate');
+    expect(workflowText).not.toMatch(/compliance:python:candidate\s+--/u);
+  });
+
+  it('requires one-day retention and a transfer manifest for full Candidate uploads', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'candidate-egress-policy-'));
+    try {
+      writeFileSync(
+        join(directory, 'candidate.yml'),
+        `jobs:\n  build:\n    steps:\n      - uses: actions/upload-artifact@${'a'.repeat(40)}\n        with:\n          name: candidate-transfer-linux\n          path: |\n            worker\n            carchive\n            candidate-transfer-manifest.json\n          retention-days: 30\n`,
+      );
+      expect(inspectWorkflowDirectory(directory)).toContain(
+        'candidate.yml: full Candidate transfer artifact must set retention-days: 1',
+      );
+      writeFileSync(
+        join(directory, 'candidate.yml'),
+        `jobs:\n  build:\n    steps:\n      - uses: actions/upload-artifact@${'a'.repeat(40)}\n        with:\n          name: candidate-transfer-linux\n          path: worker\n          retention-days: 1\n`,
+      );
+      expect(inspectWorkflowDirectory(directory)).toContain(
+        'candidate.yml: full Candidate transfer must upload its transfer manifest',
+      );
+      writeFileSync(
+        join(directory, 'candidate.yml'),
+        `jobs:\n  build:\n    steps:\n      - uses: actions/upload-artifact@${'a'.repeat(40)}\n        with:\n          name: candidate-linux\n          path: |\n            worker\n            carchive\n            candidate-transfer-manifest.json\n          retention-days: 1\n`,
+      );
+      expect(inspectWorkflowDirectory(directory)).toEqual([]);
+    } finally {
+      rmSync(directory, { force: true, recursive: true });
+    }
   });
 
   it('locks the compatibility engine artifact and preserves schema v1/v2 boundaries', () => {
