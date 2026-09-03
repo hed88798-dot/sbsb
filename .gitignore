@@ -6,6 +6,7 @@ out/
 /apps/desktop/release/
 coverage/
 artifacts/
+frozen-candidates/
 *.log
 __pycache__/
 *.py[cod]

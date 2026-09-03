@@ -50,6 +50,28 @@ jobs:
           python-version: '3.12.10'
       - run: pnpm install --frozen-lockfile
 
+      - name: Verify the GitHub-hosted x86-64 target runner
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os
+          import platform
+
+          target = os.environ['TARGET']
+          runner_arch = os.environ.get('RUNNER_ARCH', '')
+          machine = platform.machine()
+          accepted = {'x64', 'x86_64', 'amd64'}
+          if runner_arch.lower() not in accepted or machine.lower() not in accepted:
+              raise SystemExit(
+                  f'{target} runner architecture must be x86-64: '
+                  f'RUNNER_ARCH={runner_arch!r}, platform.machine={machine!r}'
+              )
+          print(f'{target}-runner-architecture: PASS ({runner_arch}/{machine})')
+          PY
+
       - name: Download the exact approved Inventory v3 review bundle
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
@@ -318,6 +340,31 @@ jobs:
             "${environment_args[@]}" \
             --output artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/build-context.json
 
+      - name: Freeze v2 distribution records before PyInstaller starts
+        shell: bash
+        run: |
+          set -euo pipefail
+          target='${{ matrix.target }}'
+          hooks_wheel="$(find artifacts/python-supply-chain/wheels/approved -type f -iname 'pyinstaller_hooks_contrib-*.whl' -print -quit)"
+          if [[ -z "$hooks_wheel" ]]; then
+            echo 'approved pyinstaller-hooks-contrib wheel was not materialized' >&2
+            exit 1
+          fi
+          node tools/python-supply-chain/create-v2-build-records.mjs \
+            --target "$target" \
+            --context "artifacts/python-supply-chain/pyinstaller-build/${target}/build-context.json" \
+            --target-descriptor "artifacts/python-supply-chain/target/${target}.json" \
+            --runtime-inventory "artifacts/python-supply-chain/candidates/code-c-${target}-runtime.v3.json" \
+            --worker-build-inventory "artifacts/python-supply-chain/candidates/code-c-${target}-worker-build.v3.json" \
+            --toolchain-inventory "artifacts/approved-inputs/${target}-toolchain.json" \
+            --spec sidecars/media-worker/media-worker.spec \
+            --cpython-distribution "artifacts/python-supply-chain/toolchain/${target}/cpython/${{ matrix.distribution }}" \
+            --pip-wheel "artifacts/python-supply-chain/toolchain/${target}/pip/pip-26.2.1-py3-none-any.whl" \
+            --pyinstaller-wheel "artifacts/python-supply-chain/toolchain/${target}/pyinstaller/${{ matrix.pyinstaller_wheel }}" \
+            --wheel-root artifacts/python-supply-chain/wheels/approved \
+            --locked-python '${{ steps.locked-python.outputs.python }}' \
+            --output-root artifacts/python-supply-chain/distribution-trust-chain
+
       - name: Build the Linux one-file Worker in its isolated workpath
         if: matrix.target == 'linux'
         shell: bash
@@ -410,6 +457,63 @@ jobs:
           print('worker-runtime-smoke: PASS')
           PY
 
+      - name: Create and verify the transient Candidate transfer manifest
+        id: candidate-transfer
+        shell: bash
+        run: |
+          set -euo pipefail
+          target='${{ matrix.target }}'
+          transport_root="artifacts/python-supply-chain/egress/${target}"
+          mkdir -p "$transport_root"
+          worker_name="worker-${target}"
+          carchive_sources="$(find "artifacts/python-supply-chain/pyinstaller-build/${target}/work" -type f -name '*.pkg' -print | sort)"
+          carchive_count="$(printf '%s\n' "$carchive_sources" | awk 'NF { count += 1 } END { print count + 0 }')"
+          if [[ "$carchive_count" != '1' ]]; then
+            echo "expected exactly one PyInstaller CArchive for ${target}; found ${carchive_count}" >&2
+            exit 1
+          fi
+          carchive_source="$carchive_sources"
+          cp -- '${{ matrix.worker }}' "$transport_root/${worker_name}"
+          cp -- "$carchive_source" "$transport_root/carchive-${target}.pkg"
+          records="artifacts/python-supply-chain/distribution-trust-chain/${target}/records-summary.json"
+          read -r recipe_id recipe_sha environment_id environment_sha context_id context_sha < <(
+            node -e 'const fs=require("node:fs"); const value=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); process.stdout.write([value.recipe.id,value.recipe.sha256,value.environment.id,value.environment.sha256,value.context.id,value.context.sha256].join(" "));' "$records"
+          )
+          candidate_id="code-c-${GITHUB_SHA}-${target}"
+          node tools/python-supply-chain/candidate-egress.mjs create-transfer-manifest \
+            --candidate-id "$candidate_id" \
+            --platform "$target" \
+            --architecture x86_64 \
+            --worker "$transport_root/${worker_name}" \
+            --carchive "$transport_root/carchive-${target}.pkg" \
+            --build-recipe-id "$recipe_id" \
+            --build-recipe-sha256 "$recipe_sha" \
+            --environment-id "$environment_id" \
+            --environment-sha256 "$environment_sha" \
+            --build-context-id "$context_id" \
+            --build-context-sha256 "$context_sha" \
+            --artifact-name "candidate-transfer-${target}-${GITHUB_SHA}" \
+            --output "$transport_root/candidate-transfer-manifest.json"
+          node tools/python-supply-chain/candidate-egress.mjs verify-transfer \
+            --manifest "$transport_root/candidate-transfer-manifest.json" \
+            --worker "$transport_root/${worker_name}" \
+            --carchive "$transport_root/carchive-${target}.pkg"
+          echo "candidate_id=${candidate_id}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload full Candidate as one-day transient transport
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ always() && steps.candidate-transfer.outcome == 'success' }}
+        with:
+          name: candidate-transfer-${{ matrix.target }}-${{ github.sha }}
+          path: |
+            artifacts/python-supply-chain/egress/${{ matrix.target }}/worker-${{ matrix.target }}
+            artifacts/python-supply-chain/egress/${{ matrix.target }}/carchive-${{ matrix.target }}.pkg
+            artifacts/python-supply-chain/egress/${{ matrix.target }}/candidate-transfer-manifest.json
+            artifacts/python-supply-chain/distribution-trust-chain/${{ matrix.target }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
+
       - name: Enforce compact current-head evidence containment budget
         id: evidence-upload-budget
         if: always()
@@ -436,6 +540,8 @@ jobs:
             --path "artifacts/python-supply-chain/pyinstaller-build/${target}/parsed/prepackage-selected-native-provenance.json" \
             --path "artifacts/python-supply-chain/pyinstaller-build/${target}/parsed/msvc-runtime-dependency-request.v1.json" \
             --path "artifacts/python-supply-chain/pyinstaller-build/${target}/parsed/DEPENDENCY_APPROVAL_REQUEST_MSVC_RUNTIME_V1.md" \
+            --path "artifacts/python-supply-chain/distribution-trust-chain/${target}" \
+            --path "artifacts/python-supply-chain/egress/${target}/candidate-transfer-manifest.json" \
             --path "artifacts/python-supply-chain/evidence/${target}-external-runtime-validation.json" \
             --path "artifacts/python-supply-chain/evidence/${target}-preinstalled-msvc-runtime-attestation.json" \
             --inventory "artifacts/python-supply-chain/evidence/${target}-ARTIFACT_UPLOAD_INVENTORY.json" \
@@ -467,6 +573,8 @@ jobs:
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/parsed/prepackage-selected-native-provenance.json
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/parsed/msvc-runtime-dependency-request.v1.json
             artifacts/python-supply-chain/pyinstaller-build/${{ matrix.target }}/parsed/DEPENDENCY_APPROVAL_REQUEST_MSVC_RUNTIME_V1.md
+            artifacts/python-supply-chain/distribution-trust-chain/${{ matrix.target }}
+            artifacts/python-supply-chain/egress/${{ matrix.target }}/candidate-transfer-manifest.json
             artifacts/python-supply-chain/evidence/${{ matrix.target }}-external-runtime-validation.json
             artifacts/python-supply-chain/evidence/${{ matrix.target }}-preinstalled-msvc-runtime-attestation.json
             artifacts/python-supply-chain/evidence/${{ matrix.target }}-ARTIFACT_UPLOAD_INVENTORY.json

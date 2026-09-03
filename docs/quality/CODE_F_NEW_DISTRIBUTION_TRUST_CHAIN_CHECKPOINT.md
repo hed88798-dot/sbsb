@@ -98,6 +98,13 @@ Mac, `retain-local` rechecks both hashes, writes `manifest.json` beside the reta
 files, performs the local Recovery Drill, and emits the hash-bound v2 retention and
 recovery records. A failed or mismatched transfer is fail-closed.
 
+The operator sequence is intentionally explicit: complete and retain the Linux
+transport first, verify its receipt and recovery drill under
+`frozen-candidates/<candidate-id>/linux/`, delete the downloaded transient
+extraction, then run the Windows transport and repeat the same local retention
+procedure. The Actions ZIP is never the Worker identity and is not a permanent
+copy.
+
 Artifact-level inventory, toolchain and license approvals may be reused only when
 their exact subject hashes, evidence snapshots, active status and policy version
 are unchanged. Worker/CArchive evidence must be rebound to the new candidate
