@@ -25,6 +25,25 @@ context, candidate identity, retention receipt and recovery drill are SHA-256 of
 canonical JSON with that record's own hash field omitted. Canonical JSON sorts
 object keys recursively and preserves array order.
 
+## Current main baseline binding
+
+This checkpoint is reviewed and tested against the Fastify-remediated main
+baseline below. The earlier baseline is retained only as historical provenance;
+it is not the current review or required-main baseline.
+
+```text
+CHECKPOINT_BASELINE_REFERENCE: 4ea7f1cc0ae5ec2d38c4036ca8e292963bdf751f
+CURRENT_MAIN_BASELINE: 4ea7f1cc0ae5ec2d38c4036ca8e292963bdf751f
+CURRENT_MAIN_BASELINE_ROLE: MAIN_AFTER_FASTIFY
+ORIGINAL_BASELINE: 06c4620e8738bd63f8674e15d1158042a65c1d28 (historical only)
+CHECKPOINT_EVIDENCE_BINDS_SYNCED_HEAD: PASS
+```
+
+All current-head CI, contract, clean-checkout, native, security and artifact
+evidence for this checkpoint must be generated after syncing this branch to the
+`CHECKPOINT_BASELINE_REFERENCE`; evidence from the historical baseline cannot be
+reused as a current PASS.
+
 ## Required records
 
 1. `build-recipe.schema.json` is materialized, canonicalized, hashed and frozen
