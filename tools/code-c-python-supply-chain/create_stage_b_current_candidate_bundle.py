@@ -233,6 +233,9 @@ def main() -> None:
         "archive_test_fixture_set_sha256": archive_fixture_sha,
         "NETWORK_TEST_FIXTURE_SET_SHA256": network_fixture_sha,
         "ARCHIVE_TEST_FIXTURE_SET_SHA256": archive_fixture_sha,
+        "STAGE_B_EVALUATOR_IDENTITIES_BY_TARGET": {
+            target: evidence[target]["stage_b_evaluator"] for target in ("linux", "windows")
+        },
         "targets": targets,
         "conclusions": conclusions,
         **conclusions,

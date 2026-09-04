@@ -238,6 +238,41 @@ jobs:
           sha = (root / 'STAGE_B_REACHABILITY_BUNDLE.sha256').read_text(encoding='utf-8').split()[0]
           print(f"::notice title=Stage B bundle identity::{bundle['bundle_id']} sha256={sha} status={bundle['status']}")
           print(f"Stage B bundle: {bundle['bundle_id']} / {sha} / {bundle['status']}")
+          summary = {
+              'bundle_id': bundle['bundle_id'],
+              'bundle_sha256': sha,
+              'validation_head_sha': bundle['validation_head_sha'],
+              'protocol': bundle['current_protocol'],
+              'evaluator': bundle['stage_b_evaluator'],
+              'evaluator_by_target': bundle['STAGE_B_EVALUATOR_IDENTITIES_BY_TARGET'],
+              'fixture_sets': {
+                  'network': bundle['network_test_fixture_set_sha256'],
+                  'archive': bundle['archive_test_fixture_set_sha256'],
+              },
+              'conclusions': bundle['conclusions'],
+              'targets': {
+                  target: {
+                      'job_id': item['job_id'],
+                      'worker_sha256': item['worker_sha256'],
+                      'carchive_sha256': item['carchive_sha256'],
+                      'runtime_evidence': item['runtime_evidence'],
+                      'packaged_module_inventory': item['packaged_module_inventory'],
+                      'network_fixture_set_sha256': item['network_fixture_set_sha256'],
+                      'archive_fixture_set_sha256': item['archive_fixture_set_sha256'],
+                      'network_counts': {
+                          key: item['network'][key]
+                          for key in ('affected_network_capability_call_count', 'user_controlled_affected_call_count', 'unexpected_network_side_effect_count')
+                      },
+                      'archive_counts': {
+                          key: item['archive'][key]
+                          for key in ('affected_api_callsite_count', 'user_reachable_callsite_count', 'unresolved_wrapper_count', 'affected_archive_extraction_call_count', 'extracted_member_count', 'unexpected_temp_output_count')
+                      },
+                  }
+                  for target, item in bundle['targets'].items()
+              },
+          }
+          import json as _json
+          print(f"::notice title=Stage B evidence summary::{_json.dumps(summary, sort_keys=True, separators=(',', ':'))}")
           PY
 
       - name: Upload compact Stage B evidence bundle
