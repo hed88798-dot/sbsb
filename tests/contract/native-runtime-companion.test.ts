@@ -465,7 +465,8 @@ describe('native runtime companion contract', () => {
     const sidecarPath = `${recordPath.slice(0, -'.json'.length)}.sha256`;
     const recordBytes = readFileSync(recordPath);
     const recordedSha = readFileSync(sidecarPath, 'utf8').trim().split(/\s+/u)[0];
-    expect(digest(recordBytes.toString())).toBe(recordedSha);
+    const canonicalRecordBytes = recordBytes.toString().replaceAll('\r\n', '\n');
+    expect(digest(canonicalRecordBytes)).toBe(recordedSha);
     const record = JSON.parse(recordBytes.toString());
     expect(record.decision_status).toBe('PASS');
     expect(record.runtime_companion_subject_type).toBe('NATIVE_RUNTIME_COMPANION_BUNDLE');

@@ -21,6 +21,9 @@ payload excludes license evidence and approval disposition, but includes artifac
 configuration, locator, and runtime-loader semantics. Consequently, changing a locator or
 runtime declaration changes identity even when member bytes do not.
 
+The published QICR record sidecar hashes canonical LF JSON bytes so its identity is stable on
+both POSIX and Windows checkouts.
+
 Artifact/provenance approval, license evidence, and license policy disposition remain separate
 records. This contract does not approve any exact ffprobe artifact.
 
