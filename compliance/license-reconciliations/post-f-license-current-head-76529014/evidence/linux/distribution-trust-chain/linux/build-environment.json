@@ -1,0 +1,56 @@
+{
+  "schema_version": "2",
+  "descriptor_id": "code-c-environment-76529014f47945fc2916d0488115822b-linux",
+  "descriptor_sha256": "e341132744136ddc15734e3c4b0196073fb453ade7177479c3f0e063e8b5091a",
+  "descriptor_bytes_retained": true,
+  "platform": {
+    "os": "linux",
+    "architecture": "x86_64"
+  },
+  "os": {
+    "name": "linux",
+    "version": "20260831.293.1",
+    "build": "20260831.293.1"
+  },
+  "runtime_tools": {
+    "node": "v24.19.0",
+    "pnpm": "11.19.0",
+    "python": "Python 3.13.15",
+    "electron": "NOT_USED_FOR_WORKER_BUILD"
+  },
+  "python_executable": {
+    "identity": "python3.13",
+    "version": "Python 3.13.15",
+    "sha256": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6"
+  },
+  "pyinstaller": {
+    "version": "6.22.2",
+    "artifact_id": "pyinstaller-6.22.2",
+    "artifact_sha256": "9622686ecc5d5fa492fe6cde29d47df9dd41138cff8177be9f901ca3260f2096"
+  },
+  "native_toolchain": {
+    "compiler": "gcc",
+    "version": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "sdk": "20260831.293.1",
+    "identity": "gcc:gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0"
+  },
+  "locale": "C.UTF-8",
+  "timezone": "UTC",
+  "relevant_environment_variables": {
+    "CI": "true",
+    "GITHUB_SHA": "76529014f47945fc2916d0488115822bc28d16c7",
+    "GITHUB_RUN_ID": "33838635766",
+    "GITHUB_REPOSITORY": "hed88798-dot/sbsb",
+    "RUNNER_OS": "Linux",
+    "RUNNER_ARCH": "X64"
+  },
+  "runner_image_identity": {
+    "provider": "github-actions",
+    "image": "ubuntu24",
+    "image_digest": "20260831.293.1"
+  },
+  "storage": {
+    "channel_class": "PROJECT_CONTROLLED_LOCAL_COLD_ARCHIVE",
+    "portable_logical_locator": "cold-archive://frozen-candidates/76529014f47945fc2916d0488115822b/linux"
+  }
+}

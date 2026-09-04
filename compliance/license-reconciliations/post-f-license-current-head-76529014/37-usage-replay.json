@@ -1,0 +1,42 @@
+{
+  "schema_version": "1",
+  "source_snapshot_id": "code-c-license-universe-2026-09-02",
+  "license_policy_version": "2026.09.02.1",
+  "total_usage": 37,
+  "target_usage_count": 2,
+  "target_changes": [
+    {
+      "usage_binding_id": "code-c-linux-worker-build-py31315",
+      "artifact_sha256": "24257a04c7a5a7a034cf28e39dcee20fbeeb9f043076729480f2e1b69904408a",
+      "previous_policy_result": "FAIL",
+      "current_policy_result": "PASS",
+      "policy_rule_id": "COPYLEFT_BUILD_ONLY_USE-v1",
+      "policy_disposition": "ALLOW_WITH_CONDITIONS",
+      "policy_input_hash": "565d72428263a119c49a6a461a1a250b9abe845e498ca1cc824f1582928191be"
+    },
+    {
+      "usage_binding_id": "code-c-windows-worker-build-py31315",
+      "artifact_sha256": "24257a04c7a5a7a034cf28e39dcee20fbeeb9f043076729480f2e1b69904408a",
+      "previous_policy_result": "FAIL",
+      "current_policy_result": "PASS",
+      "policy_rule_id": "COPYLEFT_BUILD_ONLY_USE-v1",
+      "policy_disposition": "ALLOW_WITH_CONDITIONS",
+      "policy_input_hash": "565d72428263a119c49a6a461a1a250b9abe845e498ca1cc824f1582928191be"
+    }
+  ],
+  "target_change_count": 2,
+  "non_target_usage_count": 35,
+  "non_target_policy_disposition_drift_count": 0,
+  "pre_change_disposition_counts": {
+    "PASS": 14,
+    "MANUAL_REVIEW": 21,
+    "FAIL": 2
+  },
+  "post_change_disposition_counts": {
+    "PASS": 16,
+    "MANUAL_REVIEW": 21,
+    "FAIL": 0
+  },
+  "license_disposition_partition": "PASS",
+  "full_current_license_universe_reevaluation": true
+}

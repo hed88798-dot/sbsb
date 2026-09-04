@@ -1,0 +1,223 @@
+{
+  "18_license_reviews_reused": "YES",
+  "active_license_review_record_count": 18,
+  "active_review_record_set_digest": "7726678bd5eeb47ddf70512bd7e17fab8922348018be93c4768a18ee2e0fa2e7",
+  "active_review_record_set_match": "PASS",
+  "approval_reconciliation": {
+    "active_approval_conflicts": 0,
+    "approval_reconciliation": "PASS",
+    "approval_snapshot_sha256": "198a199992e5e5895569f063102886196ba094c8143bdfc824ef94ea4967ae78",
+    "inventory_approval_count": 4,
+    "toolchain_approval_count": 2
+  },
+  "auto_policy_pass_usage_count": 16,
+  "candidate_binding_regressions": {
+    "current_candidate_explicit_binding": "PASS",
+    "historical_candidate_reuse_fail_closed": "PASS",
+    "implicit_latest_selection_disabled": "PASS",
+    "wrong_candidate_manifest_fail_closed": "PASS"
+  },
+  "candidate_id": "code-c-76529014f47945fc2916d0488115822bc28d16c7",
+  "candidate_inventory_sha256": {
+    "code-c-linux-runtime-py31315": "b6397a493afb9c555dde18a5c44947aee88692cf837f84f226bb9cdab451e9f2",
+    "code-c-linux-worker-build-py31315": "de1538e8753bbee056f238f6483d3f9d080eb018ec74b5f5926a58a078fcf56c",
+    "code-c-windows-runtime-py31315": "5d7cd9e0e93af5606f33af97d54588f1fdfb9949089c658e62ad5b185f0cce8a",
+    "code-c-windows-worker-build-py31315": "c7ed5092c627fdbad3d28c7cd85246a03c1cacbbb65664c377fce94d23de7cc7"
+  },
+  "candidate_manifest_binding": "PASS",
+  "candidate_manifests": {
+    "linux": {
+      "candidate_id": "code-c-76529014f47945fc2916d0488115822bc28d16c7-linux",
+      "manifest_sha256": "7f4e2507e126fafa55f682c4636cd1bfdbc2f7791a54fc55eef1caa4626117f4"
+    },
+    "windows": {
+      "candidate_id": "code-c-76529014f47945fc2916d0488115822bc28d16c7-windows",
+      "manifest_sha256": "c22e2eceade427e1e25997bff38fb6311490f7a2d964038c9bd59ed6c3788d35"
+    }
+  },
+  "current_candidate_explicit_binding": "PASS",
+  "cve_stage_a_rebind": "READY_NOT_RUN",
+  "dependency_artifact_set_drift": "NONE",
+  "dependency_subject_set_digest": "2774d35cef0bbdb3504a84725ed33c57256e98a3edf85be0a223182d170fc9c4",
+  "dependency_subject_set_matches_reviewed_universe": "PASS",
+  "distribution_set_reconciliation": {
+    "final_distributed_component_count": 187,
+    "native_payloads": 166,
+    "runtime_wheels": 19,
+    "status": "PASS",
+    "unaccounted_distributed_component_count": 0,
+    "worker_artifacts": 2
+  },
+  "distribution_set_reconciliation_status": "PASS",
+  "evidence_identity": {
+    "linux": {
+      "build_context_sha256": "76e78ad54ee3d10af58f8e1dc3b480c04010a9cc48f909dcc84782388236bb90",
+      "diagnostics_sha256": "bfd52552b6458b337e49258952d368d28e92b139acd910de4094dc2b248fdb61",
+      "target_evidence_sha256": "14c0bf9b7b8e9ac1b465f7ce3abf3918d638d52b85c5a2aff53e8295bc72a9ee"
+    },
+    "windows": {
+      "build_context_sha256": "caedcc5bbee6525b84f07445c56efc60504d1f84d3f6988ded3c8a614e1b1b7d",
+      "diagnostics_sha256": "7ad6b25f9f67f00905a3c77ecb7b9901e55da8a013feae85bf943d706808ccd6",
+      "target_evidence_sha256": "4d6d3fc669f8bf3ccb11b8655f9bf2bda99972eaba9ced40cf1aa8d6aa475e46"
+    }
+  },
+  "exact_artifact_set_drift_from_frozen_review": "NONE",
+  "external_prerequisites": {
+    "windows_msvc": {
+      "bundled_by_code_c": "NO",
+      "downloaded_by_code_c": "NO",
+      "final": 0,
+      "installed_by_code_c": "NO",
+      "policy": "PREINSTALLED_COMPATIBLE_RUNTIME_ONLY",
+      "selected": 4
+    }
+  },
+  "final_distributed_component_count": 187,
+  "final_distributed_set_sha256": "39f72e4cb02fc6a716b032ca022fd95c5e5d0f8264dae1aa1cc099dd74096f6b",
+  "final_distribution_binding_id": "code-c-final-distribution-6cd09589d42329c7",
+  "final_distribution_binding_sha256": "6cd09589d42329c75e4ecac05411c898b81e60f5813cb8aa704b6e9b3ce0e799",
+  "final_license_review_record_count": 18,
+  "final_notice_binds_current_distributed_set": "PASS",
+  "final_sbom_binds_current_candidate": "PASS",
+  "final_sbom_binds_current_workers": "PASS",
+  "hard_blocked_usage_count": 0,
+  "license_disposition_partition": "PASS",
+  "license_final_review_result_sha256": "0e45e2cae89a622dd60716916b3e9ba84734054e64f8572997490f4bf6e76f71",
+  "license_policy": {
+    "sha256": "9239adf47e2607b9404dd60fd7266ab628dd3d27a4715885b20a9834d8494518",
+    "version": "2026.09.02.1"
+  },
+  "license_review_bundle_sha256": "824eba5d4552179e727c8b34b95f0ecdd169e28c394265a858c5bd0955cc0c56",
+  "license_review_subject_drift": "NONE",
+  "main_quality_baseline": "d4909631456029b50c8c6bd6011719fd69ddef95",
+  "native_distributed_entry_count": 166,
+  "native_distributed_set_sha256": "c4d7d1a9edf3241ed79f609c2a8b7d5ecacb438904cdc4d39f2b700c1a5af00a",
+  "native_summary": {
+    "linux": {
+      "external_prerequisite_final_count": 0,
+      "external_prerequisite_selected_count": 0,
+      "final_native_count": 117,
+      "materialized_native_count": 117,
+      "selected_native_count": 117
+    },
+    "windows": {
+      "external_prerequisite_final_count": 0,
+      "external_prerequisite_selected_count": 4,
+      "final_native_count": 49,
+      "materialized_native_count": 49,
+      "selected_native_count": 53
+    }
+  },
+  "new_final_sbom_sha256": "e82ad74d64c4111e7d6d76070c970a8526e14a5a40043b15292a065268e8585a",
+  "new_notice_sha256": "213c1a808101fb9c7e0401f5596ea5801fed03f664d60033c665731bba385708",
+  "non_target_policy_disposition_drift_count": 0,
+  "notice": {
+    "binds_current_distributed_set": "PASS",
+    "obligation_evaluation": "PASS",
+    "path": "compliance/license-reconciliations/post-f-license-current-head-76529014/THIRD_PARTY_NOTICES.md",
+    "sha256": "213c1a808101fb9c7e0401f5596ea5801fed03f664d60033c665731bba385708"
+  },
+  "notice_binding": "PASS",
+  "notice_obligation_evaluation": "PASS",
+  "post_f_37_usage_replay": "PASS",
+  "post_f_license_reconciliation": "PASS",
+  "pr_8_updated": "NO",
+  "project_owner_review_authority_binding": "PASS",
+  "pyinstaller_hooks_build_only_conditions": {
+    "gpl_covered_code_copy_or_injection": "NO",
+    "gpl_output_members": 0,
+    "status": "PASS"
+  },
+  "python_license_gate": "PASS",
+  "recovery": {
+    "linux": {
+      "drill_id": "code-c-76529014f47945fc2916d0488115822bc28d16c7-linux-recovery-linux",
+      "drill_sha256": "5bc20893d7c1789c60ad0a581e935cff1b94679f6fb11ed487f05d1cc28f1094"
+    },
+    "windows": {
+      "drill_id": "code-c-76529014f47945fc2916d0488115822bc28d16c7-windows-recovery-windows",
+      "drill_sha256": "134b23500d7ca863367228a8da5da163d2ce6bf05d399aba595390ecde551643"
+    }
+  },
+  "recovery_drill_binding": "PASS",
+  "required_review_usage_count": 0,
+  "retention": {
+    "linux": {
+      "receipt_id": "code-c-76529014f47945fc2916d0488115822bc28d16c7-linux-retention-linux",
+      "receipt_sha256": "c96d4af64ff342609edb65719107c3f68099bb22db31840927b7cab40b7470b6"
+    },
+    "windows": {
+      "receipt_id": "code-c-76529014f47945fc2916d0488115822bc28d16c7-windows-retention-windows",
+      "receipt_sha256": "ae1aa0709ae60815bd0ba7b605c17d4c3b8683fed72599b0715afd8bae5d9729"
+    }
+  },
+  "retention_binding": "PASS",
+  "review_approved_usage_count": 21,
+  "review_record_count": 18,
+  "review_record_set_matches_f_final_snapshot": "PASS",
+  "review_snapshot_sha256": "549e4c5ae6a91a3f8b36d4fd917f44b86d9be48397ada7ef4518a387edbe9c0c",
+  "runtime_distributed_artifact_count": 19,
+  "runtime_distributed_set_sha256": "07cec6920009f8460502298d7874fc802993dec9c19b0ee1a75a67868e366c71",
+  "sbom": {
+    "binds_current_candidate": "PASS",
+    "binds_current_workers": "PASS",
+    "path": "compliance/license-reconciliations/post-f-license-current-head-76529014/FINAL_DISTRIBUTION_SBOM.cdx.json",
+    "sha256": "e82ad74d64c4111e7d6d76070c970a8526e14a5a40043b15292a065268e8585a"
+  },
+  "sbom_license_binding": "PASS",
+  "schema_version": "1",
+  "semantic_dependency_graph_drift": "NONE",
+  "siglip_index": "BLOCKED_NOT_RERUN",
+  "stable_release_license_gate": "BLOCKED_BY_EXTERNAL_MSVC_REDISTRIBUTION",
+  "stage_b": "BLOCKED_NOT_RERUN",
+  "status": "PASS",
+  "total_usage": 37,
+  "unaccounted_distributed_component_count": 0,
+  "usage_replay": {
+    "auto_policy_pass": 16,
+    "evidence_path": "compliance/license-reconciliations/post-f-license-current-head-76529014/37-usage-replay.json",
+    "evidence_sha256": "71f00cccf6c7f20b5c22d508df950a2ecc8107c72a2cb6e9a217a27e90533fe8",
+    "hard_blocked": 0,
+    "required_review": 0,
+    "review_approved": 21,
+    "total": 37
+  },
+  "validation_head_sha": "b659a60746e00fc1a0ca9760c1c7adc54b849128",
+  "worker_artifact_identity_unchanged": "PASS",
+  "worker_artifacts": {
+    "linux": {
+      "build_context_id": "code-c-pyinstaller-b817618214e35e59ffc16d5c7036bdca",
+      "build_recipe_id": "code-c-recipe-76529014f47945fc2916d0488115822b-linux",
+      "build_recipe_sha256": "8d76acdd6f47268152139313b95c9c4057850f02156899db1dd4db32888d2c18",
+      "candidate_id": "code-c-76529014f47945fc2916d0488115822bc28d16c7-linux",
+      "candidate_manifest_sha256": "7f4e2507e126fafa55f682c4636cd1bfdbc2f7791a54fc55eef1caa4626117f4",
+      "carchive_sha256": "163e72f82f93b3f7ac5585426431ccc01bf61578bcec571a83b09b08abdd0a0e",
+      "distribution_context_id": "code-c-context-76529014f47945fc2916d0488115822b-linux",
+      "distribution_context_sha256": "ace1dbbf7f61498ad4b552258d60e8a35010f232afbe8182806e4d7c26e5eae0",
+      "environment_descriptor_id": "code-c-environment-76529014f47945fc2916d0488115822b-linux",
+      "environment_descriptor_sha256": "e341132744136ddc15734e3c4b0196073fb453ade7177479c3f0e063e8b5091a",
+      "native_sha256": "8ceb4106fdb961cd8aa05136c547420286711a81ce1f39505e8458744d30c5db",
+      "packaging_sha256": "1109fa43160a5477bcbe66bb4693c719f320fca60bd0dc67699dc4486207c143",
+      "sha256": "4bd6d3afd3d2d60718f8174caedafb16a91c398a90c4198c664d14555a5f6073"
+    },
+    "windows": {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "build_recipe_id": "code-c-recipe-76529014f47945fc2916d0488115822b-windows",
+      "build_recipe_sha256": "8f4062eb0c627718d8f74e6212591a6d18b738184e12a62c5fa9929e39062048",
+      "candidate_id": "code-c-76529014f47945fc2916d0488115822bc28d16c7-windows",
+      "candidate_manifest_sha256": "c22e2eceade427e1e25997bff38fb6311490f7a2d964038c9bd59ed6c3788d35",
+      "carchive_sha256": "1a319765900d1b6cde0743efa902a5d8cb0468335f118775bbf65565e9b2c805",
+      "distribution_context_id": "code-c-context-76529014f47945fc2916d0488115822b-windows",
+      "distribution_context_sha256": "52560c7b0ee162c956c2f85ef4da309e0ff770686efbcdfbf24d7e703cbe26df",
+      "environment_descriptor_id": "code-c-environment-76529014f47945fc2916d0488115822b-windows",
+      "environment_descriptor_sha256": "e208f7385d0b355c70d35b09300de7c2fea74f50111b2e04ee5b8649135fef4f",
+      "native_sha256": "f0d6b3a54bfba9bee98996aad1bbeac18c6da48db60720851904dc92fb2dc9f2",
+      "packaging_sha256": "84f8d5d7507867a45b7c427162be0ceece37d11a7e5aaa7d2588c903ea3a6f64",
+      "sha256": "ba6b81f433beef8ee95615a45248251918a18a602b53f8db9ec02e35cf76d8b1"
+    }
+  },
+  "worker_build_input_drift": "NONE",
+  "worker_python_license_gate": "PASS",
+  "worker_rebuild_required": "NO",
+  "workflow_execution_head": "76529014f47945fc2916d0488115822bc28d16c7"
+}

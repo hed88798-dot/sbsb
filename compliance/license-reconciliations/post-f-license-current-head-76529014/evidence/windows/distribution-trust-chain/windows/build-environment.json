@@ -1,0 +1,56 @@
+{
+  "schema_version": "2",
+  "descriptor_id": "code-c-environment-76529014f47945fc2916d0488115822b-windows",
+  "descriptor_sha256": "e208f7385d0b355c70d35b09300de7c2fea74f50111b2e04ee5b8649135fef4f",
+  "descriptor_bytes_retained": true,
+  "platform": {
+    "os": "windows",
+    "architecture": "x86_64"
+  },
+  "os": {
+    "name": "windows",
+    "version": "20260830.290.1",
+    "build": "20260830.290.1"
+  },
+  "runtime_tools": {
+    "node": "v24.19.0",
+    "pnpm": "pnpm-unavailable",
+    "python": "Python 3.13.15",
+    "electron": "NOT_USED_FOR_WORKER_BUILD"
+  },
+  "python_executable": {
+    "identity": "python.exe",
+    "version": "Python 3.13.15",
+    "sha256": "85b71d8c6ec1905935f74be0c9869aae198d00e98f39df699ec66f9c5a84cecd"
+  },
+  "pyinstaller": {
+    "version": "6.22.2",
+    "artifact_id": "pyinstaller-6.22.2",
+    "artifact_sha256": "9b990fa6bbe143572f06644a984ad0d7aa2e2ccc6929d4916031343a5888e9a7"
+  },
+  "native_toolchain": {
+    "compiler": "MSVC",
+    "version": "GitHub-hosted-windows-toolchain",
+    "sdk": "GitHub-hosted-windows-sdk",
+    "identity": "MSVC:GitHub-hosted-windows-toolchain"
+  },
+  "locale": "C.UTF-8",
+  "timezone": "UTC",
+  "relevant_environment_variables": {
+    "CI": "true",
+    "GITHUB_SHA": "76529014f47945fc2916d0488115822bc28d16c7",
+    "GITHUB_RUN_ID": "33838635766",
+    "GITHUB_REPOSITORY": "hed88798-dot/sbsb",
+    "RUNNER_OS": "Windows",
+    "RUNNER_ARCH": "X64"
+  },
+  "runner_image_identity": {
+    "provider": "github-actions",
+    "image": "win22",
+    "image_digest": "20260830.290.1"
+  },
+  "storage": {
+    "channel_class": "PROJECT_CONTROLLED_LOCAL_COLD_ARCHIVE",
+    "portable_logical_locator": "cold-archive://frozen-candidates/76529014f47945fc2916d0488115822b/windows"
+  }
+}
