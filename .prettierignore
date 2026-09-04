@@ -7,3 +7,5 @@ release/
 coverage/
 pnpm-lock.yaml
 
+# Immutable compliance authority; its exact bytes are protected by a SHA-256 sidecar.
+compliance/vulnerability-reviews/cpython-3.13.15-final-vulnerability-review-current-candidate/FINAL_VULNERABILITY_REVIEW_RECORD_V2.json
