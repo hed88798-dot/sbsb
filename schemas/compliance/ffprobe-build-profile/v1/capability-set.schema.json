@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-video-platform.example/schemas/compliance/ffprobe-build-profile/v1/capability-set.schema.json",
+  "title": "Required Media Capability Set",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_kind",
+    "record_id",
+    "capability_set_sha256",
+    "authority_status",
+    "authority_sources",
+    "required_media_capabilities",
+    "scope_constraints"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "record_kind": { "const": "REQUIRED_MEDIA_CAPABILITY_SET" },
+    "record_id": { "type": "string", "minLength": 1 },
+    "capability_set_sha256": { "$ref": "#/$defs/sha256" },
+    "authority_status": { "const": "PASS" },
+    "authority_sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["locator", "sha256"],
+        "properties": {
+          "locator": { "type": "string", "minLength": 1 },
+          "sha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "authority_interpretation": { "type": "string", "minLength": 1 },
+    "required_media_capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_scope",
+        "input_locator",
+        "probe_operation",
+        "probe_fields",
+        "stream_semantics",
+        "downstream_consumers",
+        "format_scope",
+        "container_capability_policy",
+        "demuxer_capability_policy",
+        "parser_capability_policy",
+        "malformed_media_behavior",
+        "network_media_input"
+      ],
+      "properties": {
+        "input_scope": { "const": "LOCAL_FILESYSTEM_MEDIA" },
+        "input_locator": { "const": "EXPLICIT_LOCAL_FILESYSTEM_PATH" },
+        "probe_operation": { "const": "FFPROBE_JSON_SHOW_STREAMS_SHOW_FORMAT" },
+        "probe_fields": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "stream_semantics": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "downstream_consumers": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "format_scope": { "const": "FORMAT_NEUTRAL_LOCAL_MEDIA" },
+        "container_capability_policy": { "const": "ALL_UPSTREAM_CONTAINERS_AT_PINNED_RELEASE" },
+        "demuxer_capability_policy": { "const": "ALL_UPSTREAM_DEMUXERS_AT_PINNED_RELEASE" },
+        "parser_capability_policy": { "const": "ALL_UPSTREAM_PARSERS_AT_PINNED_RELEASE" },
+        "malformed_media_behavior": { "const": "REJECT_FAIL_CLOSED" },
+        "network_media_input": { "const": "NOT_REQUIRED" }
+      }
+    },
+    "scope_constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "customer_media_upload_to_probe",
+        "system_path_ffprobe",
+        "implicit_format_narrowing",
+        "capability_set_change_requires_new_version"
+      ],
+      "properties": {
+        "customer_media_upload_to_probe": { "const": "FORBIDDEN" },
+        "system_path_ffprobe": { "const": "FORBIDDEN" },
+        "implicit_format_narrowing": { "const": "FORBIDDEN" },
+        "capability_set_change_requires_new_version": { "const": true }
+      }
+    }
+  },
+  "$defs": { "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" } }
+}
