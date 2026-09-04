@@ -32,7 +32,7 @@ tar -xJf "$SOURCE_TARBALL" --strip-components=1 -C "$SOURCE_DIR"
 GCC_VERSION="$(gcc --version | head -1)"
 LD_VERSION="$(ld --version | head -1)"
 MAKE_VERSION="$("$MAKE_COMMAND" --version | head -1)"
-EXTRA_CONFIGURE_JSON='["--prefix=install","--target-os=mingw32","--arch=x86_64","--enable-cross-compile","--cc=gcc","--enable-shared","--disable-static","--extra-ldflags=-static-libgcc -static-libstdc++ -Wl,-Bstatic -lwinpthread -Wl,-Bdynamic"]'
+EXTRA_CONFIGURE_JSON='["--prefix=install","--target-os=mingw32","--arch=x86_64","--enable-cross-compile","--cc=gcc","--enable-shared","--disable-static","--extra-ldflags=-static-libgcc -static-libstdc++","--extra-libs=-Wl,-Bstatic -lwinpthread -Wl,-Bdynamic"]'
 node "$ROOT/tools/ffprobe-build/create_records.mjs" \
   --platform windows --architecture x86_64 --output "$OUT/records" --profile "$PROFILE" \
   --loader-policy "$LOADER_POLICY" --source-sha256 "$ACTUAL_SOURCE_SHA" \
@@ -48,7 +48,8 @@ cd "$SOURCE_DIR"
   --disable-ffmpeg --disable-ffplay --enable-demuxers --enable-parsers \
   --enable-decoders --enable-protocol=file --disable-network --disable-autodetect \
   --disable-gpl --disable-nonfree --disable-doc --disable-debug --enable-shared \
-  --disable-static '--extra-ldflags=-static-libgcc -static-libstdc++ -Wl,-Bstatic -lwinpthread -Wl,-Bdynamic' 2>&1 | tee "$OUT/evidence/configure.log"
+  --disable-static '--extra-ldflags=-static-libgcc -static-libstdc++' \
+  '--extra-libs=-Wl,-Bstatic -lwinpthread -Wl,-Bdynamic' 2>&1 | tee "$OUT/evidence/configure.log"
 "$MAKE_COMMAND" -j"$(nproc)" 2>&1 | tee "$OUT/evidence/build.log"
 "$MAKE_COMMAND" install 2>&1 | tee -a "$OUT/evidence/build.log"
 
