@@ -10,6 +10,8 @@ PROFILE="$ROOT/compliance/runtime-dependency-intake/ffprobe-v2/FFPROBE_BUILD_PRO
 LOADER_POLICY="$ROOT/compliance/runtime-dependency-intake/native-runtime-companion-v1/RUNTIME_LOADER_POLICY_RECORD_V1.json"
 mkdir -p "$OUT/records" "$OUT/bundle" "$OUT/evidence"
 test "$(uname -m)" = x86_64
+test -f "$OUT/evidence/nasm-preflight.json"
+NASM_PREFLIGHT_PATH="$OUT/evidence/nasm-preflight.json" node -e "const fs=require('fs'); if (JSON.parse(fs.readFileSync(process.env.NASM_PREFLIGHT_PATH,'utf8')).binding !== 'PASS') process.exit(1)"
 printf 'runner_architecture=%s\n' "$(uname -m)" > "$OUT/evidence/runner-architecture.txt"
 
 curl --fail --location --proto '=https' --tlsv1.2 --silent --show-error \
@@ -30,6 +32,7 @@ node "$ROOT/tools/ffprobe-build/create_records.mjs" \
   --loader-policy "$LOADER_POLICY" --source-sha256 "$ACTUAL_SOURCE_SHA" \
   --source-archive ffmpeg-9.0.1.tar.xz --compiler "$GCC_VERSION" \
   --toolchain "${GCC_VERSION}; ${LD_VERSION}; ${MAKE_VERSION}" \
+  --build-tools-file "$OUT/evidence/nasm-preflight.json" \
   --extra-configure-json "$EXTRA_CONFIGURE_JSON" --build-json '["make","-j$(nproc)","make install"]'
 
 cd "$SOURCE_DIR"

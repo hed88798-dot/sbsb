@@ -55,6 +55,7 @@ const configureIntent = profile.build_configuration_constraints.configure_intent
 const extraConfigure = JSON.parse(args['extra-configure-json'] ?? '[]');
 const configureArguments = [...configureIntent, ...extraConfigure];
 const buildArguments = JSON.parse(args['build-json'] ?? '[]');
+const buildTools = args['build-tools-file'] ? readJson(args['build-tools-file']) : [];
 const compilerIdentity = required(args, 'compiler');
 const toolchainIdentity = required(args, 'toolchain');
 const runIdentity = args['run-id'] ?? process.env.GITHUB_RUN_ID ?? 'local';
@@ -85,6 +86,7 @@ const recipe = {
   },
   configure_arguments: configureArguments,
   build_arguments: buildArguments,
+  build_tools: buildTools,
   compiler_identity: compilerIdentity,
   toolchain_identity: toolchainIdentity,
   enabled_components: ['ffprobe', 'demuxers', 'parsers', 'decoders', 'file-protocol'],
@@ -159,6 +161,7 @@ const context = {
     external_linked_libraries: [],
     linkage: 'SHARED',
   },
+  build_tools: buildTools,
 };
 const contextRecord = writeRecord(output, 'build-context.json', context);
 writeFileSync(

@@ -41,6 +41,9 @@ jobs:
         run: |
           pnpm compliance:ffprobe:profile:contract
           pnpm compliance:runtime-loader-policy:contract
+      - name: Install and attest pinned NASM build-only tool
+        shell: bash
+        run: ./tools/ffprobe-build/preflight-linux.sh
       - name: Build exact Linux FFprobe companion
         shell: bash
         env:
@@ -86,15 +89,12 @@ jobs:
           if (!(Test-Path $bash) -or !(Test-Path $cygpath)) {
             throw 'MSYS2 UCRT64 toolchain is unavailable on the target runner'
           }
-          & $bash -lc 'true'
-          if ($LASTEXITCODE -ne 0) {
-            & $bash -lc 'true'
-            if ($LASTEXITCODE -ne 0) { throw 'MSYS2 initial setup did not complete' }
-          }
+          & $bash --noprofile --norc -lc 'true'
+          if ($LASTEXITCODE -ne 0) { throw 'MSYS2 no-profile bootstrap probe failed' }
           $workspace = (& $cygpath -u $env:GITHUB_WORKSPACE).Trim()
           $runnerTemp = (& $cygpath -u $env:RUNNER_TEMP).Trim()
-          $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 && ./tools/ffprobe-build/build-windows.sh"
-          & $bash -lc $command
+          $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 PATH='/ucrt64/bin:/usr/bin:'`$PATH && ./tools/ffprobe-build/build-windows.sh"
+          & $bash --noprofile --norc -lc $command
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Upload transient Windows transport artifact
         if: always()
