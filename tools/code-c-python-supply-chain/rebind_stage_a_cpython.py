@@ -17,11 +17,10 @@ import tarfile
 import tempfile
 import urllib.request
 import zipfile
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from canonical_evidence import canonical_sha256, write_canonical_json
+from canonical_evidence import write_canonical_json
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -32,28 +31,11 @@ HISTORICAL_REVIEW = (
     / "cpython-3.13.15-windows-x64"
     / "stage-a-review.json"
 )
-CURRENT_POST_F_RECONCILIATION = (
-    REPOSITORY_ROOT
-    / "compliance"
-    / "license-reconciliations"
-    / "post-f-license-current-head-76529014"
-    / "POST_F_LICENSE_RECONCILIATION.json"
-)
-HISTORICAL_POST_F_RECONCILIATION = (
-    REPOSITORY_ROOT
-    / "compliance"
-    / "license-reconciliations"
-    / "post-f-license-2026-09-02"
-    / "POST_F_LICENSE_RECONCILIATION.json"
-)
-HISTORICAL_POST_F_ROOT = HISTORICAL_POST_F_RECONCILIATION.parent
 MAIN_QUALITY_BASELINE = "d4909631456029b50c8c6bd6011719fd69ddef95"
 HISTORICAL_REVIEW_SHA256 = "adf753cc3778ae5caf435a9e936519831d1e03182d978718ceae7ab9819e8bc7"
 HISTORICAL_SUBJECT_SHA256 = "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
 HISTORICAL_LINUX_WORKER_SHA256 = "4b69bb8a6eec5da994cc8c575d49db6439efab67f94b063374e4a50b0716c1d1"
 HISTORICAL_WINDOWS_WORKER_SHA256 = "d99fa3c7b30e9bf8e45c03a124a794de70baaac630f18fde4d8fd71f6cb5713c"
-HISTORICAL_FINAL_DISTRIBUTION_ID = "code-c-final-distribution-228280c42aee2513"
-HISTORICAL_FINAL_DISTRIBUTION_SHA256 = "228280c42aee2513cebb856a417847e8f121d5318291a21d353aea9616bc63c3"
 ADVISORY_SNAPSHOT = (
     REPOSITORY_ROOT
     / "compliance"
