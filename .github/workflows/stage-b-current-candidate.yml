@@ -91,8 +91,8 @@ jobs:
               stub='artifacts/stage-b/linux/ffprobe-stage-b-reject'
               printf '#!/bin/sh\nexit 1\n' > "$stub"
               chmod 755 "$stub"
+              ffprobe="$(python -c 'from pathlib import Path; import sys; print(Path(sys.argv[1]).resolve())' "$stub")"
             fi
-            ffprobe="$(python -c 'from pathlib import Path; import sys; print(Path(sys.argv[1]).resolve())' "$stub")"
             ffprobe_mode='DETERMINISTIC_REJECT_ONLY'
           fi
           printf 'ffprobe=%s\n' "$ffprobe" >> "$GITHUB_OUTPUT"
