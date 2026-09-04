@@ -1,0 +1,105 @@
+{
+  "schema_version": "1",
+  "record_kind": "CODE_F_FFPROBE_RUNTIME_DEPENDENCY_INTAKE",
+  "record_id": "code-f-ffprobe-runtime-dependency-intake-d4d6793-v1",
+  "decision_status": "BLOCKED_PENDING_GENERIC_RUNTIME_COMPANION_QICR",
+  "owner": "CODE_F",
+  "baseline": {
+    "main_quality_baseline": "d4d6793363aeef3a48147e135d2188f04ec6dd09",
+    "code_c_validation_head": "882fbd0e4270049c6ac751335698a27da9ccd1e9",
+    "source_code_c_head": "2d745e250c220fe09a64212fb5bdee933e93d629",
+    "boundary_preflight_run": 33862161582,
+    "final_vulnerability_review_v2_on_main": "PASS",
+    "current_candidate_binding": "PASS",
+    "siglip_model_identity_binding": "PASS"
+  },
+  "facts": {
+    "production_callgraph": [
+      "worker.handle",
+      "index_asset",
+      "probe_media",
+      "_run_json",
+      "subprocess.run(ffprobe)"
+    ],
+    "production_callgraph_requires_ffprobe": true,
+    "ffprobe_role": "PRODUCT_RUNTIME_DEPENDENCY",
+    "existing_approved_ffprobe_artifact": false,
+    "ffprobe_present_in_current_native_manifest": false,
+    "ffprobe_covered_by_current_final_distribution_binding": false,
+    "current_candidate_runtime_dependency_closure": "FAIL"
+  },
+  "deployment_decision": {
+    "ffprobe_deployment_model": "BUNDLED_RUNTIME_COMPANION",
+    "ffprobe_artifact_acquisition_strategy": "SOURCE_BUILD_FROM_PINNED_FFMPEG_RELEASE",
+    "ffprobe_source_version_policy": "PIN_EXACT_FFMPEG_UPSTREAM_RELEASE_SOURCE_ARCHIVE_AND_SHA256_PER_PLATFORM_BUILD",
+    "system_path_fallback_allowed": false,
+    "system_package_manager_artifact_authority": false,
+    "untracked_download_allowed": false,
+    "explicit_runtime_locator_required": true
+  },
+  "contract_assessment": {
+    "current_native_runtime_contract_can_express_external_executable_companion": "NO",
+    "runtime_companion_contract_supported": "NO",
+    "qicr_required": true,
+    "qicr_scope": "GENERIC_RUNTIME_COMPANION_WITH_EXECUTABLE_IDENTITY_PACKAGED_LOCATOR_AND_COMPLETE_RUNTIME_CLOSURE",
+    "package_specific_exception": "NO",
+    "owner_of_next_fix": "CODE_F_QICR"
+  },
+  "frozen_artifact_requirements": {
+    "required_fields": [
+      "FFPROBE_VERSION",
+      "SOURCE_RELEASE_IDENTITY",
+      "SOURCE_SHA256",
+      "BUILD_RECIPE_ID",
+      "BUILD_CONFIGURATION",
+      "ARTIFACT_SHA256",
+      "EXECUTABLE_SHA256",
+      "LICENSE_EXPRESSION",
+      "LICENSE_EVIDENCE_SHA256",
+      "PROVENANCE_RECORD"
+    ],
+    "license_basis": "EXACT_BINARY_AND_BUILD_CONFIGURATION",
+    "runtime_closure": "ALL_SHIPPED_DYNAMIC_AND_NATIVE_MEMBERS_OR_EXPLICITLY_ZERO_EXTERNAL_DYNAMIC_MEMBERS",
+    "license_evidence": "PENDING_EXACT_ARTIFACT",
+    "provenance_evidence": "PENDING_EXACT_ARTIFACT"
+  },
+  "worker_and_identity_impact": {
+    "current_worker_supports_explicit_ffprobe_locator": "YES",
+    "worker_locator_basis": "PAYLOAD_FFPROBE_PATH_RESOLVED_STRICTLY_AND_PASSED_TO_SUBPROCESS_WITH_SHELL_FALSE",
+    "worker_rebuild_required": "NO",
+    "candidate_identity_impact": "DISTRIBUTION_COMPONENT_SET_CHANGE",
+    "worker_identity_change_required": "NO",
+    "distribution_component_set_change_required": "YES",
+    "new_distribution_candidate_required": "YES"
+  },
+  "downstream_rebind": {
+    "native_rebind_required": "YES",
+    "license_distribution_rebind_required": "YES",
+    "python_artifact_license_rereview_required": "NO_UNLESS_PYTHON_ARTIFACTS_CHANGE",
+    "sbom_notice_rebind_required": "YES",
+    "final_distribution_rebind_required": "YES",
+    "vulnerability_final_review_rebind_required": "YES",
+    "python_stage_a_rerun_required": "NOT_YET_DETERMINED",
+    "python_stage_b_rerun_required": "NOT_YET_DETERMINED"
+  },
+  "artifact_status": {
+    "artifact_level_approval": "NOT_PERFORMED_YET",
+    "linux_exact_ffprobe_artifact": "NOT_YET_PRODUCED",
+    "windows_exact_ffprobe_artifact": "NOT_YET_PRODUCED",
+    "ffprobe_runtime_closure": "BLOCKED_PENDING_EXACT_ARTIFACT"
+  },
+  "prohibited_in_this_round": [
+    "DOWNLOAD_FFPROBE",
+    "BUILD_FFPROBE",
+    "PACKAGE_FFPROBE",
+    "MODIFY_WORKER",
+    "REGENERATE_SBOM_NOTICE",
+    "RERUN_NATIVE",
+    "RERUN_LICENSE",
+    "RERUN_VULNERABILITY_REVIEW",
+    "RUN_SIGLIP_OR_INDEX",
+    "RUN_REAL_INDEX_ACCEPTANCE",
+    "RUN_CODE_C_VERSION_ACCEPTANCE"
+  ],
+  "next_execution_owner": "CODE_C_FFPROBE_RUNTIME_COMPANION_ARTIFACT_PRODUCTION_AFTER_CODE_F_QICR"
+}
