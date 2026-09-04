@@ -26,11 +26,11 @@ fi
 package_dir="$RUNNER_TEMP/nasm-package"
 mkdir -p "$package_dir"
 cd "$package_dir"
-apt-get download "nasm=$EXPECTED_VERSION" >/tmp/code-c-nasm-download.log 2>&1
+apt-get download "nasm=$EXPECTED_VERSION" 2>&1 | tee "$OUT/evidence/nasm-download.log"
 deb="$(find "$package_dir" -maxdepth 1 -type f -name 'nasm_*.deb' -print -quit)"
 test -n "$deb"
 package_sha="$(sha256sum "$deb" | awk '{print $1}')"
-sudo dpkg --unpack "$deb" >/tmp/code-c-nasm-install.log 2>&1
+sudo dpkg --unpack "$deb" 2>&1 | tee "$OUT/evidence/nasm-install.log"
 command -v nasm >/dev/null
 nasm_version="$(nasm -v 2>&1 | head -1)"
 grep -F "NASM version $EXPECTED_VERSION" <<<"$nasm_version" >/dev/null
