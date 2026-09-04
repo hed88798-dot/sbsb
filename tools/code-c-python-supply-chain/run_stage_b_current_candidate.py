@@ -312,6 +312,12 @@ def main() -> None:
             "instrumentation_mutates_executable": "NO",
             "instrumentation_injects_product_code": "NO",
         },
+        "ffprobe": {
+            "path": relative(ffprobe),
+            "sha256": sha256_file(ffprobe),
+            "mode": os.environ.get("CODE_C_FFPROBE_MODE", "HOST_DISCOVERED"),
+            "role": "TEST_INPUT_REJECTION_PROBE_ONLY",
+        },
         "protocol": {
             "contract_sha256": surface.get("protocol_contract_identity_sha256"),
             # The surface identity is over the platform-independent protocol

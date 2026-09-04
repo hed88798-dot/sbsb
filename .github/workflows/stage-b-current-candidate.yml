@@ -71,12 +71,28 @@ jobs:
               )
           print(f"{os.environ['TARGET']}-runner-architecture: PASS ({runner_arch}/{machine})")
           PY
+          mkdir -p "artifacts/stage-b/${TARGET}"
           ffprobe="$(python -c 'import shutil; print(shutil.which("ffprobe") or "")')"
+          ffprobe_mode='HOST_DISCOVERED'
           if [[ -z "$ffprobe" ]]; then
-            echo 'ffprobe was not available on the target runner' >&2
-            exit 1
+            # The reachability fixtures are deliberately non-media archives.
+            # A deterministic reject-only probe is sufficient to prove that
+            # they are refused before any archive extraction.  It is not a
+            # replacement for a production ffprobe and is hash-bound in the
+            # runtime evidence.
+            if [[ "$TARGET" == 'windows' ]]; then
+              stub='artifacts/stage-b/windows/ffprobe-stage-b-reject.cmd'
+              printf '@echo off\r\nexit /b 1\r\n' > "$stub"
+            else
+              stub='artifacts/stage-b/linux/ffprobe-stage-b-reject'
+              printf '#!/bin/sh\nexit 1\n' > "$stub"
+              chmod 755 "$stub"
+            fi
+            ffprobe="$(python -c 'from pathlib import Path; import sys; print(Path(sys.argv[1]).resolve())' "$stub")"
+            ffprobe_mode='DETERMINISTIC_REJECT_ONLY'
           fi
           printf 'ffprobe=%s\n' "$ffprobe" >> "$GITHUB_OUTPUT"
+          printf 'ffprobe_mode=%s\n' "$ffprobe_mode" >> "$GITHUB_OUTPUT"
 
       - name: Locate transport manifest and exact files
         id: inputs
@@ -98,6 +114,7 @@ jobs:
         shell: bash
         env:
           TARGET: ${{ matrix.target }}
+          CODE_C_FFPROBE_MODE: ${{ steps.runner.outputs.ffprobe_mode }}
         run: |
           set -euo pipefail
           mkdir -p artifacts/stage-b/${TARGET}
