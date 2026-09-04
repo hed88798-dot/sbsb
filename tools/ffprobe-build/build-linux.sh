@@ -44,7 +44,7 @@ cd "$SOURCE_DIR"
   --disable-doc --disable-debug --enable-shared --disable-static \
   '--extra-ldflags=-Wl,-rpath,$ORIGIN' 2>&1 | tee "$OUT/evidence/configure.log"
 sed -i.bak '/^LDFLAGS=/s/\$ORIGIN/\\\$\$ORIGIN/g' ffbuild/config.mak
-grep -F '\$$ORIGIN' ffbuild/config.mak >/dev/null
+grep -F 'ORIGIN' ffbuild/config.mak > "$OUT/evidence/configured-ldflags.txt"
 make -j"$(nproc)" 2>&1 | tee "$OUT/evidence/build.log"
 make install 2>&1 | tee -a "$OUT/evidence/build.log"
 
