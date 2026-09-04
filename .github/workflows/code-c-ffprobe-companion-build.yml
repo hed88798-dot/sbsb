@@ -49,12 +49,23 @@ jobs:
         env:
           MSYSTEM: ''
         run: ./tools/ffprobe-build/build-linux.sh
+      - name: Package Linux transport preserving symlink metadata
+        if: always()
+        shell: bash
+        run: |
+          if [[ -d artifacts/ffprobe-companion/linux ]]; then
+            mkdir -p artifacts/ffprobe-companion/linux-transport
+            tar --format=posix -cf artifacts/ffprobe-companion/linux-transport/companion.tar \
+              -C artifacts/ffprobe-companion/linux .
+            sha256sum artifacts/ffprobe-companion/linux-transport/companion.tar \
+              > artifacts/ffprobe-companion/linux-transport/companion.tar.sha256
+          fi
       - name: Upload transient Linux transport artifact
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ffprobe-companion-linux-${{ github.sha }}
-          path: artifacts/ffprobe-companion/linux
+          path: artifacts/ffprobe-companion/linux-transport
           if-no-files-found: error
           retention-days: 1
 
@@ -99,11 +110,22 @@ jobs:
           $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 NODE_BIN='$nodeBin' MAKE_COMMAND=mingw32-make PATH='/ucrt64/bin:/usr/bin:/bin:$nodeBin' && command -v node && ./tools/ffprobe-build/preflight-windows.sh && bash -x ./tools/ffprobe-build/build-windows.sh"
           & $bash --noprofile --norc -lc $command
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Package Windows transport preserving bundle metadata
+        if: always()
+        shell: bash
+        run: |
+          if [[ -d artifacts/ffprobe-companion/windows ]]; then
+            mkdir -p artifacts/ffprobe-companion/windows-transport
+            tar --format=posix -cf artifacts/ffprobe-companion/windows-transport/companion.tar \
+              -C artifacts/ffprobe-companion/windows .
+            sha256sum artifacts/ffprobe-companion/windows-transport/companion.tar \
+              > artifacts/ffprobe-companion/windows-transport/companion.tar.sha256
+          fi
       - name: Upload transient Windows transport artifact
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ffprobe-companion-windows-${{ github.sha }}
-          path: artifacts/ffprobe-companion/windows
+          path: artifacts/ffprobe-companion/windows-transport
           if-no-files-found: error
           retention-days: 1
