@@ -41,9 +41,9 @@ cd "$SOURCE_DIR"
   --disable-ffmpeg --disable-ffplay --enable-demuxers --enable-parsers \
   --enable-decoders --enable-protocol=file --disable-network --disable-autodetect \
   --disable-gpl --disable-nonfree --disable-doc --disable-debug --enable-shared \
-  --disable-static '--extra-ldflags=-static-libgcc -static-libstdc++' > "$OUT/evidence/configure.log" 2>&1
-make -j"$(nproc)" > "$OUT/evidence/build.log" 2>&1
-make install >> "$OUT/evidence/build.log" 2>&1
+  --disable-static '--extra-ldflags=-static-libgcc -static-libstdc++' 2>&1 | tee "$OUT/evidence/configure.log"
+make -j"$(nproc)" 2>&1 | tee "$OUT/evidence/build.log"
+make install 2>&1 | tee -a "$OUT/evidence/build.log"
 
 test -f "$SOURCE_DIR/install/bin/ffprobe.exe"
 cp -a "$SOURCE_DIR/install/bin/ffprobe.exe" "$OUT/bundle/ffprobe.exe"

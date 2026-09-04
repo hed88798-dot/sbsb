@@ -38,9 +38,9 @@ cd "$SOURCE_DIR"
   --enable-demuxers --enable-parsers --enable-decoders --enable-protocol=file \
   --disable-network --disable-autodetect --disable-gpl --disable-nonfree \
   --disable-doc --disable-debug --enable-shared --disable-static \
-  '--extra-ldflags=-Wl,-rpath,$ORIGIN' > "$OUT/evidence/configure.log" 2>&1
-make -j"$(nproc)" > "$OUT/evidence/build.log" 2>&1
-make install >> "$OUT/evidence/build.log" 2>&1
+  '--extra-ldflags=-Wl,-rpath,$ORIGIN' 2>&1 | tee "$OUT/evidence/configure.log"
+make -j"$(nproc)" 2>&1 | tee "$OUT/evidence/build.log"
+make install 2>&1 | tee -a "$OUT/evidence/build.log"
 
 test -f "$SOURCE_DIR/install/bin/ffprobe"
 cp -a "$SOURCE_DIR/install/bin/ffprobe" "$OUT/bundle/ffprobe"

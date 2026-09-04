@@ -47,6 +47,7 @@ jobs:
           MSYSTEM: ''
         run: ./tools/ffprobe-build/build-linux.sh
       - name: Upload transient Linux transport artifact
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ffprobe-companion-linux-${{ github.sha }}
@@ -85,12 +86,18 @@ jobs:
           if (!(Test-Path $bash) -or !(Test-Path $cygpath)) {
             throw 'MSYS2 UCRT64 toolchain is unavailable on the target runner'
           }
+          & $bash -lc 'true'
+          if ($LASTEXITCODE -ne 0) {
+            & $bash -lc 'true'
+            if ($LASTEXITCODE -ne 0) { throw 'MSYS2 initial setup did not complete' }
+          }
           $workspace = (& $cygpath -u $env:GITHUB_WORKSPACE).Trim()
           $runnerTemp = (& $cygpath -u $env:RUNNER_TEMP).Trim()
           $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 && ./tools/ffprobe-build/build-windows.sh"
           & $bash -lc $command
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Upload transient Windows transport artifact
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ffprobe-companion-windows-${{ github.sha }}
