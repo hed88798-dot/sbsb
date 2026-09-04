@@ -26,7 +26,7 @@ tar -xJf "$SOURCE_TARBALL" --strip-components=1 -C "$SOURCE_DIR"
 GCC_VERSION="$(gcc --version | head -1)"
 LD_VERSION="$(ld --version | head -1)"
 MAKE_VERSION="$(make --version | head -1)"
-EXTRA_CONFIGURE_JSON='["--prefix=install","--enable-shared","--disable-static","--extra-ldflags=-Wl,-rpath,$ORIGIN"]'
+EXTRA_CONFIGURE_JSON='["--prefix=install","--enable-shared","--disable-static"]'
 BUILD_ARGS_JSON='["configure with bound literal $ORIGIN LDFLAGS; make -j$(nproc)","configure with bound literal $ORIGIN LDFLAGS; make install"]'
 node "$ROOT/tools/ffprobe-build/create_records.mjs" \
   --platform linux --architecture x86_64 --output "$OUT/records" --profile "$PROFILE" \
@@ -42,7 +42,7 @@ LDFLAGS='-Wl,-rpath,\$$ORIGIN' ./configure --prefix="$SOURCE_DIR/install" \
   --enable-demuxers --enable-parsers --enable-decoders --enable-protocol=file \
   --disable-network --disable-autodetect --disable-gpl --disable-nonfree \
   --disable-doc --disable-debug --enable-shared --disable-static \
-  '--extra-ldflags=-Wl,-rpath,$ORIGIN' 2>&1 | tee "$OUT/evidence/configure.log"
+  2>&1 | tee "$OUT/evidence/configure.log"
 grep '^LDFLAGS=' ffbuild/config.mak > "$OUT/evidence/configured-ldflags.txt"
 grep -F 'ORIGIN' "$OUT/evidence/configured-ldflags.txt" >/dev/null
 make -j"$(nproc)" 2>&1 | tee "$OUT/evidence/build.log"
