@@ -149,9 +149,10 @@ function validate(records) {
     context: JSON.parse(readFileSync(join(schemaRoot, 'build-context.schema.json'), 'utf8')),
   };
   for (const [kind, record] of Object.entries(records)) {
-    const valid = ajv.compile(schemas[kind])(record);
+    const validator = ajv.compile(schemas[kind]);
+    const valid = validator(record);
     if (!valid) {
-      const detail = (ajv.errors ?? [])
+      const detail = (validator.errors ?? [])
         .map((error) => `${error.instancePath || '/'} ${error.message}`)
         .join('; ');
       throw new Error(`${kind} v2 schema validation failed: ${detail}`);
@@ -282,6 +283,7 @@ function main() {
   const environmentId = `code-c-environment-${sourceCommit.slice(0, 32)}-${target}`;
   const contextId = `code-c-context-${sourceCommit.slice(0, 32)}-${target}`;
   const environmentValues = {};
+  const environmentVariableNamePattern = /^[A-Z][A-Z0-9_]*$/u;
   for (const name of [
     'CI',
     'GITHUB_SHA',
@@ -292,7 +294,13 @@ function main() {
     'ImageOS',
     'ImageVersion',
   ]) {
-    if (process.env[name] !== undefined) environmentValues[name] = process.env[name];
+    // The v2 recipe contract permits only portable, uppercase environment
+    // variable names. GitHub's ImageOS/ImageVersion metadata is still bound
+    // through runner_image_identity/os below, but is not a recipe allowlist
+    // entry because its platform-provided spelling is not contract-valid.
+    if (process.env[name] !== undefined && environmentVariableNamePattern.test(name)) {
+      environmentValues[name] = process.env[name];
+    }
   }
   const pythonVersion = run(lockedPythonPath, ['--version']);
   const nodeVersion = process.version;
