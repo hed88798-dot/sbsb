@@ -1,0 +1,114 @@
+{
+  "schema_version": "1",
+  "record_kind": "CODE_F_NATIVE_RUNTIME_COMPANION_LOADER_POLICY",
+  "record_id": "code-f-native-runtime-companion-loader-policy-flat-app-local-bundle-20260904-v1",
+  "record_version": 1,
+  "record_sha256": "d98b08726c15f25adebacecc951b9bef6e009b141f7e53694a7c1d21396dab3f",
+  "decision_status": "PASS",
+  "owner": "CODE_F_RUNTIME_LOADER_POLICY_DECISION",
+  "old_main_quality_baseline": "99e9d73f8b6d23f9415c87778f6fe66cbcc5aea2",
+  "qicr_binding": {
+    "record_id": "code-f-native-runtime-companion-qicr-7d8d254-v1",
+    "record_sha256": "1b8c08d3f3b6385ad158a17985087c7a57fc0c67dfaf03354386ac3587215d58"
+  },
+  "ffprobe_build_profile_binding": {
+    "record_id": "code-f-ffprobe-semantic-build-profile-v1",
+    "record_sha256": "d837b4e75e6feb616f42bec15054ce018313a94ef1df39a8ba8ce4eae4886004"
+  },
+  "runtime_companion_layout": {
+    "layout_id": "FLAT_APP_LOCAL_BUNDLE_V1",
+    "root_semantics": "ENTRYPOINT_AND_RUNTIME_MEMBERS_AT_BUNDLE_ROOT",
+    "entrypoint_locator": "EXPLICIT_ABSOLUTE_BUNDLE_PATH",
+    "bundle_members_only": true
+  },
+  "linux_policy": {
+    "strategy": "ELF_RUNPATH_ORIGIN_V1",
+    "entrypoint_dt_runpath": "$ORIGIN",
+    "bundled_library_dt_runpath": "$ORIGIN",
+    "transitive_runpath_closure_required": true,
+    "every_elf_member_with_bundled_dt_needed_requires_origin_runpath": true,
+    "dt_rpath_allowed": false,
+    "absolute_rpath_allowed": false,
+    "absolute_runpath_allowed": false,
+    "ld_library_path_authority": false,
+    "runtime_import_name_binding_supported": true,
+    "declared_import_name_to_bundle_member_binding": "REQUIRED",
+    "undeclared_alias_or_symlink": "FAIL_CLOSED"
+  },
+  "windows_policy": {
+    "strategy": "APP_LOCAL_SAME_DIRECTORY_V1",
+    "entrypoint_locator": "EXPLICIT_ABSOLUTE_BUNDLE_PATH",
+    "bundled_dll_location": "SAME_DIRECTORY_AS_ENTRYPOINT",
+    "path_authority": false,
+    "cwd_authority": false,
+    "runtime_resolution_authority": "APP_LOCAL_BUNDLE_PLUS_APPROVED_OS_PREREQUISITE_ALLOWLIST",
+    "import_name_to_bundle_member_binding": "REQUIRED",
+    "undeclared_dll_alias": "FAIL_CLOSED",
+    "decoy_dll_in_cwd_test_required": true,
+    "decoy_dll_in_path_test_required": true
+  },
+  "external_os_prerequisite_policy": {
+    "allowlist_enforced": true,
+    "undeclared_external_os_prerequisite": "FAIL_CLOSED",
+    "classification_rule": "ONLY_EXPLICIT_APPROVED_OS_ALLOWLIST_MEMBERS"
+  },
+  "runtime_loader_evidence_requirements": {
+    "runtime_loader_trace_required": true,
+    "bundled_member_load_location_enforced": true,
+    "runtime_import_name_binding_supported": true,
+    "requested_name_required": true,
+    "resolved_absolute_location_required": true,
+    "member_classification_required": true,
+    "manifest_member_identity_required_for_bundled": true,
+    "exact_resolved_file_sha256_required_where_applicable": true,
+    "static_and_runtime_evidence_both_required": true
+  },
+  "negative_resolution_tests": {
+    "linux_ld_library_path_unset": true,
+    "linux_path_does_not_contain_companion": true,
+    "linux_cwd_outside_companion_bundle": true,
+    "linux_explicit_absolute_entrypoint_launch": true,
+    "windows_path_does_not_contain_companion": true,
+    "windows_cwd_outside_companion_bundle": true,
+    "windows_explicit_absolute_entrypoint_launch": true,
+    "windows_decoy_cwd_library_consumed": false,
+    "windows_decoy_path_library_consumed": false,
+    "minimal_version_probe_required": true,
+    "minimal_benign_media_probe_required": true,
+    "system_library_shadowing_detected": "FAIL_CLOSED"
+  },
+  "system_library_shadowing_policy": "FAIL_CLOSED",
+  "recheck_triggers": [
+    "Runtime Companion layout changes",
+    "linkage policy changes",
+    "Linux RUNPATH strategy changes",
+    "Windows DLL loading strategy changes",
+    "bundle member layout changes",
+    "runtime import-name semantics change",
+    "external OS prerequisite allowlist changes",
+    "system PATH authority changes",
+    "Worker runtime companion resolver semantics change",
+    "Build Profile linkage semantics change",
+    "FFprobe Build Profile identity changes"
+  ],
+  "downstream_status": {
+    "ffprobe_build": "NOT_RUN",
+    "linux_exact_artifact": "NOT_YET_PRODUCED",
+    "windows_exact_artifact": "NOT_YET_PRODUCED",
+    "artifact_approval": "NOT_PERFORMED",
+    "license_artifact_review": "NOT_PERFORMED",
+    "worker_rebuild_required": "NO",
+    "worker_rebuild": "NO",
+    "native_rebind": "NOT_RUN",
+    "license_distribution_rebind": "NOT_RUN",
+    "sbom_notice_regeneration": "NOT_RUN",
+    "final_distribution_rebind": "NOT_RUN",
+    "vulnerability_rebind": "NOT_RUN",
+    "siglip_index": "NOT_RUN",
+    "real_index_acceptance": "NOT_RUN",
+    "code_c_version_acceptance": "NOT_RUN",
+    "code_d": "NOT_STARTED",
+    "pr_8_updated": "NO",
+    "next_owner": "CODE_C_FFPROBE_EXACT_ARTIFACT_BUILD"
+  }
+}

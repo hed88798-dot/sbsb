@@ -1,0 +1,253 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-video-platform.example/schemas/compliance/native-runtime-companion/v1/loader-policy.schema.json",
+  "title": "Native Runtime Companion Loader Policy",
+  "description": "Versioned, platform-specific loader semantics for a native runtime companion bundle.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_kind",
+    "record_id",
+    "record_version",
+    "record_sha256",
+    "decision_status",
+    "owner",
+    "old_main_quality_baseline",
+    "qicr_binding",
+    "ffprobe_build_profile_binding",
+    "runtime_companion_layout",
+    "linux_policy",
+    "windows_policy",
+    "external_os_prerequisite_policy",
+    "runtime_loader_evidence_requirements",
+    "negative_resolution_tests",
+    "system_library_shadowing_policy",
+    "recheck_triggers",
+    "downstream_status"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "record_kind": { "const": "CODE_F_NATIVE_RUNTIME_COMPANION_LOADER_POLICY" },
+    "record_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "record_version": { "const": 1 },
+    "record_sha256": { "$ref": "#/$defs/sha256" },
+    "decision_status": { "const": "PASS" },
+    "owner": { "const": "CODE_F_RUNTIME_LOADER_POLICY_DECISION" },
+    "old_main_quality_baseline": { "$ref": "#/$defs/gitSha" },
+    "qicr_binding": { "$ref": "#/$defs/authorityBinding" },
+    "ffprobe_build_profile_binding": { "$ref": "#/$defs/authorityBinding" },
+    "runtime_companion_layout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layout_id", "root_semantics", "entrypoint_locator", "bundle_members_only"],
+      "properties": {
+        "layout_id": { "const": "FLAT_APP_LOCAL_BUNDLE_V1" },
+        "root_semantics": { "const": "ENTRYPOINT_AND_RUNTIME_MEMBERS_AT_BUNDLE_ROOT" },
+        "entrypoint_locator": { "const": "EXPLICIT_ABSOLUTE_BUNDLE_PATH" },
+        "bundle_members_only": { "const": true }
+      }
+    },
+    "linux_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strategy",
+        "entrypoint_dt_runpath",
+        "bundled_library_dt_runpath",
+        "transitive_runpath_closure_required",
+        "every_elf_member_with_bundled_dt_needed_requires_origin_runpath",
+        "dt_rpath_allowed",
+        "absolute_rpath_allowed",
+        "absolute_runpath_allowed",
+        "ld_library_path_authority",
+        "runtime_import_name_binding_supported",
+        "declared_import_name_to_bundle_member_binding",
+        "undeclared_alias_or_symlink"
+      ],
+      "properties": {
+        "strategy": { "const": "ELF_RUNPATH_ORIGIN_V1" },
+        "entrypoint_dt_runpath": { "const": "$ORIGIN" },
+        "bundled_library_dt_runpath": { "const": "$ORIGIN" },
+        "transitive_runpath_closure_required": { "const": true },
+        "every_elf_member_with_bundled_dt_needed_requires_origin_runpath": { "const": true },
+        "dt_rpath_allowed": { "const": false },
+        "absolute_rpath_allowed": { "const": false },
+        "absolute_runpath_allowed": { "const": false },
+        "ld_library_path_authority": { "const": false },
+        "runtime_import_name_binding_supported": { "const": true },
+        "declared_import_name_to_bundle_member_binding": { "const": "REQUIRED" },
+        "undeclared_alias_or_symlink": { "const": "FAIL_CLOSED" }
+      }
+    },
+    "windows_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strategy",
+        "entrypoint_locator",
+        "bundled_dll_location",
+        "path_authority",
+        "cwd_authority",
+        "runtime_resolution_authority",
+        "import_name_to_bundle_member_binding",
+        "undeclared_dll_alias",
+        "decoy_dll_in_cwd_test_required",
+        "decoy_dll_in_path_test_required"
+      ],
+      "properties": {
+        "strategy": { "const": "APP_LOCAL_SAME_DIRECTORY_V1" },
+        "entrypoint_locator": { "const": "EXPLICIT_ABSOLUTE_BUNDLE_PATH" },
+        "bundled_dll_location": { "const": "SAME_DIRECTORY_AS_ENTRYPOINT" },
+        "path_authority": { "const": false },
+        "cwd_authority": { "const": false },
+        "runtime_resolution_authority": {
+          "const": "APP_LOCAL_BUNDLE_PLUS_APPROVED_OS_PREREQUISITE_ALLOWLIST"
+        },
+        "import_name_to_bundle_member_binding": { "const": "REQUIRED" },
+        "undeclared_dll_alias": { "const": "FAIL_CLOSED" },
+        "decoy_dll_in_cwd_test_required": { "const": true },
+        "decoy_dll_in_path_test_required": { "const": true }
+      }
+    },
+    "external_os_prerequisite_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allowlist_enforced",
+        "undeclared_external_os_prerequisite",
+        "classification_rule"
+      ],
+      "properties": {
+        "allowlist_enforced": { "const": true },
+        "undeclared_external_os_prerequisite": { "const": "FAIL_CLOSED" },
+        "classification_rule": { "const": "ONLY_EXPLICIT_APPROVED_OS_ALLOWLIST_MEMBERS" }
+      }
+    },
+    "runtime_loader_evidence_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime_loader_trace_required",
+        "bundled_member_load_location_enforced",
+        "runtime_import_name_binding_supported",
+        "requested_name_required",
+        "resolved_absolute_location_required",
+        "member_classification_required",
+        "manifest_member_identity_required_for_bundled",
+        "exact_resolved_file_sha256_required_where_applicable",
+        "static_and_runtime_evidence_both_required"
+      ],
+      "properties": {
+        "runtime_loader_trace_required": { "const": true },
+        "bundled_member_load_location_enforced": { "const": true },
+        "runtime_import_name_binding_supported": { "const": true },
+        "requested_name_required": { "const": true },
+        "resolved_absolute_location_required": { "const": true },
+        "member_classification_required": { "const": true },
+        "manifest_member_identity_required_for_bundled": { "const": true },
+        "exact_resolved_file_sha256_required_where_applicable": { "const": true },
+        "static_and_runtime_evidence_both_required": { "const": true }
+      }
+    },
+    "negative_resolution_tests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "linux_ld_library_path_unset",
+        "linux_path_does_not_contain_companion",
+        "linux_cwd_outside_companion_bundle",
+        "linux_explicit_absolute_entrypoint_launch",
+        "windows_path_does_not_contain_companion",
+        "windows_cwd_outside_companion_bundle",
+        "windows_explicit_absolute_entrypoint_launch",
+        "windows_decoy_cwd_library_consumed",
+        "windows_decoy_path_library_consumed",
+        "minimal_version_probe_required",
+        "minimal_benign_media_probe_required",
+        "system_library_shadowing_detected"
+      ],
+      "properties": {
+        "linux_ld_library_path_unset": { "const": true },
+        "linux_path_does_not_contain_companion": { "const": true },
+        "linux_cwd_outside_companion_bundle": { "const": true },
+        "linux_explicit_absolute_entrypoint_launch": { "const": true },
+        "windows_path_does_not_contain_companion": { "const": true },
+        "windows_cwd_outside_companion_bundle": { "const": true },
+        "windows_explicit_absolute_entrypoint_launch": { "const": true },
+        "windows_decoy_cwd_library_consumed": { "const": false },
+        "windows_decoy_path_library_consumed": { "const": false },
+        "minimal_version_probe_required": { "const": true },
+        "minimal_benign_media_probe_required": { "const": true },
+        "system_library_shadowing_detected": { "const": "FAIL_CLOSED" }
+      }
+    },
+    "system_library_shadowing_policy": { "const": "FAIL_CLOSED" },
+    "recheck_triggers": {
+      "type": "array",
+      "minItems": 9,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "downstream_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ffprobe_build",
+        "linux_exact_artifact",
+        "windows_exact_artifact",
+        "artifact_approval",
+        "license_artifact_review",
+        "worker_rebuild_required",
+        "worker_rebuild",
+        "native_rebind",
+        "license_distribution_rebind",
+        "sbom_notice_regeneration",
+        "final_distribution_rebind",
+        "vulnerability_rebind",
+        "siglip_index",
+        "real_index_acceptance",
+        "code_c_version_acceptance",
+        "code_d",
+        "pr_8_updated",
+        "next_owner"
+      ],
+      "properties": {
+        "ffprobe_build": { "const": "NOT_RUN" },
+        "linux_exact_artifact": { "const": "NOT_YET_PRODUCED" },
+        "windows_exact_artifact": { "const": "NOT_YET_PRODUCED" },
+        "artifact_approval": { "const": "NOT_PERFORMED" },
+        "license_artifact_review": { "const": "NOT_PERFORMED" },
+        "worker_rebuild_required": { "const": "NO" },
+        "worker_rebuild": { "const": "NO" },
+        "native_rebind": { "const": "NOT_RUN" },
+        "license_distribution_rebind": { "const": "NOT_RUN" },
+        "sbom_notice_regeneration": { "const": "NOT_RUN" },
+        "final_distribution_rebind": { "const": "NOT_RUN" },
+        "vulnerability_rebind": { "const": "NOT_RUN" },
+        "siglip_index": { "const": "NOT_RUN" },
+        "real_index_acceptance": { "const": "NOT_RUN" },
+        "code_c_version_acceptance": { "const": "NOT_RUN" },
+        "code_d": { "const": "NOT_STARTED" },
+        "pr_8_updated": { "const": "NO" },
+        "next_owner": { "const": "CODE_C_FFPROBE_EXACT_ARTIFACT_BUILD" }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "gitSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "authorityBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_id", "record_sha256"],
+      "properties": {
+        "record_id": { "type": "string", "minLength": 1 },
+        "record_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}
