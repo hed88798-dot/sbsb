@@ -56,7 +56,7 @@ test -f "$SOURCE_DIR/install/bin/ffprobe.exe"
 cp -a "$SOURCE_DIR/install/bin/ffprobe.exe" "$OUT/bundle/ffprobe.exe"
 while IFS= read -r -d '' library; do cp -a "$library" "$OUT/bundle/"; done < <(find "$SOURCE_DIR/install" \( -type f -o -type l \) -print0 | grep -zE '/libav[^/]*\.dll$' || true)
 test -f "$OUT/bundle/ffprobe.exe"
-if find "$OUT/bundle" -maxdepth 1 -type f | grep -E '/ff(?:mpeg|play)\.exe$'; then
+if find "$OUT/bundle" -maxdepth 1 -type f | grep -E '/ff(mpeg|play)\.exe$'; then
   echo 'prohibited ffmpeg/ffplay executable selected' >&2
   exit 1
 fi
