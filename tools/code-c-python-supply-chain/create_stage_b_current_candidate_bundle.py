@@ -139,6 +139,8 @@ def main() -> None:
     }
     evaluator_sha = linux["stage_b_evaluator"]["sha256"]
     evaluator_id = linux["stage_b_evaluator"]["id"]
+    if windows["stage_b_evaluator"]["sha256"] != evaluator_sha:
+        failures.append("Linux and Windows Stage B evaluator identities differ")
     network_fixture_sha = {target: evidence[target]["network"]["fixture_set_sha256"] for target in ("linux", "windows")}
     archive_fixture_sha = {target: evidence[target]["archive"]["fixture_set_sha256"] for target in ("linux", "windows")}
     conclusions = {
@@ -177,6 +179,7 @@ def main() -> None:
     bundle = {
         "report_kind": "CODE_C_CPYTHON_STAGE_B_CURRENT_CANDIDATE_REACHABILITY_BUNDLE",
         "schema_version": "1",
+        "bundle_id": f"code-c-stage-b-current-candidate-{current_head[:16]}",
         "status": "READY_FOR_CODE_F_FINAL_REVIEW" if not failures else "BLOCKED",
         "validation_head_sha": current_head,
         "main_quality_baseline_sha": stage_a.get("main_quality_baseline_sha"),

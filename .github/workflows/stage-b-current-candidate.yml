@@ -55,7 +55,12 @@ jobs:
             git ls-files \
               'schemas/sidecar/v1/*.json' \
               'packages/contracts/src/index.ts' \
-              'sidecars/media-worker/src/media_worker/*.py'
+              'sidecars/media-worker/src/media_worker/*.py' \
+              'tools/code-c-python-supply-chain/canonical_evidence.py' \
+              'tools/code-c-python-supply-chain/collect_stage_b_reachability.py' \
+              'tools/code-c-python-supply-chain/collect_stage_b_static_evidence.py' \
+              'tools/code-c-python-supply-chain/run_stage_b_candidate_negative.py' \
+              'tools/code-c-python-supply-chain/run_stage_b_current_candidate.py'
           )
 
       - name: Download exact Candidate transport bytes
@@ -219,6 +224,21 @@ jobs:
             printf 'Stage B bundle assembly diagnostic: %s\n' "$diagnostic" >> "$GITHUB_STEP_SUMMARY"
             exit "$aggregate_status"
           fi
+
+      - name: Publish compact Stage B bundle identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('compliance/vulnerability-reviews/cpython-3.13.15-stage-b-current-head')
+          bundle = json.loads((root / 'STAGE_B_REACHABILITY_BUNDLE.json').read_text(encoding='utf-8'))
+          sha = (root / 'STAGE_B_REACHABILITY_BUNDLE.sha256').read_text(encoding='utf-8').split()[0]
+          print(f"::notice title=Stage B bundle identity::{bundle['bundle_id']} sha256={sha} status={bundle['status']}")
+          print(f"Stage B bundle: {bundle['bundle_id']} / {sha} / {bundle['status']}")
+          PY
 
       - name: Upload compact Stage B evidence bundle
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
