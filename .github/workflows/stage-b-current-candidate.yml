@@ -135,6 +135,9 @@ jobs:
           evaluator_status=$?
           set -e
           if [[ "$evaluator_status" != '0' ]]; then
+            diagnostic="$(tail -c 3000 "artifacts/stage-b/${TARGET}/evaluator.stderr" | tr '\n' ' ')"
+            echo "::error title=Stage B evaluator diagnostic (${TARGET})::${diagnostic}"
+            printf 'Stage B evaluator diagnostic (%s): %s\n' "$TARGET" "$diagnostic" >> "$GITHUB_STEP_SUMMARY"
             tail -c 4000 "artifacts/stage-b/${TARGET}/evaluator.stderr" >&2 || true
             echo "Stage B evaluator failed for ${TARGET}; preserving compact diagnostic output." >&2
             exit "$evaluator_status"
