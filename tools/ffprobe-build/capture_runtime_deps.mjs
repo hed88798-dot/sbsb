@@ -31,6 +31,7 @@ function importedNames(file) {
   const command = platform === 'linux' ? 'readelf' : 'objdump';
   const output = execFileSync(command, platform === 'linux' ? ['-d', file] : ['-p', file], {
     encoding: 'utf8',
+    maxBuffer: 32 * 1024 * 1024,
   });
   if (platform === 'linux')
     return [...output.matchAll(/\(NEEDED\).*\[([^\]]+)\]/gu)].map((match) => match[1]);
