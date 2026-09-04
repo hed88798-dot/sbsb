@@ -134,16 +134,20 @@ jobs:
             --evidence "artifacts/functional/${TARGET}/MODEL_PACK_EVIDENCE.json"
           printf 'root=%s\n' "artifacts/model-pack/${TARGET}" >> "$GITHUB_OUTPUT"
 
-      - name: Resolve the real ffprobe boundary
+      - name: Resolve the approved ffprobe boundary
         id: runtime
         shell: bash
         run: |
           set -euo pipefail
-          python_path="$(python -c 'import sys; print(sys.executable)')"
-          ffprobe_path="$(python -c 'import shutil; print(shutil.which("ffprobe") or "")')"
-          [[ -n "$ffprobe_path" && -f "$ffprobe_path" ]] || { echo 'ffprobe is required for functional revalidation' >&2; exit 1; }
-          printf 'python=%s\n' "$python_path" >> "$GITHUB_OUTPUT"
-          printf 'ffprobe=%s\n' "$ffprobe_path" >> "$GITHUB_OUTPUT"
+          # The production worker receives ffprobe as an explicit, verified
+          # companion path.  A runner PATH hit is diagnostic only and must not
+          # become execution authority.  This workflow intentionally remains
+          # blocked until Code F publishes an approved ffprobe manifest and
+          # wires its exact locator and SHA verification here.
+          echo 'FFPROBE_RESOLUTION_SOURCE=NONE' >&2
+          echo 'SYSTEM_PATH_FALLBACK=DISABLED' >&2
+          echo 'no approved ffprobe authority is present in the current distribution' >&2
+          exit 1
 
       - name: Run exact Worker SigLIP / Index E2E
         shell: bash
