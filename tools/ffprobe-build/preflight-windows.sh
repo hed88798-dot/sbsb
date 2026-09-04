@@ -36,12 +36,13 @@ compiler_path="$(command -v gcc)"
 linker_path="$(command -v ld)"
 assembler_path="$(command -v nasm)"
 objdump_path="$(command -v objdump)"
-make_path="$(command -v make)"
+make_command="${MAKE_COMMAND:-mingw32-make}"
+make_path="$(command -v "$make_command")"
 test "$compiler_path" = /ucrt64/bin/gcc
 test "$linker_path" = /ucrt64/bin/ld
 test "$assembler_path" = /usr/bin/nasm
 test "$objdump_path" = /ucrt64/bin/objdump
-test "$make_path" = /ucrt64/bin/make
+test "$make_path" = /ucrt64/bin/mingw32-make
 
 compiler_sha="$(sha256sum "$compiler_path" | awk '{print $1}')"
 linker_sha="$(sha256sum "$linker_path" | awk '{print $1}')"
@@ -73,7 +74,7 @@ cat > "$EVIDENCE/msys2-toolchain-preflight.json" <<EOF
   "linker": {"path": "$linker_path", "sha256": "$linker_sha", "version": "$ld_version"},
   "assembler": {"path": "$assembler_path", "sha256": "$assembler_sha", "version": "$nasm_version"},
   "objdump": {"path": "$objdump_path", "sha256": "$objdump_sha", "version": "$objdump_version"},
-  "make": {"path": "$make_path", "sha256": "$make_sha", "version": "$(make --version | head -1)"},
+  "make": {"command": "$make_command", "path": "$make_path", "sha256": "$make_sha", "version": "$($make_command --version | head -1)"},
   "package_archive_sha256": {"${package_archives[0]%%=*}": "${package_archives[0]#*=}", "${package_archives[1]%%=*}": "${package_archives[1]#*=}", "${package_archives[2]%%=*}": "${package_archives[2]#*=}", "${package_archives[3]%%=*}": "${package_archives[3]#*=}"},
   "binding": "PASS"
 }

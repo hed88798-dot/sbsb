@@ -11,7 +11,8 @@ LOADER_POLICY="$ROOT/compliance/runtime-dependency-intake/native-runtime-compani
 mkdir -p "$OUT/records" "$OUT/bundle" "$OUT/evidence"
 test "$(uname -m)" = x86_64
 command -v gcc >/dev/null
-command -v make >/dev/null
+MAKE_COMMAND="${MAKE_COMMAND:-mingw32-make}"
+command -v "$MAKE_COMMAND" >/dev/null
 command -v objdump >/dev/null
 command -v nasm >/dev/null
 TOOLCHAIN_PREFLIGHT="$OUT/evidence/msys2-toolchain-preflight.json"
@@ -38,7 +39,8 @@ node "$ROOT/tools/ffprobe-build/create_records.mjs" \
   --source-archive ffmpeg-9.0.1.tar.xz --compiler "$GCC_VERSION" \
   --toolchain "${GCC_VERSION}; ${LD_VERSION}; ${MAKE_VERSION}" \
   --build-tools-file "$TOOLCHAIN_PREFLIGHT" \
-  --extra-configure-json "$EXTRA_CONFIGURE_JSON" --build-json '["make","-j$(nproc)","make install"]'
+  --extra-configure-json "$EXTRA_CONFIGURE_JSON" \
+  --build-json "[\"$MAKE_COMMAND\",\"-j\$(nproc)\",\"$MAKE_COMMAND install\"]"
 
 cd "$SOURCE_DIR"
 ./configure --prefix="$SOURCE_DIR/install" --target-os=mingw32 --arch=x86_64 \
@@ -47,8 +49,8 @@ cd "$SOURCE_DIR"
   --enable-decoders --enable-protocol=file --disable-network --disable-autodetect \
   --disable-gpl --disable-nonfree --disable-doc --disable-debug --enable-shared \
   --disable-static '--extra-ldflags=-static-libgcc -static-libstdc++' 2>&1 | tee "$OUT/evidence/configure.log"
-make -j"$(nproc)" 2>&1 | tee "$OUT/evidence/build.log"
-make install 2>&1 | tee -a "$OUT/evidence/build.log"
+"$MAKE_COMMAND" -j"$(nproc)" 2>&1 | tee "$OUT/evidence/build.log"
+"$MAKE_COMMAND" install 2>&1 | tee -a "$OUT/evidence/build.log"
 
 test -f "$SOURCE_DIR/install/bin/ffprobe.exe"
 cp -a "$SOURCE_DIR/install/bin/ffprobe.exe" "$OUT/bundle/ffprobe.exe"
