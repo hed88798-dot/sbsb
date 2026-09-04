@@ -26,14 +26,15 @@ tar -xJf "$SOURCE_TARBALL" --strip-components=1 -C "$SOURCE_DIR"
 GCC_VERSION="$(gcc --version | head -1)"
 LD_VERSION="$(ld --version | head -1)"
 MAKE_VERSION="$(make --version | head -1)"
-EXTRA_CONFIGURE_JSON='["--prefix=install","--enable-shared","--disable-static","--extra-ldflags=-Wl,-rpath,\\$$ORIGIN"]'
+EXTRA_CONFIGURE_JSON='["--prefix=install","--enable-shared","--disable-static","--extra-ldflags=-Wl,-rpath,$ORIGIN"]'
+BUILD_ARGS_JSON='["make LDFLAGS=-Wl,-rpath,\\$$ORIGIN -j$(nproc)","make LDFLAGS=-Wl,-rpath,\\$$ORIGIN install"]'
 node "$ROOT/tools/ffprobe-build/create_records.mjs" \
   --platform linux --architecture x86_64 --output "$OUT/records" --profile "$PROFILE" \
   --loader-policy "$LOADER_POLICY" --source-sha256 "$ACTUAL_SOURCE_SHA" \
   --source-archive ffmpeg-9.0.1.tar.xz --compiler "$GCC_VERSION" \
   --toolchain "${GCC_VERSION}; ${LD_VERSION}; ${MAKE_VERSION}" \
   --build-tools-file "$OUT/evidence/nasm-preflight.json" \
-  --extra-configure-json "$EXTRA_CONFIGURE_JSON" --build-json '["make","-j$(nproc)","make install"]'
+  --extra-configure-json "$EXTRA_CONFIGURE_JSON" --build-json "$BUILD_ARGS_JSON"
 
 cd "$SOURCE_DIR"
 ./configure --prefix="$SOURCE_DIR/install" \
@@ -41,9 +42,10 @@ cd "$SOURCE_DIR"
   --enable-demuxers --enable-parsers --enable-decoders --enable-protocol=file \
   --disable-network --disable-autodetect --disable-gpl --disable-nonfree \
   --disable-doc --disable-debug --enable-shared --disable-static \
-  '--extra-ldflags=-Wl,-rpath,\$$ORIGIN' 2>&1 | tee "$OUT/evidence/configure.log"
-make -j"$(nproc)" 2>&1 | tee "$OUT/evidence/build.log"
-make install 2>&1 | tee -a "$OUT/evidence/build.log"
+  '--extra-ldflags=-Wl,-rpath,$ORIGIN' 2>&1 | tee "$OUT/evidence/configure.log"
+ORIGIN_LDFLAGS='-Wl,-rpath,\$$ORIGIN'
+make LDFLAGS="$ORIGIN_LDFLAGS" -j"$(nproc)" 2>&1 | tee "$OUT/evidence/build.log"
+make LDFLAGS="$ORIGIN_LDFLAGS" install 2>&1 | tee -a "$OUT/evidence/build.log"
 
 test -f "$SOURCE_DIR/install/bin/ffprobe"
 cp -a "$SOURCE_DIR/install/bin/ffprobe" "$OUT/bundle/ffprobe"
