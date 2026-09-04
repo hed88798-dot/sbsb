@@ -37,7 +37,7 @@ node "$ROOT/tools/ffprobe-build/create_records.mjs" \
   --extra-configure-json "$EXTRA_CONFIGURE_JSON" --build-json "$BUILD_ARGS_JSON"
 
 cd "$SOURCE_DIR"
-LDFLAGS='-Wl,-rpath,\$$ORIGIN' ./configure --prefix="$SOURCE_DIR/install" \
+LDFLAGS='-Wl,-rpath,\$$$$ORIGIN' ./configure --prefix="$SOURCE_DIR/install" \
   --disable-everything --enable-ffprobe --disable-ffmpeg --disable-ffplay \
   --enable-demuxers --enable-parsers --enable-decoders --enable-protocol=file \
   --disable-network --disable-autodetect --disable-gpl --disable-nonfree \
