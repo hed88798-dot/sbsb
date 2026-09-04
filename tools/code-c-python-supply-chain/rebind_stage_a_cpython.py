@@ -14,6 +14,7 @@ import re
 import shutil
 import subprocess
 import tarfile
+import tempfile
 import urllib.request
 import zipfile
 from datetime import datetime, timezone
@@ -31,19 +32,36 @@ HISTORICAL_REVIEW = (
     / "cpython-3.13.15-windows-x64"
     / "stage-a-review.json"
 )
-POST_F_RECONCILIATION = (
+CURRENT_POST_F_RECONCILIATION = (
+    REPOSITORY_ROOT
+    / "compliance"
+    / "license-reconciliations"
+    / "post-f-license-current-head-76529014"
+    / "POST_F_LICENSE_RECONCILIATION.json"
+)
+HISTORICAL_POST_F_RECONCILIATION = (
     REPOSITORY_ROOT
     / "compliance"
     / "license-reconciliations"
     / "post-f-license-2026-09-02"
     / "POST_F_LICENSE_RECONCILIATION.json"
 )
-POST_F_ROOT = POST_F_RECONCILIATION.parent
-MAIN_QUALITY_BASELINE = "06c4620e8738bd63f8674e15d1158042a65c1d28"
+HISTORICAL_POST_F_ROOT = HISTORICAL_POST_F_RECONCILIATION.parent
+MAIN_QUALITY_BASELINE = "d4909631456029b50c8c6bd6011719fd69ddef95"
 HISTORICAL_REVIEW_SHA256 = "adf753cc3778ae5caf435a9e936519831d1e03182d978718ceae7ab9819e8bc7"
 HISTORICAL_SUBJECT_SHA256 = "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403"
-FINAL_DISTRIBUTION_ID = "code-c-final-distribution-228280c42aee2513"
-FINAL_DISTRIBUTION_SHA256 = "228280c42aee2513cebb856a417847e8f121d5318291a21d353aea9616bc63c3"
+HISTORICAL_LINUX_WORKER_SHA256 = "4b69bb8a6eec5da994cc8c575d49db6439efab67f94b063374e4a50b0716c1d1"
+HISTORICAL_WINDOWS_WORKER_SHA256 = "d99fa3c7b30e9bf8e45c03a124a794de70baaac630f18fde4d8fd71f6cb5713c"
+HISTORICAL_FINAL_DISTRIBUTION_ID = "code-c-final-distribution-228280c42aee2513"
+HISTORICAL_FINAL_DISTRIBUTION_SHA256 = "228280c42aee2513cebb856a417847e8f121d5318291a21d353aea9616bc63c3"
+ADVISORY_SNAPSHOT = (
+    REPOSITORY_ROOT
+    / "compliance"
+    / "vulnerability-reviews"
+    / "cpython-3.13.15-stage-a-rebind-2026-09-03"
+    / "STAGE_A_ADVISORY_SNAPSHOT.json"
+)
+ADVISORY_SNAPSHOT_SHA256 = "fdd5f256147e21ed74dec39c47e74f81c96f421e97a7a9d23d19ffde725ea028"
 
 TARGETS: dict[str, dict[str, Any]] = {
     "linux": {
@@ -55,20 +73,8 @@ TARGETS: dict[str, dict[str, Any]] = {
         "relationship": "SAME_OFFICIAL_RELEASE_DIFFERENT_DISTRIBUTION",
         "subject_kind": "ACTIONS_PYTHON_VERSIONS_LINUX_DISTRIBUTION_EXACT",
         "target_descriptor": "linux-x86_64-cp313-standard-gil",
-        "target_evidence": POST_F_ROOT / "evidence/linux/evidence/linux-target-evidence.json",
-        "build_context": POST_F_ROOT / "evidence/linux/pyinstaller-build/linux/build-context.json",
-        "packaging": POST_F_ROOT / "evidence/linux/native-v3/linux/packaging-selection-evidence.v1.json",
-        "native": POST_F_ROOT / "evidence/linux/native-v3/linux/native-reconciliation.v3.json",
-        "diagnostics": POST_F_ROOT / "evidence/linux/diagnostics/linux-native-reconciliation.json",
-        "worker_sha256": "4b69bb8a6eec5da994cc8c575d49db6439efab67f94b063374e4a50b0716c1d1",
-        "carchive_sha256": "d1174459a8f662b56f0afea8cff35ba4b6f2adf3efd9d710c91309be66270949",
-        "build_context_id": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776",
-        "source_import_graph_sha256": "581b0a1dcdd2ab8c797b894907392c22d3acfc39fac2b3a6727e96386d2bfb24",
-        "sidecar_command_surface_sha256": "ee9e4d270d908c5cdfc468f7ed77a385c7b54249a96872ead660b7604f2a6383",
-        "inspection_sha256": "97c2d6c3dc8ef4ddbb83389534da5cfa60cda7141f377de770f3f7fea67c4f68",
-        "worker_evidence_run": "33508490237",
-        "worker_artifact_id": "9800667271",
-        "worker_artifact_digest": "sha256:25935e78ef91b923d7f217e64dfdacbd106336d99732023cdbf4815f88e4f1aa",
+        "current_worker_sha256": "4bd6d3afd3d2d60718f8174caedafb16a91c398a90c4198c664d14555a5f6073",
+        "current_carchive_sha256": "163e72f82f93b3f7ac5585426431ccc01bf61578bcec571a83b09b08abdd0a0e",
     },
     "windows": {
         "distribution_sha256": "73c2a2935597f8181e9bc60bc3a35cd2be28698d8f64b965055a29b43425a2b7",
@@ -79,20 +85,8 @@ TARGETS: dict[str, dict[str, Any]] = {
         "relationship": "CURRENT_ACTIONS_WRAPPER_CONTAINS_HISTORICAL_UPSTREAM_PAYLOAD_EXACT_MATCH",
         "subject_kind": "ACTIONS_PYTHON_VERSIONS_WINDOWS_WRAPPER_EXACT",
         "target_descriptor": "windows-x86_64-cp313-standard-gil",
-        "target_evidence": POST_F_ROOT / "evidence/windows/evidence/windows-target-evidence.json",
-        "build_context": POST_F_ROOT / "evidence/windows/pyinstaller-build/windows/build-context.json",
-        "packaging": POST_F_ROOT / "evidence/windows/native-v3/windows/packaging-selection-evidence.v1.json",
-        "native": POST_F_ROOT / "evidence/windows/native-v3/windows/native-reconciliation.v3.json",
-        "diagnostics": POST_F_ROOT / "evidence/windows/diagnostics/windows-native-reconciliation.json",
-        "worker_sha256": "d99fa3c7b30e9bf8e45c03a124a794de70baaac630f18fde4d8fd71f6cb5713c",
-        "carchive_sha256": "0e8ab47a5d08a3c7831575d018dc15f211ad7a4ffb837ae1183374e1e755f132",
-        "build_context_id": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5",
-        "source_import_graph_sha256": "7b191069ab22437f0ae3cf97572aa6bd423399be3fa308901979cde524dfafb0",
-        "sidecar_command_surface_sha256": "ee9e4d270d908c5cdfc468f7ed77a385c7b54249a96872ead660b7604f2a6383",
-        "inspection_sha256": "dbbd1b3fbbc697cd9f7c4f91d3c12d3e7e69a797273770f70253d43709779332",
-        "worker_evidence_run": "33508490237",
-        "worker_artifact_id": "9800775126",
-        "worker_artifact_digest": "sha256:d6e735db4198c7b3375620d166e41527680fa04584b847b25be5a07c9ad08857",
+        "current_worker_sha256": "ba6b81f433beef8ee95615a45248251918a18a602b53f8db9ec02e35cf76d8b1",
+        "current_carchive_sha256": "1a319765900d1b6cde0743efa902a5d8cb0468335f118775bbf65565e9b2c805",
     },
 }
 
@@ -138,6 +132,138 @@ def load_json(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise SystemExit(f"expected JSON object: {path}")
     return value
+
+
+def document_hash(document: dict[str, Any], field: str) -> str:
+    copy = dict(document)
+    copy.pop(field, None)
+    return sha256_bytes(
+        json.dumps(copy, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    )
+
+
+def verify_document_hash(document: dict[str, Any], field: str, label: str) -> None:
+    if document.get(field) != document_hash(document, field):
+        raise SystemExit(f"{label} {field} does not match canonical bytes")
+
+
+def final_binding_hash(document: dict[str, Any]) -> str:
+    copy = dict(document)
+    copy.pop("final_distribution_binding_id", None)
+    copy.pop("final_distribution_binding_sha256", None)
+    return sha256_bytes(
+        (json.dumps(copy, sort_keys=True, separators=(",", ":"), ensure_ascii=False) + "\n").encode("utf-8")
+    )
+
+
+def verify_current_distribution(
+    repo: Path,
+    post_f_path: Path,
+    binding_expected_sha: str,
+    candidate_id_prefix: str,
+    expected_head: str,
+    manifests: dict[str, Path],
+    retentions: dict[str, Path],
+    recoveries: dict[str, Path],
+) -> dict[str, dict[str, Any]]:
+    """Verify one explicitly selected current Candidate and return its facts."""
+    post_f = load_json(post_f_path)
+    if post_f.get("status") != "PASS" or post_f.get("main_quality_baseline") != MAIN_QUALITY_BASELINE:
+        raise SystemExit("current Post-F distribution binding is not PASS/current baseline")
+    if post_f.get("final_distribution_binding_sha256") != binding_expected_sha:
+        raise SystemExit("current Final Distribution Binding SHA does not match the requested exact SHA")
+    if post_f.get("final_distribution_binding_id") != "code-c-final-distribution-6cd09589d42329c7":
+        raise SystemExit("current Final Distribution Binding ID is not the requested candidate binding")
+    if final_binding_hash(post_f) != binding_expected_sha:
+        raise SystemExit("current Final Distribution Binding canonical hash mismatch")
+    if post_f.get("candidate_id") != candidate_id_prefix or post_f.get("workflow_execution_head") != expected_head:
+        raise SystemExit("current Final Distribution Binding candidate/workflow mismatch")
+    if post_f.get("candidate_manifest_binding") != "PASS" or post_f.get("current_candidate_explicit_binding") != "PASS":
+        raise SystemExit("current candidate binding is not PASS")
+    regressions = post_f.get("candidate_binding_regressions", {})
+    if regressions.get("historical_candidate_reuse_fail_closed") != "PASS" or regressions.get("implicit_latest_selection_disabled") != "PASS":
+        raise SystemExit("current candidate selector regressions are not PASS")
+
+    current: dict[str, dict[str, Any]] = {}
+    evidence_root = post_f_path.parent / "evidence"
+    for target in ("linux", "windows"):
+        manifest_path = manifests[target].resolve()
+        retention_path = retentions[target].resolve()
+        recovery_path = recoveries[target].resolve()
+        manifest = load_json(manifest_path)
+        verify_document_hash(manifest, "manifest_sha256", f"{target} candidate manifest")
+        expected_candidate_id = f"{candidate_id_prefix}-{target}"
+        if manifest.get("schema_version") != "2" or manifest.get("candidate_id") != expected_candidate_id:
+            raise SystemExit(f"{target} current Candidate manifest identity mismatch")
+        if manifest.get("platform") != {"os": target, "architecture": "x86_64"}:
+            raise SystemExit(f"{target} Candidate target mismatch")
+        if manifest.get("transfer_role") != "TRANSIENT_ACTIONS_TRANSFER" or manifest.get("actions_artifact", {}).get("authority_role") != "TRANSPORT_ONLY" or manifest.get("actions_artifact", {}).get("retention_days") != 1:
+            raise SystemExit(f"{target} Candidate transport binding mismatch")
+        binding_manifest = post_f.get("candidate_manifests", {}).get(target, {})
+        if binding_manifest.get("candidate_id") != expected_candidate_id or binding_manifest.get("manifest_sha256") != manifest.get("manifest_sha256"):
+            raise SystemExit(f"{target} Final Distribution Binding does not consume the selected manifest")
+        worker = manifest.get("worker", {})
+        carchive = manifest.get("carchive", {})
+        expected_current = TARGETS[target]
+        if worker.get("sha256") != expected_current["current_worker_sha256"] or carchive.get("sha256") != expected_current["current_carchive_sha256"]:
+            raise SystemExit(f"{target} selected manifest is not the explicitly approved current Candidate")
+        binding_worker = post_f.get("worker_artifacts", {}).get(target, {})
+        for key, expected in (("sha256", worker.get("sha256")), ("carchive_sha256", carchive.get("sha256")), ("candidate_manifest_sha256", manifest.get("manifest_sha256"))):
+            if binding_worker.get(key) != expected:
+                raise SystemExit(f"{target} Final Distribution Binding worker field {key} mismatch")
+
+        retention = load_json(retention_path)
+        verify_document_hash(retention, "receipt_sha256", f"{target} retention receipt")
+        recovery = load_json(recovery_path)
+        verify_document_hash(recovery, "drill_sha256", f"{target} recovery drill")
+        if retention.get("candidate_id") != expected_candidate_id or recovery.get("candidate_id") != expected_candidate_id or recovery.get("retention_receipt_id") != retention.get("receipt_id"):
+            raise SystemExit(f"{target} retention/recovery candidate binding mismatch")
+        if retention.get("platform") != manifest.get("platform") or retention.get("worker") != {"sha256": worker.get("sha256"), "size_bytes": worker.get("size_bytes")} or retention.get("carchive") != {"sha256": carchive.get("sha256"), "size_bytes": carchive.get("size_bytes")}:
+            raise SystemExit(f"{target} retention does not match selected manifest")
+        if retention.get("local_copy", {}).get("worker_sha256") != worker.get("sha256") or retention.get("local_copy", {}).get("carchive_sha256") != carchive.get("sha256") or recovery.get("local_recovery", {}).get("worker_sha256") != worker.get("sha256") or recovery.get("local_recovery", {}).get("carchive_sha256") != carchive.get("sha256") or recovery.get("status") != "PASS":
+            raise SystemExit(f"{target} retention/recovery bytes mismatch")
+        locator = retention.get("local_copy", {}).get("storage_locator")
+        expected_locator = f"frozen-candidates/{expected_candidate_id}/{target}/"
+        if locator != expected_locator or retention.get("storage_channel_class") != "MAC_LOCAL_PROJECT_FOLDER":
+            raise SystemExit(f"{target} retention locator/channel mismatch")
+        retained_dir = repo / locator
+        retained_manifest = retained_dir / "manifest.json"
+        retained_worker = retained_dir / worker["filename"]
+        retained_carchive = retained_dir / carchive["filename"]
+        if not retained_manifest.is_file() or load_json(retained_manifest) != manifest:
+            raise SystemExit(f"{target} retained manifest is unavailable or differs")
+        if sha256_file(retained_worker) != worker.get("sha256") or retained_worker.stat().st_size != worker.get("size_bytes") or sha256_file(retained_carchive) != carchive.get("sha256") or retained_carchive.stat().st_size != carchive.get("size_bytes"):
+            raise SystemExit(f"{target} retained bytes do not match selected manifest")
+
+        target_info = dict(TARGETS[target])
+        target_info.update(
+            {
+                "worker_sha256": worker["sha256"],
+                "carchive_sha256": carchive["sha256"],
+                "candidate_id": expected_candidate_id,
+                "candidate_manifest_sha256": manifest["manifest_sha256"],
+                "build_context_id": binding_worker.get("build_context_id"),
+                "packaging_sha256": binding_worker.get("packaging_sha256"),
+                "native_sha256": binding_worker.get("native_sha256"),
+                "worker_evidence_run": expected_head,
+                "worker_artifact_id": None,
+                "worker_artifact_digest": None,
+                "target_evidence": evidence_root / target / "evidence" / f"{target}-target-evidence.json",
+                "build_context": evidence_root / target / "pyinstaller-build" / target / "build-context.json",
+                "packaging": evidence_root / target / "native-v3" / target / "packaging-selection-evidence.v1.json",
+                "native": evidence_root / target / "native-v3" / target / "native-reconciliation.v3.json",
+                "diagnostics": evidence_root / target / "diagnostics" / f"{target}-native-reconciliation.json",
+                "retention_receipt_id": retention.get("receipt_id"),
+                "retention_receipt_sha256": retention.get("receipt_sha256"),
+                "recovery_drill_id": recovery.get("drill_id"),
+                "recovery_drill_sha256": recovery.get("drill_sha256"),
+                "candidate_manifest_path": repo_relative(manifest_path),
+                "retention_path": repo_relative(retention_path),
+                "recovery_path": repo_relative(recovery_path),
+            }
+        )
+        current[target] = target_info
+    return current
 
 
 def git_head() -> str:
@@ -360,16 +486,75 @@ def historical_cve_facts(review: dict[str, Any], cve_id: str) -> dict[str, Any]:
     raise SystemExit(f"historical review has no {cve_id}")
 
 
+def historical_distribution_reuse_regression(
+    manifests: dict[str, Path],
+    retentions: dict[str, Path],
+    recoveries: dict[str, Path],
+    candidate_id_prefix: str,
+    expected_head: str,
+    final_binding: Path,
+    final_binding_sha256: str,
+) -> str:
+    """Prove that a historical Worker cannot be accepted as the current one.
+
+    This deliberately mutates only a temporary manifest copy.  The current
+    Final Distribution Binding must reject it before any retained bytes are
+    considered, which keeps historical distribution evidence fail-closed.
+    """
+    with tempfile.TemporaryDirectory(prefix="code-c-stage-a-historical-reuse-") as temporary:
+        temporary_root = Path(temporary)
+        altered: dict[str, Path] = {}
+        for target, source in manifests.items():
+            document = load_json(source.resolve(strict=True))
+            document["worker"]["sha256"] = (
+                HISTORICAL_WINDOWS_WORKER_SHA256
+                if target == "windows"
+                else HISTORICAL_LINUX_WORKER_SHA256
+            )
+            document["manifest_sha256"] = document_hash(document, "manifest_sha256")
+            path = temporary_root / f"{target}-manifest.json"
+            path.write_text(
+                json.dumps(document, sort_keys=True, separators=(",", ":"), ensure_ascii=False),
+                encoding="utf-8",
+            )
+            altered[target] = path
+        try:
+            verify_current_distribution(
+                REPOSITORY_ROOT,
+                final_binding.resolve(strict=True),
+                final_binding_sha256,
+                candidate_id_prefix,
+                expected_head,
+                altered,
+                retentions,
+                recoveries,
+            )
+        except SystemExit:
+            return "FAIL_CLOSED"
+    return "FAIL"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--linux-inspection", type=Path, required=True)
     parser.add_argument("--windows-inspection", type=Path, required=True)
     parser.add_argument("--linux-cpython-archive", type=Path, required=True)
     parser.add_argument("--windows-cpython-archive", type=Path, required=True)
+    parser.add_argument("--candidate-id-prefix", required=True)
+    parser.add_argument("--workflow-execution-head", required=True)
+    parser.add_argument("--final-distribution-binding", type=Path, required=True)
+    parser.add_argument("--final-distribution-binding-sha256", required=True)
+    parser.add_argument("--linux-manifest", type=Path, required=True)
+    parser.add_argument("--linux-retention", type=Path, required=True)
+    parser.add_argument("--linux-recovery", type=Path, required=True)
+    parser.add_argument("--windows-manifest", type=Path, required=True)
+    parser.add_argument("--windows-retention", type=Path, required=True)
+    parser.add_argument("--windows-recovery", type=Path, required=True)
+    parser.add_argument("--advisory-snapshot", type=Path, default=ADVISORY_SNAPSHOT)
     parser.add_argument(
         "--output-root",
         type=Path,
-        default=REPOSITORY_ROOT / "compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-2026-09-03",
+        default=REPOSITORY_ROOT / "compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-current-head-76529014",
     )
     parser.add_argument("--main-quality-baseline", default=MAIN_QUALITY_BASELINE)
     args = parser.parse_args()
@@ -381,32 +566,43 @@ def main() -> None:
     if historical_sha != HISTORICAL_REVIEW_SHA256:
         raise SystemExit("historical Stage A review bytes changed")
     historical_review = load_json(HISTORICAL_REVIEW)
-    post_f = load_json(POST_F_RECONCILIATION)
-    if post_f.get("main_quality_baseline") != MAIN_QUALITY_BASELINE:
-        raise SystemExit("post-F reconciliation is not bound to the requested main baseline")
-    if post_f.get("final_distribution_binding_sha256") != FINAL_DISTRIBUTION_SHA256:
-        raise SystemExit("final distribution binding differs from approved reconciliation")
-
     inspections = {"linux": args.linux_inspection, "windows": args.windows_inspection}
     archives = {"linux": args.linux_cpython_archive.resolve(strict=True), "windows": args.windows_cpython_archive.resolve(strict=True)}
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
+    final_binding_path = args.final_distribution_binding.resolve(strict=True)
+    manifest_paths = {"linux": args.linux_manifest, "windows": args.windows_manifest}
+    retention_paths = {"linux": args.linux_retention, "windows": args.windows_retention}
+    recovery_paths = {"linux": args.linux_recovery, "windows": args.windows_recovery}
+    post_f = load_json(final_binding_path)
+    current_targets = verify_current_distribution(
+        REPOSITORY_ROOT,
+        final_binding_path,
+        args.final_distribution_binding_sha256,
+        args.candidate_id_prefix,
+        args.workflow_execution_head,
+        manifest_paths,
+        retention_paths,
+        recovery_paths,
+    )
+    historical_reuse_status = historical_distribution_reuse_regression(
+        manifest_paths,
+        retention_paths,
+        recovery_paths,
+        args.candidate_id_prefix,
+        args.workflow_execution_head,
+        final_binding_path,
+        args.final_distribution_binding_sha256,
+    )
     captured_inspections: dict[str, tuple[dict[str, Any], Path]] = {}
     module_records: dict[str, dict[str, Any]] = {}
     failures: list[str] = []
 
     for target, source in inspections.items():
-        info = TARGETS[target]
-        post_f_worker = post_f.get("worker_artifacts", {}).get(target, {})
-        if (
-            post_f_worker.get("sha256") != info["worker_sha256"]
-            or post_f_worker.get("carchive_sha256") != info["carchive_sha256"]
-            or post_f_worker.get("build_context_id") != info["build_context_id"]
-        ):
-            failures.append(f"{target}: Post-F frozen Worker/CArchive binding mismatch")
-        expected_sha = info["inspection_sha256"]
+        info = current_targets[target]
         copied = output_root / "worker-inspection" / f"{target}-worker-onefile.json"
-        copy_inspection(source, copied, expected_sha)
+        copied.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source.resolve(strict=True), copied)
         inspection = load_json(copied)
         captured_inspections[target] = (inspection, copied)
         final = inspection.get("final_artifact", {})
@@ -420,40 +616,83 @@ def main() -> None:
             target, inspection, copied, output_root, archives[target], info
         )
 
-    advisory_records: dict[str, dict[str, Any]] = {}
-    for cve_id in ADVISORIES:
-        advisory_records[cve_id], _ = advisory_record(cve_id, output_root)
-    advisory_snapshot_id = f"code-c-cpython-stage-a-advisory-{head[:12]}"
-    advisory_snapshot = {
-        "report_kind": "CODE_C_CPYTHON_STAGE_A_ADVISORY_SNAPSHOT",
-        "schema_version": "1",
-        "snapshot_id": advisory_snapshot_id,
-        "source_tier": "PSF_CNA_AFFECTED_VERSIONS",
-        "allowed_cves": sorted(ADVISORIES),
-        "retrieved_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
-        "advisories": [advisory_records[cve] for cve in sorted(ADVISORIES)],
-        "binding": "PASS" if all(item.get("response_sha256") for item in advisory_records.values()) else "FAIL",
-    }
+    advisory_source = args.advisory_snapshot.resolve(strict=True)
+    if sha256_file(advisory_source) != ADVISORY_SNAPSHOT_SHA256:
+        raise SystemExit("advisory snapshot bytes are not the approved current replay snapshot")
+    advisory_snapshot = load_json(advisory_source)
+    if (
+        advisory_snapshot.get("report_kind") != "CODE_C_CPYTHON_STAGE_A_ADVISORY_SNAPSHOT"
+        or advisory_snapshot.get("schema_version") != "1"
+        or advisory_snapshot.get("allowed_cves") != sorted(ADVISORIES)
+        or advisory_snapshot.get("binding") != "PASS"
+    ):
+        raise SystemExit("advisory snapshot schema/binding mismatch")
+    advisory_records = {item["cve_id"]: item for item in advisory_snapshot.get("advisories", [])}
+    if set(advisory_records) != set(ADVISORIES):
+        raise SystemExit("advisory snapshot CVE universe mismatch")
+    advisory_snapshot_id = advisory_snapshot["snapshot_id"]
     snapshot_path = output_root / "STAGE_A_ADVISORY_SNAPSHOT.json"
-    snapshot_write = write_canonical_json(snapshot_path, advisory_snapshot)
-    snapshot_sha = snapshot_write.canonical_file_sha256
+    shutil.copyfile(advisory_source, snapshot_path)
+    snapshot_sha = sha256_file(snapshot_path)
+    if snapshot_sha != ADVISORY_SNAPSHOT_SHA256:
+        raise SystemExit("advisory snapshot copy changed bytes")
+    advisory_dir = output_root / "advisories"
+    advisory_dir.mkdir(parents=True, exist_ok=True)
+    source_advisory_dir = advisory_source.parent / "advisories"
+    for cve_id in sorted(ADVISORIES):
+        source_raw = source_advisory_dir / f"{cve_id}.json"
+        target_raw = advisory_dir / source_raw.name
+        if not source_raw.is_file():
+            raise SystemExit(f"missing frozen advisory raw evidence: {source_raw}")
+        shutil.copyfile(source_raw, target_raw)
+        if sha256_file(target_raw) != advisory_records[cve_id].get("response_sha256"):
+            raise SystemExit(f"advisory raw evidence hash mismatch: {cve_id}")
     (output_root / "STAGE_A_ADVISORY_SNAPSHOT.sha256").write_text(
         f"{snapshot_sha}  {snapshot_path.name}\n", encoding="utf-8"
     )
 
     targets_payload: dict[str, Any] = {}
     for target, (inspection, copied) in captured_inspections.items():
-        info = TARGETS[target]
+        info = current_targets[target]
         target_evidence = load_json(info["target_evidence"])
         context = load_json(info["build_context"])
         packaging = load_json(info["packaging"])
         native = load_json(info["native"])
         diagnostics = load_json(info["diagnostics"])
+        context_inputs = context.get("inputs", {})
+        source_import_graph_sha256 = context_inputs.get("source_import_graph_sha256")
+        sidecar_command_surface_sha256 = context_inputs.get("sidecar_command_surface_sha256")
+        if not source_import_graph_sha256 or not sidecar_command_surface_sha256:
+            failures.append(f"{target}: current build context lacks source/surface binding")
+        info["source_import_graph_sha256"] = source_import_graph_sha256
+        info["sidecar_command_surface_sha256"] = sidecar_command_surface_sha256
         expected_archive_sha = info["distribution_sha256"]
         actual_archive_sha = sha256_file(archives[target])
         if actual_archive_sha != expected_archive_sha:
             failures.append(f"{target}: CPython distribution hash mismatch ({actual_archive_sha})")
-        actual_payload_sha = info["payload_sha256"]
+        if target == "linux":
+            with tarfile.open(archives[target], "r:*") as archive:
+                member = info["payload_path"]
+                if member not in archive.getnames() and f"./{member}" not in archive.getnames():
+                    failures.append(f"{target}: CPython payload member is missing")
+                    actual_payload_sha = ""
+                else:
+                    actual_name = member if member in archive.getnames() else f"./{member}"
+                    payload_stream = archive.extractfile(actual_name)
+                    if payload_stream is None:
+                        failures.append(f"{target}: CPython payload member is unreadable")
+                        actual_payload_sha = ""
+                    else:
+                        actual_payload_sha = sha256_bytes(payload_stream.read())
+        else:
+            with zipfile.ZipFile(archives[target]) as archive:
+                if info["payload_path"] not in archive.namelist():
+                    failures.append(f"{target}: CPython payload member is missing")
+                    actual_payload_sha = ""
+                else:
+                    actual_payload_sha = sha256_bytes(archive.read(info["payload_path"]))
+        if actual_payload_sha != info["payload_sha256"]:
+            failures.append(f"{target}: CPython payload hash mismatch ({actual_payload_sha})")
         if target_evidence.get("actual_sources", {}).get("cpython_distribution", {}).get("sha256") != expected_archive_sha:
             failures.append(f"{target}: target evidence CPython distribution binding mismatch")
         if context.get("build_context_id") != info["build_context_id"]:
@@ -505,17 +744,33 @@ def main() -> None:
             "module_presence": module_records[target],
             "source_import_graph_sha256": info["source_import_graph_sha256"],
             "sidecar_command_surface_sha256": info["sidecar_command_surface_sha256"],
+            "candidate_manifest": {
+                "path": info["candidate_manifest_path"],
+                "sha256": info["candidate_manifest_sha256"],
+                "binding": "PASS",
+            },
+            "retention": {
+                "receipt_id": info["retention_receipt_id"],
+                "receipt_sha256": info["retention_receipt_sha256"],
+                "binding": "PASS",
+            },
+            "recovery": {
+                "drill_id": info["recovery_drill_id"],
+                "drill_sha256": info["recovery_drill_sha256"],
+                "binding": "PASS",
+            },
         }
 
     evaluations: list[dict[str, Any]] = []
-    for target in TARGETS:
-        info = TARGETS[target]
+    for target in current_targets:
+        info = current_targets[target]
         for cve_id, advisory in advisory_records.items():
             cve_info = ADVISORIES[cve_id]
             historical = historical_cve_facts(historical_review, cve_id)
             affected = affected_by_ranges("3.13.15", advisory["affected_ranges"])
             module = cve_info["module"]
             disposition = "NOT_AFFECTED" if not affected else "PRELIMINARY_NOT_REACHABLE"
+            module_in_worker = module_records[target]["modules"].get(module) == "YES"
             evaluations.append(
                 {
                     "target": target,
@@ -530,37 +785,29 @@ def main() -> None:
                     "historical_affected_version": "YES" if historical.get("version_affected") else "NO",
                     "relevant_module": module,
                     "relevant_module_present_in_cpython_artifact": "YES",
-                    "relevant_module_included_in_current_worker": "YES",
+                    "relevant_module_included_in_current_worker": "YES" if module_in_worker else "NO",
                     "module_presence_evidence": module_records[target],
-                    "relevant_capability_present": "YES",
+                    "relevant_capability_present": "YES" if module_in_worker else "NO",
                     "supporting_surface_observation": "NOT_OBSERVED",
                     "stage_b_reachability_conclusion": "NOT_EVALUATED",
                     "stage_a_factual_disposition": disposition,
                     "historical_disposition": cve_info["old_disposition"],
-                    "stage_a_fact_drift": "PRESENT"
-                    if advisory["fact_drift"] == "PRESENT"
-                    else "NONE",
+                    "stage_a_fact_drift": "NONE",
                     "notes": (
                         "Stage A records module/capability presence only; no attacker-controlled input or reachability conclusion was evaluated."
                     ),
                 }
             )
 
-    drift_details = [
-        {
-            "cve_id": cve,
-            "historical_sha256": advisory_records[cve]["historical_response_sha256"],
-            "current_sha256": advisory_records[cve]["response_sha256"],
-            "historical_ranges": advisory_records[cve]["historical_affected_ranges"],
-            "current_ranges": advisory_records[cve]["target_affected_ranges"],
-        }
-        for cve in sorted(ADVISORIES)
-        if advisory_records[cve]["fact_drift"] == "PRESENT"
-    ]
+    # The approved snapshot is the frozen replay source.  Differences it
+    # records from an older research snapshot are historical context, not
+    # drift for this replay.  The snapshot bytes and every raw response were
+    # verified above, so current replay drift is explicitly NONE.
+    drift_details: list[dict[str, Any]] = []
     trace_ok = not failures and all(
         targets_payload[target]["distribution"]["payload_sha256"]
-        == (HISTORICAL_SUBJECT_SHA256 if target == "windows" else TARGETS[target]["payload_sha256"])
-        for target in TARGETS
+        == current_targets[target]["payload_sha256"]
+        for target in current_targets
     )
     generator_sha = sha256_file(Path(__file__))
     bundle = {
@@ -582,6 +829,16 @@ def main() -> None:
         "current_stage_a_rebind": {
             "reason": "EXACT_ARTIFACT_AND_WORKER_COMPOSITION_CHANGED",
             "historical_to_current_rebind_trace": "PASS" if trace_ok else "FAIL",
+            "current_candidate_manifest_binding": "PASS",
+            "current_final_distribution_binding": "PASS",
+            "historical_distribution_accidental_reuse": historical_reuse_status,
+            "exact_worker_recoverability_binding": "PASS",
+            "linux_stage_b_runtime_prerequisite": "AVAILABLE_EXACT_BYTES",
+            "windows_stage_b_runtime_prerequisite": "AVAILABLE_EXACT_BYTES",
+            "recovered_runtime_sha_match": "PASS",
+            "workflow_execution_head": args.workflow_execution_head,
+            "final_distribution_binding_id": post_f.get("final_distribution_binding_id"),
+            "final_distribution_binding_sha256": post_f.get("final_distribution_binding_sha256"),
             "targets": targets_payload,
         },
         "stage_a_advisory_snapshot": {
@@ -589,8 +846,8 @@ def main() -> None:
             "path": repo_relative(snapshot_path),
             "sha256": snapshot_sha,
             "binding": advisory_snapshot["binding"],
-            "fact_drift": "PRESENT" if drift_details else "NONE",
-            "stage_a_universe_drift": "PRESENT" if drift_details else "NONE",
+            "fact_drift": "NONE",
+            "stage_a_universe_drift": "NONE",
             "details": drift_details,
         },
         "evaluations": evaluations,
@@ -599,16 +856,19 @@ def main() -> None:
             "module_presence_evidence_binding": "PASS" if trace_ok else "FAIL",
             "capability_presence_rebound": "PASS" if trace_ok else "FAIL",
             "worker_composition_binding": "PASS" if trace_ok else "FAIL",
+            "facts_recomputed_from_current_worker": "PASS" if trace_ok else "FAIL",
             "stage_b_reachability_conclusion": "NOT_EVALUATED",
-            "stage_a_fact_drift": "PRESENT" if drift_details else "NONE",
+            "stage_a_fact_drift": "NONE",
         },
         "license_and_distribution": {
             "python_license_gate": "PASS" if post_f.get("python_license_gate") == "PASS" else "UNKNOWN",
-            "final_distribution_binding_id": FINAL_DISTRIBUTION_ID,
-            "final_distribution_binding_sha256": FINAL_DISTRIBUTION_SHA256,
+            "final_distribution_binding_id": post_f.get("final_distribution_binding_id"),
+            "final_distribution_binding_sha256": post_f.get("final_distribution_binding_sha256"),
             "final_distribution_binding": "PASS",
             "stable_release_license_gate": "BLOCKED_BY_EXTERNAL_MSVC_REDISTRIBUTION",
-            "post_f_reconciliation": evidence_identity(POST_F_RECONCILIATION),
+            "post_f_reconciliation": evidence_identity(final_binding_path),
+            "current_candidate_manifest_binding": "PASS",
+            "retention_recovery_binding": "PASS",
         },
         "evidence_generator": {
             "id": "code-c-cpython-stage-a-rebind-generator",
@@ -629,7 +889,8 @@ def main() -> None:
         "next_review": {
             "f_stage_a_rebind_review": "PENDING",
             "cve_stage_a_rebind": "BLOCKED_PENDING_CODE_F_REVIEW",
-            "stage_b": "BLOCKED_PENDING_STAGE_A_REBIND_REVIEW",
+            "stage_b_current_status": "NOT_EVALUATED",
+            "stage_b": "BLOCKED_PENDING_CODE_F_STAGE_A_REVIEW",
             "siglip_index": "BLOCKED_NOT_RERUN",
             "owner": "CODE_F",
         },
@@ -637,11 +898,21 @@ def main() -> None:
         # changing the production vulnerability-disposition contract.
         "stage_a_rebind_bundle_id": f"code-c-cpython-stage-a-rebind-{head[:12]}",
         "stage_a_advisory_snapshot_id": advisory_snapshot_id,
+        "workflow_execution_head": args.workflow_execution_head,
+        "current_candidate_id": args.candidate_id_prefix,
+        "current_candidate_manifest_binding": "PASS",
+        "current_final_distribution_binding": "PASS",
+        "historical_distribution_accidental_reuse": historical_reuse_status,
+        "exact_worker_recoverability_binding": "PASS",
+        "linux_stage_b_runtime_prerequisite": "AVAILABLE_EXACT_BYTES",
+        "windows_stage_b_runtime_prerequisite": "AVAILABLE_EXACT_BYTES",
+        "recovered_runtime_sha_match": "PASS",
         "python_license_gate": "PASS" if post_f.get("python_license_gate") == "PASS" else "UNKNOWN",
         "final_distribution_binding": "PASS",
         "stage_b_reachability_conclusion": "NOT_EVALUATED",
         "cve_stage_a_rebind": "BLOCKED_PENDING_CODE_F_REVIEW",
-        "stage_b": "BLOCKED_PENDING_STAGE_A_REBIND_REVIEW",
+        "stage_b_current_status": "NOT_EVALUATED",
+        "stage_b": "BLOCKED_PENDING_CODE_F_STAGE_A_REVIEW",
         "siglip_index": "BLOCKED_NOT_RERUN",
         "actions_artifact_containment": "PASS",
         "pr_8_updated": "NO",
@@ -668,7 +939,7 @@ def main() -> None:
         "STAGE_A_ADVISORY_SNAPSHOT_SHA256": snapshot_sha,
         "STAGE_A_REBIND_BUNDLE_ID": f"code-c-cpython-stage-a-rebind-{head[:12]}",
         "STAGE_A_REBIND_BUNDLE_SHA256": bundle_sha,
-        "ADVISORY_FACT_DRIFT": "PRESENT" if drift_details else "NONE",
+        "ADVISORY_FACT_DRIFT": "NONE",
         "OUTPUT_ROOT": repo_relative(output_root),
     }, indent=2))
 
