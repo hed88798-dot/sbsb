@@ -33,6 +33,7 @@ jobs:
       - run: pnpm compliance:python:tooling:install
       - run: pnpm compliance:artifact-license:verify
       - run: pnpm compliance:runtime-prerequisite:verify
+      - run: pnpm compliance:runtime-companion:contract
       - run: pnpm compliance:python:target -- describe-current --output artifacts/compliance/CURRENT_TARGET.json
       - run: pnpm compliance:python:target -- verify-current --target artifacts/compliance/CURRENT_TARGET.json
       - run: pnpm ci:prepare

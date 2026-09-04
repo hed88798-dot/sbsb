@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "pnpm -r --if-present build",
-    "check": "pnpm compliance:license-policy:verify && pnpm compliance:artifact-license:verify && pnpm compliance:license-coverage:verify && pnpm compliance:runtime-prerequisite:verify && pnpm compliance:python:tooling:install && pnpm compliance:trust-chain:contract && pnpm compliance:python:candidate:egress:policy && pnpm ci:prepare && pnpm format:check && pnpm lint && pnpm ci:typecheck && pnpm ci:test && pnpm dependency:check && pnpm portability:check && pnpm workflow:security && pnpm secret:scan && pnpm license:scan && pnpm vulnerability:scan && pnpm compliance:python:verify && pnpm compliance:python:target:verify && pnpm golden:verify",
+    "check": "pnpm compliance:license-policy:verify && pnpm compliance:artifact-license:verify && pnpm compliance:license-coverage:verify && pnpm compliance:runtime-prerequisite:verify && pnpm compliance:python:tooling:install && pnpm compliance:trust-chain:contract && pnpm compliance:runtime-companion:contract && pnpm compliance:python:candidate:egress:policy && pnpm ci:prepare && pnpm format:check && pnpm lint && pnpm ci:typecheck && pnpm ci:test && pnpm dependency:check && pnpm portability:check && pnpm workflow:security && pnpm secret:scan && pnpm license:scan && pnpm vulnerability:scan && pnpm compliance:python:verify && pnpm compliance:python:target:verify && pnpm golden:verify",
     "ci:prepare": "pnpm --filter @app/desktop... --filter @app/gateway... build",
     "ci:test": "vitest run",
     "ci:typecheck": "pnpm -r --if-present typecheck",
@@ -70,6 +70,7 @@
     "code-c:python:release:notices": "python tools/code-c-python-supply-chain/assemble_release_notices.py",
     "code-c:python:license:post-f-reconcile": "python tools/code-c-python-supply-chain/reconcile_post_f_license.py",
     "compliance:trust-chain:contract": "vitest run tests/contract/distribution-trust-chain.test.ts --maxWorkers=1",
+    "compliance:runtime-companion:contract": "vitest run tests/contract/native-runtime-companion.test.ts --maxWorkers=1",
     "golden:verify": "node tools/golden/validate-manifest.mjs",
     "golden:update": "node tools/golden/update-manifest.mjs",
     "golden:validate": "pnpm golden:verify",

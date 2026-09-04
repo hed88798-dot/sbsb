@@ -1,0 +1,249 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-video-platform.example/schemas/compliance/native-runtime-companion/v1/companion.schema.json",
+  "title": "Native Runtime Companion Bundle",
+  "description": "Versioned, provenance-bound and fail-closed contract for a native runtime companion bundle.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "subject_type",
+    "companion_id",
+    "manifest_sha256",
+    "companion_identity_sha256",
+    "role",
+    "platform",
+    "entrypoint",
+    "bundle_members",
+    "runtime_dependency_closure",
+    "provenance",
+    "build_configuration",
+    "distribution",
+    "artifact_approval",
+    "license_evidence",
+    "retention"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "subject_type": { "const": "NATIVE_RUNTIME_COMPANION_BUNDLE" },
+    "companion_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "manifest_sha256": { "$ref": "#/$defs/sha256" },
+    "companion_identity_sha256": { "$ref": "#/$defs/sha256" },
+    "role": { "const": "PRODUCT_RUNTIME_DEPENDENCY" },
+    "platform": { "$ref": "#/$defs/platform" },
+    "entrypoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "bundle_members": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/member" }
+    },
+    "runtime_dependency_closure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "loader_policy",
+        "undeclared_runtime_resolution",
+        "unresolved_count",
+        "members",
+        "external_os_prerequisites"
+      ],
+      "properties": {
+        "status": { "const": "PASS" },
+        "loader_policy": { "const": "COMPANION_BUNDLE_ONLY" },
+        "undeclared_runtime_resolution": { "const": "FAIL_CLOSED" },
+        "unresolved_count": { "const": 0 },
+        "members": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/runtimeMember" }
+        },
+        "external_os_prerequisites": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/externalPrerequisite" }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "upstream_project",
+        "upstream_release",
+        "upstream_tag",
+        "upstream_commit",
+        "source_archive_identity",
+        "source_archive_sha256",
+        "build_recipe_id",
+        "build_recipe_sha256",
+        "build_environment_descriptor_id",
+        "build_environment_descriptor_sha256",
+        "build_context_id",
+        "build_context_sha256",
+        "target_platform",
+        "target_architecture"
+      ],
+      "properties": {
+        "upstream_project": { "type": "string", "minLength": 1 },
+        "upstream_release": { "type": "string", "minLength": 1 },
+        "upstream_tag": { "type": "string", "minLength": 1 },
+        "upstream_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "source_archive_identity": { "type": "string", "minLength": 1 },
+        "source_archive_sha256": { "$ref": "#/$defs/sha256" },
+        "build_recipe_id": { "type": "string", "minLength": 1 },
+        "build_recipe_sha256": { "$ref": "#/$defs/sha256" },
+        "build_environment_descriptor_id": { "type": "string", "minLength": 1 },
+        "build_environment_descriptor_sha256": { "$ref": "#/$defs/sha256" },
+        "build_context_id": { "type": "string", "minLength": 1 },
+        "build_context_sha256": { "$ref": "#/$defs/sha256" },
+        "target_platform": { "$ref": "#/$defs/os" },
+        "target_architecture": { "$ref": "#/$defs/architecture" }
+      }
+    },
+    "build_configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "configure_arguments",
+        "build_arguments",
+        "compiler_identity",
+        "toolchain_identity",
+        "enabled_components",
+        "disabled_components",
+        "external_linked_libraries",
+        "linkage"
+      ],
+      "properties": {
+        "configure_arguments": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "build_arguments": { "type": "array", "items": { "type": "string" } },
+        "compiler_identity": { "type": "string", "minLength": 1 },
+        "toolchain_identity": { "type": "string", "minLength": 1 },
+        "enabled_components": { "type": "array", "items": { "type": "string" } },
+        "disabled_components": { "type": "array", "items": { "type": "string" } },
+        "external_linked_libraries": { "type": "array", "items": { "type": "string" } },
+        "linkage": { "enum": ["STATIC", "SHARED", "MIXED"] },
+        "feature_selection": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "distribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "packaged_locator",
+        "resolver_mode",
+        "system_path_fallback",
+        "external_os_prerequisite_allowlist"
+      ],
+      "properties": {
+        "mode": { "const": "BUNDLED_RUNTIME_COMPANION" },
+        "packaged_locator": { "$ref": "#/$defs/relativePath" },
+        "resolver_mode": { "const": "EXPLICIT_BUNDLED_LOCATOR" },
+        "system_path_fallback": { "const": false },
+        "external_os_prerequisite_allowlist": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "artifact_approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["NOT_YET_APPROVED", "PROVENANCE_VERIFIED", "DISTRIBUTION_APPROVED"] },
+        "record_id": { "type": "string", "minLength": 1 },
+        "record_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "license_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "evidence_sha256", "policy_disposition"],
+      "properties": {
+        "evidence_id": { "type": "string", "minLength": 1 },
+        "evidence_sha256": { "$ref": "#/$defs/sha256" },
+        "policy_disposition": {
+          "enum": ["NOT_EVALUATED", "SEPARATE_REVIEW_REQUIRED", "ALLOW_WITH_CONDITIONS", "BLOCKED"]
+        }
+      }
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transport_role", "final_retention_channel", "recovery_drill_required"],
+      "properties": {
+        "transport_role": { "const": "TRANSIENT_TRANSFER_ONLY" },
+        "final_retention_channel": { "const": "MAC_LOCAL_PROJECT_FOLDER" },
+        "recovery_drill_required": { "const": true }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "os": { "enum": ["linux", "windows"] },
+    "architecture": { "enum": ["x86_64", "arm64"] },
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "architecture"],
+      "properties": {
+        "os": { "$ref": "#/$defs/os" },
+        "architecture": { "$ref": "#/$defs/architecture" }
+      }
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^(?!/)(?![A-Za-z]:).+$"
+    },
+    "member": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "kind"],
+      "properties": {
+        "path": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "kind": {
+          "enum": ["EXECUTABLE", "DYNAMIC_LIBRARY", "INTERNAL_COMPANION_MEMBER", "DATA", "SYMLINK"]
+        },
+        "link_target": { "$ref": "#/$defs/relativePath" }
+      }
+    },
+    "runtimeMember": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "classification"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "classification": { "enum": ["INTERNAL_COMPANION_MEMBER", "EXTERNAL_OS_PREREQUISITE"] },
+        "member_path": { "$ref": "#/$defs/relativePath" },
+        "loader_scope": { "const": "COMPANION_BUNDLE_ONLY" }
+      }
+    },
+    "externalPrerequisite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "version_policy", "allowlisted"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "version_policy": { "type": "string", "minLength": 1 },
+        "allowlisted": { "const": true }
+      }
+    }
+  }
+}
