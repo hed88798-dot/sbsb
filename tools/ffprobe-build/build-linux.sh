@@ -48,6 +48,7 @@ grep -F 'ORIGIN' "$OUT/evidence/configured-ldflags.txt" >/dev/null
 make -j"$(nproc)" 2>&1 | tee "$OUT/evidence/build.log"
 CONFIGURED_BASE_LDFLAGS="$(sed -n -E 's#^LDFLAGS=##p' ffbuild/config.mak | sed -E 's#-Wl,-rpath,[\\$]+ORIGIN##g')"
 FFPROBE_RELINK_LDFLAGS="-Llibavcodec -Llibavdevice -Llibavfilter -Llibavformat -Llibavutil -Llibswscale -Llibswresample ${CONFIGURED_BASE_LDFLAGS} -Wl,-rpath,\\\$\$ORIGIN"
+rm -f ffprobe ffprobe_g
 make LDFLAGS="$FFPROBE_RELINK_LDFLAGS" ffprobe 2>&1 | tee -a "$OUT/evidence/build.log"
 make install 2>&1 | tee -a "$OUT/evidence/build.log"
 
