@@ -81,8 +81,12 @@ jobs:
             # replacement for a production ffprobe and is hash-bound in the
             # runtime evidence.
             if [[ "$TARGET" == 'windows' ]]; then
-              stub='artifacts/stage-b/windows/ffprobe-stage-b-reject.cmd'
-              printf '@echo off\r\nexit /b 1\r\n' > "$stub"
+              # Windows CreateProcess does not reliably launch a .cmd path
+              # with shell=False.  The locked runner Python executable is a
+              # regular PE executable; passing probe flags to it deterministically
+              # returns a non-zero code and therefore exercises the Worker's
+              # safe MEDIA_PROBE_FAILED rejection without a shell wrapper.
+              ffprobe="$(python -c 'import sys; print(sys.executable)')"
             else
               stub='artifacts/stage-b/linux/ffprobe-stage-b-reject'
               printf '#!/bin/sh\nexit 1\n' > "$stub"
