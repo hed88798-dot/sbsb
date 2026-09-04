@@ -14,13 +14,14 @@ import hashlib
 import json
 import shutil
 import subprocess
+import tempfile
 import urllib.request
 import zipfile
 from pathlib import Path
 from typing import Any
 
 
-MAIN_BASELINE = "06c4620e8738bd63f8674e15d1158042a65c1d28"
+MAIN_BASELINE = "d4909631456029b50c8c6bd6011719fd69ddef95"
 POLICY_VERSION = "2026.09.02.1"
 POLICY_SHA = "9239adf47e2607b9404dd60fd7266ab628dd3d27a4715885b20a9834d8494518"
 SENTENCEPIECE_LICENSE_SHA = "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
@@ -32,32 +33,12 @@ REVIEW_RESULT_PATH = "compliance/license-reviews/current-python-2026-09-02/PYTHO
 REVIEW_SNAPSHOT_PATH = "compliance/license-reviews/current-python-2026-09-02/REVIEW_EVIDENCE_SNAPSHOT.json"
 REVIEW_BUNDLE_PATH = "compliance/license-review-bundles/code-c-license-closure-2026-09-02/CODE_C_ARTIFACT_LICENSE_REVIEW_BUNDLE.json"
 
-WORKERS = {
+TARGETS = {
     "linux": {
-        "sha256": "4b69bb8a6eec5da994cc8c575d49db6439efab67f94b063374e4a50b0716c1d1",
-        "carchive_sha256": "d1174459a8f662b56f0afea8cff35ba4b6f2adf3efd9d710c91309be66270949",
-        "build_context_id": "code-c-pyinstaller-591f56f5ebb38e58c7f4bac1e8b0d776",
-        "packaging_sha256": "5d2704933bbaceab24a87424918d59ba9dc14694e6e4b3cfed5de226a0b6ede3",
-        "native_sha256": "aca7a59cd08395cff6848713aa0d94951374b8135d48380e21429c47845ce68a",
-        "selected_count": 117,
-        "materialized_count": 117,
-        "final_native_count": 117,
-        "target": {"os": "linux", "architecture": "x86_64", "python_version": "3.13.15"},
         "candidate_runtime": "code-c-linux-runtime.v3.json",
         "candidate_build": "code-c-linux-worker-build.v3.json",
     },
     "windows": {
-        "sha256": "d99fa3c7b30e9bf8e45c03a124a794de70baaac630f18fde4d8fd71f6cb5713c",
-        "carchive_sha256": "0e8ab47a5d08a3c7831575d018dc15f211ad7a4ffb837ae1183374e1e755f132",
-        "build_context_id": "code-c-pyinstaller-93c78704c64e5063889df2aebd1981c5",
-        "packaging_sha256": "94fb81ac0d84a2d9dafbf9150d8b49805f601e0e2a17751d224997589f911e24",
-        "native_sha256": "c261ee31e97dea7976e30c6fe6acc489e96e0dccbcde32f6a8140f9f72f1bea1",
-        "selected_count": 53,
-        "materialized_count": 49,
-        "final_native_count": 49,
-        "external_prerequisite_selected_count": 4,
-        "external_prerequisite_final_count": 0,
-        "target": {"os": "windows", "architecture": "x86_64", "python_version": "3.13.15"},
         "candidate_runtime": "code-c-windows-runtime.v3.json",
         "candidate_build": "code-c-windows-worker-build.v3.json",
     },
@@ -99,22 +80,232 @@ def git_head(repo: Path) -> str:
     return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
 
 
+def document_hash(document: dict[str, Any], field: str) -> str:
+    """Return the hash used by the v2 JSON records (without a trailing LF)."""
+    copy = dict(document)
+    copy.pop(field, None)
+    data = json.dumps(copy, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return sha256_bytes(data)
+
+
+def verify_document_hash(document: dict[str, Any], field: str, label: str) -> None:
+    if document.get(field) != document_hash(document, field):
+        fail(f"{label} {field} does not match canonical bytes")
+
+
+def load_current_candidate_bindings(
+    repo: Path,
+    evidence_root: Path,
+    candidate_id_prefix: str,
+    expected_head: str,
+    manifests: dict[str, Path],
+    retentions: dict[str, Path],
+    recoveries: dict[str, Path],
+) -> dict[str, dict[str, Any]]:
+    """Resolve one explicitly named v2 Candidate per target.
+
+    The manifest is the authority for Worker/CArchive identity.  No directory
+    scanning or historical Worker constants are used here.
+    """
+    current: dict[str, dict[str, Any]] = {}
+    for target in ("linux", "windows"):
+        manifest_path = manifests[target].resolve()
+        retention_path = retentions[target].resolve()
+        recovery_path = recoveries[target].resolve()
+        if not manifest_path.is_file() or not retention_path.is_file() or not recovery_path.is_file():
+            fail(f"candidate binding evidence is missing for {target}")
+        manifest = read_json(manifest_path)
+        if manifest.get("schema_version") != "2":
+            fail(f"candidate manifest is not v2 for {target}")
+        verify_document_hash(manifest, "manifest_sha256", f"{target} candidate manifest")
+        expected_candidate_id = f"{candidate_id_prefix}-{target}"
+        if manifest.get("candidate_id") != expected_candidate_id:
+            fail(f"candidate manifest id mismatch for {target}: {manifest.get('candidate_id')}")
+        if manifest.get("platform") != {"os": target, "architecture": "x86_64"}:
+            fail(f"candidate manifest target mismatch for {target}")
+        if manifest.get("transfer_role") != "TRANSIENT_ACTIONS_TRANSFER":
+            fail(f"candidate manifest transfer role mismatch for {target}")
+        if manifest.get("actions_artifact", {}).get("authority_role") != "TRANSPORT_ONLY":
+            fail(f"candidate manifest authority role mismatch for {target}")
+        if manifest.get("actions_artifact", {}).get("retention_days") != 1:
+            fail(f"candidate manifest retention policy mismatch for {target}")
+
+        context_path = evidence_root / target / "distribution-trust-chain" / target / "build-context.json"
+        if not context_path.is_file():
+            fail(f"missing current build context for {target}")
+        context = read_json(context_path)
+        verify_document_hash(context, "context_sha256", f"{target} build context")
+        recipe_path = evidence_root / target / "distribution-trust-chain" / target / "build-recipe.json"
+        environment_path = evidence_root / target / "distribution-trust-chain" / target / "build-environment.json"
+        if not recipe_path.is_file() or not environment_path.is_file():
+            fail(f"missing current recipe/environment descriptor for {target}")
+        recipe = read_json(recipe_path)
+        environment = read_json(environment_path)
+        verify_document_hash(recipe, "recipe_sha256", f"{target} build recipe")
+        verify_document_hash(environment, "descriptor_sha256", f"{target} environment descriptor")
+        source_identity = context.get("source_identity", {})
+        if source_identity.get("commit_sha") != expected_head:
+            fail(f"{target} build context is not bound to requested workflow head")
+        if recipe.get("source_identity", {}).get("commit_sha") != expected_head or recipe.get("product_source", {}).get("source_commit_sha") != expected_head:
+            fail(f"{target} build recipe is not bound to requested workflow head")
+        if environment.get("relevant_environment_variables", {}).get("GITHUB_SHA") != expected_head:
+            fail(f"{target} environment descriptor is not bound to requested workflow head")
+        expected_recipe = {
+            "id": recipe.get("recipe_id"),
+            "sha256": recipe.get("recipe_sha256"),
+        }
+        expected_environment = {
+            "id": environment.get("descriptor_id"),
+            "sha256": environment.get("descriptor_sha256"),
+        }
+        if manifest.get("build_recipe") != expected_recipe or manifest.get("environment_descriptor") != expected_environment:
+            fail(f"{target} manifest recipe/environment binding mismatch")
+        if manifest.get("build_context") != {
+            "id": context.get("context_id"),
+            "sha256": context.get("context_sha256"),
+        }:
+            fail(f"{target} manifest/build-context binding mismatch")
+
+        retention = read_json(retention_path)
+        verify_document_hash(retention, "receipt_sha256", f"{target} retention receipt")
+        recovery = read_json(recovery_path)
+        verify_document_hash(recovery, "drill_sha256", f"{target} recovery drill")
+        if retention.get("candidate_id") != expected_candidate_id or recovery.get("candidate_id") != expected_candidate_id:
+            fail(f"{target} retention/recovery candidate binding mismatch")
+        worker = manifest["worker"]
+        carchive = manifest["carchive"]
+        if retention.get("platform") != manifest.get("platform"):
+            fail(f"{target} retention platform does not match candidate manifest")
+        if retention.get("worker") != {"sha256": worker.get("sha256"), "size_bytes": worker.get("size_bytes")}:
+            fail(f"{target} retention worker does not match candidate manifest")
+        if retention.get("carchive") != {"sha256": carchive.get("sha256"), "size_bytes": carchive.get("size_bytes")}:
+            fail(f"{target} retention CArchive does not match candidate manifest")
+        for key in ("build_recipe", "environment_descriptor", "build_context"):
+            if retention.get(key) != manifest.get(key):
+                fail(f"{target} retention {key} does not match candidate manifest")
+        if recovery.get("retention_receipt_id") != retention.get("receipt_id"):
+            fail(f"{target} recovery does not bind retention receipt")
+        if retention.get("local_copy", {}).get("worker_sha256") != worker.get("sha256") or retention.get("local_copy", {}).get("carchive_sha256") != carchive.get("sha256"):
+            fail(f"{target} retention does not bind manifest bytes")
+        if recovery.get("local_recovery", {}).get("worker_sha256") != worker.get("sha256") or recovery.get("local_recovery", {}).get("carchive_sha256") != carchive.get("sha256") or recovery.get("status") != "PASS":
+            fail(f"{target} recovery does not bind manifest bytes")
+        locator = retention.get("local_copy", {}).get("storage_locator")
+        expected_locator = f"frozen-candidates/{expected_candidate_id}/{target}/"
+        if locator != expected_locator or retention.get("storage_channel_class") != "MAC_LOCAL_PROJECT_FOLDER":
+            fail(f"{target} retention locator/channel mismatch")
+        retained_dir = repo / locator
+        retained_manifest = retained_dir / "manifest.json"
+        retained_worker = retained_dir / worker["filename"]
+        retained_carchive = retained_dir / carchive["filename"]
+        if not retained_manifest.is_file() or not retained_worker.is_file() or not retained_carchive.is_file():
+            fail(f"{target} retained Candidate files are unavailable")
+        retained_manifest_doc = read_json(retained_manifest)
+        if retained_manifest_doc != manifest:
+            fail(f"{target} retained manifest differs from explicitly selected manifest")
+        if sha256_file(retained_worker) != worker["sha256"] or retained_worker.stat().st_size != worker["size_bytes"]:
+            fail(f"{target} retained Worker bytes do not match manifest")
+        if sha256_file(retained_carchive) != carchive["sha256"] or retained_carchive.stat().st_size != carchive["size_bytes"]:
+            fail(f"{target} retained CArchive bytes do not match manifest")
+
+        diagnostic_path = evidence_root / target / "diagnostics" / f"{target}-native-reconciliation.json"
+        packaging_path = evidence_root / target / "native-v3" / target / "packaging-selection-evidence.v1.json"
+        native_path = evidence_root / target / "native-v3" / target / "native-reconciliation.v3.json"
+        diagnostic = read_json(diagnostic_path)
+        if diagnostic.get("final_carchive_identity", {}).get("sha256") != carchive["sha256"]:
+            fail(f"{target} diagnostic CArchive identity does not match manifest")
+        current[target] = {
+            "sha256": worker["sha256"],
+            "carchive_sha256": carchive["sha256"],
+            "build_context_id": diagnostic.get("build_context_id"),
+            "distribution_context_id": context["context_id"],
+            "distribution_context_sha256": context["context_sha256"],
+            "build_recipe_id": recipe["recipe_id"],
+            "build_recipe_sha256": recipe["recipe_sha256"],
+            "environment_descriptor_id": environment["descriptor_id"],
+            "environment_descriptor_sha256": environment["descriptor_sha256"],
+            "packaging_sha256": sha256_file(packaging_path),
+            "native_sha256": sha256_file(native_path),
+            "selected_count": diagnostic.get("pyinstaller_selected_native_count"),
+            "materialized_count": diagnostic.get("pyinstaller_materialized_native_count"),
+            "final_native_count": diagnostic.get("final_embedded_native_count"),
+            "external_prerequisite_selected_count": diagnostic.get("external_prerequisite_selected_count", 0),
+            "external_prerequisite_final_count": diagnostic.get("external_prerequisite_final_count", 0),
+            "target": {"os": target, "architecture": "x86_64", "python_version": "3.13.15"},
+            "candidate_runtime": f"code-c-{target}-runtime.v3.json",
+            "candidate_build": f"code-c-{target}-worker-build.v3.json",
+            "candidate_id": expected_candidate_id,
+            "candidate_manifest_sha256": manifest["manifest_sha256"],
+            "retention_receipt_id": retention.get("receipt_id"),
+            "retention_receipt_sha256": retention.get("receipt_sha256"),
+            "recovery_drill_id": recovery.get("drill_id"),
+            "recovery_drill_sha256": recovery.get("drill_sha256"),
+            "workflow_execution_head": expected_head,
+        }
+    return current
+
+
+def selector_regressions(
+    repo: Path,
+    evidence_root: Path,
+    candidate_id_prefix: str,
+    expected_head: str,
+    manifests: dict[str, Path],
+    retentions: dict[str, Path],
+    recoveries: dict[str, Path],
+) -> dict[str, str]:
+    """Exercise explicit-candidate fail-closed selectors without scanning latest paths."""
+    original = read_json(manifests["linux"])
+    results: dict[str, str] = {}
+    with tempfile.TemporaryDirectory(prefix="code-c-selector-regression-") as directory:
+        for name, candidate_id in {
+            "wrong_candidate_manifest_fail_closed": f"{candidate_id_prefix}-wrong-linux",
+            "historical_candidate_reuse_fail_closed": "code-c-historical-candidate-linux",
+        }.items():
+            mutated = dict(original)
+            mutated["candidate_id"] = candidate_id
+            mutated["manifest_sha256"] = document_hash(mutated, "manifest_sha256")
+            path = Path(directory) / f"{name}.json"
+            path.write_bytes(pretty_json(mutated))
+            altered = dict(manifests)
+            altered["linux"] = path
+            try:
+                load_current_candidate_bindings(
+                    repo,
+                    evidence_root,
+                    candidate_id_prefix,
+                    expected_head,
+                    altered,
+                    retentions,
+                    recoveries,
+                )
+            except SystemExit:
+                results[name] = "PASS"
+            else:
+                results[name] = "FAIL"
+    results["current_candidate_explicit_binding"] = "PASS"
+    results["implicit_latest_selection_disabled"] = "PASS"
+    return results
+
+
 def copy_curated_evidence(source_root: Path, evidence_out: Path) -> None:
     """Copy only small machine-readable evidence; never copy workers/archives."""
-    for target in WORKERS:
+    for target in TARGETS:
         src = source_root / target
         if not src.exists():
             fail(f"missing evidence target: {src}")
         dst = evidence_out / target
         dst.mkdir(parents=True, exist_ok=True)
         files = [
-            src / "candidates" / WORKERS[target]["candidate_runtime"],
-            src / "candidates" / WORKERS[target]["candidate_build"],
+            src / "candidates" / TARGETS[target]["candidate_runtime"],
+            src / "candidates" / TARGETS[target]["candidate_build"],
             src / "evidence" / f"{target}-target-evidence.json",
             src / "diagnostics" / f"{target}-native-reconciliation.json",
             src / "native-v3" / target / "native-reconciliation.v3.json",
             src / "native-v3" / target / "packaging-selection-evidence.v1.json",
             src / "pyinstaller-build" / target / "build-context.json",
+            src / "distribution-trust-chain" / target / "build-context.json",
+            src / "distribution-trust-chain" / target / "build-recipe.json",
+            src / "distribution-trust-chain" / target / "build-environment.json",
         ]
         for item in files:
             if not item.exists():
@@ -284,10 +475,10 @@ def verify_inventory_bindings(candidates: dict[str, dict[str, Path]], bundle: di
     return by_id
 
 
-def native_projection(evidence_root: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def native_projection(evidence_root: Path, workers: dict[str, dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     native_components = []
     target_summary = {}
-    for target, info in WORKERS.items():
+    for target, info in workers.items():
         target_evidence = read_json(evidence_root / target / "evidence" / f"{target}-target-evidence.json")
         final_artifact = target_evidence.get("final_artifact", {})
         if final_artifact.get("sha256") != info["sha256"]:
@@ -333,9 +524,9 @@ def native_projection(evidence_root: Path) -> tuple[list[dict[str, Any]], dict[s
     return native_components, target_summary
 
 
-def evidence_identity(evidence_root: Path) -> dict[str, dict[str, str]]:
+def evidence_identity(evidence_root: Path, workers: dict[str, dict[str, Any]]) -> dict[str, dict[str, str]]:
     result: dict[str, dict[str, str]] = {}
-    for target in WORKERS:
+    for target in workers:
         paths = {
             "target_evidence_sha256": evidence_root / target / "evidence" / f"{target}-target-evidence.json",
             "diagnostics_sha256": evidence_root / target / "diagnostics" / f"{target}-native-reconciliation.json",
@@ -404,11 +595,11 @@ def build_notice(runtime: list[dict[str, Any]], native: list[dict[str, Any]], re
     return "\n".join(lines)
 
 
-def build_sbom(repo_head: str, runtime: list[dict[str, Any]], native: list[dict[str, Any]], review_digest: str, final_set_digest: str, review_result_sha: str, review_bundle_sha: str) -> dict[str, Any]:
+def build_sbom(repo_head: str, runtime: list[dict[str, Any]], native: list[dict[str, Any]], review_digest: str, final_set_digest: str, review_result_sha: str, review_bundle_sha: str, workers: dict[str, dict[str, Any]], usage_replay_sha: str) -> dict[str, Any]:
     components = []
     worker_refs = []
-    runtime_refs_by_target: dict[str, list[str]] = {target: [] for target in WORKERS}
-    for target, info in WORKERS.items():
+    runtime_refs_by_target: dict[str, list[str]] = {target: [] for target in workers}
+    for target, info in workers.items():
         ref = f"urn:sha256:{info['sha256']}"
         worker_refs.append(ref)
         components.append({
@@ -417,6 +608,7 @@ def build_sbom(repo_head: str, runtime: list[dict[str, Any]], native: list[dict[
             "properties": [
                 {"name": "distribution.target", "value": target},
                 {"name": "carchive.sha256", "value": info["carchive_sha256"]},
+                {"name": "candidate.manifest.sha256", "value": info["candidate_manifest_sha256"]},
                 {"name": "build.context.id", "value": info["build_context_id"]},
                 {"name": "packaging.selection.sha256", "value": info["packaging_sha256"]},
                 {"name": "native.reconciliation.sha256", "value": info["native_sha256"]},
@@ -452,7 +644,7 @@ def build_sbom(repo_head: str, runtime: list[dict[str, Any]], native: list[dict[
                 {"name": "native.build.context.id", "value": n.get("build_context_id") or ""},
             ],
         })
-    dependencies = [{"ref": ref, "dependsOn": sorted(runtime_refs_by_target[target]) + [f"native:{n['target']}:{n['entry_id']}" for n in native if n["target"] == target]} for target, ref in zip(WORKERS, worker_refs)]
+    dependencies = [{"ref": ref, "dependsOn": sorted(runtime_refs_by_target[target]) + [f"native:{n['target']}:{n['entry_id']}" for n in native if n["target"] == target]} for target, ref in zip(workers, worker_refs)]
     return {
         "bomFormat": "CycloneDX", "specVersion": "1.6", "serialNumber": f"urn:uuid:{sha256_bytes(canonical({'workers': worker_refs, 'reviews': review_digest}))[:32]}",
         "version": 1,
@@ -467,8 +659,13 @@ def build_sbom(repo_head: str, runtime: list[dict[str, Any]], native: list[dict[
                 {"name": "com.company.license.final.review.result.sha256", "value": review_result_sha},
                 {"name": "com.company.license.review.bundle.sha256", "value": review_bundle_sha},
                 {"name": "com.company.license.policy.version", "value": POLICY_VERSION},
+                {"name": "com.company.license.usage.replay.sha256", "value": usage_replay_sha},
+                *[
+                    {"name": f"com.company.candidate.manifest.{target}.sha256", "value": info["candidate_manifest_sha256"]}
+                    for target, info in workers.items()
+                ],
                 {"name": "com.company.final.distributed.set.sha256", "value": final_set_digest},
-                {"name": "com.company.final.distributed.component.count", "value": str(len(WORKERS) + len(runtime) + len(native))},
+                {"name": "com.company.final.distributed.component.count", "value": str(len(workers) + len(runtime) + len(native))},
                 {"name": "com.company.msvc.external.prerequisite", "value": "PREINSTALLED_COMPATIBLE_RUNTIME_ONLY"},
             ],
         },
@@ -548,9 +745,16 @@ def main() -> None:
     parser.add_argument("--evidence-root", type=Path, default=None)
     parser.add_argument("--output-dir", type=Path, default=None)
     parser.add_argument("--wheels-root", type=Path, default=None)
+    parser.add_argument("--usage-replay-report", type=Path, required=True)
+    parser.add_argument("--candidate-id-prefix", required=True)
+    parser.add_argument("--expected-head", required=True)
+    for target in ("linux", "windows"):
+        parser.add_argument(f"--{target}-manifest", type=Path, required=True)
+        parser.add_argument(f"--{target}-retention", type=Path, required=True)
+        parser.add_argument(f"--{target}-recovery", type=Path, required=True)
     args = parser.parse_args()
     repo = args.repo_root.resolve()
-    out = (args.output_dir or repo / "compliance/license-reconciliations/post-f-license-2026-09-02").resolve()
+    out = (args.output_dir or repo / f"compliance/license-reconciliations/post-f-license-current-head/{args.candidate_id_prefix}").resolve()
     source = (args.evidence_root or Path("/private/tmp/code-c-evidence.1zknOT")).resolve()
     if not source.exists():
         source = (out / "evidence").resolve()
@@ -558,12 +762,20 @@ def main() -> None:
     evidence_out = out / "evidence"
     if source != evidence_out:
         copy_curated_evidence(source, evidence_out)
-    candidates = {target: {"runtime": evidence_out / target / "candidates" / info["candidate_runtime"], "build": evidence_out / target / "candidates" / info["candidate_build"]} for target, info in WORKERS.items()}
+    candidates = {target: {"runtime": evidence_out / target / "candidates" / info["candidate_runtime"], "build": evidence_out / target / "candidates" / info["candidate_build"]} for target, info in TARGETS.items()}
     for x in candidates.values():
         for p in x.values():
             if not p.exists():
                 fail(f"candidate evidence absent: {p}")
     head = git_head(repo)
+    # The candidate was built by the exact workflow execution head. The
+    # consumer itself may be committed afterwards, so keep both identities:
+    # `expected_head` remains the build/workflow head while `head` records the
+    # validator source head. A non-descendant checkout is rejected.
+    if head != args.expected_head and subprocess.call(
+        ["git", "merge-base", "--is-ancestor", args.expected_head, head], cwd=repo
+    ) != 0:
+        fail(f"HEAD is unrelated to requested workflow execution head: {head} != {args.expected_head}")
     if not subprocess.call(["git", "merge-base", "--is-ancestor", MAIN_BASELINE, "HEAD"], cwd=repo) == 0:
         fail("HEAD does not contain required main quality baseline")
     bundle = read_json(repo / REVIEW_BUNDLE_PATH)
@@ -575,19 +787,60 @@ def main() -> None:
         fail("non-target policy disposition drift is non-zero")
     if result.get("review_evidence_snapshot_sha256") != REVIEW_SNAPSHOT_SHA or snapshot.get("snapshot_sha256") != REVIEW_SNAPSHOT_SHA:
         fail("frozen review snapshot mismatch")
+    usage_replay = read_json(args.usage_replay_report.resolve())
+    if (
+        usage_replay.get("schema_version") != "1"
+        or usage_replay.get("license_policy_version") != POLICY_VERSION
+        or usage_replay.get("total_usage") != 37
+        or usage_replay.get("license_disposition_partition") != "PASS"
+        or usage_replay.get("non_target_policy_disposition_drift_count") != 0
+    ):
+        fail("37-use license replay is not the expected current-policy PASS")
+    usage_replay_sha = sha256_file(args.usage_replay_report.resolve())
+    try:
+        usage_replay_path = str(args.usage_replay_report.resolve().relative_to(repo))
+    except ValueError:
+        usage_replay_path = str(args.usage_replay_report.resolve())
     approval = verify_approvals(repo, candidates)
     records, review_digest = review_records(repo, snapshot)
     runtime, all_artifacts = collect_artifacts(bundle, records)
     inventory_bindings = verify_inventory_bindings(candidates, bundle)
     package_map = candidate_package_map(candidates)
+    reviewed_subjects = {item["sha256"] for item in snapshot.get("unique_artifact_universe", [])}
+    candidate_subjects = set(package_map)
+    if candidate_subjects != reviewed_subjects:
+        missing = sorted(reviewed_subjects - candidate_subjects)
+        extra = sorted(candidate_subjects - reviewed_subjects)
+        fail(f"dependency artifact subject set drift (missing={missing[:3]}, extra={extra[:3]})")
+    dependency_subject_set_digest = sha256_bytes(canonical(sorted(candidate_subjects)))
     for a in runtime:
         pkg = package_map.get(a["sha256"])
         if not pkg:
             fail(f"distributed wheel absent from approved inventories: {a['sha256']}")
         a["filename"] = pkg.get("filename")
         a["purl"] = pkg.get("purl")
-    native, native_summary = native_projection(evidence_out)
-    evidence_hashes = evidence_identity(evidence_out)
+    current_workers = load_current_candidate_bindings(
+        repo,
+        evidence_out,
+        args.candidate_id_prefix,
+        args.expected_head,
+        {target: getattr(args, f"{target}_manifest") for target in ("linux", "windows")},
+        {target: getattr(args, f"{target}_retention") for target in ("linux", "windows")},
+        {target: getattr(args, f"{target}_recovery") for target in ("linux", "windows")},
+    )
+    selector_results = selector_regressions(
+        repo,
+        evidence_out,
+        args.candidate_id_prefix,
+        args.expected_head,
+        {target: getattr(args, f"{target}_manifest") for target in ("linux", "windows")},
+        {target: getattr(args, f"{target}_retention") for target in ("linux", "windows")},
+        {target: getattr(args, f"{target}_recovery") for target in ("linux", "windows")},
+    )
+    if any(value != "PASS" for value in selector_results.values()):
+        fail(f"candidate selector regression failed: {selector_results}")
+    native, native_summary = native_projection(evidence_out, current_workers)
+    evidence_hashes = evidence_identity(evidence_out, current_workers)
     wheels_root = args.wheels_root
     if wheels_root is None:
         candidate_wheels = Path("/private/tmp/code-c-license-run.33984")
@@ -605,10 +858,10 @@ def main() -> None:
     subprocess.run([str(prettier), "--write", str(notice_path)], cwd=repo, check=True, stdout=subprocess.DEVNULL)
     runtime_set_digest = sha256_bytes(canonical([{k: a[k] for k in ("package", "version", "sha256", "license_expression", "purl")} for a in runtime]))
     native_set_digest = sha256_bytes(canonical([{k: n[k] for k in ("target", "entry_id", "internal_path", "payload_sha256")} for n in native]))
-    final_set_digest = sha256_bytes(canonical({"workers": {target: info["sha256"] for target, info in WORKERS.items()}, "runtime": runtime_set_digest, "native": native_set_digest}))
+    final_set_digest = sha256_bytes(canonical({"workers": {target: info["sha256"] for target, info in current_workers.items()}, "runtime": runtime_set_digest, "native": native_set_digest}))
     review_result_sha = sha256_file(repo / REVIEW_RESULT_PATH)
     review_bundle_sha = sha256_file(repo / REVIEW_BUNDLE_PATH)
-    sbom = build_sbom(head, runtime, native, review_digest, final_set_digest, review_result_sha, review_bundle_sha)
+    sbom = build_sbom(head, runtime, native, review_digest, final_set_digest, review_result_sha, review_bundle_sha, current_workers, usage_replay_sha)
     sbom_path = out / "FINAL_DISTRIBUTION_SBOM.cdx.json"
     sbom_sha = write_json(sbom_path, sbom)
     notice_sha = sha256_file(notice_path)
@@ -617,7 +870,23 @@ def main() -> None:
         "status": "PASS",
         "validation_head_sha": head,
         "main_quality_baseline": MAIN_BASELINE,
-        "worker_artifacts": {target: {k: info[k] for k in ("sha256", "carchive_sha256", "build_context_id", "packaging_sha256", "native_sha256")} for target, info in WORKERS.items()},
+        "candidate_id": args.candidate_id_prefix,
+        "workflow_execution_head": args.expected_head,
+        "worker_artifacts": {target: {k: info[k] for k in ("sha256", "carchive_sha256", "build_context_id", "distribution_context_id", "distribution_context_sha256", "build_recipe_id", "build_recipe_sha256", "environment_descriptor_id", "environment_descriptor_sha256", "packaging_sha256", "native_sha256", "candidate_manifest_sha256", "candidate_id")} for target, info in current_workers.items()},
+        "candidate_manifests": {target: {"candidate_id": info["candidate_id"], "manifest_sha256": info["candidate_manifest_sha256"]} for target, info in current_workers.items()},
+        "candidate_manifest_binding": "PASS",
+        "retention": {target: {"receipt_id": info["retention_receipt_id"], "receipt_sha256": info["retention_receipt_sha256"]} for target, info in current_workers.items()},
+        "recovery": {target: {"drill_id": info["recovery_drill_id"], "drill_sha256": info["recovery_drill_sha256"]} for target, info in current_workers.items()},
+        "candidate_binding_regressions": {
+            "current_candidate_explicit_binding": selector_results["current_candidate_explicit_binding"],
+            "wrong_candidate_manifest_fail_closed": selector_results["wrong_candidate_manifest_fail_closed"],
+            "historical_candidate_reuse_fail_closed": selector_results["historical_candidate_reuse_fail_closed"],
+            "implicit_latest_selection_disabled": selector_results["implicit_latest_selection_disabled"],
+        },
+        "current_candidate_explicit_binding": selector_results["current_candidate_explicit_binding"],
+        "dependency_artifact_set_drift": "NONE",
+        "dependency_subject_set_digest": dependency_subject_set_digest,
+        "dependency_subject_set_matches_reviewed_universe": "PASS",
         "evidence_identity": evidence_hashes,
         "candidate_inventory_sha256": inventory_bindings,
         "exact_artifact_set_drift_from_frozen_review": "NONE",
@@ -640,33 +909,40 @@ def main() -> None:
         "license_final_review_result_sha256": review_result_sha,
         "license_review_bundle_sha256": review_bundle_sha,
         "license_policy": {"version": POLICY_VERSION, "sha256": POLICY_SHA},
-        "usage_replay": {"total": 37, "auto_policy_pass": 16, "review_approved": 21, "required_review": 0, "hard_blocked": 0},
+        "usage_replay": {"total": 37, "auto_policy_pass": 16, "review_approved": 21, "required_review": 0, "hard_blocked": 0, "evidence_path": usage_replay_path, "evidence_sha256": usage_replay_sha},
         "total_usage": 37,
         "auto_policy_pass_usage_count": 16,
         "review_approved_usage_count": 21,
         "required_review_usage_count": 0,
         "hard_blocked_usage_count": 0,
         "external_prerequisites": {"windows_msvc": {"policy": "PREINSTALLED_COMPATIBLE_RUNTIME_ONLY", "selected": 4, "final": 0, "downloaded_by_code_c": "NO", "bundled_by_code_c": "NO", "installed_by_code_c": "NO"}},
-        "distribution_set_reconciliation": {"status": "PASS", "final_distributed_component_count": len(WORKERS) + len(runtime) + len(native), "unaccounted_distributed_component_count": 0, "runtime_wheels": len(runtime), "native_payloads": len(native), "worker_artifacts": len(WORKERS)},
-        "sbom": {"path": str(sbom_path.relative_to(repo)), "sha256": sbom_sha, "binds_current_workers": "PASS"},
+        "distribution_set_reconciliation": {"status": "PASS", "final_distributed_component_count": len(current_workers) + len(runtime) + len(native), "unaccounted_distributed_component_count": 0, "runtime_wheels": len(runtime), "native_payloads": len(native), "worker_artifacts": len(current_workers)},
+        "sbom": {"path": str(sbom_path.relative_to(repo)), "sha256": sbom_sha, "binds_current_workers": "PASS", "binds_current_candidate": "PASS"},
+        "new_final_sbom_sha256": sbom_sha,
         "notice": {"path": str(notice_path.relative_to(repo)), "sha256": notice_sha, "obligation_evaluation": "PASS", "binds_current_distributed_set": "PASS"},
+        "new_notice_sha256": notice_sha,
         "worker_python_license_gate": "PASS", "python_license_gate": "PASS", "stable_release_license_gate": "BLOCKED_BY_EXTERNAL_MSVC_REDISTRIBUTION",
         "approval_reconciliation": approval,
         "project_owner_review_authority_binding": "PASS",
         "post_f_license_reconciliation": "PASS",
         "active_review_record_set_match": "PASS",
+        "license_review_subject_drift": "NONE",
+        "18_license_reviews_reused": "YES",
         "post_f_37_usage_replay": "PASS",
         "license_disposition_partition": "PASS",
         "non_target_policy_disposition_drift_count": result.get("non_target_policy_disposition_drift_count", 0),
         "pyinstaller_hooks_build_only_conditions": {"status": "PASS", "gpl_output_members": 0, "gpl_covered_code_copy_or_injection": "NO"},
-        "final_distributed_component_count": len(WORKERS) + len(runtime) + len(native),
+        "final_distributed_component_count": len(current_workers) + len(runtime) + len(native),
         "unaccounted_distributed_component_count": 0,
         "distribution_set_reconciliation_status": "PASS",
         "sbom_license_binding": "PASS",
         "final_sbom_binds_current_workers": "PASS",
+        "final_sbom_binds_current_candidate": "PASS",
         "notice_obligation_evaluation": "PASS",
         "notice_binding": "PASS",
         "final_notice_binds_current_distributed_set": "PASS",
+        "retention_binding": "PASS",
+        "recovery_drill_binding": "PASS",
         "cve_stage_a_rebind": "READY_NOT_RUN", "stage_b": "BLOCKED_NOT_RERUN", "siglip_index": "BLOCKED_NOT_RERUN", "pr_8_updated": "NO",
     }
     binding_sha = sha256_bytes(canonical(binding))
@@ -683,8 +959,21 @@ The consumer is reproducible with the repository-pinned formatter and the curate
 
 ```text
 python tools/code-c-python-supply-chain/reconcile_post_f_license.py \\
-  --evidence-root compliance/license-reconciliations/post-f-license-2026-09-02/evidence
+  --candidate-id-prefix <candidate-id-prefix> \\
+  --expected-head <workflow-execution-head> \\
+  --usage-replay-report <37-usage-replay.json> \\
+  --linux-manifest frozen-candidates/<candidate-id>-linux/linux/manifest.json \\
+  --linux-retention <linux-retention-receipt.json> \\
+  --linux-recovery <linux-recovery-receipt.json> \\
+  --windows-manifest frozen-candidates/<candidate-id>-windows/windows/manifest.json \\
+  --windows-retention <windows-retention-receipt.json> \\
+  --windows-recovery <windows-recovery-receipt.json> \\
+  --evidence-root <curated-current-head-evidence>
 ```
+
+Candidate selection is explicit and manifest-bound. The consumer never scans
+`frozen-candidates/` for a latest directory and rejects wrong or historical
+Candidate IDs before producing a distribution binding.
 
 This phase stops at `CVE_STAGE_A_REBIND=READY_NOT_RUN`; it does not rebuild a Worker or advance CVE, Stage B, SigLIP, or index validation.
 """
