@@ -122,6 +122,19 @@ def main() -> None:
             failures.append(f"{target} network reachability evidence is not closed")
         if archive.get("positive_control", {}).get("status") != "PASS" or archive.get("user_reachable_callsite_count") != 0 or archive.get("unresolved_wrapper_count") != 0 or archive.get("affected_archive_extraction_call_count") != 0 or archive.get("extracted_member_count") != 0 or archive.get("unexpected_temp_output_count") != 0:
             failures.append(f"{target} archive reachability evidence is not closed")
+        variants = {
+            fixture.get("input_variant")
+            for fixture in archive.get("fixture_set", [])
+            if isinstance(fixture, dict)
+        }
+        required_variants = {
+            "ZIP_MEDIA",
+            "RENAMED_IMAGE",
+            "RENAMED_MODEL",
+            "RENAMED_ACCEPTED_MEDIA",
+        }
+        if not required_variants.issubset(variants):
+            failures.append(f"{target} archive fixture coverage is incomplete")
         third_party_closure = item.get("callsite_closure", {}).get("third_party", {})
         if third_party_closure.get("unresolved_wrapper_count") != 0:
             failures.append(f"{target} third-party wrapper closure is unresolved")

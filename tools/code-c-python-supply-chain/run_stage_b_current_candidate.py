@@ -258,7 +258,11 @@ def main() -> None:
         "public_network": False,
     }
     archive_fixtures = [
-        {key: item[key] for key in ("label", "sha256", "compressed_size", "uncompressed_size", "member_count")}
+        {
+            **{key: item[key] for key in ("label", "sha256", "compressed_size", "uncompressed_size", "member_count")},
+            "input_variant": item.get("input_variant"),
+            "input_filename": item.get("input_filename"),
+        }
         for item in archive_negative.get("fixtures", [])
     ]
     network_fixture_sha = canonical_sha256(network_fixture)

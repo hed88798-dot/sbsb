@@ -169,48 +169,60 @@ def main() -> None:
         with tempfile.TemporaryDirectory(prefix="code-c-stage-b-") as directory:
             root = Path(directory)
             for fixture in create_archives(root):
-                output_root = root / f"output-{fixture['label']}"
-                event = terminal(
-                    call_worker(
-                        worker,
-                        "media.index.asset.v1",
-                        {
-                            **MALICIOUS_CAPABILITY_FIELDS,
-                            "input_path": str(fixture["path"]),
-                            "output_dir": str(output_root),
-                            "asset_id": f"stage_b_zip_{fixture['label']}",
-                            "revision": 1,
-                            "ffprobe_path": str(ffprobe),
-                            "shot_detector_parameters": {
-                                "adaptive_threshold": 3.0,
-                                "min_scene_len_frames": 10,
-                                "window_width": 2,
-                                "luma_only": False,
+                variants = [("ZIP_MEDIA", fixture["path"])]
+                for variant_name, suffix in (
+                    ("RENAMED_IMAGE", ".jpg"),
+                    ("RENAMED_MODEL", ".onnx"),
+                    ("RENAMED_ACCEPTED_MEDIA", ".avi"),
+                ):
+                    variant_path = root / f"safe-{fixture['label']}-{variant_name.lower()}{suffix}"
+                    variant_path.write_bytes(fixture["path"].read_bytes())
+                    variants.append((variant_name, variant_path))
+                for variant_name, input_path in variants:
+                    output_root = root / f"output-{fixture['label']}-{variant_name.lower()}"
+                    event = terminal(
+                        call_worker(
+                            worker,
+                            "media.index.asset.v1",
+                            {
+                                **MALICIOUS_CAPABILITY_FIELDS,
+                                "input_path": str(input_path),
+                                "output_dir": str(output_root),
+                                "asset_id": f"stage_b_zip_{fixture['label']}_{variant_name.lower()}",
+                                "revision": 1,
+                                "ffprobe_path": str(ffprobe),
+                                "shot_detector_parameters": {
+                                    "adaptive_threshold": 3.0,
+                                    "min_scene_len_frames": 10,
+                                    "window_width": 2,
+                                    "luma_only": False,
+                                },
+                                "embedding_model_version": "onnx-fp32-9e7ee6850617",
+                                "embedding_preprocess_version": "siglip2-processor-256-bicubic-mean0.5-official-text-v2",
+                                "model_root": str(root / "not-reached-model"),
+                                "dimension": 768,
                             },
-                            "embedding_model_version": "onnx-fp32-9e7ee6850617",
-                            "embedding_preprocess_version": "siglip2-processor-256-bicubic-mean0.5-official-text-v2",
-                            "model_root": str(root / "not-reached-model"),
-                            "dimension": 768,
-                        },
-                        environment,
+                            environment,
+                        )
                     )
-                )
-                code = event.get("error", {}).get("code") if event.get("type") == "error" else None  # type: ignore[union-attr]
-                safe_reject = code in {"MEDIA_PROBE_FAILED", "MEDIA_NO_VIDEO_STREAM"}
-                if not safe_reject:
-                    failures.append(f"{fixture['label']} ZIP-as-media was not safely rejected: {code}")
-                if output_root.exists():
-                    extraction_side_effects.extend(
-                        path.relative_to(root).as_posix()
-                        for path in sorted(output_root.rglob("*"))
+                    code = event.get("error", {}).get("code") if event.get("type") == "error" else None  # type: ignore[union-attr]
+                    safe_reject = code in {"MEDIA_PROBE_FAILED", "MEDIA_NO_VIDEO_STREAM"}
+                    if not safe_reject:
+                        failures.append(f"{fixture['label']} {variant_name} was not safely rejected: {code}")
+                    if output_root.exists():
+                        extraction_side_effects.extend(
+                            path.relative_to(root).as_posix()
+                            for path in sorted(output_root.rglob("*"))
+                        )
+                    archive_results.append(
+                        {
+                            **{key: value for key, value in fixture.items() if key != "path"},
+                            "input_variant": variant_name,
+                            "input_filename": input_path.name,
+                            "worker_error_code": code,
+                            "result": "SAFE_REJECT" if safe_reject else "FAIL",
+                        }
                     )
-                archive_results.append(
-                    {
-                        **{key: value for key, value in fixture.items() if key != "path"},
-                        "worker_error_code": code,
-                        "result": "SAFE_REJECT" if safe_reject else "FAIL",
-                    }
-                )
     finally:
         observer.shutdown()
         observer.server_close()
