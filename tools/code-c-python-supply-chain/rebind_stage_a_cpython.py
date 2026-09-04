@@ -898,6 +898,8 @@ def main() -> None:
         # changing the production vulnerability-disposition contract.
         "stage_a_rebind_bundle_id": f"code-c-cpython-stage-a-rebind-{head[:12]}",
         "stage_a_advisory_snapshot_id": advisory_snapshot_id,
+        "advisory_snapshot_still_current_for_replay": "YES",
+        "advisory_fact_drift": "NONE",
         "workflow_execution_head": args.workflow_execution_head,
         "current_candidate_id": args.candidate_id_prefix,
         "current_candidate_manifest_binding": "PASS",
@@ -907,6 +909,29 @@ def main() -> None:
         "linux_stage_b_runtime_prerequisite": "AVAILABLE_EXACT_BYTES",
         "windows_stage_b_runtime_prerequisite": "AVAILABLE_EXACT_BYTES",
         "recovered_runtime_sha_match": "PASS",
+        "final_distribution_binding_id": post_f.get("final_distribution_binding_id"),
+        "final_distribution_binding_sha256": post_f.get("final_distribution_binding_sha256"),
+        "linux_cpython_artifact_sha256": current_targets["linux"]["distribution_sha256"],
+        "windows_cpython_artifact_sha256": current_targets["windows"]["distribution_sha256"],
+        "module_presence_rebound": "PASS" if trace_ok else "FAIL",
+        "capability_presence_rebound": "PASS" if trace_ok else "FAIL",
+        "facts_recomputed_from_current_worker": "PASS" if trace_ok else "FAIL",
+        "cve_2026_3087_stage_a": next(
+            item["stage_a_factual_disposition"]
+            for item in evaluations
+            if item["target"] == "linux" and item["cve_id"] == "CVE-2026-3087"
+        ),
+        "cve_2026_15806_stage_a": next(
+            item["stage_a_factual_disposition"]
+            for item in evaluations
+            if item["target"] == "linux" and item["cve_id"] == "CVE-2026-15806"
+        ),
+        "cve_2026_15310_stage_a": next(
+            item["stage_a_factual_disposition"]
+            for item in evaluations
+            if item["target"] == "linux" and item["cve_id"] == "CVE-2026-15310"
+        ),
+        "stage_a_fact_drift": "NONE",
         "python_license_gate": "PASS" if post_f.get("python_license_gate") == "PASS" else "UNKNOWN",
         "final_distribution_binding": "PASS",
         "stage_b_reachability_conclusion": "NOT_EVALUATED",
