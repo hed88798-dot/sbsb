@@ -1,0 +1,99 @@
+name: Code C FFprobe exact runtime companion build
+
+on:
+  push:
+    branches:
+      - code-c/ffprobe-companion-build
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: code-c-ffprobe-companion-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FFMPEG_SOURCE_SHA256: cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635
+  FFMPEG_RELEASE_COMMIT: bf1b838f2ab88b4f8fd83443325c782ea0e0f7fa
+  FFPROBE_BUILD_PROFILE_SHA256: d837b4e75e6feb616f42bec15054ce018313a94ef1df39a8ba8ce4eae4886004
+  RUNTIME_LOADER_POLICY_SHA256: d98b08726c15f25adebacecc951b9bef6e009b141f7e53694a7c1d21396dab3f
+
+jobs:
+  linux:
+    name: Linux x86_64 FFprobe companion
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - name: Install pinned repository tooling
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Verify frozen FFprobe authority
+        run: |
+          pnpm compliance:ffprobe:profile:contract
+          pnpm compliance:runtime-loader-policy:contract
+      - name: Build exact Linux FFprobe companion
+        shell: bash
+        env:
+          MSYSTEM: ''
+        run: ./tools/ffprobe-build/build-linux.sh
+      - name: Upload transient Linux transport artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ffprobe-companion-linux-${{ github.sha }}
+          path: artifacts/ffprobe-companion/linux
+          if-no-files-found: error
+          retention-days: 1
+
+  windows:
+    name: Windows x86_64 FFprobe companion
+    runs-on: windows-2022
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - name: Install pinned repository tooling
+        shell: pwsh
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Verify frozen FFprobe authority
+        shell: pwsh
+        run: |
+          pnpm compliance:ffprobe:profile:contract
+          pnpm compliance:runtime-loader-policy:contract
+      - name: Verify target MSYS2 toolchain and build exact Windows companion
+        shell: pwsh
+        run: |
+          $bash = 'C:\msys64\usr\bin\bash.exe'
+          $cygpath = 'C:\msys64\usr\bin\cygpath.exe'
+          if (!(Test-Path $bash) -or !(Test-Path $cygpath)) {
+            throw 'MSYS2 UCRT64 toolchain is unavailable on the target runner'
+          }
+          $workspace = (& $cygpath -u $env:GITHUB_WORKSPACE).Trim()
+          $runnerTemp = (& $cygpath -u $env:RUNNER_TEMP).Trim()
+          $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 && ./tools/ffprobe-build/build-windows.sh"
+          & $bash -lc $command
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Upload transient Windows transport artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ffprobe-companion-windows-${{ github.sha }}
+          path: artifacts/ffprobe-companion/windows
+          if-no-files-found: error
+          retention-days: 1
