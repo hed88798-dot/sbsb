@@ -1,0 +1,148 @@
+{
+  "schema_version": "1",
+  "profile_kind": "FFPROBE_BUILD_PROFILE",
+  "profile_id": "code-f-ffprobe-semantic-build-profile-v1",
+  "profile_version": 1,
+  "profile_sha256": "d837b4e75e6feb616f42bec15054ce018313a94ef1df39a8ba8ce4eae4886004",
+  "product_capability_authority": {
+    "required_media_capability_set_id": "code-f-local-media-index-required-capabilities-format-neutral-v1",
+    "required_media_capability_set_sha256": "9cdc3630905ecb10429dde9ddd9e1fbe5d676a17aa21a2ca1a81f1070667a5a1",
+    "source_record": "compliance/runtime-dependency-intake/ffprobe-v2/REQUIRED_MEDIA_CAPABILITY_SET_V1.json"
+  },
+  "target_architecture_policy": {
+    "supported_platforms": ["linux-x86_64", "windows-x86_64"],
+    "semantic_profile_shared_across_platforms": true,
+    "platform_recipe_must_bind_toolchain_and_runtime_closure": true
+  },
+  "program_enablement": {
+    "FFPROBE_PROGRAM": "REQUIRED",
+    "FFMPEG_PROGRAM": "DISABLED",
+    "FFPLAY_PROGRAM": "DISABLED"
+  },
+  "required_product_capabilities": {
+    "input_scope": "LOCAL_FILESYSTEM_MEDIA",
+    "probe_operation": "FFPROBE_JSON_SHOW_STREAMS_SHOW_FORMAT",
+    "probe_fields": [
+      "duration",
+      "streams",
+      "rotation",
+      "frame_rate",
+      "resolution",
+      "pixel_format",
+      "audio"
+    ],
+    "stream_semantics": [
+      "AT_LEAST_ONE_VIDEO_STREAM",
+      "AUDIO_STREAM_METADATA_OPTIONAL",
+      "MULTI_STREAM_METADATA_PRESERVED"
+    ],
+    "container_capability_policy": "ALL_UPSTREAM_CONTAINERS_AT_PINNED_RELEASE",
+    "demuxer_capability_policy": "ALL_UPSTREAM_DEMUXERS_AT_PINNED_RELEASE",
+    "parser_capability_policy": "ALL_UPSTREAM_PARSERS_AT_PINNED_RELEASE"
+  },
+  "provided_capabilities": {
+    "input_scope": "LOCAL_FILESYSTEM_MEDIA",
+    "probe_operation": "FFPROBE_JSON_SHOW_STREAMS_SHOW_FORMAT",
+    "probe_fields": [
+      "duration",
+      "streams",
+      "rotation",
+      "frame_rate",
+      "resolution",
+      "pixel_format",
+      "audio"
+    ],
+    "stream_semantics": [
+      "AT_LEAST_ONE_VIDEO_STREAM",
+      "AUDIO_STREAM_METADATA_OPTIONAL",
+      "MULTI_STREAM_METADATA_PRESERVED"
+    ],
+    "container_capability_policy": "ALL_UPSTREAM_CONTAINERS_AT_PINNED_RELEASE",
+    "demuxer_capability_policy": "ALL_UPSTREAM_DEMUXERS_AT_PINNED_RELEASE",
+    "parser_capability_policy": "ALL_UPSTREAM_PARSERS_AT_PINNED_RELEASE"
+  },
+  "capability_coverage": {
+    "required_media_capability_set_sha256": "9cdc3630905ecb10429dde9ddd9e1fbe5d676a17aa21a2ca1a81f1070667a5a1",
+    "provided_capability_set_sha256": "9cdc3630905ecb10429dde9ddd9e1fbe5d676a17aa21a2ca1a81f1070667a5a1",
+    "status": "PASS",
+    "no_silent_format_narrowing": true
+  },
+  "protocol_policy": {
+    "declared_protocol_set": ["file"],
+    "undeclared_protocol_enablement": "FORBIDDEN",
+    "network_protocol_policy": "DISABLED",
+    "network_protocol_allowlist": []
+  },
+  "external_library_policy": {
+    "build_autodetection_policy": "FAIL_CLOSED",
+    "undeclared_external_library_policy": "FORBIDDEN",
+    "declared_external_library_set": [],
+    "declared_external_library_set_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "actual_linked_external_library_set_must_equal_declared": true
+  },
+  "linkage_policy": {
+    "linkage": "SHARED",
+    "bundled_runtime_library_policy": "Only FFmpeg shared libraries required by ffprobe may be selected into the companion; every selected member is later bound by the native runtime companion contract.",
+    "external_os_prerequisite_policy": "ALLOWLIST_ONLY",
+    "platform_prerequisite_allowlist": ["LINUX_GLIBC_BASELINE_X86_64", "WINDOWS_MSVC_RUNTIME_X64"]
+  },
+  "license_oriented_build_constraints": {
+    "GPL_COMPONENT_POLICY": "FORBIDDEN",
+    "NONFREE_COMPONENT_POLICY": "FORBIDDEN",
+    "LGPL_COMPONENT_POLICY": "REQUIRES_EXACT_ARTIFACT_REVIEW_AND_LGPL_OBLIGATION_CLOSURE",
+    "forbidden_components": ["GPL_COMPONENTS", "NONFREE_COMPONENTS", "libx264", "libx265"]
+  },
+  "build_configuration_constraints": {
+    "configure_intent": [
+      "--disable-everything",
+      "--enable-ffprobe",
+      "--disable-ffmpeg",
+      "--disable-ffplay",
+      "--enable-demuxers",
+      "--enable-parsers",
+      "--enable-decoders",
+      "--enable-protocol=file",
+      "--disable-network",
+      "--disable-autodetect",
+      "--disable-gpl",
+      "--disable-nonfree",
+      "--disable-doc",
+      "--disable-debug"
+    ],
+    "build_may_not_enable_unlisted_features": true,
+    "runner_environment_may_not_supply_undeclared_libraries": true,
+    "no_source_or_binary_download_during_profile_evaluation": true
+  },
+  "expected_build_output_classes": [
+    "FFPROBE_EXECUTABLE",
+    "FFMPEG_SHARED_SUPPORT_LIBRARIES",
+    "PLATFORM_RUNTIME_PREREQUISITES"
+  ],
+  "distribution_member_selection_policy": {
+    "allowed_runtime_members": ["ffprobe", "FFmpeg_shared_support_libraries_required_by_ffprobe"],
+    "prohibited_runtime_members": [
+      "ffmpeg",
+      "ffplay",
+      "network_protocol_modules",
+      "undeclared_external_libraries"
+    ],
+    "selection_authority": "NATIVE_RUNTIME_COMPANION_MANIFEST_AND_FINAL_DISTRIBUTION_RECONCILIATION"
+  },
+  "artifact_status": {
+    "linux_exact_ffprobe_artifact": "NOT_YET_PRODUCED",
+    "windows_exact_ffprobe_artifact": "NOT_YET_PRODUCED",
+    "artifact_approval": "NOT_PERFORMED",
+    "license_artifact_review": "NOT_PERFORMED"
+  },
+  "recheck_triggers": [
+    "product media capability authority changes",
+    "required media capability set changes",
+    "FFmpeg release or source archive SHA changes",
+    "program enablement changes",
+    "protocol or network policy changes",
+    "external library or autodetection policy changes",
+    "linkage or OS prerequisite policy changes",
+    "GPL or nonfree policy changes",
+    "relevant upstream advisory facts change"
+  ]
+}

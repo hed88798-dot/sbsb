@@ -1,0 +1,90 @@
+{
+  "schema_version": "1",
+  "snapshot_kind": "FFMPEG_RELEASE_SECURITY_INTAKE",
+  "snapshot_id": "code-f-ffmpeg-release-security-intake-n9.0.1-20260904-v1",
+  "snapshot_sha256": "78015e1bdbf8f0a0b5c1ef3aafd3ab000b129688f914833c6fb4f1dc917ccbdc",
+  "reviewed_at": "2026-09-04",
+  "review_owner": "CODE_F",
+  "review_scope": "Release-level intake for a future source-built ffprobe runtime dependency; not an exact binary vulnerability disposition.",
+  "selected_release": {
+    "upstream_project": "FFmpeg/FFmpeg",
+    "release_version": "9.0.1",
+    "release_tag": "n9.0.1",
+    "release_commit": "bf1b838f2ab88b4f8fd83443325c782ea0e0f7fa",
+    "release_date": "2026-08-12",
+    "support_basis": "Latest stable release from the 9.0 release branch at review time."
+  },
+  "evidence_sources": [
+    {
+      "type": "UPSTREAM_RELEASE_INDEX",
+      "locator": "https://ffmpeg.org/releases/",
+      "observation": "ffmpeg-9.0.1.tar.xz is the upstream published release archive."
+    },
+    {
+      "type": "UPSTREAM_DOWNLOAD_PAGE",
+      "locator": "https://ffmpeg.org/download.html",
+      "observation": "9.0.1 is identified as the latest stable FFmpeg release from the 9.0 release branch."
+    },
+    {
+      "type": "UPSTREAM_SECURITY_PAGE",
+      "locator": "https://ffmpeg.org/security.html",
+      "observation": "The reviewed table lists fixed boundaries for prior 8.0 releases; no blocking advisory is assigned there to n9.0.1. This observation does not replace later exact-artifact review."
+    },
+    {
+      "type": "UPSTREAM_TAG_MIRROR_PROVENANCE",
+      "locator": "https://chromium.googlesource.com/external/git.ffmpeg.org/ffmpeg/+/refs/tags/upstream/n9.0.1",
+      "observation": "The upstream tag resolves to commit bf1b838f2ab88b4f8fd83443325c782ea0e0f7fa."
+    }
+  ],
+  "known_relevant_advisories_reviewed": [
+    {
+      "advisory": "CVE-2025-69693",
+      "upstream_fixed_boundary": "FFmpeg 8.0.1",
+      "selected_release_relation": "9.0.1 is newer than the published 8.0.1 fix boundary; exact binary review remains required."
+    },
+    {
+      "advisory": "CVE-2025-63757",
+      "upstream_fixed_boundary": "FFmpeg 8.0.1",
+      "selected_release_relation": "9.0.1 is newer than the published 8.0.1 fix boundary; exact binary review remains required."
+    },
+    {
+      "advisory": "CVE-2025-67306",
+      "upstream_fixed_boundary": "FFmpeg 8.0.2",
+      "selected_release_relation": "9.0.1 is newer than the published 8.0.2 fix boundary; exact binary review remains required."
+    },
+    {
+      "advisory": "CVE-2026-8461",
+      "upstream_fixed_boundary": "FFmpeg 8.0.3",
+      "selected_release_relation": "9.0.1 is newer than the published 8.0.3 fix boundary; exact binary review remains required."
+    },
+    {
+      "advisory": "CVE-2026-30999",
+      "upstream_fixed_boundary": "FFmpeg 8.0.3",
+      "selected_release_relation": "9.0.1 is newer than the published 8.0.3 fix boundary; exact binary review remains required."
+    }
+  ],
+  "product_relevance": {
+    "relevant_surface": [
+      "ffprobe",
+      "container_demuxing",
+      "stream_metadata_parsing",
+      "local_media_input"
+    ],
+    "network_input": "DISABLED_BY_BUILD_PROFILE",
+    "external_library_autodetection": "DISABLED_BY_BUILD_PROFILE"
+  },
+  "outcome": {
+    "ffmpeg_release_support_status": "ACCEPTABLE",
+    "ffmpeg_release_security_intake": "PASS",
+    "known_relevant_advisory_review": "PASS",
+    "blocking_advisories_identified": 0,
+    "rationale": "The selected upstream stable release is newer than all relevant fixed boundaries listed in the reviewed upstream security table. The final Linux and Windows exact binaries must still undergo artifact and distribution vulnerability review before approval."
+  },
+  "recheck_triggers": [
+    "upstream security page adds an advisory affecting n9.0.1",
+    "selected release or tag changes",
+    "required product probing surface changes",
+    "build profile enables network or external libraries",
+    "exact binary enters distribution"
+  ]
+}

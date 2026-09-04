@@ -1,0 +1,54 @@
+{
+  "schema_version": "1",
+  "record_kind": "REQUIRED_MEDIA_CAPABILITY_SET",
+  "record_id": "code-f-local-media-index-required-capabilities-format-neutral-v1",
+  "capability_set_sha256": "9cdc3630905ecb10429dde9ddd9e1fbe5d676a17aa21a2ca1a81f1070667a5a1",
+  "authority_status": "PASS",
+  "authority_sources": [
+    {
+      "locator": "docs/architecture/code-0/PRODUCT_V1_SCOPE.md#本地素材库与智能索引",
+      "sha256": "cf3e4d27218061ed6062561aa0c1bc66a8d91264b49a39868e50b96f8a1b32b7"
+    },
+    {
+      "locator": "docs/architecture/code-0/LOCAL_MEDIA_INDEX_ARCHITECTURE.md#流水线",
+      "sha256": "f29aa8d6a0b74a00c6c00255523d7755372c2fed3436112699c9f5020e82829a"
+    },
+    {
+      "locator": "docs/architecture/code-0/TEST_STRATEGY.md#本地素材索引",
+      "sha256": "0cc1abdb3b306be41128d17ecbd2b39112cf5a2b113560149a0d0423bc6b2157"
+    }
+  ],
+  "authority_interpretation": "The frozen V1 contract is local-filesystem media indexing followed by probe, shot detection, keyframes, quality and embedding. It intentionally does not name a finite extension allowlist; the FFprobe profile therefore preserves all upstream container/demuxer/parser coverage at the pinned release and may not silently narrow it.",
+  "required_media_capabilities": {
+    "input_scope": "LOCAL_FILESYSTEM_MEDIA",
+    "input_locator": "EXPLICIT_LOCAL_FILESYSTEM_PATH",
+    "probe_operation": "FFPROBE_JSON_SHOW_STREAMS_SHOW_FORMAT",
+    "probe_fields": [
+      "duration",
+      "streams",
+      "rotation",
+      "frame_rate",
+      "resolution",
+      "pixel_format",
+      "audio"
+    ],
+    "stream_semantics": [
+      "AT_LEAST_ONE_VIDEO_STREAM",
+      "AUDIO_STREAM_METADATA_OPTIONAL",
+      "MULTI_STREAM_METADATA_PRESERVED"
+    ],
+    "downstream_consumers": ["SHOT_DETECTION_INPUT", "KEYFRAME_DECODE_INPUT", "SIGLIP_INDEX_INPUT"],
+    "format_scope": "FORMAT_NEUTRAL_LOCAL_MEDIA",
+    "container_capability_policy": "ALL_UPSTREAM_CONTAINERS_AT_PINNED_RELEASE",
+    "demuxer_capability_policy": "ALL_UPSTREAM_DEMUXERS_AT_PINNED_RELEASE",
+    "parser_capability_policy": "ALL_UPSTREAM_PARSERS_AT_PINNED_RELEASE",
+    "malformed_media_behavior": "REJECT_FAIL_CLOSED",
+    "network_media_input": "NOT_REQUIRED"
+  },
+  "scope_constraints": {
+    "customer_media_upload_to_probe": "FORBIDDEN",
+    "system_path_ffprobe": "FORBIDDEN",
+    "implicit_format_narrowing": "FORBIDDEN",
+    "capability_set_change_requires_new_version": true
+  }
+}
