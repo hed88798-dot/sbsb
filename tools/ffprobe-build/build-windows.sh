@@ -31,7 +31,7 @@ tar -xJf "$SOURCE_TARBALL" --strip-components=1 -C "$SOURCE_DIR"
 
 GCC_VERSION="$(gcc --version | head -1)"
 LD_VERSION="$(ld --version | head -1)"
-MAKE_VERSION="$(make --version | head -1)"
+MAKE_VERSION="$("$MAKE_COMMAND" --version | head -1)"
 EXTRA_CONFIGURE_JSON='["--prefix=install","--target-os=mingw32","--arch=x86_64","--enable-cross-compile","--cc=gcc","--enable-shared","--disable-static","--extra-ldflags=-static-libgcc -static-libstdc++"]'
 node "$ROOT/tools/ffprobe-build/create_records.mjs" \
   --platform windows --architecture x86_64 --output "$OUT/records" --profile "$PROFILE" \
