@@ -477,7 +477,7 @@ jobs:
           cp -- "$carchive_source" "$transport_root/carchive-${target}.pkg"
           records="artifacts/python-supply-chain/distribution-trust-chain/${target}/records-summary.json"
           read -r recipe_id recipe_sha environment_id environment_sha context_id context_sha < <(
-            node -e 'const fs=require("node:fs"); const value=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); process.stdout.write([value.recipe.id,value.recipe.sha256,value.environment.id,value.environment.sha256,value.context.id,value.context.sha256].join(" "));' "$records"
+            node -e 'const fs=require("node:fs"); const value=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); process.stdout.write([value.recipe.id,value.recipe.sha256,value.environment.id,value.environment.sha256,value.context.id,value.context.sha256].join(" ")+"\\n");' "$records"
           )
           candidate_id="code-c-${GITHUB_SHA}-${target}"
           node tools/python-supply-chain/candidate-egress.mjs create-transfer-manifest \
