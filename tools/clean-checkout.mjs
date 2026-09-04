@@ -83,6 +83,7 @@ try {
   );
   for (const args of [
     ['compliance:trust-chain:contract'],
+    ['compliance:runtime-companion:contract'],
     ['compliance:python:candidate:egress:policy'],
     ['compliance:artifact-license:verify'],
     ['compliance:runtime-prerequisite:verify'],
