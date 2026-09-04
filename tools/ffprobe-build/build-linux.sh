@@ -27,7 +27,7 @@ GCC_VERSION="$(gcc --version | head -1)"
 LD_VERSION="$(ld --version | head -1)"
 MAKE_VERSION="$(make --version | head -1)"
 EXTRA_CONFIGURE_JSON='["--prefix=install","--enable-shared","--disable-static","--extra-ldflags=-Wl,-rpath,$ORIGIN"]'
-BUILD_ARGS_JSON='["make LDFLAGS=-Wl,-rpath,\\$$ORIGIN -j$(nproc)","make LDFLAGS=-Wl,-rpath,\\$$ORIGIN install"]'
+BUILD_ARGS_JSON='["make with configured LDFLAGS and literal $ORIGIN binding -j$(nproc)","make with configured LDFLAGS and literal $ORIGIN binding install"]'
 node "$ROOT/tools/ffprobe-build/create_records.mjs" \
   --platform linux --architecture x86_64 --output "$OUT/records" --profile "$PROFILE" \
   --loader-policy "$LOADER_POLICY" --source-sha256 "$ACTUAL_SOURCE_SHA" \
@@ -43,9 +43,11 @@ cd "$SOURCE_DIR"
   --disable-network --disable-autodetect --disable-gpl --disable-nonfree \
   --disable-doc --disable-debug --enable-shared --disable-static \
   '--extra-ldflags=-Wl,-rpath,$ORIGIN' 2>&1 | tee "$OUT/evidence/configure.log"
-ORIGIN_LDFLAGS='-Wl,-rpath,\$$ORIGIN'
-make LDFLAGS="$ORIGIN_LDFLAGS" -j"$(nproc)" 2>&1 | tee "$OUT/evidence/build.log"
-make LDFLAGS="$ORIGIN_LDFLAGS" install 2>&1 | tee -a "$OUT/evidence/build.log"
+CONFIGURED_LDFLAGS="$(sed -n 's/^LDFLAGS=//p' ffbuild/config.mak)"
+test -n "$CONFIGURED_LDFLAGS"
+BOUND_LDFLAGS=${CONFIGURED_LDFLAGS//\$/\\\$\$}
+make LDFLAGS="$BOUND_LDFLAGS" -j"$(nproc)" 2>&1 | tee "$OUT/evidence/build.log"
+make LDFLAGS="$BOUND_LDFLAGS" install 2>&1 | tee -a "$OUT/evidence/build.log"
 
 test -f "$SOURCE_DIR/install/bin/ffprobe"
 cp -a "$SOURCE_DIR/install/bin/ffprobe" "$OUT/bundle/ffprobe"
