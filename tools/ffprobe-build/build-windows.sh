@@ -54,7 +54,13 @@ cd "$SOURCE_DIR"
 
 test -f "$SOURCE_DIR/install/bin/ffprobe.exe"
 cp -a "$SOURCE_DIR/install/bin/ffprobe.exe" "$OUT/bundle/ffprobe.exe"
-while IFS= read -r -d '' library; do cp -a "$library" "$OUT/bundle/"; done < <(find "$SOURCE_DIR/install" \( -type f -o -type l \) -print0 | grep -zE '/(avcodec|avdevice|avfilter|avformat|avutil|swresample|swscale)\.dll$' || true)
+while IFS= read -r -d '' library; do
+  case "$(basename "$library")" in
+    avcodec.dll|avdevice.dll|avfilter.dll|avformat.dll|avutil.dll|swresample.dll|swscale.dll)
+      cp -a "$library" "$OUT/bundle/"
+      ;;
+  esac
+done < <(find "$SOURCE_DIR/install" \( -type f -o -type l \) -print0)
 test -f "$OUT/bundle/ffprobe.exe"
 if find "$OUT/bundle" -maxdepth 1 -type f | grep -E '/ff(mpeg|play)\.exe$'; then
   echo 'prohibited ffmpeg/ffplay executable selected' >&2
