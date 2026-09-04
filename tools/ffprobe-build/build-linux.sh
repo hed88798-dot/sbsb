@@ -27,7 +27,7 @@ GCC_VERSION="$(gcc --version | head -1)"
 LD_VERSION="$(ld --version | head -1)"
 MAKE_VERSION="$(make --version | head -1)"
 EXTRA_CONFIGURE_JSON='["--prefix=install","--enable-shared","--disable-static"]'
-BUILD_ARGS_JSON='["configure with bound literal $ORIGIN LDFLAGS; make -j$(nproc)","configure with bound literal $ORIGIN LDFLAGS; make install"]'
+BUILD_ARGS_JSON='["configure with bound literal $ORIGIN LDFLAGS; make -j$(nproc)","relink ffprobe with explicit FFmpeg library search paths and bound literal $ORIGIN; make install"]'
 node "$ROOT/tools/ffprobe-build/create_records.mjs" \
   --platform linux --architecture x86_64 --output "$OUT/records" --profile "$PROFILE" \
   --loader-policy "$LOADER_POLICY" --source-sha256 "$ACTUAL_SOURCE_SHA" \
@@ -46,6 +46,9 @@ LDFLAGS='-Wl,-rpath,\$$$$ORIGIN' ./configure --prefix="$SOURCE_DIR/install" \
 grep '^LDFLAGS=' ffbuild/config.mak > "$OUT/evidence/configured-ldflags.txt"
 grep -F 'ORIGIN' "$OUT/evidence/configured-ldflags.txt" >/dev/null
 make -j"$(nproc)" 2>&1 | tee "$OUT/evidence/build.log"
+CONFIGURED_BASE_LDFLAGS="$(sed -n -E 's#^LDFLAGS=##p' ffbuild/config.mak | sed -E 's#-Wl,-rpath,[\\$]+ORIGIN##g')"
+FFPROBE_RELINK_LDFLAGS="-Llibavcodec -Llibavdevice -Llibavfilter -Llibavformat -Llibavutil -Llibswscale -Llibswresample ${CONFIGURED_BASE_LDFLAGS} -Wl,-rpath,\\\$\$ORIGIN"
+make LDFLAGS="$FFPROBE_RELINK_LDFLAGS" ffprobe 2>&1 | tee -a "$OUT/evidence/build.log"
 make install 2>&1 | tee -a "$OUT/evidence/build.log"
 
 test -f "$SOURCE_DIR/install/bin/ffprobe"
