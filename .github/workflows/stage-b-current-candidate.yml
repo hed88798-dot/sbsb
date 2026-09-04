@@ -122,13 +122,23 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p artifacts/stage-b/${TARGET}
+          set +e
           python tools/code-c-python-supply-chain/run_stage_b_current_candidate.py \
             --target "$TARGET" \
             --worker '${{ steps.inputs.outputs.worker }}' \
             --carchive '${{ steps.inputs.outputs.carchive }}' \
             --manifest '${{ steps.inputs.outputs.manifest }}' \
             --ffprobe '${{ steps.runner.outputs.ffprobe }}' \
-            --output "artifacts/stage-b/${TARGET}/runtime.json"
+            --output "artifacts/stage-b/${TARGET}/runtime.json" \
+            > "artifacts/stage-b/${TARGET}/evaluator.stdout" \
+            2> "artifacts/stage-b/${TARGET}/evaluator.stderr"
+          evaluator_status=$?
+          set -e
+          if [[ "$evaluator_status" != '0' ]]; then
+            tail -c 4000 "artifacts/stage-b/${TARGET}/evaluator.stderr" >&2 || true
+            echo "Stage B evaluator failed for ${TARGET}; preserving compact diagnostic output." >&2
+            exit "$evaluator_status"
+          fi
 
       - name: Upload compact runtime evidence only
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
