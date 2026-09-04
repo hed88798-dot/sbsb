@@ -54,7 +54,7 @@ make install 2>&1 | tee -a "$OUT/evidence/build.log"
 
 test -f "$SOURCE_DIR/install/bin/ffprobe"
 cp -a "$SOURCE_DIR/install/bin/ffprobe" "$OUT/bundle/ffprobe"
-while IFS= read -r -d '' library; do cp -a "$library" "$OUT/bundle/"; done < <(find "$SOURCE_DIR/install/lib" -maxdepth 1 \( -type f -o -type l \) -print0 | grep -zE '/libav[^/]*\.so(\.[0-9]+)*$' || true)
+while IFS= read -r -d '' library; do cp -a "$library" "$OUT/bundle/"; done < <(find "$SOURCE_DIR/install/lib" -maxdepth 1 \( -type f -o -type l \) -print0 | grep -zE '/lib(av|sw)[^/]*\.so(\.[0-9]+)*$' || true)
 test -f "$OUT/bundle/ffprobe"
 if find "$OUT/bundle" -maxdepth 1 -type f -o -type l | grep -Eq '/ff(mpeg|play)$'; then
   echo 'prohibited ffmpeg/ffplay executable selected' >&2
