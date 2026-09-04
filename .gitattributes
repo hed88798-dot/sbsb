@@ -7,6 +7,7 @@ schemas/golden/** text eol=lf
 compliance/license-policy/** text eol=lf
 compliance/quality-tooling/npm/** text eol=lf
 compliance/runtime-dependency-intake/native-runtime-companion/** text eol=lf
+compliance/runtime-dependency-intake/native-runtime-companion-v1/** text eol=lf
 schemas/compliance/native-runtime-companion/** text eol=lf
 tools/native-runtime-companion/** text eol=lf
 tests/contract/native-runtime-companion.test.ts text eol=lf
