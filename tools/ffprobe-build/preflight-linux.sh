@@ -33,7 +33,8 @@ package_sha="$(sha256sum "$deb" | awk '{print $1}')"
 sudo dpkg --unpack "$deb" 2>&1 | tee "$OUT/evidence/nasm-install.log"
 command -v nasm >/dev/null
 nasm_version="$(nasm -v 2>&1 | head -1)"
-grep -F "NASM version $EXPECTED_VERSION" <<<"$nasm_version" >/dev/null
+tool_version="${EXPECTED_VERSION%%-*}"
+grep -F "NASM version $tool_version" <<<"$nasm_version" >/dev/null
 nasm_path="$(command -v nasm)"
 nasm_sha="$(sha256sum "$nasm_path" | awk '{print $1}')"
 nasm_arch="$(file -b "$nasm_path")"
@@ -45,6 +46,7 @@ cat > "$PREFLIGHT" <<EOF
   "role": "BUILD_ONLY_TOOL",
   "distributed_in_runtime_companion": false,
   "version": "$EXPECTED_VERSION",
+  "tool_version": "$tool_version",
   "version_output": "$nasm_version",
   "architecture": "$nasm_arch",
   "executable": "$nasm_path",
