@@ -34,6 +34,7 @@ jobs:
       - run: pnpm compliance:python:tooling:install
       - run: pnpm compliance:trust-chain:contract
       - run: pnpm compliance:runtime-companion:contract
+      - run: pnpm compliance:runtime-loader-policy:contract
       - run: pnpm compliance:ffprobe:profile:contract
       - run: pnpm compliance:python:candidate:egress:policy
       - run: pnpm compliance:artifact-license:verify

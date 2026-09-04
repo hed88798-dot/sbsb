@@ -84,6 +84,7 @@ try {
   for (const args of [
     ['compliance:trust-chain:contract'],
     ['compliance:runtime-companion:contract'],
+    ['compliance:runtime-loader-policy:contract'],
     ['compliance:ffprobe:profile:contract'],
     ['compliance:python:candidate:egress:policy'],
     ['compliance:artifact-license:verify'],
