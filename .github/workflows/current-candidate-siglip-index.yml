@@ -1,0 +1,274 @@
+name: Code C current Candidate SigLIP Index revalidation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - code-c/new-distribution-candidate-build
+    paths:
+      - .github/workflows/current-candidate-siglip-index.yml
+      - tests/e2e/real-siglip-onnx.test.ts
+      - tools/code-c-python-supply-chain/create_siglip_index_revalidation_target_evidence.py
+      - tools/code-c-python-supply-chain/create_siglip_index_revalidation_bundle.py
+      - tools/code-c-python-supply-chain/download_locked_model_pack.py
+      - sidecars/media-worker/model-manifests/**
+      - compliance/vulnerability-reviews/cpython-3.13.15-final-vulnerability-review-current-candidate/**
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: code-c-current-candidate-siglip-index-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  functional:
+    name: Exact Candidate SigLIP/Index functional revalidation (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux
+            runner: ubuntu-24.04
+            transport_artifact: candidate-transfer-linux-76529014f47945fc2916d0488115822bc28d16c7
+          - target: windows
+            runner: windows-2022
+            transport_artifact: candidate-transfer-windows-76529014f47945fc2916d0488115822bc28d16c7
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    steps:
+      - name: Checkout current Candidate evaluator
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.13.15'
+
+      - name: Install repository test dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install the locked media-fixture runtime subset
+        run: python -m pip install --disable-pip-version-check --no-deps --requirement sidecars/media-worker/requirements-ci.lock
+
+      - name: Download exact Candidate transport bytes
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ matrix.transport_artifact }}
+          run-id: 33838635766
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
+          path: transport/${{ matrix.target }}
+
+      - name: Locate and verify exact Candidate
+        id: candidate
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          root="transport/${TARGET}"
+          worker="$(find "$root" -type f -name "worker-${TARGET}" -print -quit)"
+          carchive="$(find "$root" -type f -name "carchive-${TARGET}.pkg" -print -quit)"
+          manifest="$(find "$root" -type f -name 'candidate-transfer-manifest.json' -print -quit)"
+          [[ -n "$worker" && -n "$carchive" && -n "$manifest" ]]
+          if [[ "$TARGET" == linux ]]; then chmod 755 "$worker"; fi
+          python - "$TARGET" "$worker" "$carchive" "$manifest" <<'PY'
+          import hashlib
+          import json
+          import sys
+          from pathlib import Path
+
+          target, worker_value, carchive_value, manifest_value = sys.argv[1:]
+          manifest = json.loads(Path(manifest_value).read_text(encoding="utf-8"))
+          expected = {
+              "linux": {
+                  "worker": "4bd6d3afd3d2d60718f8174caedafb16a91c398a90c4198c664d14555a5f6073",
+                  "carchive": "163e72f82f93b3f7ac5585426431ccc01bf61578bcec571a83b09b08abdd0a0e",
+              },
+              "windows": {
+                  "worker": "ba6b81f433beef8ee95615a45248251918a18a602b53f8db9ec02e35cf76d8b1",
+                  "carchive": "1a319765900d1b6cde0743efa902a5d8cb0468335f118775bbf65565e9b2c805",
+              },
+          }[target]
+          def digest(path):
+              value = hashlib.sha256()
+              with Path(path).open("rb") as source:
+                  for chunk in iter(lambda: source.read(1024 * 1024), b""):
+                      value.update(chunk)
+              return value.hexdigest()
+          if manifest.get("transfer_role") != "TRANSIENT_ACTIONS_TRANSFER" or manifest.get("actions_artifact", {}).get("authority_role") != "TRANSPORT_ONLY":
+              raise SystemExit("candidate transport authority is invalid")
+          if digest(worker_value) != expected["worker"] or digest(carchive_value) != expected["carchive"]:
+              raise SystemExit("exact frozen Candidate SHA mismatch")
+          if manifest.get("worker", {}).get("sha256") != expected["worker"] or manifest.get("carchive", {}).get("sha256") != expected["carchive"]:
+              raise SystemExit("Candidate manifest does not bind the expected frozen bytes")
+          print(f"{target}-exact-candidate: PASS")
+          PY
+          mkdir -p "artifacts/functional/${TARGET}"
+          printf 'worker=%s\n' "$worker" >> "$GITHUB_OUTPUT"
+          printf 'carchive=%s\n' "$carchive" >> "$GITHUB_OUTPUT"
+          printf 'manifest=%s\n' "$manifest" >> "$GITHUB_OUTPUT"
+
+      - name: Hydrate approved SigLIP runtime model pack
+        id: model
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          python tools/code-c-python-supply-chain/download_locked_model_pack.py \
+            --output-root "artifacts/model-pack/${TARGET}" \
+            --evidence "artifacts/functional/${TARGET}/MODEL_PACK_EVIDENCE.json"
+          printf 'root=%s\n' "artifacts/model-pack/${TARGET}" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve the real ffprobe boundary
+        id: runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python_path="$(python -c 'import sys; print(sys.executable)')"
+          ffprobe_path="$(python -c 'import shutil; print(shutil.which("ffprobe") or "")')"
+          [[ -n "$ffprobe_path" && -f "$ffprobe_path" ]] || { echo 'ffprobe is required for functional revalidation' >&2; exit 1; }
+          printf 'python=%s\n' "$python_path" >> "$GITHUB_OUTPUT"
+          printf 'ffprobe=%s\n' "$ffprobe_path" >> "$GITHUB_OUTPUT"
+
+      - name: Run exact Worker SigLIP / Index E2E
+        shell: bash
+        env:
+          CODE_C_WORKER_PYTHON: ${{ steps.runtime.outputs.python }}
+          CODE_C_WORKER_EXECUTABLE: ${{ steps.candidate.outputs.worker }}
+          CODE_C_REAL_MODEL_ROOT: artifacts/model-pack/${{ matrix.target }}
+          CODE_C_FFPROBE: ${{ steps.runtime.outputs.ffprobe }}
+          CODE_C_E2E_REPORT: artifacts/functional/${{ matrix.target }}/REAL_SIGLIP_INDEX_E2E.json
+        run: |
+          set -euo pipefail
+          pnpm exec vitest run tests/e2e/real-siglip-onnx.test.ts --reporter=dot
+
+      - name: Create compact functional revalidation evidence
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          python tools/code-c-python-supply-chain/create_siglip_index_revalidation_target_evidence.py \
+            --target "$TARGET" \
+            --worker '${{ steps.candidate.outputs.worker }}' \
+            --carchive '${{ steps.candidate.outputs.carchive }}' \
+            --manifest '${{ steps.candidate.outputs.manifest }}' \
+            --model-root "artifacts/model-pack/${TARGET}" \
+            --model-evidence "artifacts/functional/${TARGET}/MODEL_PACK_EVIDENCE.json" \
+            --e2e-report "artifacts/functional/${TARGET}/REAL_SIGLIP_INDEX_E2E.json" \
+            --output "artifacts/functional/${TARGET}/FUNCTIONAL_REVALIDATION.json"
+
+      - name: Enforce compact evidence upload budget
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          node tools/actions-artifact-budget.mjs \
+            --name "code-c-siglip-index-functional-${TARGET}-${GITHUB_SHA}" \
+            --path "artifacts/functional/${TARGET}" \
+            --inventory "artifacts/functional/${TARGET}/ARTIFACT_UPLOAD_INVENTORY.json" \
+            --retention-days 3 \
+            --purpose siglip-index-functional-revalidation \
+            --classification transient \
+            --max-bytes 5242880
+
+      - name: Upload compact functional evidence only
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ always() }}
+        with:
+          name: code-c-siglip-index-functional-${{ matrix.target }}-${{ github.sha }}
+          path: artifacts/functional/${{ matrix.target }}
+          if-no-files-found: error
+          retention-days: 3
+
+  aggregate:
+    name: Assemble SigLIP / Index revalidation bundle
+    needs: functional
+    if: ${{ always() && needs.functional.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout current Candidate evidence assembler
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download Linux compact evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: code-c-siglip-index-functional-linux-${{ github.sha }}
+          path: artifacts/functional/linux
+
+      - name: Download Windows compact evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: code-c-siglip-index-functional-windows-${{ github.sha }}
+          path: artifacts/functional/windows
+
+      - name: Assemble and validate revalidation bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/code-c-python-supply-chain/create_siglip_index_revalidation_bundle.py \
+            --linux-evidence artifacts/functional/linux/FUNCTIONAL_REVALIDATION.json \
+            --windows-evidence artifacts/functional/windows/FUNCTIONAL_REVALIDATION.json \
+            --output-root compliance/revalidations/current-candidate-siglip-index-${GITHUB_SHA}
+
+      - name: Enforce and publish compact revalidation bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/actions-artifact-budget.mjs \
+            --name "code-c-siglip-index-revalidation-bundle-${GITHUB_SHA}" \
+            --path "compliance/revalidations/current-candidate-siglip-index-${GITHUB_SHA}" \
+            --path artifacts/functional/linux \
+            --path artifacts/functional/windows \
+            --inventory "compliance/revalidations/current-candidate-siglip-index-${GITHUB_SHA}/ARTIFACT_UPLOAD_INVENTORY.json" \
+            --retention-days 7 \
+            --purpose siglip-index-functional-and-real-index-revalidation \
+            --classification authoritative \
+            --max-bytes 5242880
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = next(Path('compliance/revalidations').glob('current-candidate-siglip-index-*'))
+          bundle = json.loads((root / 'SIGLIP_INDEX_REVALIDATION_BUNDLE.json').read_text(encoding='utf-8'))
+          sha = (root / 'SIGLIP_INDEX_REVALIDATION_BUNDLE.sha256').read_text(encoding='utf-8').split()[0]
+          print(f"::notice title=SigLIP Index revalidation::{bundle['status']} sha256={sha} head={bundle['code_c_head_sha']}")
+          print(json.dumps({
+              'status': bundle['status'],
+              'bundle_sha256': sha,
+              'functional_revalidation': bundle['functional_revalidation']['status'],
+              'real_index_acceptance': bundle['real_index_acceptance']['evidence_rebind'],
+              'model': bundle['siglip'],
+          }, sort_keys=True, separators=(',', ':')))
+          PY
+
+      - name: Upload compact revalidation bundle only
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: code-c-siglip-index-revalidation-bundle-${{ github.sha }}
+          path: |
+            compliance/revalidations/current-candidate-siglip-index-${{ github.sha }}
+            artifacts/functional/linux
+            artifacts/functional/windows
+          if-no-files-found: error
+          retention-days: 7
