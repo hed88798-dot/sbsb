@@ -195,10 +195,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          set +e
           python tools/code-c-python-supply-chain/create_stage_b_current_candidate_bundle.py \
             --linux-evidence artifacts/runtime/linux/runtime.json \
             --windows-evidence artifacts/runtime/windows/runtime.json \
-            --output-root compliance/vulnerability-reviews/cpython-3.13.15-stage-b-current-head
+            --output-root compliance/vulnerability-reviews/cpython-3.13.15-stage-b-current-head \
+            > aggregate.stdout \
+            2> aggregate.stderr
+          aggregate_status=$?
+          set -e
+          if [[ "$aggregate_status" != '0' ]]; then
+            diagnostic="$(tail -c 4000 aggregate.stderr | tr '\n' ' ')"
+            echo "::error title=Stage B bundle assembly diagnostic::${diagnostic}"
+            printf 'Stage B bundle assembly diagnostic: %s\n' "$diagnostic" >> "$GITHUB_STEP_SUMMARY"
+            exit "$aggregate_status"
+          fi
 
       - name: Upload compact Stage B evidence bundle
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
