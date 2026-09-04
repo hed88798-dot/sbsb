@@ -1,0 +1,107 @@
+{
+  "schema_version": "1",
+  "record_kind": "CODE_F_FFPROBE_SOURCE_AND_BUILD_PROFILE_PIN",
+  "record_id": "code-f-ffprobe-source-build-profile-pin-9f4d2b1-v1",
+  "record_sha256": "2ecf175af3e0aa5a765e4d04faf2c25312228a7fd134cb4715e3534a81a991e6",
+  "decision_status": "PASS",
+  "owner": "CODE_F_FFPROBE_SOURCE_RELEASE_AND_BUILD_PROFILE_PIN",
+  "old_main_quality_baseline": "fc6816214b7d4f56d691309ed6b2fd628ad25f79",
+  "qicr_binding": {
+    "record_id": "code-f-native-runtime-companion-qicr-7d8d254-v1",
+    "record_sha256": "1b8c08d3f3b6385ad158a17985087c7a57fc0c67dfaf03354386ac3587215d58"
+  },
+  "product_media_capability_binding": {
+    "source_record": "compliance/runtime-dependency-intake/ffprobe-v2/REQUIRED_MEDIA_CAPABILITY_SET_V1.json",
+    "required_media_capability_set_id": "code-f-local-media-index-required-capabilities-format-neutral-v1",
+    "required_media_capability_set_sha256": "9cdc3630905ecb10429dde9ddd9e1fbe5d676a17aa21a2ca1a81f1070667a5a1",
+    "authority_status": "PASS"
+  },
+  "ffmpeg_upstream_release": {
+    "upstream_project": "FFmpeg/FFmpeg",
+    "release_version": "9.0.1",
+    "release_tag": "n9.0.1",
+    "release_commit": "bf1b838f2ab88b4f8fd83443325c782ea0e0f7fa",
+    "release_identity_status": "PASS",
+    "release_locator": "https://ffmpeg.org/download.html"
+  },
+  "release_security_intake_binding": {
+    "snapshot_id": "code-f-ffmpeg-release-security-intake-n9.0.1-20260904-v1",
+    "snapshot_sha256": "78015e1bdbf8f0a0b5c1ef3aafd3ab000b129688f914833c6fb4f1dc917ccbdc",
+    "ffmpeg_release_support_status": "ACCEPTABLE",
+    "ffmpeg_release_security_intake": "PASS",
+    "known_relevant_advisory_review": "PASS"
+  },
+  "source_archive": {
+    "authority_type": "UPSTREAM_PUBLISHED_RELEASE_ARCHIVE",
+    "name": "ffmpeg-9.0.1.tar.xz",
+    "locator": "https://ffmpeg.org/releases/ffmpeg-9.0.1.tar.xz",
+    "sha256": "cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635",
+    "sha256_evidence_locator": "https://fossies.org/linux/misc/ffmpeg-9.0.1.tar.xz/",
+    "sha256_evidence_scope": "Archive bytes at the upstream URL; the source archive itself remains the authority.",
+    "release_binding": "PASS",
+    "upstream_source_signature_evidence": "PASS",
+    "upstream_checksum_evidence": "NOT_AVAILABLE"
+  },
+  "build_profile_binding": {
+    "profile_id": "code-f-ffprobe-semantic-build-profile-v1",
+    "profile_version": 1,
+    "profile_sha256": "d837b4e75e6feb616f42bec15054ce018313a94ef1df39a8ba8ce4eae4886004",
+    "pinned_build_intent": "PASS"
+  },
+  "semantic_constraints": {
+    "ffprobe_program": "REQUIRED",
+    "ffmpeg_program": "DISABLED",
+    "ffplay_program": "DISABLED",
+    "declared_protocol_set": ["file"],
+    "undeclared_protocol_enablement": "FORBIDDEN",
+    "network_protocol_policy": "DISABLED",
+    "network_protocol_allowlist": [],
+    "build_autodetection_policy": "FAIL_CLOSED",
+    "undeclared_external_library_policy": "FORBIDDEN",
+    "declared_external_library_set": [],
+    "declared_external_library_set_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "linkage_policy": "SHARED",
+    "external_os_prerequisite_policy": "ALLOWLIST_ONLY",
+    "nonfree_component_policy": "FORBIDDEN",
+    "gpl_component_policy": "FORBIDDEN"
+  },
+  "capability_coverage": {
+    "build_profile_capability_coverage": "PASS",
+    "required_media_capability_set_sha256": "9cdc3630905ecb10429dde9ddd9e1fbe5d676a17aa21a2ca1a81f1070667a5a1",
+    "build_profile_provided_capability_set_sha256": "9cdc3630905ecb10429dde9ddd9e1fbe5d676a17aa21a2ca1a81f1070667a5a1",
+    "no_silent_format_narrowing": true
+  },
+  "recheck_triggers": [
+    "FFmpeg release changes",
+    "source archive SHA changes",
+    "product media capability contract changes",
+    "required media capability set changes",
+    "Build Profile changes",
+    "program enablement changes",
+    "protocol allowlist changes",
+    "network policy changes",
+    "external library policy changes",
+    "linkage policy changes",
+    "GPL/nonfree policy changes",
+    "relevant upstream advisory facts change"
+  ],
+  "downstream_status": {
+    "linux_exact_ffprobe_artifact": "NOT_YET_PRODUCED",
+    "windows_exact_ffprobe_artifact": "NOT_YET_PRODUCED",
+    "artifact_approval": "NOT_PERFORMED",
+    "license_artifact_review": "NOT_PERFORMED",
+    "worker_rebuild_required": "NO",
+    "worker_rebuild": "NO",
+    "native_rebind": "NOT_RUN",
+    "license_distribution_rebind": "NOT_RUN",
+    "sbom_notice_regeneration": "NOT_RUN",
+    "final_distribution_rebind": "NOT_RUN",
+    "vulnerability_rebind": "NOT_RUN",
+    "siglip_index": "NOT_RUN",
+    "real_index_acceptance": "NOT_RUN",
+    "code_c_version_acceptance": "NOT_RUN",
+    "code_d": "NOT_STARTED",
+    "pr_8_updated": "NO"
+  },
+  "next_owner": "CODE_C_FFPROBE_EXACT_ARTIFACT_BUILD"
+}

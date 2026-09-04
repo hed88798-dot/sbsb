@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-video-platform.example/schemas/compliance/ffprobe-build-profile/v1/pin-record.schema.json",
+  "title": "FFprobe Source and Build Profile Pin Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_kind",
+    "record_id",
+    "record_sha256",
+    "decision_status",
+    "owner",
+    "old_main_quality_baseline",
+    "qicr_binding",
+    "product_media_capability_binding",
+    "ffmpeg_upstream_release",
+    "release_security_intake_binding",
+    "source_archive",
+    "build_profile_binding",
+    "semantic_constraints",
+    "capability_coverage",
+    "recheck_triggers",
+    "downstream_status",
+    "next_owner"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "record_kind": { "const": "CODE_F_FFPROBE_SOURCE_AND_BUILD_PROFILE_PIN" },
+    "record_id": { "type": "string", "minLength": 1 },
+    "record_sha256": { "$ref": "#/$defs/sha256" },
+    "decision_status": { "const": "PASS" },
+    "owner": { "const": "CODE_F_FFPROBE_SOURCE_RELEASE_AND_BUILD_PROFILE_PIN" },
+    "old_main_quality_baseline": { "$ref": "#/$defs/gitCommit" },
+    "qicr_binding": { "type": "object" },
+    "product_media_capability_binding": { "type": "object" },
+    "ffmpeg_upstream_release": { "type": "object" },
+    "release_security_intake_binding": { "type": "object" },
+    "source_archive": { "type": "object" },
+    "build_profile_binding": { "type": "object" },
+    "semantic_constraints": { "type": "object" },
+    "capability_coverage": { "type": "object" },
+    "recheck_triggers": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "downstream_status": { "type": "object" },
+    "next_owner": { "const": "CODE_C_FFPROBE_EXACT_ARTIFACT_BUILD" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "gitCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+  }
+}
