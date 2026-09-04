@@ -56,7 +56,7 @@ test -f "$SOURCE_DIR/install/bin/ffprobe.exe"
 cp -a "$SOURCE_DIR/install/bin/ffprobe.exe" "$OUT/bundle/ffprobe.exe"
 while IFS= read -r -d '' library; do
   case "$(basename "$library")" in
-    avcodec.dll|avdevice.dll|avfilter.dll|avformat.dll|avutil.dll|swresample.dll|swscale.dll)
+    avcodec-*.dll|avdevice-*.dll|avfilter-*.dll|avformat-*.dll|avutil-*.dll|swresample-*.dll|swscale-*.dll)
       cp -a "$library" "$OUT/bundle/"
       ;;
   esac
