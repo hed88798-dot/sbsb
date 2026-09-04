@@ -93,9 +93,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'MSYS2 no-profile bootstrap probe failed' }
           $workspace = (& $cygpath -u $env:GITHUB_WORKSPACE).Trim()
           $runnerTemp = (& $cygpath -u $env:RUNNER_TEMP).Trim()
-          $nodePath = (& $cygpath -u ((Get-Command node).Source)).Trim()
-          $nodeBin = Split-Path -Parent $nodePath
-          $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 NODE_BIN='$nodeBin' MAKE_COMMAND=mingw32-make PATH='/ucrt64/bin:/usr/bin:/bin:$nodeBin' && ./tools/ffprobe-build/preflight-windows.sh && bash -x ./tools/ffprobe-build/build-windows.sh"
+          $nodePath = (Get-Command node).Source
+          $nodeBin = (& $cygpath -u (Split-Path -Parent $nodePath)).Trim()
+          if (!(Test-Path $nodePath) -or [string]::IsNullOrWhiteSpace($nodeBin)) { throw 'Node runtime path could not be bound for MSYS2 build' }
+          $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 NODE_BIN='$nodeBin' MAKE_COMMAND=mingw32-make PATH='/ucrt64/bin:/usr/bin:/bin:$nodeBin' && command -v node && ./tools/ffprobe-build/preflight-windows.sh && bash -x ./tools/ffprobe-build/build-windows.sh"
           & $bash --noprofile --norc -lc $command
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Upload transient Windows transport artifact
