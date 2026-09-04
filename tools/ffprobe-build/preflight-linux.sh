@@ -4,12 +4,25 @@ set -euo pipefail
 ROOT="${GITHUB_WORKSPACE:?GITHUB_WORKSPACE is required}"
 OUT="$ROOT/artifacts/ffprobe-companion/linux"
 PREFLIGHT="$OUT/evidence/nasm-preflight.json"
+STATUS="$OUT/evidence/nasm-preflight-status.txt"
 EXPECTED_VERSION='2.16.01-1build1'
 mkdir -p "$OUT/evidence"
+printf 'status=STARTED\nexpected_version=%s\n' "$EXPECTED_VERSION" > "$STATUS"
+on_error() {
+  code=$?
+  printf 'status=FAIL\nexit_code=%s\n' "$code" >> "$STATUS"
+  exit "$code"
+}
+trap on_error ERR
 
 sudo apt-get update -qq
-candidate="$(apt-cache policy nasm | awk '/Candidate:/ {print $2; exit}')"
-test "$candidate" = "$EXPECTED_VERSION"
+apt-cache policy nasm > "$OUT/evidence/nasm-apt-policy.txt"
+candidate="$(awk '/Candidate:/ {print $2; exit}' "$OUT/evidence/nasm-apt-policy.txt")"
+printf 'candidate_version=%s\n' "${candidate:-NOT_AVAILABLE}" >> "$STATUS"
+if [ "$candidate" != "$EXPECTED_VERSION" ]; then
+  echo "expected NASM $EXPECTED_VERSION, runner candidate is ${candidate:-NOT_AVAILABLE}" >&2
+  exit 1
+fi
 package_dir="$RUNNER_TEMP/nasm-package"
 mkdir -p "$package_dir"
 cd "$package_dir"
@@ -46,6 +59,7 @@ cat > "$PREFLIGHT" <<EOF
   "binding": "PASS"
 }
 EOF
+printf 'status=PASS\n' >> "$STATUS"
 {
   echo "NASM_VERSION=$EXPECTED_VERSION"
   echo "NASM_EXECUTABLE_SHA256=$nasm_sha"

@@ -93,7 +93,9 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'MSYS2 no-profile bootstrap probe failed' }
           $workspace = (& $cygpath -u $env:GITHUB_WORKSPACE).Trim()
           $runnerTemp = (& $cygpath -u $env:RUNNER_TEMP).Trim()
-          $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 PATH='/ucrt64/bin:/usr/bin:'`$PATH && printf 'msystem=' && printenv MSYSTEM && printf 'path=' && printenv PATH && uname -a && command -v gcc && command -v make && command -v objdump && command -v nasm && ./tools/ffprobe-build/build-windows.sh"
+          $nodePath = (& $cygpath -u ((Get-Command node).Source)).Trim()
+          $nodeBin = Split-Path -Parent $nodePath
+          $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 NODE_BIN='$nodeBin' PATH='/ucrt64/bin:/usr/bin:/bin:$nodeBin' && ./tools/ffprobe-build/preflight-windows.sh && ./tools/ffprobe-build/build-windows.sh"
           & $bash --noprofile --norc -lc $command
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Upload transient Windows transport artifact

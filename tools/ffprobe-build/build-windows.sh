@@ -14,30 +14,9 @@ command -v gcc >/dev/null
 command -v make >/dev/null
 command -v objdump >/dev/null
 command -v nasm >/dev/null
-NASM_VERSION="$(nasm -v 2>&1 | head -1)"
-NASM_PATH="$(command -v nasm)"
-NASM_SHA256="$(sha256sum "$NASM_PATH" | awk '{print $1}')"
-NASM_PACKAGE="$(pacman -Q nasm 2>/dev/null || true)"
-test -n "$NASM_PACKAGE"
-cat > "$OUT/evidence/nasm-preflight.json" <<EOF
-{
-  "schema_version": "1",
-  "tool": "nasm",
-  "role": "BUILD_ONLY_TOOL",
-  "distributed_in_runtime_companion": false,
-  "version_output": "$NASM_VERSION",
-  "executable": "$NASM_PATH",
-  "executable_sha256": "$NASM_SHA256",
-  "package_name": "nasm",
-  "package_version": "$NASM_PACKAGE",
-  "package_source": "MSYS2-UCRT64-installed-runner",
-  "package_artifact_sha256": "NOT_AVAILABLE_UNDER_CURRENT_POLICY",
-  "acquisition": "preinstalled MSYS2 UCRT64 package; no package mutation",
-  "package_manager_used_for_build_toolchain": true,
-  "package_manager_used_as_product_artifact_authority": false,
-  "binding": "PASS"
-}
-EOF
+TOOLCHAIN_PREFLIGHT="$OUT/evidence/msys2-toolchain-preflight.json"
+test -f "$TOOLCHAIN_PREFLIGHT"
+TOOLCHAIN_PREFLIGHT_PATH="$TOOLCHAIN_PREFLIGHT" node -e "const fs=require('fs'); if (JSON.parse(fs.readFileSync(process.env.TOOLCHAIN_PREFLIGHT_PATH,'utf8')).binding !== 'PASS') process.exit(1)"
 printf 'runner_architecture=%s\nmsystem=%s\n' "$(uname -m)" "${MSYSTEM:-unset}" > "$OUT/evidence/runner-architecture.txt"
 
 curl --fail --location --proto '=https' --tlsv1.2 --silent --show-error \
@@ -58,7 +37,7 @@ node "$ROOT/tools/ffprobe-build/create_records.mjs" \
   --loader-policy "$LOADER_POLICY" --source-sha256 "$ACTUAL_SOURCE_SHA" \
   --source-archive ffmpeg-9.0.1.tar.xz --compiler "$GCC_VERSION" \
   --toolchain "${GCC_VERSION}; ${LD_VERSION}; ${MAKE_VERSION}" \
-  --build-tools-file "$OUT/evidence/nasm-preflight.json" \
+  --build-tools-file "$TOOLCHAIN_PREFLIGHT" \
   --extra-configure-json "$EXTRA_CONFIGURE_JSON" --build-json '["make","-j$(nproc)","make install"]'
 
 cd "$SOURCE_DIR"
