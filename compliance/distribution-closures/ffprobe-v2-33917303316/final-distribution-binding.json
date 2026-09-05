@@ -1,0 +1,31 @@
+{
+  "candidate_id": "code-c-distribution-ffprobe-v2-33917303316",
+  "candidate_manifest_file_sha256": "5f68a73ae32e9c1437aa5ebd05890df986d542f9f62e9685c00cdf817d273366",
+  "candidate_manifest_sha256": "3fb598a0872db0e30cd08de0bd187b823b36ebff7072bd3d6c00f065335aa215",
+  "distribution_component_count": 217,
+  "distribution_component_set_digest": "b0165100d3a4de94ef18f9b285f565aa51978c649d5d3f452e7df828ad7bf9ae",
+  "ffprobe_approval_aggregate_sha256": "2a05f157c4fb43427035945da042da73b23c3379a492ae9aa902516ea2803ac6",
+  "final_distribution_binding_id": "code-c-final-distribution-ffprobe-v2-33917303316",
+  "final_distribution_binding_sha256": "2ff105489777ffee0ae12bcab6f864097f7e34513ee1d523185415fd7047a2d6",
+  "license_reconciliation": "PASS",
+  "license_reconciliation_sha256": "951ff2ac04367778fa05d5169b152226373dc74bf97a18ba2d92fe609d7fbede",
+  "main_quality_baseline": "f438e4d31f043d3b3750781772478c93169ea922",
+  "native_reconciliation": {
+    "linux": "ea5f0b4ec03fc0fa190d1f29974ec903b8c00fcfbab796932da83a2529649c14",
+    "windows": "ee160600addc39993afdff7991b0545e92859ca5c8beb75641b8918d674ac579"
+  },
+  "notice_sha256": "22b1dcb331b18632617ce3bb361271c02de9b7457a053a1b7388b6a0ca4a76bd",
+  "previous_final_distribution_id": "code-c-final-distribution-6cd09589d42329c7",
+  "previous_final_distribution_mutated": false,
+  "production_boundary_smoke_sha256": "5584bb2a012565a394da4884c69a2860a75d82a70540869f2e7a7e48a225bd63",
+  "record_kind": "FINAL_DISTRIBUTION_BINDING",
+  "retention_binding_sha256": "4f32c3e2ae4480d34eeb1c1a1f5d965e37da8768f7abbdaca886ca4c8759e47c",
+  "sbom_sha256": "c151bf75ad9ab2b47656743a183ec3f0b3c0dac7fa55dc307d263ec3356a4b39",
+  "schema_version": "1",
+  "siglip_index": "BLOCKED_PENDING_VULNERABILITY_REBIND",
+  "stable_release_license_gate": "BLOCKED_BY_EXTERNAL_MSVC_REDISTRIBUTION",
+  "status": "PASS",
+  "vulnerability_rebind": "READY_NOT_RUN",
+  "worker_lineage": "SAME_WORKER_LINEAGE",
+  "worker_rebuild": "NO"
+}
