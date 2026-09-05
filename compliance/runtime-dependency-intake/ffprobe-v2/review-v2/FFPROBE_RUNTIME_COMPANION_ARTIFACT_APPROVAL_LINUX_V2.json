@@ -1,0 +1,129 @@
+{
+  "schema_version": "1",
+  "record_kind": "FFPROBE_RUNTIME_COMPANION_ARTIFACT_APPROVAL",
+  "record_id": "code-f-ffprobe-linux-artifact-approval-33917303316-packaging-v2",
+  "decision": "APPROVED",
+  "review_authority": {
+    "owner": "CODE_F",
+    "status": "PASS",
+    "reviewed_at": "2026-09-05T05:25:46Z",
+    "immutable": true,
+    "scope": "EXACT_PACKAGING_V2_ARTIFACT"
+  },
+  "subject": {
+    "companion_id": "code-c-ffprobe-linux-33917303316",
+    "platform": "linux-x86_64",
+    "artifact_logical_locator": "frozen-candidates/code-c-ffprobe-linux-33917303316-v2/linux/",
+    "manifest_logical_locator": "frozen-candidates/code-c-ffprobe-linux-33917303316-v2/linux/manifest.json",
+    "manifest_file_sha256": "5a543191f240ac547f7a387a2bfedd634df8815b2e74fd58bb1e79d5a662d5f3",
+    "manifest_canonical_sha256": "fbb3c771b23bc8d50d8df7d3aa92ba226d7f5da3f125c10634f7436fef3fdaeb",
+    "bundle_identity_sha256": "171a289b8ce7bcc443b448f75225469e192ca38dbc1cc8fa233b8f6c6463f1db",
+    "entrypoint": {
+      "path": "ffprobe",
+      "sha256": "59f3a6208e2f5754c4d3c75525a7b50be673fff13994e5d98f8e6a47e68f6097"
+    },
+    "member_set_digest": "4fc10ff70b77ce1df4be3edd1f88d53a7cf989f09c78bdaab1c6549ff9ee2c8d",
+    "member_count": 22
+  },
+  "packaging_issuance": {
+    "issuance_id": "code-c-ffprobe-linux-33917303316-packaging-v2",
+    "issuance_sha256": "c005930bd0ee3322bc283b5122970cd00b023c548bb62878027412f2f67bcbec",
+    "transport_tar_sha256": "8ba9c164f73e11fb299f3551a056a30845aae0d4eeec3d50c71014cddf960ef3",
+    "packaging_relation": "REPACKAGED_FROM_EXISTING_EXACT_RUNTIME_BINARY_SET",
+    "packaging_issuance": "NEW",
+    "manual_post_hoc_artifact_edit": false,
+    "authority_manifest_location": "PACKAGE_ROOT",
+    "root_authority_manifest_present": true,
+    "bundle_authority_manifest_absent": true,
+    "bundle_manifest_logical_locator": "frozen-candidates/code-c-ffprobe-linux-33917303316-v2/linux/bundle/manifest.json"
+  },
+  "provenance": {
+    "reviewed_code_c_head": "eff2bb6bc90cd70a1b8e971c150c6f74fe5e472a",
+    "source_build_commit": "3ebded1b25b205fa6128379f39de2c3848550485",
+    "source_build_lineage": "SAME",
+    "runtime_binary_lineage": "SAME",
+    "source_build_rerun": false,
+    "runtime_binary_rebuild": false,
+    "upstream_release": "9.0.1",
+    "upstream_tag": "n9.0.1",
+    "upstream_commit": "bf1b838f2ab88b4f8fd83443325c782ea0e0f7fa",
+    "source_archive_identity": "ffmpeg-9.0.1.tar.xz",
+    "source_archive_sha256": "cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635",
+    "build_recipe": {
+      "id": "code-c-ffprobe-linux-33917303316-recipe",
+      "sha256": "72eb670577ee4f335d28539ccf0c17e399aa2c487f7bd189cbed22ff96fc421c"
+    },
+    "environment_descriptor": {
+      "id": "code-c-ffprobe-linux-33917303316-environment",
+      "sha256": "e50bb4a09531b3eae3aecd2b2e9b035865c828705224b5ce2e855e4436ad72cb"
+    },
+    "build_context": {
+      "id": "code-c-ffprobe-linux-33917303316-context",
+      "sha256": "30ae2cc2096c8b1cefe59f8e06247dcebb9a1705ae99a21f5c42fc6137e13cff"
+    },
+    "build_profile": {
+      "id": "code-f-ffprobe-semantic-build-profile-v1",
+      "sha256": "d837b4e75e6feb616f42bec15054ce018313a94ef1df39a8ba8ce4eae4886004"
+    },
+    "loader_policy": {
+      "id": "code-f-native-runtime-companion-loader-policy-flat-app-local-bundle-20260904-v1",
+      "sha256": "d98b08726c15f25adebacecc951b9bef6e009b141f7e53694a7c1d21396dab3f"
+    },
+    "actual_build_configuration_match": "PASS",
+    "external_linked_library_set": [],
+    "gpl_enablement": "NONE",
+    "nonfree_enablement": "NONE",
+    "build_only_tools": [
+      {
+        "name": "nasm",
+        "role": "BUILD_ONLY_TOOL",
+        "package_version": "2.16.01-1build1",
+        "package_artifact_sha256": "22eede0f2dd62343b0298182f62f7485704fe02f166395b02c92a8883377e0b3",
+        "distributed_in_runtime_companion": false,
+        "package_manager_product_artifact_authority": false
+      }
+    ]
+  },
+  "runtime_closure": {
+    "status": "PASS",
+    "runtime_rebind_evidence_id": "code-c-ffprobe-linux-runtime-rebind-33917303316-v2",
+    "runtime_rebind_evidence_sha256": "019d7582b815bf9b543d2ae9e5e6d046e337231e9c2d24062b68a17ab510fa63",
+    "unresolved_runtime_dependency_count": 0,
+    "undeclared_runtime_member_count": 0,
+    "system_library_shadowing": "NONE",
+    "system_path_used": "NO",
+    "loader_trace": "PASS",
+    "entrypoint_execution_evidence": "PASS",
+    "target_platform_execution_evidence": "PASS_EXACT_BINARY_REBIND",
+    "target_platform_execution_rerun_by_f": "NOT_RUN_ON_MAC"
+  },
+  "retention_and_reverification": {
+    "transport_role": "TRANSIENT_TRANSFER_ONLY",
+    "transport_tar_logical_locator": "frozen-candidates/code-c-ffprobe-linux-33917303316-v2/companion.tar",
+    "transport_tar_sha256_recomputed": "PASS",
+    "archive_readability": "PASS",
+    "recovery_drill": "PASS",
+    "recovered_bundle_verifier": "PASS",
+    "undeclared_member_count": 0,
+    "missing_declared_member_count": 0,
+    "declared_member_hashes": "PASS",
+    "bundle_member_hash_closure": "PASS"
+  },
+  "identity_drift": {
+    "canonical_runtime_identity_drift": "NONE",
+    "entrypoint_byte_drift": "NONE",
+    "shared_library_byte_drift": "NONE",
+    "runtime_binary_member_drift": "NONE",
+    "packaging_issuance_drift": "PRESENT_EXPECTED",
+    "historical_rejected_packaging_issuance_acceptable_for_integration": false
+  },
+  "downstream_rebinds_required": {
+    "worker_rebuild_required": false,
+    "native_rebind_required": true,
+    "license_distribution_rebind_required": true,
+    "sbom_notice_rebind_required": true,
+    "final_distribution_rebind_required": true,
+    "vulnerability_rebind_required": true
+  },
+  "record_sha256": "434ae744aa92090b9b55791af53255dac85f3df2841006d7837f1689abe27074"
+}

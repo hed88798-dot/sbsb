@@ -1,0 +1,142 @@
+{
+  "schema_version": "1",
+  "record_kind": "FFPROBE_RUNTIME_COMPANION_ARTIFACT_APPROVAL",
+  "record_id": "code-f-ffprobe-windows-artifact-approval-33917303316-packaging-v2",
+  "decision": "APPROVED",
+  "review_authority": {
+    "owner": "CODE_F",
+    "status": "PASS",
+    "reviewed_at": "2026-09-05T05:25:46Z",
+    "immutable": true,
+    "scope": "EXACT_PACKAGING_V2_ARTIFACT"
+  },
+  "subject": {
+    "companion_id": "code-c-ffprobe-windows-33917303316",
+    "platform": "windows-x86_64",
+    "artifact_logical_locator": "frozen-candidates/code-c-ffprobe-windows-33917303316-v2/windows/",
+    "manifest_logical_locator": "frozen-candidates/code-c-ffprobe-windows-33917303316-v2/windows/manifest.json",
+    "manifest_file_sha256": "954f61486d78f039e817fc705be121d69c42d20ee8748006008283c8a94c3d74",
+    "manifest_canonical_sha256": "abb81e9a7d2682913ae69ae9a11af7b611fd2ac5058aca9da0165ce398e43255",
+    "bundle_identity_sha256": "67f37171869f353712f6f02341a2beb5755c3ba1d2ae4702aa0effe0283856e8",
+    "entrypoint": {
+      "path": "ffprobe.exe",
+      "sha256": "2ed7798daa057ee557bca8d1fe72a0f2c48109369dc0e5a7672b31c08565fc7c"
+    },
+    "member_set_digest": "0174d437346c67bec0e4bfc3e64c39ad170ae014560fc3afdd615ababee2a5e2",
+    "member_count": 8
+  },
+  "packaging_issuance": {
+    "issuance_id": "code-c-ffprobe-windows-33917303316-packaging-v2",
+    "issuance_sha256": "16c95257acb53caecfb24d4c54091530884adfcfdf1f796ad017ebe844c75f11",
+    "transport_tar_sha256": "0e8250dc4cf8f8e4fd4533a7a1298b59475982a78d2df49d4686ba9eacd684d7",
+    "packaging_relation": "REPACKAGED_FROM_EXISTING_EXACT_RUNTIME_BINARY_SET",
+    "packaging_issuance": "NEW",
+    "manual_post_hoc_artifact_edit": false,
+    "authority_manifest_location": "PACKAGE_ROOT",
+    "root_authority_manifest_present": true,
+    "bundle_authority_manifest_absent": true,
+    "bundle_manifest_logical_locator": "frozen-candidates/code-c-ffprobe-windows-33917303316-v2/windows/bundle/manifest.json"
+  },
+  "provenance": {
+    "reviewed_code_c_head": "eff2bb6bc90cd70a1b8e971c150c6f74fe5e472a",
+    "source_build_commit": "3ebded1b25b205fa6128379f39de2c3848550485",
+    "source_build_lineage": "SAME",
+    "runtime_binary_lineage": "SAME",
+    "source_build_rerun": false,
+    "runtime_binary_rebuild": false,
+    "upstream_release": "9.0.1",
+    "upstream_tag": "n9.0.1",
+    "upstream_commit": "bf1b838f2ab88b4f8fd83443325c782ea0e0f7fa",
+    "source_archive_identity": "ffmpeg-9.0.1.tar.xz",
+    "source_archive_sha256": "cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635",
+    "build_recipe": {
+      "id": "code-c-ffprobe-windows-33917303316-recipe",
+      "sha256": "ece3e87035e147e232061593ddaabe31ed1856b531b2d29ab8113a8f933f7031"
+    },
+    "environment_descriptor": {
+      "id": "code-c-ffprobe-windows-33917303316-environment",
+      "sha256": "fd7efbe6c73bfeba578a076a36ee2f06f8afc6f0657b57a1e31c8e1b5a7ecf88"
+    },
+    "build_context": {
+      "id": "code-c-ffprobe-windows-33917303316-context",
+      "sha256": "e1d008afdc3146ea914e49a5a2407678fdb5b12983a799aff034c406cdf6e3eb"
+    },
+    "build_profile": {
+      "id": "code-f-ffprobe-semantic-build-profile-v1",
+      "sha256": "d837b4e75e6feb616f42bec15054ce018313a94ef1df39a8ba8ce4eae4886004"
+    },
+    "loader_policy": {
+      "id": "code-f-native-runtime-companion-loader-policy-flat-app-local-bundle-20260904-v1",
+      "sha256": "d98b08726c15f25adebacecc951b9bef6e009b141f7e53694a7c1d21396dab3f"
+    },
+    "actual_build_configuration_match": "PASS",
+    "external_linked_library_set": [],
+    "gpl_enablement": "NONE",
+    "nonfree_enablement": "NONE",
+    "build_only_tools": [
+      {
+        "name": "nasm",
+        "role": "BUILD_ONLY_TOOL",
+        "package_version": "2.16.03",
+        "package_artifact_sha256": "167fcbff7e2492f8b25803112d74f7ea224abbee33b7b1e731714ee89e4af07f",
+        "distributed_in_runtime_companion": false,
+        "package_manager_product_artifact_authority": false
+      },
+      {
+        "name": "MSYS2 UCRT64 toolchain",
+        "role": "BUILD_ONLY_TOOLCHAIN",
+        "package_artifact_sha256": {
+          "mingw-w64-ucrt-x86_64-binutils": "cbf255869ea862b3a3de61a83916abf2a92a2c61520ea09f94eb3b13ae8e5bdf",
+          "mingw-w64-ucrt-x86_64-gcc": "1126ddc1848e2b6b878abd1902fcb6bb01e2b869d475e30ba0bb78c96be49392",
+          "mingw-w64-ucrt-x86_64-make": "d7da0a7245398411a59c44b6495b49c0dc314b40ab1ee8ec06a64169800dce6a"
+        },
+        "distributed_in_runtime_companion": false,
+        "package_manager_product_artifact_authority": false
+      }
+    ]
+  },
+  "runtime_closure": {
+    "status": "PASS",
+    "runtime_rebind_evidence_id": "code-c-ffprobe-windows-runtime-rebind-33917303316-v2",
+    "runtime_rebind_evidence_sha256": "3cfbe59f3fc851d1c5efbaefbac94c773d61a43e3d12d9d17f13961418c95b3e",
+    "unresolved_runtime_dependency_count": 0,
+    "undeclared_runtime_member_count": 0,
+    "system_library_shadowing": "NONE",
+    "system_path_used": "NO",
+    "loader_trace": "PASS",
+    "decoy_dll_cwd_test": "PASS",
+    "decoy_dll_path_test": "PASS",
+    "entrypoint_execution_evidence": "PASS",
+    "target_platform_execution_evidence": "PASS_EXACT_BINARY_REBIND",
+    "target_platform_execution_rerun_by_f": "NOT_RUN_ON_MAC"
+  },
+  "retention_and_reverification": {
+    "transport_role": "TRANSIENT_TRANSFER_ONLY",
+    "transport_tar_logical_locator": "frozen-candidates/code-c-ffprobe-windows-33917303316-v2/companion.tar",
+    "transport_tar_sha256_recomputed": "PASS",
+    "archive_readability": "PASS",
+    "recovery_drill": "PASS",
+    "recovered_bundle_verifier": "PASS",
+    "undeclared_member_count": 0,
+    "missing_declared_member_count": 0,
+    "declared_member_hashes": "PASS",
+    "bundle_member_hash_closure": "PASS"
+  },
+  "identity_drift": {
+    "canonical_runtime_identity_drift": "NONE",
+    "entrypoint_byte_drift": "NONE",
+    "shared_library_byte_drift": "NONE",
+    "runtime_binary_member_drift": "NONE",
+    "packaging_issuance_drift": "PRESENT_EXPECTED",
+    "historical_rejected_packaging_issuance_acceptable_for_integration": false
+  },
+  "downstream_rebinds_required": {
+    "worker_rebuild_required": false,
+    "native_rebind_required": true,
+    "license_distribution_rebind_required": true,
+    "sbom_notice_rebind_required": true,
+    "final_distribution_rebind_required": true,
+    "vulnerability_rebind_required": true
+  },
+  "record_sha256": "4fe01fa6d87cd57b30048bb8a2b3fa7a4603f2040b677c6856aa95da8087722b"
+}

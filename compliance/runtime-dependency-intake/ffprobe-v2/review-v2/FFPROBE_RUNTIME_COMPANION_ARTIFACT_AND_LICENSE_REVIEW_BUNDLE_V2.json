@@ -1,0 +1,79 @@
+{
+  "schema_version": "1",
+  "record_kind": "FFPROBE_RUNTIME_COMPANION_ARTIFACT_AND_LICENSE_REVIEW_BUNDLE",
+  "bundle_id": "code-f-ffprobe-artifact-license-review-33917303316-packaging-v2",
+  "decision": "APPROVED",
+  "review_authority": {
+    "owner": "CODE_F",
+    "reviewed_at": "2026-09-05T05:25:46Z",
+    "status": "PASS",
+    "immutable": true
+  },
+  "reviewed_code_c_head": "eff2bb6bc90cd70a1b8e971c150c6f74fe5e472a",
+  "main_quality_baseline_at_review": "9d2345d30776d71144bfa16b05f0b9aa01efeea2",
+  "packaging_fix_scope": {
+    "authority_manifest_outside_runtime_bundle": "PASS",
+    "source_build_rerun": false,
+    "runtime_binary_rebuild": false,
+    "packaging_reissuance": "NEW",
+    "runtime_binary_lineage": "SAME",
+    "historical_rejected_packaging_v1_integration_allowed": false
+  },
+  "artifact_approval_records": [
+    {
+      "platform": "linux-x86_64",
+      "record_id": "code-f-ffprobe-linux-artifact-approval-33917303316-packaging-v2",
+      "record_sha256": "434ae744aa92090b9b55791af53255dac85f3df2841006d7837f1689abe27074"
+    },
+    {
+      "platform": "windows-x86_64",
+      "record_id": "code-f-ffprobe-windows-artifact-approval-33917303316-packaging-v2",
+      "record_sha256": "4fe01fa6d87cd57b30048bb8a2b3fa7a4603f2040b677c6856aa95da8087722b"
+    }
+  ],
+  "license_review_records": [
+    {
+      "platform": "linux-x86_64",
+      "record_id": "code-f-ffprobe-linux-license-review-33917303316-packaging-v2",
+      "record_sha256": "35a50ae13f81749026c76b6d4f69042413b226166aba691c42529d8c529e1ec9"
+    },
+    {
+      "platform": "windows-x86_64",
+      "record_id": "code-f-ffprobe-windows-license-review-33917303316-packaging-v2",
+      "record_sha256": "851c72502dbed3041718402602fa56016a7459d45f71e4a3a8d6e7de21e47f70"
+    }
+  ],
+  "license_obligation_sets": [
+    {
+      "platform": "linux-x86_64",
+      "obligation_set_id": "code-f-ffprobe-linux-license-obligation-33917303316-v2",
+      "record_sha256": "e6983b3c37dd7f60aafd8597e6910e81e4bf3768859d40a6c5fd80353123e9a1"
+    },
+    {
+      "platform": "windows-x86_64",
+      "obligation_set_id": "code-f-ffprobe-windows-license-obligation-33917303316-v2",
+      "record_sha256": "1c2bfc4271fed140ca14004b845fe660cfe3c233541134bf53bca912d5ca9831"
+    }
+  ],
+  "license_partition": {
+    "linux": "LGPL-2.1-or-later",
+    "windows": "LGPL-2.1-or-later",
+    "coverage_scope": "WHOLE_DISTRIBUTED_RUNTIME_COMPANION",
+    "unaccounted_license_relevant_member_count": 0,
+    "gpl_enablement": "NONE",
+    "nonfree_enablement": "NONE"
+  },
+  "required_downstream_rebinds": {
+    "native_rebind": "REQUIRED",
+    "license_distribution_rebind": "REQUIRED",
+    "sbom_notice_rebind": "REQUIRED",
+    "final_distribution_rebind": "REQUIRED",
+    "vulnerability_rebind": "REQUIRED",
+    "worker_rebuild": "NOT_REQUIRED"
+  },
+  "stable_release_license_gate": "BLOCKED_BY_EXTERNAL_MSVC_REDISTRIBUTION",
+  "code_c_ffprobe_runtime_companion_integration": "READY_NOT_RUN",
+  "code_c_notification": "NOT_SENT",
+  "owner_of_next_fix": "CODE_C_FFPROBE_RUNTIME_COMPANION_INTEGRATION",
+  "record_sha256": "2a05f157c4fb43427035945da042da73b23c3379a492ae9aa902516ea2803ac6"
+}

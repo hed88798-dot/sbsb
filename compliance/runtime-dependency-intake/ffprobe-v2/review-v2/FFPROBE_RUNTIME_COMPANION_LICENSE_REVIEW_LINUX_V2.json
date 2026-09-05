@@ -1,0 +1,41 @@
+{
+  "schema_version": "1",
+  "record_kind": "FFPROBE_RUNTIME_COMPANION_LICENSE_REVIEW",
+  "review_id": "code-f-ffprobe-linux-license-review-33917303316-packaging-v2",
+  "decision": "APPROVED",
+  "review_authority": {
+    "owner": "CODE_F",
+    "status": "PASS",
+    "reviewed_at": "2026-09-05T05:25:46Z",
+    "scope": "WHOLE_DISTRIBUTED_RUNTIME_COMPANION",
+    "immutable": true
+  },
+  "subject": {
+    "companion_id": "code-c-ffprobe-linux-33917303316",
+    "platform": "linux-x86_64",
+    "manifest_sha256": "fbb3c771b23bc8d50d8df7d3aa92ba226d7f5da3f125c10634f7436fef3fdaeb",
+    "bundle_identity_sha256": "171a289b8ce7bcc443b448f75225469e192ca38dbc1cc8fa233b8f6c6463f1db",
+    "packaging_issuance_id": "code-c-ffprobe-linux-33917303316-packaging-v2",
+    "packaging_issuance_sha256": "c005930bd0ee3322bc283b5122970cd00b023c548bb62878027412f2f67bcbec",
+    "transport_tar_sha256": "8ba9c164f73e11fb299f3551a056a30845aae0d4eeec3d50c71014cddf960ef3"
+  },
+  "reviewed_spdx_expression": "LGPL-2.1-or-later",
+  "coverage": {
+    "scope": "WHOLE_DISTRIBUTED_RUNTIME_COMPANION",
+    "distributed_member_count": 22,
+    "unaccounted_license_relevant_member_count": 0,
+    "effective_license_evidence_id": "code-c-ffprobe-linux-license-33917303316",
+    "effective_license_evidence_sha256": "3b607e6ec1b1c85c9455fb7f2b37404f6c36aa67a15912736e66e3d574b1d1d5",
+    "license_rebind_evidence_id": "code-c-ffprobe-linux-license-rebind-33917303316-v2",
+    "license_rebind_evidence_sha256": "77d2a2edfcfb3cd174f09260ee20969e7e08d459ba97759329c54b8e143175cd"
+  },
+  "obligation_set": {
+    "id": "code-f-ffprobe-linux-license-obligation-33917303316-v2",
+    "sha256": "e6983b3c37dd7f60aafd8597e6910e81e4bf3768859d40a6c5fd80353123e9a1"
+  },
+  "review_reason": "Exact Packaging v2 runtime members, licensing evidence, and LGPL obligations were independently reconciled; no unaccounted license-relevant member remains.",
+  "upstream_source_modification_state": "UNMODIFIED",
+  "patch_set_sha256": null,
+  "stable_release_license_gate": "BLOCKED_BY_EXTERNAL_MSVC_REDISTRIBUTION",
+  "record_sha256": "35a50ae13f81749026c76b6d4f69042413b226166aba691c42529d8c529e1ec9"
+}

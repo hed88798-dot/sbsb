@@ -1,0 +1,67 @@
+{
+  "schema_version": "1",
+  "record_kind": "FFPROBE_RUNTIME_COMPANION_LICENSE_OBLIGATION_SET",
+  "obligation_set_id": "code-f-ffprobe-windows-license-obligation-33917303316-v2",
+  "decision": "APPROVED_WITH_OBLIGATIONS",
+  "policy_disposition": "ALLOW_WITH_CONDITIONS",
+  "subject": {
+    "companion_id": "code-c-ffprobe-windows-33917303316",
+    "platform": "windows-x86_64",
+    "companion_identity_sha256": "67f37171869f353712f6f02341a2beb5755c3ba1d2ae4702aa0effe0283856e8",
+    "packaging_issuance_id": "code-c-ffprobe-windows-33917303316-packaging-v2",
+    "packaging_issuance_sha256": "16c95257acb53caecfb24d4c54091530884adfcfdf1f796ad017ebe844c75f11",
+    "transport_tar_sha256": "0e8250dc4cf8f8e4fd4533a7a1298b59475982a78d2df49d4686ba9eacd684d7"
+  },
+  "license": {
+    "effective_spdx_expression": "LGPL-2.1-or-later",
+    "coverage_scope": "WHOLE_DISTRIBUTED_RUNTIME_COMPANION",
+    "distributed_member_count": 8,
+    "unaccounted_license_relevant_member_count": 0,
+    "upstream_source_modification_state": "UNMODIFIED",
+    "patch_set_sha256": null,
+    "source_archive_identity": "ffmpeg-9.0.1.tar.xz",
+    "source_archive_sha256": "cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635"
+  },
+  "evidence": {
+    "exact_license_evidence_id": "code-c-ffprobe-windows-license-33917303316",
+    "exact_license_evidence_sha256": "ba0c3da247688e60c6d7ef34d428b7ba18850aeeb33914b1146c69f86066c745",
+    "license_rebind_evidence_id": "code-c-ffprobe-windows-license-rebind-33917303316-v2",
+    "license_rebind_evidence_sha256": "a5a0f9de4c5ed155b4d0cce406f644e8d42530aec5e9fddfc9b5c3ec90d1f3fa",
+    "license_evidence_bundle_id": "code-c-ffprobe-license-review-33917303316-v2",
+    "license_evidence_bundle_sha256": "8a86fb7e13982c2782363eec4d3ec17c9c3b07e0158a93011f9d64da851a86b8",
+    "license_evidence_bundle_file_sha256": "834c651a4de046e88f44cc65c732bcc7f02116875966a5751f7564022bec3258",
+    "policy_source": "docs/architecture/code-0/OPEN_SOURCE_DUE_DILIGENCE_V2.md"
+  },
+  "obligations": {
+    "required_license_texts": ["COPYING.LGPLv2.1", "LICENSE.md"],
+    "required_attribution_notices": [
+      "FFmpeg attribution and license notice for the distributed runtime companion"
+    ],
+    "source_availability": [
+      "Provide the exact FFmpeg 9.0.1 source archive identity and SHA-256 with the distribution compliance materials",
+      "Provide corresponding source or a valid written source offer for the distributed LGPL-covered build"
+    ],
+    "modification_disclosure": [
+      "State that the upstream source is unmodified for this build",
+      "Publish exact configure/build parameters and disclose any future patch set by SHA-256"
+    ],
+    "redistribution_conditions": [
+      "Preserve LGPL license text and attribution notices",
+      "Do not add GPL or nonfree components to this companion",
+      "Keep the distributed shared libraries replaceable by the user"
+    ],
+    "linkage_related_obligations": [
+      "Use the approved shared-library linkage and companion-local loader policy",
+      "Bind every distributed shared library in Native, SBOM, NOTICE, and final distribution reconciliation"
+    ],
+    "other_exact_license_obligations": [
+      "LGPL obligations do not grant patent rights; handle codec patent and regional issues separately"
+    ]
+  },
+  "review_authority": {
+    "owner": "CODE_F",
+    "reviewed_at": "2026-09-05T05:25:46Z",
+    "immutable": true
+  },
+  "record_sha256": "1c2bfc4271fed140ca14004b845fe660cfe3c233541134bf53bca912d5ca9831"
+}
