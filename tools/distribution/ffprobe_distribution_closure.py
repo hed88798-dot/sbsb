@@ -12,6 +12,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 import tempfile
@@ -94,7 +95,11 @@ def canonical(value: Any) -> bytes:
 
 
 def pretty(value: Any) -> bytes:
-    return (json.dumps(value, sort_keys=True, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+    text = json.dumps(value, sort_keys=True, indent=2, ensure_ascii=False)
+    # Match the repository formatter's compact representation for singleton
+    # scalar arrays while retaining stable two-space JSON indentation.
+    text = re.sub(r"\[\n\s+\"([^\"\n]+)\"\n\s+\]", r'["\1"]', text)
+    return (text + "\n").encode("utf-8")
 
 
 def sha_bytes(data: bytes) -> str:
