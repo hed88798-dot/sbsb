@@ -61,6 +61,7 @@
     "compliance:runtime-loader-policy:contract": "node tools/native-runtime-companion/loader-policy.mjs && vitest run tests/contract/native-runtime-loader-policy.test.ts --maxWorkers=1",
     "compliance:ffprobe:profile:contract": "node tools/ffprobe-build-profile/verify.mjs && vitest run tests/contract/ffprobe-build-profile.test.ts --maxWorkers=1",
     "golden:verify": "node tools/golden/validate-manifest.mjs",
+    "functional:authority:verify": "node tools/functional-acceptance/verify-authority-graph.mjs",
     "golden:update": "node tools/golden/update-manifest.mjs",
     "golden:validate": "pnpm golden:verify",
     "sbom:generate": "node tools/compliance/generate-sbom.mjs --output artifacts/compliance/SBOM.cdx.json",
