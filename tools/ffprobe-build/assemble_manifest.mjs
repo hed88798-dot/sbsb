@@ -184,10 +184,6 @@ validateCompanionManifest(manifest, {
   expectedPlatform: manifest.platform,
 });
 writeFileSync(resolve(options.output), `${JSON.stringify(canonical(manifest), null, 2)}\n`);
-writeFileSync(
-  resolve(bundle, 'manifest.json'),
-  `${JSON.stringify(canonical(manifest), null, 2)}\n`,
-);
 console.log(
   JSON.stringify({
     companion_id: manifest.companion_id,
