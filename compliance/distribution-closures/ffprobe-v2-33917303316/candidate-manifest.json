@@ -1,0 +1,168 @@
+{
+  "candidate_id": "code-c-distribution-ffprobe-v2-33917303316",
+  "candidate_manifest_sha256": "3fb598a0872db0e30cd08de0bd187b823b36ebff7072bd3d6c00f065335aa215",
+  "distribution_component_set": {
+    "added_ffprobe_members": 30,
+    "count": 217,
+    "digest": "b0165100d3a4de94ef18f9b285f565aa51978c649d5d3f452e7df828ad7bf9ae",
+    "old_pre_ffprobe_count": 187
+  },
+  "ffprobe_f_approval_aggregate_sha256": "2a05f157c4fb43427035945da042da73b23c3379a492ae9aa902516ea2803ac6",
+  "historical_v1_packaging_selected": false,
+  "license_reconciliation": {
+    "distribution_license_gate": "PASS",
+    "path": "compliance/distribution-closures/ffprobe-v2-33917303316/distribution-license-reconciliation.json",
+    "python_license_gate": "PASS",
+    "sha256": "951ff2ac04367778fa05d5169b152226373dc74bf97a18ba2d92fe609d7fbede",
+    "stable_release_gate": "BLOCKED_BY_EXTERNAL_MSVC_REDISTRIBUTION",
+    "unaccounted_license_relevant_components": 0,
+    "unsatisfied_ffprobe_obligations": 0
+  },
+  "main_quality_baseline": "f438e4d31f043d3b3750781772478c93169ea922",
+  "native_reconciliation": {
+    "linux": {
+      "final_native_count": 139,
+      "record_sha256": "ea5f0b4ec03fc0fa190d1f29974ec903b8c00fcfbab796932da83a2529649c14",
+      "undeclared": 0,
+      "unresolved_runtime_dependencies": 0
+    },
+    "windows": {
+      "final_native_count": 57,
+      "record_sha256": "ee160600addc39993afdff7991b0545e92859ca5c8beb75641b8918d674ac579",
+      "undeclared": 0,
+      "unresolved_runtime_dependencies": 0
+    }
+  },
+  "notice": {
+    "path": "compliance/distribution-closures/ffprobe-v2-33917303316/THIRD_PARTY_NOTICES.md",
+    "previous_notice_sha256": "213c1a808101fb9c7e0401f5596ea5801fed03f664d60033c665731bba385708",
+    "sha256": "22b1dcb331b18632617ce3bb361271c02de9b7457a053a1b7388b6a0ca4a76bd"
+  },
+  "platforms": {
+    "linux": {
+      "carchive_sha256": "163e72f82f93b3f7ac5585426431ccc01bf61578bcec571a83b09b08abdd0a0e",
+      "carchive_unchanged": true,
+      "explicit_locator": "runtime/ffprobe/linux/bundle/ffprobe",
+      "ffprobe_artifact_approval_record_id": "code-f-ffprobe-linux-artifact-approval-33917303316-packaging-v2",
+      "ffprobe_artifact_approval_record_sha256": "434ae744aa92090b9b55791af53255dac85f3df2841006d7837f1689abe27074",
+      "ffprobe_companion_id": "code-c-ffprobe-linux-33917303316",
+      "ffprobe_identity_sha256": "171a289b8ce7bcc443b448f75225469e192ca38dbc1cc8fa233b8f6c6463f1db",
+      "ffprobe_license_review_id": "code-f-ffprobe-linux-license-review-33917303316-packaging-v2",
+      "ffprobe_license_review_sha256": "35a50ae13f81749026c76b6d4f69042413b226166aba691c42529d8c529e1ec9",
+      "ffprobe_manifest_canonical_sha256": "fbb3c771b23bc8d50d8df7d3aa92ba226d7f5da3f125c10634f7436fef3fdaeb",
+      "ffprobe_manifest_sha256": "5a543191f240ac547f7a387a2bfedd634df8815b2e74fd58bb1e79d5a662d5f3",
+      "ffprobe_obligation_set_id": "code-f-ffprobe-linux-license-obligation-33917303316-v2",
+      "ffprobe_obligation_set_sha256": "e6983b3c37dd7f60aafd8597e6910e81e4bf3768859d40a6c5fd80353123e9a1",
+      "ffprobe_packaging_issuance_id": "code-c-ffprobe-linux-33917303316-packaging-v2",
+      "ffprobe_packaging_issuance_sha256": "c005930bd0ee3322bc283b5122970cd00b023c548bb62878027412f2f67bcbec",
+      "ffprobe_transport_tar_sha256": "8ba9c164f73e11fb299f3551a056a30845aae0d4eeec3d50c71014cddf960ef3",
+      "fresh_target_execution_on_mac": "NOT_RUN",
+      "production_boundary_smoke": "PASS_EXACT_BINARY_REBIND",
+      "system_path_fallback": false,
+      "worker_post_integration_sha256": "4bd6d3afd3d2d60718f8174caedafb16a91c398a90c4198c664d14555a5f6073",
+      "worker_pre_integration_sha256": "4bd6d3afd3d2d60718f8174caedafb16a91c398a90c4198c664d14555a5f6073",
+      "worker_sha256": "4bd6d3afd3d2d60718f8174caedafb16a91c398a90c4198c664d14555a5f6073"
+    },
+    "windows": {
+      "carchive_sha256": "1a319765900d1b6cde0743efa902a5d8cb0468335f118775bbf65565e9b2c805",
+      "carchive_unchanged": true,
+      "explicit_locator": "runtime/ffprobe/windows/bundle/ffprobe.exe",
+      "ffprobe_artifact_approval_record_id": "code-f-ffprobe-windows-artifact-approval-33917303316-packaging-v2",
+      "ffprobe_artifact_approval_record_sha256": "4fe01fa6d87cd57b30048bb8a2b3fa7a4603f2040b677c6856aa95da8087722b",
+      "ffprobe_companion_id": "code-c-ffprobe-windows-33917303316",
+      "ffprobe_identity_sha256": "67f37171869f353712f6f02341a2beb5755c3ba1d2ae4702aa0effe0283856e8",
+      "ffprobe_license_review_id": "code-f-ffprobe-windows-license-review-33917303316-packaging-v2",
+      "ffprobe_license_review_sha256": "851c72502dbed3041718402602fa56016a7459d45f71e4a3a8d6e7de21e47f70",
+      "ffprobe_manifest_canonical_sha256": "abb81e9a7d2682913ae69ae9a11af7b611fd2ac5058aca9da0165ce398e43255",
+      "ffprobe_manifest_sha256": "954f61486d78f039e817fc705be121d69c42d20ee8748006008283c8a94c3d74",
+      "ffprobe_obligation_set_id": "code-f-ffprobe-windows-license-obligation-33917303316-v2",
+      "ffprobe_obligation_set_sha256": "1c2bfc4271fed140ca14004b845fe660cfe3c233541134bf53bca912d5ca9831",
+      "ffprobe_packaging_issuance_id": "code-c-ffprobe-windows-33917303316-packaging-v2",
+      "ffprobe_packaging_issuance_sha256": "16c95257acb53caecfb24d4c54091530884adfcfdf1f796ad017ebe844c75f11",
+      "ffprobe_transport_tar_sha256": "0e8250dc4cf8f8e4fd4533a7a1298b59475982a78d2df49d4686ba9eacd684d7",
+      "fresh_target_execution_on_mac": "NOT_RUN",
+      "production_boundary_smoke": "PASS_EXACT_BINARY_REBIND",
+      "system_path_fallback": false,
+      "worker_post_integration_sha256": "ba6b81f433beef8ee95615a45248251918a18a602b53f8db9ec02e35cf76d8b1",
+      "worker_pre_integration_sha256": "ba6b81f433beef8ee95615a45248251918a18a602b53f8db9ec02e35cf76d8b1",
+      "worker_sha256": "ba6b81f433beef8ee95615a45248251918a18a602b53f8db9ec02e35cf76d8b1"
+    }
+  },
+  "production_boundary_smoke": {
+    "path": "compliance/distribution-closures/ffprobe-v2-33917303316/production-boundary-smoke.json",
+    "sha256": "5584bb2a012565a394da4884c69a2860a75d82a70540869f2e7a7e48a225bd63",
+    "status": "PASS_EXACT_BINARY_REBIND"
+  },
+  "python_37_usage_replay": {
+    "artifact_drift": "NONE",
+    "auto_policy_pass": 16,
+    "hard_blocked": 0,
+    "required_review": 0,
+    "review_approved": 21,
+    "source_sha256": "71f00cccf6c7f20b5c22d508df950a2ecc8107c72a2cb6e9a217a27e90533fe8",
+    "total": 37
+  },
+  "record_kind": "NEW_DISTRIBUTION_CANDIDATE_MANIFEST",
+  "retention_recovery": {
+    "channel": "MAC_LOCAL_PROJECT_FOLDER",
+    "recovery": {
+      "candidate_id": "code-c-distribution-ffprobe-v2-33917303316",
+      "platforms": {
+        "linux": {
+          "carchive_sha256": "163e72f82f93b3f7ac5585426431ccc01bf61578bcec571a83b09b08abdd0a0e",
+          "companion_manifest_sha256": "5a543191f240ac547f7a387a2bfedd634df8815b2e74fd58bb1e79d5a662d5f3",
+          "rejected_v1_selected": false,
+          "status": "PASS_REBOUND",
+          "worker_sha256": "4bd6d3afd3d2d60718f8174caedafb16a91c398a90c4198c664d14555a5f6073"
+        },
+        "windows": {
+          "carchive_sha256": "1a319765900d1b6cde0743efa902a5d8cb0468335f118775bbf65565e9b2c805",
+          "companion_manifest_sha256": "954f61486d78f039e817fc705be121d69c42d20ee8748006008283c8a94c3d74",
+          "rejected_v1_selected": false,
+          "status": "PASS_REBOUND",
+          "worker_sha256": "ba6b81f433beef8ee95615a45248251918a18a602b53f8db9ec02e35cf76d8b1"
+        }
+      },
+      "schema_version": "1",
+      "status": "PASS"
+    },
+    "retention": {
+      "candidate_id": "code-c-distribution-ffprobe-v2-33917303316",
+      "channel": "MAC_LOCAL_PROJECT_FOLDER",
+      "platforms": {
+        "linux": {
+          "carchive_sha256": "163e72f82f93b3f7ac5585426431ccc01bf61578bcec571a83b09b08abdd0a0e",
+          "companion_identity_sha256": "171a289b8ce7bcc443b448f75225469e192ca38dbc1cc8fa233b8f6c6463f1db",
+          "companion_issuance_id": "code-c-ffprobe-linux-33917303316-packaging-v2",
+          "companion_issuance_sha256": "c005930bd0ee3322bc283b5122970cd00b023c548bb62878027412f2f67bcbec",
+          "companion_locator": "runtime/ffprobe/linux/bundle/ffprobe",
+          "companion_manifest_sha256": "5a543191f240ac547f7a387a2bfedd634df8815b2e74fd58bb1e79d5a662d5f3",
+          "locator": "frozen-candidates/code-c-distribution-ffprobe-v2-33917303316/linux/",
+          "worker_sha256": "4bd6d3afd3d2d60718f8174caedafb16a91c398a90c4198c664d14555a5f6073"
+        },
+        "windows": {
+          "carchive_sha256": "1a319765900d1b6cde0743efa902a5d8cb0468335f118775bbf65565e9b2c805",
+          "companion_identity_sha256": "67f37171869f353712f6f02341a2beb5755c3ba1d2ae4702aa0effe0283856e8",
+          "companion_issuance_id": "code-c-ffprobe-windows-33917303316-packaging-v2",
+          "companion_issuance_sha256": "16c95257acb53caecfb24d4c54091530884adfcfdf1f796ad017ebe844c75f11",
+          "companion_locator": "runtime/ffprobe/windows/bundle/ffprobe.exe",
+          "companion_manifest_sha256": "954f61486d78f039e817fc705be121d69c42d20ee8748006008283c8a94c3d74",
+          "locator": "frozen-candidates/code-c-distribution-ffprobe-v2-33917303316/windows/",
+          "worker_sha256": "ba6b81f433beef8ee95615a45248251918a18a602b53f8db9ec02e35cf76d8b1"
+        }
+      },
+      "schema_version": "1",
+      "secondary_copy": false
+    }
+  },
+  "same_worker_lineage": true,
+  "sbom": {
+    "path": "compliance/distribution-closures/ffprobe-v2-33917303316/FINAL_DISTRIBUTION_SBOM.cdx.json",
+    "sha256": "c151bf75ad9ab2b47656743a183ec3f0b3c0dac7fa55dc307d263ec3356a4b39"
+  },
+  "schema_version": "1",
+  "validation_head_sha": "a4705882b171232cf5ee57a7f814fb9bc37e380c",
+  "vulnerability_rebind": "READY_NOT_RUN",
+  "worker_modification": false,
+  "worker_rebuild": false
+}

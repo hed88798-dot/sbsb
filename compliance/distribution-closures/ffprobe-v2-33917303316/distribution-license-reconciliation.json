@@ -1,0 +1,39 @@
+{
+  "ffprobe_companions": {
+    "linux": {
+      "effective_spdx_expression": "LGPL-2.1-or-later",
+      "license_review_id": "code-f-ffprobe-linux-license-review-33917303316-packaging-v2",
+      "license_review_sha256": "35a50ae13f81749026c76b6d4f69042413b226166aba691c42529d8c529e1ec9",
+      "obligation_set_id": "code-f-ffprobe-linux-license-obligation-33917303316-v2",
+      "obligation_set_sha256": "e6983b3c37dd7f60aafd8597e6910e81e4bf3768859d40a6c5fd80353123e9a1",
+      "required_member_count": 22,
+      "unaccounted_license_relevant_member_count": 0,
+      "unsatisfied_obligation_count": 0
+    },
+    "windows": {
+      "effective_spdx_expression": "LGPL-2.1-or-later",
+      "license_review_id": "code-f-ffprobe-windows-license-review-33917303316-packaging-v2",
+      "license_review_sha256": "851c72502dbed3041718402602fa56016a7459d45f71e4a3a8d6e7de21e47f70",
+      "obligation_set_id": "code-f-ffprobe-windows-license-obligation-33917303316-v2",
+      "obligation_set_sha256": "1c2bfc4271fed140ca14004b845fe660cfe3c233541134bf53bca912d5ca9831",
+      "required_member_count": 8,
+      "unaccounted_license_relevant_member_count": 0,
+      "unsatisfied_obligation_count": 0
+    }
+  },
+  "python_license_gate": "PASS",
+  "python_usage_replay": {
+    "artifact_drift": "NONE",
+    "auto_policy_pass": 16,
+    "hard_blocked": 0,
+    "required_review": 0,
+    "review_approved": 21,
+    "total": 37
+  },
+  "record_kind": "NEW_DISTRIBUTION_LICENSE_RECONCILIATION",
+  "schema_version": "1",
+  "stable_release_license_gate": "BLOCKED_BY_EXTERNAL_MSVC_REDISTRIBUTION",
+  "status": "PASS",
+  "unaccounted_license_relevant_distributed_component_count": 0,
+  "unsatisfied_ffprobe_license_obligation_count": 0
+}

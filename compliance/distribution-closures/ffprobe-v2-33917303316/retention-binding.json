@@ -1,0 +1,32 @@
+{
+  "candidate_id": "code-c-distribution-ffprobe-v2-33917303316",
+  "candidate_manifest_file_sha256": "5f68a73ae32e9c1437aa5ebd05890df986d542f9f62e9685c00cdf817d273366",
+  "candidate_manifest_sha256": "3fb598a0872db0e30cd08de0bd187b823b36ebff7072bd3d6c00f065335aa215",
+  "channel": "MAC_LOCAL_PROJECT_FOLDER",
+  "platforms": {
+    "linux": {
+      "carchive_sha256": "163e72f82f93b3f7ac5585426431ccc01bf61578bcec571a83b09b08abdd0a0e",
+      "companion_identity_sha256": "171a289b8ce7bcc443b448f75225469e192ca38dbc1cc8fa233b8f6c6463f1db",
+      "companion_issuance_id": "code-c-ffprobe-linux-33917303316-packaging-v2",
+      "companion_issuance_sha256": "c005930bd0ee3322bc283b5122970cd00b023c548bb62878027412f2f67bcbec",
+      "companion_locator": "runtime/ffprobe/linux/bundle/ffprobe",
+      "companion_manifest_sha256": "5a543191f240ac547f7a387a2bfedd634df8815b2e74fd58bb1e79d5a662d5f3",
+      "locator": "frozen-candidates/code-c-distribution-ffprobe-v2-33917303316/linux/",
+      "worker_sha256": "4bd6d3afd3d2d60718f8174caedafb16a91c398a90c4198c664d14555a5f6073"
+    },
+    "windows": {
+      "carchive_sha256": "1a319765900d1b6cde0743efa902a5d8cb0468335f118775bbf65565e9b2c805",
+      "companion_identity_sha256": "67f37171869f353712f6f02341a2beb5755c3ba1d2ae4702aa0effe0283856e8",
+      "companion_issuance_id": "code-c-ffprobe-windows-33917303316-packaging-v2",
+      "companion_issuance_sha256": "16c95257acb53caecfb24d4c54091530884adfcfdf1f796ad017ebe844c75f11",
+      "companion_locator": "runtime/ffprobe/windows/bundle/ffprobe.exe",
+      "companion_manifest_sha256": "954f61486d78f039e817fc705be121d69c42d20ee8748006008283c8a94c3d74",
+      "locator": "frozen-candidates/code-c-distribution-ffprobe-v2-33917303316/windows/",
+      "worker_sha256": "ba6b81f433beef8ee95615a45248251918a18a602b53f8db9ec02e35cf76d8b1"
+    }
+  },
+  "record_kind": "NEW_DISTRIBUTION_CANDIDATE_RETENTION_BINDING",
+  "schema_version": "1",
+  "secondary_copy": false,
+  "status": "PASS"
+}

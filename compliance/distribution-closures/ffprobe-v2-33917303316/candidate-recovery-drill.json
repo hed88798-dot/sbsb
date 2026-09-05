@@ -1,0 +1,21 @@
+{
+  "candidate_id": "code-c-distribution-ffprobe-v2-33917303316",
+  "platforms": {
+    "linux": {
+      "carchive_sha256": "163e72f82f93b3f7ac5585426431ccc01bf61578bcec571a83b09b08abdd0a0e",
+      "companion_manifest_sha256": "5a543191f240ac547f7a387a2bfedd634df8815b2e74fd58bb1e79d5a662d5f3",
+      "rejected_v1_selected": false,
+      "status": "PASS_REBOUND",
+      "worker_sha256": "4bd6d3afd3d2d60718f8174caedafb16a91c398a90c4198c664d14555a5f6073"
+    },
+    "windows": {
+      "carchive_sha256": "1a319765900d1b6cde0743efa902a5d8cb0468335f118775bbf65565e9b2c805",
+      "companion_manifest_sha256": "954f61486d78f039e817fc705be121d69c42d20ee8748006008283c8a94c3d74",
+      "rejected_v1_selected": false,
+      "status": "PASS_REBOUND",
+      "worker_sha256": "ba6b81f433beef8ee95615a45248251918a18a602b53f8db9ec02e35cf76d8b1"
+    }
+  },
+  "schema_version": "1",
+  "status": "PASS"
+}
