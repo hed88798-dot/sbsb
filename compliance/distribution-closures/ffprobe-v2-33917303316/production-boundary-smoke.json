@@ -1,0 +1,30 @@
+{
+  "fresh_target_execution_on_mac": "NOT_RUN",
+  "mode": "EXPLICIT_BUNDLED_LOCATOR",
+  "platforms": {
+    "linux": {
+      "companion_identity_sha256": "171a289b8ce7bcc443b448f75225469e192ca38dbc1cc8fa233b8f6c6463f1db",
+      "entrypoint_sha256": "59f3a6208e2f5754c4d3c75525a7b50be673fff13994e5d98f8e6a47e68f6097",
+      "manifest_canonical_sha256": "fbb3c771b23bc8d50d8df7d3aa92ba226d7f5da3f125c10634f7436fef3fdaeb",
+      "packaging_issuance_id": "code-c-ffprobe-linux-33917303316-packaging-v2",
+      "runtime_rebind_evidence_path": "frozen-candidates/code-c-ffprobe-linux-33917303316-v2/linux/evidence/runtime-rebind.json",
+      "runtime_rebind_evidence_sha256": "ce9ad8c37d3c4521d55f9ab13321fc67a9271985ff725e0450a86d8fb1c88fba",
+      "status": "PASS_EXACT_BINARY_REBIND",
+      "system_path_used": "NO"
+    },
+    "windows": {
+      "companion_identity_sha256": "67f37171869f353712f6f02341a2beb5755c3ba1d2ae4702aa0effe0283856e8",
+      "entrypoint_sha256": "2ed7798daa057ee557bca8d1fe72a0f2c48109369dc0e5a7672b31c08565fc7c",
+      "manifest_canonical_sha256": "abb81e9a7d2682913ae69ae9a11af7b611fd2ac5058aca9da0165ce398e43255",
+      "packaging_issuance_id": "code-c-ffprobe-windows-33917303316-packaging-v2",
+      "runtime_rebind_evidence_path": "frozen-candidates/code-c-ffprobe-windows-33917303316-v2/windows/evidence/runtime-rebind.json",
+      "runtime_rebind_evidence_sha256": "29621ea80fac4c8bf15f5a35563f7e6ef84b0df2a95673356f5088f55d7d5cc2",
+      "status": "PASS_EXACT_BINARY_REBIND",
+      "system_path_used": "NO"
+    }
+  },
+  "system_path_fallback": false,
+  "worker_pipeline_sha256": "56e1057ec84c0dfa98508dc2dfaeeff379deb4f647269603b242900949d91f16",
+  "worker_subprocess_shell_false": true,
+  "worker_uses_ffprobe_path": true
+}

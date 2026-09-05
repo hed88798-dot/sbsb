@@ -1,0 +1,983 @@
+{
+  "approved_external_prerequisites": ["WINDOWS_MSVC_RUNTIME_X64"],
+  "counts": {
+    "ffprobe_members": 8,
+    "final_native": 57,
+    "previous_native": 49,
+    "undeclared": 0,
+    "unresolved_runtime_dependencies": 0
+  },
+  "ffprobe_approval_record_sha256": "4fe01fa6d87cd57b30048bb8a2b3fa7a4603f2040b677c6856aa95da8087722b",
+  "ffprobe_license_record_sha256": "851c72502dbed3041718402602fa56016a7459d45f71e4a3a8d6e7de21e47f70",
+  "ffprobe_obligation_set_sha256": "1c2bfc4271fed140ca14004b845fe660cfe3c233541134bf53bca912d5ca9831",
+  "final_native_entries": [
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0001-9ba4dd0e98bd",
+      "internal_path": "PIL/_avif.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0001-9ba4dd0e98bd",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "2e3e5cce3aea38c603680ca3da5d161fad123ce23a803bb692a56aff608989be",
+      "source_artifact_id": "wheel-pkg:pypi-pillow-12.3.0",
+      "source_artifact_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
+      "source_path": "PIL/_avif.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0002-3a71eddb05a8",
+      "internal_path": "PIL/_imaging.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0002-3a71eddb05a8",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "88756e8e0e3f6180e518da25d379597c861e2d20d716ef001894789b515c1777",
+      "source_artifact_id": "wheel-pkg:pypi-pillow-12.3.0",
+      "source_artifact_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
+      "source_path": "PIL/_imaging.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0003-f7855ee27740",
+      "internal_path": "PIL/_imagingcms.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0003-f7855ee27740",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "7ecb50b954d13d72b7a0ff565872332443cdbc83a36e58a56b2b949a56f32549",
+      "source_artifact_id": "wheel-pkg:pypi-pillow-12.3.0",
+      "source_artifact_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
+      "source_path": "PIL/_imagingcms.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0004-6ec61ba4b0aa",
+      "internal_path": "PIL/_imagingmath.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0004-6ec61ba4b0aa",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "9d5bbea6a877a48ed7995a0640ecb0a5567d9fad544a4a1fbf9f22d507029b57",
+      "source_artifact_id": "wheel-pkg:pypi-pillow-12.3.0",
+      "source_artifact_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
+      "source_path": "PIL/_imagingmath.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0005-8b61aa5c70ad",
+      "internal_path": "PIL/_imagingtk.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0005-8b61aa5c70ad",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "8ccd6128481d5a3a15993c2f8a69585694ff972652a6b06dcaee276fc65633a7",
+      "source_artifact_id": "wheel-pkg:pypi-pillow-12.3.0",
+      "source_artifact_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
+      "source_path": "PIL/_imagingtk.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0006-5c1319b0ebb1",
+      "internal_path": "PIL/_webp.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0006-5c1319b0ebb1",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "9918faf8d90faa86e03e48479c6a62383be71da759254afded18591a406a92fe",
+      "source_artifact_id": "wheel-pkg:pypi-pillow-12.3.0",
+      "source_artifact_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
+      "source_path": "PIL/_webp.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0007-0c3970a665f1",
+      "internal_path": "_asyncio.pyd",
+      "materialized_entry_id": "materialized-0007-9a88f31a7a70",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "6941e2aeed3aad1a4658774ecb60309170066a040c2118a5efd16458ac3bed00",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/_asyncio.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0008-039385ad042f",
+      "internal_path": "_bz2.pyd",
+      "materialized_entry_id": "materialized-0008-7151c982de5b",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "261545bd24f15a783fc0c82568b766a4ab569dde14507a81701cccf5293e6e54",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/_bz2.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0009-956b394bc4f5",
+      "internal_path": "_ctypes.pyd",
+      "materialized_entry_id": "materialized-0009-fadf84113f6c",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "9d6dccb4cd84a44a107f9b06b91c0a44e85766d9bf4debb6abbde8fda7494c2c",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/_ctypes.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0010-3c047f5978ed",
+      "internal_path": "_decimal.pyd",
+      "materialized_entry_id": "materialized-0010-f1e23bfc3abe",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "1e6a5707163d3c103e0eb4695eefedbea4b855fb227c61cc265b168970d6c6f0",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/_decimal.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0011-b609895d77cd",
+      "internal_path": "_elementtree.pyd",
+      "materialized_entry_id": "materialized-0011-425a74357434",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "26c5c2f3f2b8dac1499f07a50d7afd14315c20a6a541abbe4e306bcd9df404f1",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/_elementtree.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0012-fc28a5e43945",
+      "internal_path": "_hashlib.pyd",
+      "materialized_entry_id": "materialized-0012-996d92449bef",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "79a26289aef0d92545a082507c7021f10e219621d137cb726c4d0fbbfd4b46ae",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/_hashlib.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0013-c47747086485",
+      "internal_path": "_lzma.pyd",
+      "materialized_entry_id": "materialized-0013-e85f42585289",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "ee224aacf5cf9c9974a1b842aac8d89d5d9b7eeebbf4d76619ae0ce4da8ecd96",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/_lzma.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0014-29500c1a3726",
+      "internal_path": "_multiprocessing.pyd",
+      "materialized_entry_id": "materialized-0014-fbd7f44c4def",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "db19972cf033b598f5826f8219bc2608412b84061d294f5972b43c2ab95f7af5",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/_multiprocessing.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0015-74aa0b9aa16d",
+      "internal_path": "_overlapped.pyd",
+      "materialized_entry_id": "materialized-0015-24428d9cf708",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "9db08b5449e18088754ce57e315657d00b46575e0151cd379efef8847488a606",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/_overlapped.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0016-5155604f3572",
+      "internal_path": "_queue.pyd",
+      "materialized_entry_id": "materialized-0016-ea60a9a4fb2b",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "4404c2569443ffb54e7cfffdca8ddf58c9a609175305970728ec12bc1c147b43",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/_queue.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0017-efc9b392670c",
+      "internal_path": "_socket.pyd",
+      "materialized_entry_id": "materialized-0017-c8f6fec37503",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "ccbd0f83df3784da08147b8e8765e28c978de28b5c0eddcfba5567b59d43fef9",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/_socket.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0018-7603dff71292",
+      "internal_path": "_ssl.pyd",
+      "materialized_entry_id": "materialized-0018-4e761bebb562",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "8d2f51fa1dc929073a2ad8d1c7c0c911e8f695870dcf4dda2846f4b75a7f77fb",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/_ssl.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0019-493a1ea60091",
+      "internal_path": "_uuid.pyd",
+      "materialized_entry_id": "materialized-0019-a1498db5acb8",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "b93832742a2348d6659fd62e8a8aff061594693fc537da74c7d2d1cdf83a8475",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/_uuid.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0020-b6896260a767",
+      "internal_path": "_wmi.pyd",
+      "materialized_entry_id": "materialized-0020-178ebd91622e",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "db45362354fd4965329cb14bd974e60b26525045d09fb4fdfb1674a93b79d60c",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/_wmi.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0021-d3308dd029b8",
+      "internal_path": "cv2/cv2.pyd",
+      "materialized_entry_id": "materialized-0021-d3308dd029b8",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "441542da947fb1d51b4e1c4654ceb191bd7748f917a5f88dfeb50dc7d5221241",
+      "source_artifact_id": "wheel-pkg:pypi-opencv-python-headless-4.14.0.94",
+      "source_artifact_sha256": "cbed65415b8f6a9541c705afe3e64795840524d0ff3bc58f507826284a1dc64b",
+      "source_path": "cv2/cv2.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0022-58f50aca3120",
+      "internal_path": "cv2/opencv_videoio_ffmpeg4140_64.dll",
+      "materialized_entry_id": "materialized-0022-58f50aca3120",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "131d7657a173f659de69e1e331916e4a9c0d8cf7bde7201a6988af6056b94853",
+      "source_artifact_id": "wheel-pkg:pypi-opencv-python-headless-4.14.0.94",
+      "source_artifact_sha256": "cbed65415b8f6a9541c705afe3e64795840524d0ff3bc58f507826284a1dc64b",
+      "source_path": "cv2/opencv_videoio_ffmpeg4140_64.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0023-91f0b2d01051",
+      "internal_path": "libcrypto-3.dll",
+      "materialized_entry_id": "materialized-0023-829c2d7c521b",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "09499e186cf0e434ffa17ad153aa9a66d6048c54a2c03b823e2a06c49d9affe4",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/libcrypto-3.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0024-7a73848fad5d",
+      "internal_path": "libffi-8.dll",
+      "materialized_entry_id": "materialized-0024-cb5561dfd002",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "eff52743773eb550fcc6ce3efc37c85724502233b6b002a35496d828bd7b280a",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/libffi-8.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0025-e191be3f60fa",
+      "internal_path": "libssl-3.dll",
+      "materialized_entry_id": "materialized-0025-4b745343ceaa",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "28c395290279fa4f4f54a57b85cd66d853895f925fefb8f6fdebc0d8b1cdd07c",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/libssl-3.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0026-e171163e1135",
+      "internal_path": "numpy.libs/libscipy_openblas64_-9e3e5a4229c1ca39f10dc82bba9e2b2b.dll",
+      "materialized_entry_id": "materialized-0026-e171163e1135",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "9e3e5a4229c1ca39f10dc82bba9e2b2bf48037790932566f37aff1a7ccf3588f",
+      "source_artifact_id": "wheel-pkg:pypi-numpy-2.3.5",
+      "source_artifact_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+      "source_path": "numpy.libs/libscipy_openblas64_-9e3e5a4229c1ca39f10dc82bba9e2b2b.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0027-67d4545a2919",
+      "internal_path": "numpy.libs/msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll",
+      "materialized_entry_id": "materialized-0027-67d4545a2919",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "a4c2229bdc2a2a630acdc095b4d86008e5c3e3bc7773174354f3da4f5beb9cde",
+      "source_artifact_id": "wheel-pkg:pypi-numpy-2.3.5",
+      "source_artifact_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+      "source_path": "numpy.libs/msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0028-8b92ba9e009e",
+      "internal_path": "numpy/_core/_multiarray_tests.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0028-8b92ba9e009e",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "181efbd14d98fc4ccf96fc5c274fb7c85294e263a93320d8f261eb36881a9000",
+      "source_artifact_id": "wheel-pkg:pypi-numpy-2.3.5",
+      "source_artifact_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+      "source_path": "numpy/_core/_multiarray_tests.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0029-46ff322bdfe5",
+      "internal_path": "numpy/_core/_multiarray_umath.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0029-46ff322bdfe5",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "04a87dcb37e46eff7b931a45e6d87366ede144b5ff319070a2cb983a9b2e1bbc",
+      "source_artifact_id": "wheel-pkg:pypi-numpy-2.3.5",
+      "source_artifact_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+      "source_path": "numpy/_core/_multiarray_umath.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0030-ac530369c632",
+      "internal_path": "numpy/fft/_pocketfft_umath.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0030-ac530369c632",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "450931b90eabbb64b3f7936f06ee95250fb5b9d1c06cf3892efed36c025909e8",
+      "source_artifact_id": "wheel-pkg:pypi-numpy-2.3.5",
+      "source_artifact_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+      "source_path": "numpy/fft/_pocketfft_umath.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0031-731886d426c7",
+      "internal_path": "numpy/linalg/_umath_linalg.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0031-731886d426c7",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "ce9c95c3836521e26f4b34d71ad89ddc8e945fe72a2016f8b339999c6fb0edf4",
+      "source_artifact_id": "wheel-pkg:pypi-numpy-2.3.5",
+      "source_artifact_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+      "source_path": "numpy/linalg/_umath_linalg.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0032-92eeca8ea1e2",
+      "internal_path": "numpy/random/_bounded_integers.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0032-92eeca8ea1e2",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "5423456cf271a96c9bf8376d5a49634465f393a681b8f29f0039a2206c542de6",
+      "source_artifact_id": "wheel-pkg:pypi-numpy-2.3.5",
+      "source_artifact_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+      "source_path": "numpy/random/_bounded_integers.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0033-1d08a88f6044",
+      "internal_path": "numpy/random/_common.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0033-1d08a88f6044",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "db844232c16284032a353198f3606416ee1b7768ca46286e91819d34f645e627",
+      "source_artifact_id": "wheel-pkg:pypi-numpy-2.3.5",
+      "source_artifact_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+      "source_path": "numpy/random/_common.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0034-900a53ae9f8c",
+      "internal_path": "numpy/random/_generator.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0034-900a53ae9f8c",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "14fd4a00819b036bcaab9b92b9fadb5aad5dbcea00390a6b7e78bffe4ec13aa0",
+      "source_artifact_id": "wheel-pkg:pypi-numpy-2.3.5",
+      "source_artifact_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+      "source_path": "numpy/random/_generator.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0035-57d44f8a9554",
+      "internal_path": "numpy/random/_mt19937.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0035-57d44f8a9554",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "1cd4a5e52ac6791d91b94bce072579804c7a01961691986441692285891c5194",
+      "source_artifact_id": "wheel-pkg:pypi-numpy-2.3.5",
+      "source_artifact_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+      "source_path": "numpy/random/_mt19937.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0036-29d92369acfa",
+      "internal_path": "numpy/random/_pcg64.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0036-29d92369acfa",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "a26be0e497ed821f02a25c91c73e3487bcde37a2ae6643eeb2f8ea536eecd3da",
+      "source_artifact_id": "wheel-pkg:pypi-numpy-2.3.5",
+      "source_artifact_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+      "source_path": "numpy/random/_pcg64.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0037-703f801b5827",
+      "internal_path": "numpy/random/_philox.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0037-703f801b5827",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "d7c2370679114aed54bdd64089d7f77b5d68261f1775967603376c72a593b001",
+      "source_artifact_id": "wheel-pkg:pypi-numpy-2.3.5",
+      "source_artifact_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+      "source_path": "numpy/random/_philox.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0038-1f36aab9a9df",
+      "internal_path": "numpy/random/_sfc64.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0038-1f36aab9a9df",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "333b0369d2538ee4ca1db76734bc1c943a4e8cff1b8c8c3ded080f18ff71cc95",
+      "source_artifact_id": "wheel-pkg:pypi-numpy-2.3.5",
+      "source_artifact_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+      "source_path": "numpy/random/_sfc64.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0039-99c56a022508",
+      "internal_path": "numpy/random/bit_generator.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0039-99c56a022508",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "9463c856a55cba2d6a5776954ce74ef7693030c1b9bc29ef9a1c9c26b87ba3d3",
+      "source_artifact_id": "wheel-pkg:pypi-numpy-2.3.5",
+      "source_artifact_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+      "source_path": "numpy/random/bit_generator.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0040-9144fcdb9176",
+      "internal_path": "numpy/random/mtrand.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0040-9144fcdb9176",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "da9ea962151d7d6d140c1c6266dd3e2da61d9a2c84fea6d68917206c1dc72fad",
+      "source_artifact_id": "wheel-pkg:pypi-numpy-2.3.5",
+      "source_artifact_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+      "source_path": "numpy/random/mtrand.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0041-2b35cc788e4b",
+      "internal_path": "onnxruntime/capi/onnxruntime.dll",
+      "materialized_entry_id": "materialized-0041-2b35cc788e4b",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "4075344f1057c0d16883fb5a93428aeac5fecfbcb24e1560defb1cb80a6e0a85",
+      "source_artifact_id": "wheel-pkg:pypi-onnxruntime-1.29.0",
+      "source_artifact_sha256": "2945e1f82f81f27e88decea88c7861f45baea23818950d467bf3909aa303119e",
+      "source_path": "onnxruntime/capi/onnxruntime.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0042-773f3015372f",
+      "internal_path": "onnxruntime/capi/onnxruntime_providers_shared.dll",
+      "materialized_entry_id": "materialized-0042-773f3015372f",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "d647b451ba2808310ae2694040b670809daddf12f7a4f6296aca2a553c2ac571",
+      "source_artifact_id": "wheel-pkg:pypi-onnxruntime-1.29.0",
+      "source_artifact_sha256": "2945e1f82f81f27e88decea88c7861f45baea23818950d467bf3909aa303119e",
+      "source_path": "onnxruntime/capi/onnxruntime_providers_shared.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0043-7076f679925e",
+      "internal_path": "onnxruntime/capi/onnxruntime_pybind11_state.pyd",
+      "materialized_entry_id": "materialized-0043-7076f679925e",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "fc7ce1c1f18f630d8255ba13dff0b348f3f4436c743423a2fe2ad1dee510646c",
+      "source_artifact_id": "wheel-pkg:pypi-onnxruntime-1.29.0",
+      "source_artifact_sha256": "2945e1f82f81f27e88decea88c7861f45baea23818950d467bf3909aa303119e",
+      "source_path": "onnxruntime/capi/onnxruntime_pybind11_state.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0044-df5c66bb2d8d",
+      "internal_path": "pyexpat.pyd",
+      "materialized_entry_id": "materialized-0044-6017e2546349",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "b9c9c5a9f52af559a7eb4e8ddfd60558185bfc7794f32840bed1747d1ec9026a",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/pyexpat.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0045-63c880665806",
+      "internal_path": "python3.dll",
+      "materialized_entry_id": "materialized-0045-63c880665806",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "76e7fd69a01081726308317d6e502721c2ba6792b48880dc1ef649c755788db7",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "python3.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0046-674db60a6ea3",
+      "internal_path": "python313.dll",
+      "materialized_entry_id": "materialized-0046-674db60a6ea3",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "e820bf024efd2b56bb2b82791e6b6ddc7303f070f8e72cba7637482a8a906238",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "python313.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0047-f39ccbafd37d",
+      "internal_path": "select.pyd",
+      "materialized_entry_id": "materialized-0047-93818802ed21",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "024f955349fe46cf1bb2c22c6b57fcf38cf5755d46166fbf63e7e5b92433b111",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/select.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0048-feb712fe2df8",
+      "internal_path": "sentencepiece/_sentencepiece.cp313-win_amd64.pyd",
+      "materialized_entry_id": "materialized-0048-feb712fe2df8",
+      "owner_kind": "WHEEL_OWNED_NATIVE",
+      "payload_sha256": "ef25868963dc0fa56cd6f3e5477725873dd115a879e8cd070317f573442ae47c",
+      "source_artifact_id": "wheel-pkg:pypi-sentencepiece-0.2.1",
+      "source_artifact_sha256": "10ed3dab2044c47f7a2e7b4969b0c430420cdd45735d78c8f853191fa0e3148b",
+      "source_path": "sentencepiece/_sentencepiece.cp313-win_amd64.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+      "carchive_typecode": "b",
+      "entry_id": "final-0049-25a24bc21b0f",
+      "internal_path": "unicodedata.pyd",
+      "materialized_entry_id": "materialized-0049-c05c387bd26c",
+      "owner_kind": "CPYTHON_TOOLCHAIN_NATIVE",
+      "payload_sha256": "111e0fdfeef9887c04f6ebf1972ce1ccbec55b226012e4a288c2d4a0b17b216b",
+      "source_artifact_id": "cpython-3.13.15-windows-x86_64",
+      "source_artifact_sha256": "edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403",
+      "source_path": "DLLs/unicodedata.pyd",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows",
+        "python_version": "3.13.15"
+      }
+    },
+    {
+      "build_context_id": "code-c-distribution-ffprobe-v2-windows",
+      "carchive_typecode": "BINARY",
+      "entry_id": "ffprobe-v2-windows-001",
+      "internal_path": "runtime/ffprobe/bundle/avcodec-63.dll",
+      "license_record_sha256": "851c72502dbed3041718402602fa56016a7459d45f71e4a3a8d6e7de21e47f70",
+      "owner_kind": "FFPROBE_APPROVED_RUNTIME_COMPANION",
+      "payload_sha256": "12395f40203271b12d7a84286a08230cb5f5f4526988d5a47875455aa68d22bd",
+      "source_artifact_id": "code-c-ffprobe-windows-33917303316-packaging-v2",
+      "source_artifact_sha256": "67f37171869f353712f6f02341a2beb5755c3ba1d2ae4702aa0effe0283856e8",
+      "source_path": "avcodec-63.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows"
+      }
+    },
+    {
+      "build_context_id": "code-c-distribution-ffprobe-v2-windows",
+      "carchive_typecode": "BINARY",
+      "entry_id": "ffprobe-v2-windows-002",
+      "internal_path": "runtime/ffprobe/bundle/avdevice-63.dll",
+      "license_record_sha256": "851c72502dbed3041718402602fa56016a7459d45f71e4a3a8d6e7de21e47f70",
+      "owner_kind": "FFPROBE_APPROVED_RUNTIME_COMPANION",
+      "payload_sha256": "a550679f311d43b3bdf651136ddbe21de0998de3d2690e30f3c9d31e155e61d1",
+      "source_artifact_id": "code-c-ffprobe-windows-33917303316-packaging-v2",
+      "source_artifact_sha256": "67f37171869f353712f6f02341a2beb5755c3ba1d2ae4702aa0effe0283856e8",
+      "source_path": "avdevice-63.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows"
+      }
+    },
+    {
+      "build_context_id": "code-c-distribution-ffprobe-v2-windows",
+      "carchive_typecode": "BINARY",
+      "entry_id": "ffprobe-v2-windows-003",
+      "internal_path": "runtime/ffprobe/bundle/avfilter-12.dll",
+      "license_record_sha256": "851c72502dbed3041718402602fa56016a7459d45f71e4a3a8d6e7de21e47f70",
+      "owner_kind": "FFPROBE_APPROVED_RUNTIME_COMPANION",
+      "payload_sha256": "24b858749d79b5cd2d4506d60a137fee83c1ee90fe66df6b23e558dddd3a8293",
+      "source_artifact_id": "code-c-ffprobe-windows-33917303316-packaging-v2",
+      "source_artifact_sha256": "67f37171869f353712f6f02341a2beb5755c3ba1d2ae4702aa0effe0283856e8",
+      "source_path": "avfilter-12.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows"
+      }
+    },
+    {
+      "build_context_id": "code-c-distribution-ffprobe-v2-windows",
+      "carchive_typecode": "BINARY",
+      "entry_id": "ffprobe-v2-windows-004",
+      "internal_path": "runtime/ffprobe/bundle/avformat-63.dll",
+      "license_record_sha256": "851c72502dbed3041718402602fa56016a7459d45f71e4a3a8d6e7de21e47f70",
+      "owner_kind": "FFPROBE_APPROVED_RUNTIME_COMPANION",
+      "payload_sha256": "72737ec54c72f0737c0650acaaec79a47d06786a1579d91a04f742c88d67af94",
+      "source_artifact_id": "code-c-ffprobe-windows-33917303316-packaging-v2",
+      "source_artifact_sha256": "67f37171869f353712f6f02341a2beb5755c3ba1d2ae4702aa0effe0283856e8",
+      "source_path": "avformat-63.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows"
+      }
+    },
+    {
+      "build_context_id": "code-c-distribution-ffprobe-v2-windows",
+      "carchive_typecode": "BINARY",
+      "entry_id": "ffprobe-v2-windows-005",
+      "internal_path": "runtime/ffprobe/bundle/avutil-61.dll",
+      "license_record_sha256": "851c72502dbed3041718402602fa56016a7459d45f71e4a3a8d6e7de21e47f70",
+      "owner_kind": "FFPROBE_APPROVED_RUNTIME_COMPANION",
+      "payload_sha256": "18c6a76c544de3ad7aaf8bde5658a974362133f210f204bb0d89f2bdf8fd1673",
+      "source_artifact_id": "code-c-ffprobe-windows-33917303316-packaging-v2",
+      "source_artifact_sha256": "67f37171869f353712f6f02341a2beb5755c3ba1d2ae4702aa0effe0283856e8",
+      "source_path": "avutil-61.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows"
+      }
+    },
+    {
+      "build_context_id": "code-c-distribution-ffprobe-v2-windows",
+      "carchive_typecode": "BINARY",
+      "entry_id": "ffprobe-v2-windows-006",
+      "internal_path": "runtime/ffprobe/bundle/ffprobe.exe",
+      "license_record_sha256": "851c72502dbed3041718402602fa56016a7459d45f71e4a3a8d6e7de21e47f70",
+      "owner_kind": "FFPROBE_APPROVED_RUNTIME_COMPANION",
+      "payload_sha256": "2ed7798daa057ee557bca8d1fe72a0f2c48109369dc0e5a7672b31c08565fc7c",
+      "source_artifact_id": "code-c-ffprobe-windows-33917303316-packaging-v2",
+      "source_artifact_sha256": "67f37171869f353712f6f02341a2beb5755c3ba1d2ae4702aa0effe0283856e8",
+      "source_path": "ffprobe.exe",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows"
+      }
+    },
+    {
+      "build_context_id": "code-c-distribution-ffprobe-v2-windows",
+      "carchive_typecode": "BINARY",
+      "entry_id": "ffprobe-v2-windows-007",
+      "internal_path": "runtime/ffprobe/bundle/swresample-7.dll",
+      "license_record_sha256": "851c72502dbed3041718402602fa56016a7459d45f71e4a3a8d6e7de21e47f70",
+      "owner_kind": "FFPROBE_APPROVED_RUNTIME_COMPANION",
+      "payload_sha256": "8aa376ddcfb8745287aa9b6cc018c6514b3ec1d5f01c537567f1ce2f509eb5c1",
+      "source_artifact_id": "code-c-ffprobe-windows-33917303316-packaging-v2",
+      "source_artifact_sha256": "67f37171869f353712f6f02341a2beb5755c3ba1d2ae4702aa0effe0283856e8",
+      "source_path": "swresample-7.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows"
+      }
+    },
+    {
+      "build_context_id": "code-c-distribution-ffprobe-v2-windows",
+      "carchive_typecode": "BINARY",
+      "entry_id": "ffprobe-v2-windows-008",
+      "internal_path": "runtime/ffprobe/bundle/swscale-10.dll",
+      "license_record_sha256": "851c72502dbed3041718402602fa56016a7459d45f71e4a3a8d6e7de21e47f70",
+      "owner_kind": "FFPROBE_APPROVED_RUNTIME_COMPANION",
+      "payload_sha256": "dcdb26cb11338ec92ebd90e614092c6160a81eea14c375e813252360f78a2d23",
+      "source_artifact_id": "code-c-ffprobe-windows-33917303316-packaging-v2",
+      "source_artifact_sha256": "67f37171869f353712f6f02341a2beb5755c3ba1d2ae4702aa0effe0283856e8",
+      "source_path": "swscale-10.dll",
+      "target": {
+        "architecture": "x86_64",
+        "os": "windows"
+      }
+    }
+  ],
+  "native_set_digest": "181ae5e5cfd5b34a09b4204dd4a4c866829d16dffcf107d03475a3dd3014f703",
+  "reconciliation_id": "code-c-distribution-native-v4-windows",
+  "record_kind": "DISTRIBUTION_NATIVE_RECONCILIATION",
+  "schema_version": "4",
+  "source_v3_reconciliation": "compliance/license-reconciliations/post-f-license-current-head-76529014/evidence/windows/native-v3/windows/native-reconciliation.v3.json",
+  "source_v3_sha256": "f0d6b3a54bfba9bee98996aad1bbeac18c6da48db60720851904dc92fb2dc9f2",
+  "status": "PASS"
+}
