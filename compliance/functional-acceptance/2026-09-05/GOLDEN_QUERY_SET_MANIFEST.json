@@ -1,0 +1,27 @@
+{
+  "schema_version": "1",
+  "record_kind": "GOLDEN_RETRIEVAL_QUERY_SET_MANIFEST",
+  "record_id": "code-f-golden-query-set-20260905-v1",
+  "manifest_sha256": "ed6d673c0001939d39a67f6713952e2585c19948b7955ca65ce932f72c4301e5",
+  "classification": "MISSING_AND_NEEDS_DEFINITION",
+  "manifest_status": "NOT_YET_POPULATED",
+  "execution_status": "NOT_RUN",
+  "query_set_id": "code-f-golden-retrieval-query-set-20260905-v1",
+  "dataset_version": "1.0.0",
+  "minimum_query_count": 100,
+  "minimum_count_decision_source": "OWNER_GOVERNANCE_DECISION",
+  "query_schema_version": "media-index-retrieval-query-v1",
+  "queries": [],
+  "query_requirements": {
+    "anonymous_query_id_required": true,
+    "exact_text_bytes_sha256_required": true,
+    "language_required": true,
+    "authorized_or_owner_approved_intent_required": true,
+    "duplicate_query_id": "FAIL_CLOSED"
+  },
+  "freeze_semantics": {
+    "test_queries_read_only_after_freeze": true,
+    "query_change_requires_new_dataset_version": true,
+    "freeze_status": "SCHEMA_ONLY_NOT_FROZEN"
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "schema_version": "1",
+  "record_kind": "FINAL_FUNCTIONAL_ACCEPTANCE_AUTHORITY_SET",
+  "record_id": "code-f-final-functional-acceptance-authority-set-20260905-v1",
+  "record_sha256": "622b5c5f8cf67ac2d59e8279135910e082bd6b0a7eeda19813bebc485324f49e",
+  "authority_set_status": "PASS_AUTHORITY_CLOSURE_ONLY",
+  "functional_acceptance_status": "NOT_RUN",
+  "main_quality_baseline_at_inventory": "c0db97eee1003b789c851cf73d947a43be9c6041",
+  "scope": "CURRENT_DISTRIBUTION_CANDIDATE_SIGLIP_INDEX_AND_REAL_INDEX_GATE",
+  "siglip_model_id": "google/siglip2-base-patch32-256",
+  "siglip_model_revision": "9e7ee68506177b546b2d5dc578f54afdc5e425f1",
+  "siglip_image_onnx_sha256": "ef5f7b69830c352e57f15668092d7323521836c16fff2d71d14549b75eca6059",
+  "siglip_text_onnx_sha256": "12bccdb491a98d224df1e6b6b249378118c6cfb54c18f6eb12286ffce8b26f30",
+  "siglip_model_authority_sha256": "f8956b5ea0cc3f1662d92f6029416c8b2ad73c9a20bc9a7bd5614e5db6d76ea0",
+  "real_index_corpus_id": "code-f-real-index-corpus-20260905-v1",
+  "real_index_corpus_manifest_sha256": "a007c7c6829cef003282b136e46199fdf601926d819169850ccc9ea6fe02f06f",
+  "authorized_asset_provenance_policy_id": "code-f-authorized-asset-provenance-policy-20260905-v1",
+  "authorized_asset_provenance_policy_sha256": "76d15758b775b505fc8bb0cf18fbec888f663e131e0d0839a0092b4816c7dde5",
+  "golden_retrieval_protocol_id": "code-f-golden-retrieval-protocol-20260905-v1",
+  "golden_retrieval_protocol_sha256": "4bf87d766915af959f7c192e0dec632318ca4c31d6b4a9af4be7806fd650c552",
+  "golden_query_set_id": "code-f-golden-retrieval-query-set-20260905-v1",
+  "golden_ground_truth_sha256": "d5196727b5f5b7d53cfee0f941809266069dfc240c833dbbd604f7fabe5443ee",
+  "golden_metric": "RECALL_AT_5",
+  "golden_threshold_authority": "OWNER_GOVERNANCE_DECISION",
+  "golden_threshold_sha256": "37dcb1a42139863039162844ab1ef3dde50d6b3e6e3f26f01ff55f3a3c310074",
+  "windows_low_end_profile_ids": ["WINDOWS_4C_8GB_PROFILE", "WINDOWS_4C_16GB_PROFILE"],
+  "current_distribution_candidate": {
+    "candidate_id": "code-c-distribution-ffprobe-v2-33917303316",
+    "manifest_sha256": "3fb598a0872db0e30cd08de0bd187b823b36ebff7072bd3d6c00f065335aa215",
+    "final_distribution_binding_id": "code-c-final-distribution-ffprobe-v2-33917303316",
+    "final_distribution_binding_sha256": "2ff105489777ffee0ae12bcab6f864097f7e34513ee1d523185415fd7047a2d6",
+    "final_distribution_binding_status": "PASS"
+  },
+  "vulnerability_authority": {
+    "logical_path": "compliance/vulnerability-reviews/ffprobe-v2-current-distribution-2026-09-05/CURRENT_DISTRIBUTION_FINAL_VULNERABILITY_REVIEW.json",
+    "record_id": "code-f-current-distribution-ffprobe-v2-vulnerability-20260905-v1",
+    "record_sha256": "57483e55f9f444f630dea5cf579a891cfe0a093c6912b0e63423f55cad2d7e41",
+    "raw_file_sha256": "6edf1fbeb901e779982c006e9850a374152ecf4672a4850a020310c56e5e6183",
+    "status": "PASS",
+    "scope": "CURRENT_DISTRIBUTION_CANDIDATE"
+  },
+  "authority_categories": {
+    "siglip_exact_model": {
+      "classification": "EXISTING_BUT_NOT_PUBLISHED",
+      "record_id": "code-f-siglip2-exact-model-authority-20260905-v1",
+      "record_sha256": "f8956b5ea0cc3f1662d92f6029416c8b2ad73c9a20bc9a7bd5614e5db6d76ea0",
+      "raw_file_sha256": "2bdacc356958cdc74c8bdf0808542eb9cbbdd3b0f4dfeeb48033d3baab0ac317",
+      "identity_binding": "PASS",
+      "execution_status": "NOT_RUN_THIS_ROUND"
+    },
+    "real_index_corpus": {
+      "classification": "MISSING_AND_NEEDS_DEFINITION",
+      "record_id": "code-f-real-index-corpus-authority-20260905-v1",
+      "record_sha256": "be32358ae33fcebe7e4e0c63f1a073d220f638eeac326e18d0c62e712c9823ec",
+      "raw_file_sha256": "1dd108de1de5183d00acd8a590cd0164ae67453e699751709b924f433eb1cc01",
+      "corpus_id": "code-f-real-index-corpus-20260905-v1",
+      "corpus_manifest_sha256": "a007c7c6829cef003282b136e46199fdf601926d819169850ccc9ea6fe02f06f",
+      "corpus_manifest_raw_file_sha256": "f55174219dd6b60500a04cd5e34b6458620a04743339cb67266d28a10bc66a2e",
+      "authorized_asset_provenance_policy_id": "code-f-authorized-asset-provenance-policy-20260905-v1",
+      "authorized_asset_provenance_policy_sha256": "76d15758b775b505fc8bb0cf18fbec888f663e131e0d0839a0092b4816c7dde5",
+      "minimum_authorized_real_asset_count": 500,
+      "execution_status": "NOT_RUN"
+    },
+    "golden_retrieval": {
+      "classification": "MISSING_AND_NEEDS_DEFINITION",
+      "record_id": "code-f-golden-retrieval-protocol-20260905-v1",
+      "record_sha256": "4bf87d766915af959f7c192e0dec632318ca4c31d6b4a9af4be7806fd650c552",
+      "raw_file_sha256": "e8a1b201c674c5f7c3f064f994cf65ff004744f655d693132d8b549c46cbdb15",
+      "golden_retrieval_protocol_id": "code-f-golden-retrieval-protocol-20260905-v1",
+      "golden_query_set_id": "code-f-golden-retrieval-query-set-20260905-v1",
+      "golden_query_set_sha256": "ed6d673c0001939d39a67f6713952e2585c19948b7955ca65ce932f72c4301e5",
+      "golden_ground_truth_id": "code-f-golden-retrieval-ground-truth-20260905-v1",
+      "golden_ground_truth_sha256": "d5196727b5f5b7d53cfee0f941809266069dfc240c833dbbd604f7fabe5443ee",
+      "golden_metric": "RECALL_AT_5",
+      "golden_threshold_authority": "OWNER_GOVERNANCE_DECISION",
+      "golden_threshold_sha256": "01eb1790ac4fe3fea0a1533ff0952a197edb9783ee9d54ca2d365673d3440f42",
+      "execution_status": "NOT_RUN"
+    },
+    "windows_low_end_profiles": {
+      "classification": "MISSING_AND_NEEDS_DEFINITION",
+      "record_id": "code-f-windows-low-end-profiles-20260905-v1",
+      "record_sha256": "a37ef1710f152550e3e048f8f58c364d019296eb62cbc3cc029bfb2d743b26f0",
+      "raw_file_sha256": "45cbc62d87413f250eceaeed6f8303f1f5cc592947b5bddbb4a9248a715c3535",
+      "required_profiles": ["WINDOWS_4C_8GB_PROFILE", "WINDOWS_4C_16GB_PROFILE"],
+      "execution_status": "NOT_RUN"
+    }
+  },
+  "closure_semantics": {
+    "authority_records_complete": true,
+    "authority_definition_is_not_functional_acceptance": true,
+    "real_index_acceptance": "READY_NOT_RUN",
+    "golden_retrieval_acceptance": "READY_NOT_RUN",
+    "windows_low_end_acceptance": "READY_NOT_RUN",
+    "code_c_version_acceptance": "NOT_RUN",
+    "code_d": "NOT_STARTED",
+    "stable_release_license_gate": "BLOCKED_BY_EXTERNAL_MSVC_REDISTRIBUTION"
+  },
+  "recheck_triggers": [
+    "current distribution candidate, final binding, or vulnerability authority changes",
+    "SigLIP model id, revision, model-pack tag, source lock, ONNX bytes, or runtime changes",
+    "real-index corpus id, manifest, asset provenance, labels, or freeze status changes",
+    "Golden query set, ground truth, metric, top-k, tie-breaking, or threshold changes",
+    "Windows low-end CPU/memory/OS/VM semantics, workload, metric, or threshold changes",
+    "Media Index implementation or retrieval protocol changes"
+  ]
+}

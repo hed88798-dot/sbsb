@@ -1,0 +1,71 @@
+{
+  "schema_version": "1",
+  "record_kind": "WINDOWS_LOW_END_ACCEPTANCE_PROFILES",
+  "record_id": "code-f-windows-low-end-profiles-20260905-v1",
+  "record_sha256": "a37ef1710f152550e3e048f8f58c364d019296eb62cbc3cc029bfb2d743b26f0",
+  "classification": "MISSING_AND_NEEDS_DEFINITION",
+  "authority_status": "READY_FOR_EXECUTION",
+  "execution_status": "NOT_RUN",
+  "profile_set_id": "code-f-windows-low-end-profiles-20260905-v1",
+  "platform": {
+    "os_family": "Windows",
+    "architectures": ["x86_64"],
+    "supported_versions": ["Windows 10", "Windows 11"],
+    "vm_semantics": "CLEAN_VM_WITH_FIXED_CPU_AND_MEMORY; NO_HOST_PROCESS_INTERFERENCE"
+  },
+  "measurement_contract": {
+    "index_build_workload": "500_AUTHORIZED_REAL_ASSETS_BOUND_TO_FROZEN_CORPUS_MANIFEST",
+    "retrieval_workload": "BOUND_GOLDEN_QUERY_SET",
+    "warmup_runs": 1,
+    "measured_repetitions": 5,
+    "latency_metric": "P95",
+    "memory_metric": "PEAK_PROCESS_WORKING_SET",
+    "timing_clock": "MONOTONIC",
+    "background_process_policy": "MINIMIZED_AND_RECORDED",
+    "measurement_result": "NOT_RUN"
+  },
+  "profiles": {
+    "WINDOWS_4C_8GB_PROFILE": {
+      "profile_id": "code-f-windows-4c-8gb-profile-20260905-v1",
+      "cpu_logical_cores": 4,
+      "memory_bytes": 8589934592,
+      "index_build_p95_max_seconds": 900,
+      "retrieval_p95_max_milliseconds": 1000,
+      "peak_working_set_max_bytes": 6442450944,
+      "threshold_authority": "OWNER_GOVERNANCE_DECISION",
+      "pass_requires": [
+        "all workload inputs are bound to the exact corpus/query/ground-truth authorities",
+        "all repetitions complete without process crash or data loss",
+        "each measured p95 and peak working set is at or below the threshold"
+      ],
+      "acceptance_result": "NOT_RUN"
+    },
+    "WINDOWS_4C_16GB_PROFILE": {
+      "profile_id": "code-f-windows-4c-16gb-profile-20260905-v1",
+      "cpu_logical_cores": 4,
+      "memory_bytes": 17179869184,
+      "index_build_p95_max_seconds": 600,
+      "retrieval_p95_max_milliseconds": 750,
+      "peak_working_set_max_bytes": 12884901888,
+      "threshold_authority": "OWNER_GOVERNANCE_DECISION",
+      "pass_requires": [
+        "all workload inputs are bound to the exact corpus/query/ground-truth authorities",
+        "all repetitions complete without process crash or data loss",
+        "each measured p95 and peak working set is at or below the threshold"
+      ],
+      "acceptance_result": "NOT_RUN"
+    }
+  },
+  "profile_freeze_policy": {
+    "threshold_change_requires_new_profile_version": true,
+    "hardware_or_os_semantics_change_invalidates_results": true,
+    "host_resource_sharing_cannot_be_used_to_claim_pass": true
+  },
+  "recheck_triggers": [
+    "CPU, memory, Windows version, or VM isolation semantics change",
+    "index-build or retrieval workload binding changes",
+    "warmup, repetition, metric, or threshold changes",
+    "SigLIP/model/corpus/query/ground-truth authority changes",
+    "Windows Worker or runtime candidate changes"
+  ]
+}

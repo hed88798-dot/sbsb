@@ -1,0 +1,41 @@
+{
+  "schema_version": "1",
+  "record_kind": "REAL_INDEX_CORPUS_AUTHORITY",
+  "record_id": "code-f-real-index-corpus-authority-20260905-v1",
+  "record_sha256": "be32358ae33fcebe7e4e0c63f1a073d220f638eeac326e18d0c62e712c9823ec",
+  "classification": "MISSING_AND_NEEDS_DEFINITION",
+  "authority_status": "READY_FOR_EXECUTION",
+  "execution_status": "NOT_RUN",
+  "acceptance_status": "NOT_YET_CLOSED",
+  "corpus_id": "code-f-real-index-corpus-20260905-v1",
+  "dataset_version": "1.0.0",
+  "corpus_manifest": {
+    "logical_path": "compliance/functional-acceptance/2026-09-05/REAL_INDEX_CORPUS_MANIFEST.json",
+    "manifest_sha256": "a007c7c6829cef003282b136e46199fdf601926d819169850ccc9ea6fe02f06f",
+    "raw_file_sha256": "f55174219dd6b60500a04cd5e34b6458620a04743339cb67266d28a10bc66a2e",
+    "manifest_status": "NOT_YET_POPULATED"
+  },
+  "authorized_asset_provenance_policy": {
+    "policy_id": "code-f-authorized-asset-provenance-policy-20260905-v1",
+    "policy_sha256": "76d15758b775b505fc8bb0cf18fbec888f663e131e0d0839a0092b4816c7dde5",
+    "raw_file_sha256": "b067940108340b339aeb6f895ddd8aa254aa50e0b1acf2e8c743aa962f4eb23c"
+  },
+  "minimum_authorized_real_asset_count": 500,
+  "current_authorized_real_asset_count": 0,
+  "asset_count_gate": "NOT_RUN",
+  "provenance_gate": "NOT_RUN",
+  "manifest_freeze_gate": "NOT_RUN",
+  "execution_preconditions": [
+    "manifest populated with at least 500 authorized assets",
+    "every asset has anonymous id, exact-byte SHA-256, size and authorization evidence",
+    "test split is locked and label/guideline versions are bound",
+    "controlled storage access and retention evidence are available"
+  ],
+  "recheck_triggers": [
+    "corpus manifest semantic or raw bytes change",
+    "authorization policy semantic or raw bytes change",
+    "asset count or split membership changes",
+    "label schema or annotation guideline changes",
+    "real-index pipeline or candidate binding changes"
+  ]
+}

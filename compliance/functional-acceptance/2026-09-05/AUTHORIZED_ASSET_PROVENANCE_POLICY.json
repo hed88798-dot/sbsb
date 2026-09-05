@@ -1,0 +1,59 @@
+{
+  "schema_version": "1",
+  "record_kind": "AUTHORIZED_REAL_ASSET_PROVENANCE_POLICY",
+  "record_id": "code-f-authorized-asset-provenance-policy-20260905-v1",
+  "policy_sha256": "76d15758b775b505fc8bb0cf18fbec888f663e131e0d0839a0092b4816c7dde5",
+  "classification": "MISSING_AND_NEEDS_DEFINITION",
+  "policy_status": "APPROVED_GOVERNANCE_DEFINITION",
+  "scope": "REAL_INDEX_CORPUS_AND_GOLDEN_RETRIEVAL_INPUTS",
+  "execution_status": "NOT_RUN",
+  "authorization_rules": {
+    "accepted_source_types": ["CUSTOMER_AUTHORIZED", "PUBLIC_APPROVED"],
+    "customer_authorization_evidence_required": true,
+    "public_source_approval_evidence_required": true,
+    "authorization_must_precede_ingest": true,
+    "authorization_expiry_must_be_checked": true,
+    "unauthorized_or_expired_source": "FAIL_CLOSED"
+  },
+  "anonymization_rules": {
+    "anonymous_asset_id_required": true,
+    "customer_names_forbidden": true,
+    "customer_directory_structure_forbidden": true,
+    "private_absolute_paths_forbidden": true,
+    "sensitive_product_internal_information_forbidden": true,
+    "portable_logical_locator_required": true
+  },
+  "integrity_rules": {
+    "per_asset_sha256_required": true,
+    "manifest_sha256_required": true,
+    "byte_semantics": "EXACT_BYTES",
+    "asset_size_bytes_required": true,
+    "duplicate_anonymous_id": "FAIL_CLOSED",
+    "hash_mismatch": "FAIL_CLOSED"
+  },
+  "dataset_rules": {
+    "label_schema_version_required": true,
+    "annotation_guideline_version_required": true,
+    "splits_required": ["train", "calibration", "test"],
+    "test_split_locked": true,
+    "test_label_mutation_without_new_dataset_version": "FORBIDDEN",
+    "independent_annotation_and_adjudication_when_applicable": true,
+    "algorithm_author_may_not_change_test_labels_to_improve_metrics": true
+  },
+  "storage_and_access_rules": {
+    "large_media_inordinary_git": "FORBIDDEN",
+    "manifest_and_hashes_in_git": "ALLOWED",
+    "controlled_storage_required_for_large_media": true,
+    "access_log_required": true,
+    "retention_and_deletion_must_be_authorized": true
+  },
+  "policy_owner": "CODE_F",
+  "decision_basis": "FINAL_FUNCTIONAL_ACCEPTANCE_AUTHORITY_CLOSURE_GOVERNANCE_DECISION",
+  "recheck_triggers": [
+    "source authorization policy changes",
+    "anonymization or sensitive-data policy changes",
+    "label schema or annotation guideline changes",
+    "split or test-lock semantics changes",
+    "controlled-storage or retention policy changes"
+  ]
+}

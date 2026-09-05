@@ -1,0 +1,68 @@
+{
+  "schema_version": "1",
+  "record_kind": "SIGLIP_EXACT_MODEL_AUTHORITY",
+  "record_id": "code-f-siglip2-exact-model-authority-20260905-v1",
+  "record_sha256": "f8956b5ea0cc3f1662d92f6029416c8b2ad73c9a20bc9a7bd5614e5db6d76ea0",
+  "classification": "EXISTING_BUT_NOT_PUBLISHED",
+  "authority_status": "PASS_IDENTITY_BINDING",
+  "publication_status": "PUBLISHED_BY_THIS_CHANGE",
+  "scope": "CURRENT_DISTRIBUTION_CANDIDATE",
+  "main_quality_baseline_at_inventory": "c0db97eee1003b789c851cf73d947a43be9c6041",
+  "execution_status": "NOT_RUN_THIS_ROUND",
+  "distribution_signing_status": "BLOCKED_BY_MODEL_PACK_RELEASE_BOUNDARY",
+  "model": {
+    "model_id": "google/siglip2-base-patch32-256",
+    "model_revision": "9e7ee68506177b546b2d5dc578f54afdc5e425f1",
+    "license": "Apache-2.0",
+    "onnx_opset": 18,
+    "onnxruntime_version": "1.29.0",
+    "runtime": "onnxruntime-cpu",
+    "preprocess_version": "siglip2-processor-256-bicubic-mean0.5-official-text-v2",
+    "export_script_version": "siglip2-onnx-export-v2",
+    "image_encoder": {
+      "logical_id": "google-siglip2-base-patch32-256/image-encoder-onnx-fp32/sha256:ef5f7b69830c352e57f15668092d7323521836c16fff2d71d14549b75eca6059",
+      "sha256": "ef5f7b69830c352e57f15668092d7323521836c16fff2d71d14549b75eca6059",
+      "size_bytes": 378435041
+    },
+    "text_encoder": {
+      "logical_id": "google-siglip2-base-patch32-256/text-encoder-onnx-fp32/sha256:12bccdb491a98d224df1e6b6b249378118c6cfb54c18f6eb12286ffce8b26f30",
+      "sha256": "12bccdb491a98d224df1e6b6b249378118c6cfb54c18f6eb12286ffce8b26f30",
+      "size_bytes": 1129415247
+    }
+  },
+  "source_authority": {
+    "source": "https://huggingface.co/google/siglip2-base-patch32-256",
+    "source_revision": "9e7ee68506177b546b2d5dc578f54afdc5e425f1",
+    "source_lock_declared_sha256": "3f628585475283c2b50bd8040acb2f47767b3cebc4b07cdf9ae08bde47e4b82d",
+    "model_pack_tag": "model-pack-siglip2-9e7ee685-opset18-fp32",
+    "model_pack_tag_commit": "96fc88b3a0139ea5d927fa183b381b314ac7057c",
+    "storage_semantics": "IMMUTABLE_CONTENT_ADDRESSED_MODEL_PACK; ONNX_BYTES_NOT_GIT_BLOBS"
+  },
+  "historical_evidence": {
+    "source_branch": "code-f/code-c-artifact-containment",
+    "source_commit": "53de6ec507e5d4cdc125012032f9b775276c94d7",
+    "completion_report": {
+      "logical_path": "CODE_C_COMPLETION_REPORT.md",
+      "file_sha256": "ad9fad16d870e2b8ed5d98e04a634650dfd436856b691260689b7bc338f01c0d"
+    },
+    "model_manifest": {
+      "logical_path": "sidecars/media-worker/model-manifests/siglip2-base-patch32-256.onnx-fp32.manifest.json",
+      "file_sha256": "a70e7551d855d23259b3d6f0a64e11124a7d2712e9fea8cd1727f87a59c7c4f1",
+      "canonical_content_sha256": "2b1983f01677573a4882b02da1ba8a2e76d89918247c5c4923c8328d80725b10"
+    },
+    "source_lock": {
+      "logical_path": "sidecars/media-worker/model-manifests/siglip2-base-patch32-256.source-lock.json",
+      "file_sha256": "cce03a026d776ad51427c8d47edbed3cb0f1d20b7b02c754451e1035c7a7da00",
+      "canonical_content_sha256": "8b8e278c005c2ad6eb6a6e7767388626cda52ae36935b819e09d81df8f9b14f4"
+    },
+    "evidence_status": "EXISTING_ACCEPTED_EVIDENCE_REBOUND; NOT_PREVIOUSLY_ON_MAIN"
+  },
+  "recheck_triggers": [
+    "model id or official revision changes",
+    "source lock or model-pack tag/commit changes",
+    "image or text ONNX SHA-256 or size changes",
+    "ONNX opset, ONNX Runtime, preprocessing, or export script changes",
+    "model license or distribution-signing boundary changes",
+    "current distribution candidate or final binding changes"
+  ]
+}

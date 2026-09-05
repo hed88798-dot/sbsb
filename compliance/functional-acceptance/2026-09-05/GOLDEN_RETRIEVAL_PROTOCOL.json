@@ -1,0 +1,50 @@
+{
+  "schema_version": "1",
+  "record_kind": "GOLDEN_RETRIEVAL_PROTOCOL",
+  "record_id": "code-f-golden-retrieval-protocol-20260905-v1",
+  "protocol_sha256": "4bf87d766915af959f7c192e0dec632318ca4c31d6b4a9af4be7806fd650c552",
+  "classification": "MISSING_AND_NEEDS_DEFINITION",
+  "protocol_status": "APPROVED_GOVERNANCE_DEFINITION",
+  "execution_status": "NOT_RUN",
+  "protocol_id": "code-f-golden-retrieval-protocol-20260905-v1",
+  "query_set": {
+    "query_set_id": "code-f-golden-retrieval-query-set-20260905-v1",
+    "manifest_path": "compliance/functional-acceptance/2026-09-05/GOLDEN_QUERY_SET_MANIFEST.json",
+    "manifest_sha256": "ed6d673c0001939d39a67f6713952e2585c19948b7955ca65ce932f72c4301e5",
+    "raw_file_sha256": "56f872ad1e96cdc16c334261bbe764b121266754b19098db11050a613adec1e7"
+  },
+  "ground_truth": {
+    "ground_truth_id": "code-f-golden-retrieval-ground-truth-20260905-v1",
+    "manifest_path": "compliance/functional-acceptance/2026-09-05/GOLDEN_GROUND_TRUTH_MANIFEST.json",
+    "manifest_sha256": "d5196727b5f5b7d53cfee0f941809266069dfc240c833dbbd604f7fabe5443ee",
+    "raw_file_sha256": "90a8643944e887a0305d4de0853911b50f92a646d72bdacbba9511b6a40e0ba4"
+  },
+  "evaluation": {
+    "metric": "RECALL_AT_5",
+    "top_k": 5,
+    "threshold_authority": "OWNER_GOVERNANCE_DECISION",
+    "threshold_value": 0.9,
+    "threshold_sha256": "37dcb1a42139863039162844ab1ef3dde50d6b3e6e3f26f01ff55f3a3c310074",
+    "threshold_semantics": "RECALL_AT_5_MUST_BE_GREATER_THAN_OR_EQUAL_TO_0_90",
+    "minimum_query_count": 100,
+    "query_count_source": "BOUND_QUERY_SET_MANIFEST",
+    "per_query_exact_cosine_ordering": true,
+    "tie_breaking": "ASSET_ID_ASCENDING",
+    "embedding_runtime": "SIGLIP2_ONNX_CPU",
+    "missing_query_or_ground_truth": "FAIL_CLOSED"
+  },
+  "result_semantics": {
+    "pass_requires_populated_frozen_query_and_ground_truth_manifests": true,
+    "pass_requires_exact_candidate_and_model_binding": true,
+    "metrics_result": "NOT_RUN",
+    "acceptance_result": "NOT_RUN"
+  },
+  "threshold_change_policy": "NEW_VERSION_AND_REVIEW_REQUIRED; NO_INHERITANCE",
+  "recheck_triggers": [
+    "query set id, version, or manifest bytes change",
+    "ground truth id, version, labels, or manifest bytes change",
+    "metric, top-k, tie-breaking, or threshold changes",
+    "SigLIP model or ONNX bytes change",
+    "index/retrieval implementation or candidate binding changes"
+  ]
+}
