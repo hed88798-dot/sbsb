@@ -69,6 +69,7 @@
     "code-c:python:usage-binding": "python tools/code-c-python-supply-chain/create_usage_binding.py",
     "code-c:python:release:notices": "python tools/code-c-python-supply-chain/assemble_release_notices.py",
     "code-c:python:license:post-f-reconcile": "python tools/code-c-python-supply-chain/reconcile_post_f_license.py",
+    "code-c:distribution:ffprobe:closure": "python tools/distribution/ffprobe_distribution_closure.py",
     "compliance:trust-chain:contract": "vitest run tests/contract/distribution-trust-chain.test.ts --maxWorkers=1",
     "compliance:runtime-companion:contract": "vitest run tests/contract/native-runtime-companion.test.ts --maxWorkers=1",
     "compliance:runtime-loader-policy:contract": "node tools/native-runtime-companion/loader-policy.mjs && vitest run tests/contract/native-runtime-loader-policy.test.ts --maxWorkers=1",
