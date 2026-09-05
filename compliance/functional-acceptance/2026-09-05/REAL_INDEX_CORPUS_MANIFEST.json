@@ -1,0 +1,43 @@
+{
+  "schema_version": "1",
+  "record_kind": "REAL_INDEX_CORPUS_MANIFEST",
+  "record_id": "code-f-real-index-corpus-manifest-20260905-v1",
+  "manifest_sha256": "a007c7c6829cef003282b136e46199fdf601926d819169850ccc9ea6fe02f06f",
+  "classification": "MISSING_AND_NEEDS_DEFINITION",
+  "manifest_status": "NOT_YET_POPULATED",
+  "execution_status": "NOT_RUN",
+  "corpus_id": "code-f-real-index-corpus-20260905-v1",
+  "dataset_version": "1.0.0",
+  "minimum_authorized_real_asset_count": 500,
+  "minimum_count_decision_source": "OWNER_GOVERNANCE_DECISION",
+  "authorization_policy_id": "code-f-authorized-asset-provenance-policy-20260905-v1",
+  "authorization_policy_sha256": "76d15758b775b505fc8bb0cf18fbec888f663e131e0d0839a0092b4816c7dde5",
+  "provenance": {
+    "source_type": "CUSTOMER_AUTHORIZED_OR_PUBLIC_APPROVED",
+    "contains_customer_data": false,
+    "customer_data_storage": "CONTROLLED_STORAGE_ONLY",
+    "ordinary_git_media": "FORBIDDEN"
+  },
+  "label_schema_version": "media-index-real-asset-v1",
+  "annotation_guideline_version": "media-index-real-asset-guideline-v1",
+  "splits": {
+    "train": { "locked": false, "minimum_count": 0 },
+    "calibration": { "locked": false, "minimum_count": 0 },
+    "test": { "locked": true, "minimum_count": 1 }
+  },
+  "assets": [],
+  "freeze_semantics": {
+    "manifest_is_read_only_after_freeze": true,
+    "test_labels_require_new_dataset_version": true,
+    "asset_or_label_change_invalidates_bound_acceptance": true,
+    "freeze_status": "SCHEMA_ONLY_NOT_FROZEN"
+  },
+  "recheck_triggers": [
+    "corpus_id or dataset version changes",
+    "manifest asset list or per-asset hash changes",
+    "authorization policy or provenance evidence changes",
+    "label schema or annotation guideline changes",
+    "minimum authorized asset count changes",
+    "split membership or test lock changes"
+  ]
+}

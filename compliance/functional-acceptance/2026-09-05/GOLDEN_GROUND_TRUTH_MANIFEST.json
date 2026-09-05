@@ -1,0 +1,28 @@
+{
+  "schema_version": "1",
+  "record_kind": "GOLDEN_RETRIEVAL_GROUND_TRUTH_MANIFEST",
+  "record_id": "code-f-golden-ground-truth-20260905-v1",
+  "manifest_sha256": "d5196727b5f5b7d53cfee0f941809266069dfc240c833dbbd604f7fabe5443ee",
+  "classification": "MISSING_AND_NEEDS_DEFINITION",
+  "manifest_status": "NOT_YET_POPULATED",
+  "execution_status": "NOT_RUN",
+  "ground_truth_id": "code-f-golden-retrieval-ground-truth-20260905-v1",
+  "dataset_version": "1.0.0",
+  "query_set_id": "code-f-golden-retrieval-query-set-20260905-v1",
+  "ground_truth_schema_version": "media-index-retrieval-ground-truth-v1",
+  "entries": [],
+  "ground_truth_requirements": {
+    "one_to_one_query_binding_required": true,
+    "anonymous_asset_ids_only": true,
+    "relevant_asset_sha256_required": true,
+    "relevance_label_schema_version_required": true,
+    "adjudication_evidence_required": true,
+    "missing_query_binding": "FAIL_CLOSED",
+    "missing_relevant_asset": "FAIL_CLOSED"
+  },
+  "freeze_semantics": {
+    "test_ground_truth_read_only_after_freeze": true,
+    "label_change_requires_new_dataset_version": true,
+    "freeze_status": "SCHEMA_ONLY_NOT_FROZEN"
+  }
+}
