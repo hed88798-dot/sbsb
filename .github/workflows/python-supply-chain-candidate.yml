@@ -517,6 +517,22 @@ jobs:
           print('worker-runtime-smoke: PASS')
           PY
 
+      - name: Verify packaged Worker hello protocol 1.0
+        shell: bash
+        run: |
+          set -euo pipefail
+          hello_response="$(printf '%s\n' \
+            '{"type":"request","protocol_version":"1.0","request_id":"windows_candidate_hello","method":"hello","payload":{}}' \
+            | '${{ matrix.worker }}')"
+          HELLO_RESPONSE="$hello_response" python - <<'PY'
+          import json
+          import os
+          value = json.loads(os.environ['HELLO_RESPONSE'])
+          if value.get('type') != 'hello' or value.get('protocol_version') != '1.0':
+              raise SystemExit(f'hello protocol mismatch: {value!r}')
+          print('worker-hello-protocol: PASS (protocol_version=1.0)')
+          PY
+
       - name: Stage transient Windows Worker artifact
         if: matrix.target == 'windows'
         shell: bash
