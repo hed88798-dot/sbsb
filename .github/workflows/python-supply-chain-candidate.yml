@@ -540,16 +540,23 @@ jobs:
         if: matrix.target == 'windows'
         id: transient-worker-upload-budget
         shell: bash
-        run: >-
-          node tools/actions-artifact-budget.mjs
-          --name windows-worker-candidate-${{ github.sha }}
-          --path artifacts/transient-worker/media-worker.exe
-          --inventory artifacts/python-supply-chain/evidence/windows-transient-worker-upload-inventory.json
-          --retention-days 1
-          --purpose windows-worker-runtime-smoke
-          --classification transient
-          --max-bytes 524288000
-          --allow-transient-worker-binary
+        run: |
+          set -euo pipefail
+          if ! budget_output=$(node tools/actions-artifact-budget.mjs \
+            --name windows-worker-candidate-${{ github.sha }} \
+            --path artifacts/transient-worker/media-worker.exe \
+            --inventory artifacts/python-supply-chain/evidence/windows-transient-worker-upload-inventory.json \
+            --retention-days 1 \
+            --purpose windows-worker-runtime-smoke \
+            --classification transient \
+            --max-bytes 524288000 \
+            --allow-transient-worker-binary 2>&1); then
+            printf '%s\n' "$budget_output" >&2
+            budget_annotation="${budget_output//$'\n'/ }"
+            echo "::error title=Transient worker upload budget::${budget_annotation}"
+            exit 1
+          fi
+          printf '%s\n' "$budget_output"
 
       - name: Upload transient Windows Worker artifact
         if: ${{ matrix.target == 'windows' && steps.transient-worker-upload-budget.outcome == 'success' }}
@@ -625,7 +632,7 @@ jobs:
         run: |
           set -euo pipefail
           target='${{ matrix.target }}'
-          node tools/actions-artifact-budget.mjs \
+          if ! budget_output=$(node tools/actions-artifact-budget.mjs \
             --name "code-c-current-head-worker-native-${target}-${GITHUB_SHA}" \
             --path "artifacts/python-supply-chain/candidates/code-c-${target}-runtime.v3.json" \
             --path "artifacts/python-supply-chain/candidates/code-c-${target}-worker-build.v3.json" \
@@ -652,7 +659,13 @@ jobs:
             --retention-days 3 \
             --purpose current-head-worker-native-reconciliation \
             --classification transient \
-            --max-bytes 12000000
+            --max-bytes 12000000 2>&1); then
+            printf '%s\n' "$budget_output" >&2
+            budget_annotation="${budget_output//$'\n'/ }"
+            echo "::error title=Compact evidence upload budget::${budget_annotation}"
+            exit 1
+          fi
+          printf '%s\n' "$budget_output"
 
       - name: Upload only compact current-head evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
