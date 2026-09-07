@@ -52,6 +52,20 @@ jobs:
           git show "${GITHUB_SHA}:tools/actions-artifact-budget.mjs" > tools/actions-artifact-budget.mjs
           test "$(sha256sum tools/actions-artifact-budget.mjs | cut -d' ' -f1)" = \
             'ae116b487573b449503251cfd81f7dac6d80875fac60e301ea89719129356704'
+          # Explicitly materialize every tracked hash-bound evidence blob; this
+          # is independent of the runner's global line-ending configuration.
+          for evidence_path in \
+            compliance/approval/review-snapshot-v2/review-snapshot-code-c-python-inventory-v3-v2-20260901.json \
+            schemas/compliance/artifact-approval-provenance/v2/approval.schema.json \
+            compliance/approval/authority-policy-v1.json \
+            compliance/approval/records/approval-code-c-linux-runtime-py31315.json \
+            compliance/approval/records/approval-code-c-linux-worker-build-py31315.json \
+            compliance/approval/records/approval-code-c-windows-runtime-py31315.json \
+            compliance/approval/records/approval-code-c-windows-worker-build-py31315.json \
+            compliance/approval/records/approval-code-c-linux-toolchain-intake-evidence.json \
+            compliance/approval/records/approval-code-c-windows-toolchain-intake-evidence.json; do
+            git show "HEAD:${evidence_path}" > "${evidence_path}"
+          done
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
         with:
           version: 11.19.0
