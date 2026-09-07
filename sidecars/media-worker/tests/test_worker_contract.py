@@ -64,6 +64,35 @@ class WorkerContractTests(unittest.TestCase):
         self.assertEqual(event["error"]["code"], "WORKER_INTERNAL")
         self.assertIn("ValueError", event["error"]["message"])
 
+    def test_stdio_boundary_decodes_literal_unicode_as_utf8(self) -> None:
+        request = {
+            "type": "request",
+            "protocol_version": "1.0",
+            "request_id": "猪场",
+            "method": "hello",
+            "payload": {},
+        }
+        stdin = type("BinaryStdin", (), {})()
+        stdin.buffer = io.BytesIO((json.dumps(request, ensure_ascii=False) + "\n").encode("utf-8"))
+        stdout = type("BinaryStdout", (), {})()
+        stdout.buffer = io.BytesIO()
+        with patch.object(worker.sys, "stdin", stdin), patch.object(worker.sys, "stdout", stdout):
+            worker.main()
+        event = json.loads(stdout.buffer.getvalue().decode("utf-8"))
+        self.assertEqual(event["type"], "hello")
+        self.assertEqual(event["request_id"], "猪场")
+
+    def test_stdio_boundary_rejects_invalid_utf8(self) -> None:
+        stdin = type("BinaryStdin", (), {})()
+        stdin.buffer = io.BytesIO(b'{"type":"request"}\n\xff\n')
+        stdout = type("BinaryStdout", (), {})()
+        stdout.buffer = io.BytesIO()
+        with patch.object(worker.sys, "stdin", stdin), patch.object(worker.sys, "stdout", stdout):
+            worker.main()
+        events = [json.loads(line) for line in stdout.buffer.getvalue().decode("utf-8").splitlines()]
+        self.assertEqual(events[-1]["error"]["code"], "REQUEST_INVALID")
+        self.assertIn("UTF-8", events[-1]["error"]["message"])
+
     def test_search_rejects_explicit_non_positive_dimension(self) -> None:
         with self.assertRaises(WorkerError) as context:
             worker._search_payload(

@@ -12,6 +12,23 @@ from .pipeline import index_asset
 from .search import ExactSearchCache
 
 
+def _write_utf8(value: str) -> None:
+    """Write protocol bytes using the Sidecar's UTF-8 wire contract.
+
+    ``sys.stdout`` is a text wrapper whose encoding follows the host process on
+    Windows.  Bypassing that wrapper prevents a code-page conversion from
+    changing non-ASCII response data.  The text-stream fallback keeps the
+    in-process contract tests (which use ``io.StringIO``) deterministic.
+    """
+    stream = getattr(sys.stdout, "buffer", None)
+    if stream is None:
+        sys.stdout.write(value)
+        sys.stdout.flush()
+        return
+    stream.write(value.encode("utf-8", errors="strict"))
+    stream.flush()
+
+
 def emit(event_type: str, request_id: str, *, payload: dict[str, Any] | None = None, error: dict[str, Any] | None = None) -> None:
     event: dict[str, Any] = {
         "type": event_type,
@@ -22,8 +39,7 @@ def emit(event_type: str, request_id: str, *, payload: dict[str, Any] | None = N
         event["payload"] = payload
     if error is not None:
         event["error"] = error
-    sys.stdout.write(json.dumps(event, ensure_ascii=False, separators=(",", ":")) + "\n")
-    sys.stdout.flush()
+    _write_utf8(json.dumps(event, ensure_ascii=False, separators=(",", ":")) + "\n")
 
 
 def _required_string(payload: dict[str, Any], name: str) -> str:
@@ -121,11 +137,25 @@ def handle(request: dict[str, Any]) -> None:
 
 
 def main() -> None:
-    for line in sys.stdin:
-        if not line.strip():
-            continue
+    input_stream = getattr(sys.stdin, "buffer", None)
+    if input_stream is None:
+        input_stream = sys.stdin
+    for raw_line in input_stream:
         request_id = "unknown"
         try:
+            if isinstance(raw_line, bytes):
+                # The protocol is UTF-8 regardless of the host locale/code
+                # page.  Strict decoding makes malformed transport bytes a
+                # request error instead of silently replacing user input.
+                line = raw_line.decode("utf-8", errors="strict")
+            elif isinstance(raw_line, str):
+                # ``io.StringIO`` is used by the in-process contract tests and
+                # already represents decoded text.
+                line = raw_line
+            else:
+                raise TypeError("stdin yielded a non-text line")
+            if not line.strip():
+                continue
             request = json.loads(line)
             if isinstance(request, dict):
                 request_id = str(request.get("request_id", "unknown"))
@@ -148,6 +178,16 @@ def main() -> None:
                 error={
                     "code": "REQUEST_INVALID",
                     "message": f"Malformed JSON ({error.msg})",
+                    "retryable": False,
+                },
+            )
+        except UnicodeDecodeError as error:
+            emit(
+                "error",
+                request_id,
+                error={
+                    "code": "REQUEST_INVALID",
+                    "message": f"Input is not valid UTF-8 ({error.reason})",
                     "retryable": False,
                 },
             )
