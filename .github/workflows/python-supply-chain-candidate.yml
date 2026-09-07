@@ -3,7 +3,9 @@ name: Python supply-chain current-head worker candidate
 on:
   workflow_dispatch:
   push:
-    branches: [code-c/stage-b-validation-candidate]
+    branches:
+      - code-c/stage-b-validation-candidate
+      - code-c/ffprobe-companion-build
 
 permissions:
   contents: read
@@ -15,6 +17,7 @@ concurrency:
 
 jobs:
   current-head-worker-native:
+    if: ${{ github.event_name != 'push' || matrix.target == 'windows' }}
     strategy:
       fail-fast: true
       matrix:
@@ -38,6 +41,8 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          # Keep this validation bound to the exact root-cause-fix source commit.
+          ref: ${{ github.ref == 'refs/heads/code-c/ffprobe-companion-build' && '072393b97b19a9a920184734a34aa4a2ec5ca573' || github.ref }}
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
         with:
           version: 11.19.0
@@ -233,6 +238,10 @@ jobs:
             --reporter=json \
             --outputFile=artifacts/python-supply-chain/evidence/${{ matrix.target }}-current-head-regressions.json
           node -e 'const fs=require("node:fs"); const path="artifacts/python-supply-chain/evidence/${{ matrix.target }}-current-head-regressions.json"; const value=JSON.parse(fs.readFileSync(path,"utf8")); const files=value.testResults?.length; const tests=value.numTotalTests; if (!Number.isInteger(files)||files<=0||!Number.isInteger(tests)||tests<=0) throw new Error(`empty current-head regression execution: files=${files}, tests=${tests}`); console.log(`current-head-regression-evidence: PASS (shell=bash; files=${files}; tests=${tests}; assertions_executed=YES; exit_code=0)`);'
+
+      - name: Run Media Index Contract tests
+        shell: bash
+        run: pnpm exec vitest run tests/contract/media-index-contract.test.ts --maxWorkers=1 --reporter=dot
 
       - name: Attest the preinstalled Windows MSVC prerequisite
         if: matrix.target == 'windows'
@@ -457,6 +466,72 @@ jobs:
           print('worker-runtime-smoke: PASS')
           PY
 
+      - name: Stage transient Windows Worker artifact
+        if: matrix.target == 'windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          worker='${{ matrix.worker }}'
+          test -f "$worker"
+          source_head="$(git rev-parse HEAD)"
+          test "$source_head" = '072393b97b19a9a920184734a34aa4a2ec5ca573'
+          mkdir -p artifacts/transient-worker
+          cp -- "$worker" artifacts/transient-worker/media-worker.exe
+          worker_sha="$(python - <<'PY'
+          import hashlib
+          from pathlib import Path
+          print(hashlib.sha256(Path('artifacts/transient-worker/media-worker.exe').read_bytes()).hexdigest())
+          PY
+          )"
+          WORKER_SHA256="$worker_sha" python - <<'PY'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+          manifest = {
+              'schema_version': 1,
+              'artifact_name': f"windows-worker-candidate-{os.environ['GITHUB_SHA']}",
+              'artifact_type': 'PYINSTALLER_ONEFILE_WORKER',
+              'source_head': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+              'worker_sha256': os.environ['WORKER_SHA256'],
+              'python': '3.13.15',
+              'retention_days': 1,
+              'classification': 'transient',
+              'scope': 'Windows runtime smoke only',
+              'included_files': ['media-worker.exe'],
+              'excluded_inputs': ['models', 'videos', 'customer-data', '500-corpus'],
+          }
+          path = Path('artifacts/python-supply-chain/evidence/windows-transient-worker-artifact-manifest.json')
+          path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          PY
+          echo "TRANSIENT_WORKER_ARTIFACT=media-worker.exe"
+          echo "TRANSIENT_WORKER_SHA256=$worker_sha"
+
+      - name: Enforce transient Windows Worker upload budget
+        if: matrix.target == 'windows'
+        id: transient-worker-upload-budget
+        shell: bash
+        run: >-
+          node tools/actions-artifact-budget.mjs
+          --name windows-worker-candidate-${{ github.sha }}
+          --path artifacts/transient-worker/media-worker.exe
+          --inventory artifacts/python-supply-chain/evidence/windows-transient-worker-upload-inventory.json
+          --retention-days 1
+          --purpose windows-worker-runtime-smoke
+          --classification transient
+          --max-bytes 524288000
+          --allow-transient-worker-binary
+
+      - name: Upload transient Windows Worker artifact
+        if: ${{ matrix.target == 'windows' && steps.transient-worker-upload-budget.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-worker-candidate-${{ github.sha }}
+          path: artifacts/transient-worker/media-worker.exe
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
+
       - name: Create and verify the transient Candidate transfer manifest
         id: candidate-transfer
         shell: bash
@@ -502,7 +577,7 @@ jobs:
 
       - name: Upload full Candidate as one-day transient transport
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: ${{ always() && steps.candidate-transfer.outcome == 'success' }}
+        if: ${{ always() && steps.candidate-transfer.outcome == 'success' && github.ref != 'refs/heads/code-c/ffprobe-companion-build' }}
         with:
           name: candidate-transfer-${{ matrix.target }}-${{ github.sha }}
           path: |

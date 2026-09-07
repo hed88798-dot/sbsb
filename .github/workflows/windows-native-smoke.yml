@@ -2,9 +2,6 @@ name: Windows native smoke
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - code-c/ffprobe-companion-build
   pull_request:
 
 permissions:
@@ -16,7 +13,6 @@ concurrency:
 
 jobs:
   packaged-native-addon:
-    if: ${{ github.event_name != 'push' }}
     runs-on: windows-2022
     timeout-minutes: 45
     steps:
@@ -66,9 +62,6 @@ jobs:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
-          # The push trigger is a one-off validation of the exact root-cause-fix
-          # commit; workflow-only changes must not change the Worker source HEAD.
-          ref: ${{ github.event_name == 'push' && '072393b97b19a9a920184734a34aa4a2ec5ca573' || github.ref }}
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
         with:
           version: 11.19.0
@@ -163,9 +156,6 @@ jobs:
         run: |
           pnpm media-worker:test
           pnpm exec vitest run tests/contract/python-supply-chain-tooling.test.ts tests/contract/packaged-native-toolchain-provenance.test.ts tests/contract/code-c-hermetic-pyinstaller.test.ts --maxWorkers=1
-      - name: Run Media Index Contract tests
-        shell: bash
-        run: pnpm exec vitest run tests/contract/media-index-contract.test.ts --maxWorkers=1 --reporter=dot
       - name: Freeze hermetic PyInstaller environment and file provenance
         shell: bash
         run: >-
@@ -311,61 +301,6 @@ jobs:
           $hello = $helloRequest | & .\dist\media-worker.exe | ConvertFrom-Json
           if ($hello.type -ne 'hello') { throw 'Packaged worker hello failed' }
           if ($hello.protocol_version -ne '1.0') { throw 'Sidecar protocol changed' }
-      - name: Stage transient Windows Worker artifact
-        shell: pwsh
-        run: |
-          $source = Join-Path $env:GITHUB_WORKSPACE 'dist/media-worker.exe'
-          if (-not (Test-Path -LiteralPath $source -PathType Leaf)) { throw 'Worker artifact is missing' }
-          $sourceHead = (& git rev-parse HEAD).Trim()
-          if ($sourceHead -ne '072393b97b19a9a920184734a34aa4a2ec5ca573') {
-            throw "Unexpected Worker source HEAD: $sourceHead"
-          }
-          $targetDir = Join-Path $env:GITHUB_WORKSPACE 'artifacts/transient-worker'
-          New-Item -ItemType Directory -Force $targetDir | Out-Null
-          $target = Join-Path $targetDir 'media-worker.exe'
-          Copy-Item -LiteralPath $source -Destination $target -Force
-          $hash = (Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash.ToLowerInvariant()
-          $pythonVersion = (& .\artifacts\worker-venv\Scripts\python.exe --version 2>&1).Trim()
-          if ($pythonVersion -ne 'Python 3.13.15') { throw "Unexpected Worker Python: $pythonVersion" }
-          $manifest = [ordered]@{
-            schema_version = 1
-            artifact_name = "windows-worker-candidate-$env:GITHUB_SHA"
-            artifact_type = 'PYINSTALLER_ONEFILE_WORKER'
-            source_head = $sourceHead
-            worker_sha256 = $hash
-            python = '3.13.15'
-            retention_days = 1
-            classification = 'transient'
-            scope = 'Windows runtime smoke only'
-            included_files = @('media-worker.exe')
-            excluded_inputs = @('models', 'videos', 'customer-data', '500-corpus')
-          }
-          $manifestPath = Join-Path $env:GITHUB_WORKSPACE 'artifacts/compliance/windows/TRANSIENT_WORKER_ARTIFACT_MANIFEST.json'
-          $manifest | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $manifestPath -Encoding utf8
-          Write-Host "TRANSIENT_WORKER_ARTIFACT=media-worker.exe"
-          Write-Host "TRANSIENT_WORKER_SHA256=$hash"
-      - name: Enforce transient Worker upload budget
-        id: transient-worker-upload-budget
-        shell: bash
-        run: >-
-          node tools/actions-artifact-budget.mjs
-          --name windows-worker-candidate-${{ github.sha }}
-          --path artifacts/transient-worker/media-worker.exe
-          --inventory artifacts/compliance/windows/TRANSIENT_WORKER_ARTIFACT_UPLOAD_INVENTORY.json
-          --retention-days 1
-          --purpose windows-worker-runtime-smoke
-          --classification transient
-          --max-bytes 524288000
-          --allow-transient-worker-binary
-      - name: Upload transient Windows Worker artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: ${{ steps.transient-worker-upload-budget.outcome == 'success' }}
-        with:
-          name: windows-worker-candidate-${{ github.sha }}
-          path: artifacts/transient-worker/media-worker.exe
-          if-no-files-found: error
-          compression-level: 0
-          retention-days: 1
       - name: Enforce Windows Worker evidence upload budget
         shell: bash
         run: >-
