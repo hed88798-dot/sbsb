@@ -122,7 +122,7 @@ jobs:
           actual_head="$(git rev-parse HEAD)"
           echo "Worker source HEAD: $actual_head"
           test "$actual_head" = '072393b97b19a9a920184734a34aa4a2ec5ca573'
-          node tools/code-c-python-supply-chain/verify_build_approval_binding.mjs \
+          if ! binding_output=$(node tools/code-c-python-supply-chain/verify_build_approval_binding.mjs \
             --code-c-head "$actual_head" \
             --main-quality-baseline d4909631456029b50c8c6bd6011719fd69ddef95 \
             --review-snapshot compliance/approval/review-snapshot-v2/review-snapshot-code-c-python-inventory-v3-v2-20260901.json \
@@ -142,7 +142,13 @@ jobs:
             --approval-record compliance/approval/records/approval-code-c-windows-worker-build-py31315.json \
             --approval-record compliance/approval/records/approval-code-c-linux-toolchain-intake-evidence.json \
             --approval-record compliance/approval/records/approval-code-c-windows-toolchain-intake-evidence.json \
-            --output artifacts/python-supply-chain/evidence/build-approval-binding.json
+            --output artifacts/python-supply-chain/evidence/build-approval-binding.json 2>&1); then
+            printf '%s\n' "$binding_output" >&2
+            binding_annotation="${binding_output//$'\n'/ }"
+            echo "::error title=Build approval binding::${binding_annotation}"
+            exit 1
+          fi
+          printf '%s\n' "$binding_output"
 
       - name: Hydrate the exact approved wheels and toolchain artifacts
         shell: bash
