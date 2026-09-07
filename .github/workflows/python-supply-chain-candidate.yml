@@ -543,6 +543,8 @@ jobs:
           PY
           echo "TRANSIENT_WORKER_ARTIFACT=media-worker.exe"
           echo "TRANSIENT_WORKER_SHA256=$worker_sha"
+          echo "::notice title=Windows Worker SHA256::${worker_sha}"
+          echo "::notice title=Windows Worker artifact::windows-worker-candidate-${GITHUB_SHA} (retention_days=1)"
 
       - name: Enforce transient Windows Worker upload budget
         if: matrix.target == 'windows'
