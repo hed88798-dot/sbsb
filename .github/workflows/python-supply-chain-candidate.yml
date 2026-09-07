@@ -563,6 +563,12 @@ jobs:
           CODE_C_SIDECAR_UTF8_E2E_REPORT: artifacts/python-supply-chain/evidence/windows-desktop-sidecar-utf8-e2e.json
         run: |
           set -euo pipefail
+          # The candidate workflow intentionally installs dependencies without
+          # building workspace packages.  Build only the two small packages
+          # imported by the real Desktop Main sidecar client test so Vite can
+          # resolve their declared dist entrypoints.
+          pnpm --filter @app/contracts build
+          pnpm --filter @app/domain-media-index build
           sidecar_log='artifacts/python-supply-chain/evidence/windows-desktop-sidecar-utf8-e2e.log'
           if ! pnpm exec vitest run tests/e2e/windows-packaged-sidecar-utf8.test.ts --reporter=dot 2>&1 | tee "$sidecar_log"; then
             sidecar_output="$(tr '\n' ' ' < "$sidecar_log" | tail -c 10000)"
