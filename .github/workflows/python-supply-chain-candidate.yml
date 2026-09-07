@@ -33,7 +33,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           # Keep this validation bound to the exact root-cause-fix source commit.
-          ref: ${{ github.ref == 'refs/heads/code-c/ffprobe-companion-build' && '072393b97b19a9a920184734a34aa4a2ec5ca573' || github.ref }}
+          ref: 072393b97b19a9a920184734a34aa4a2ec5ca573
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
         with:
           version: 11.19.0
