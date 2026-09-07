@@ -35,7 +35,7 @@ jobs:
           # Keep this validation bound to the exact UTF-8 boundary-fix source
           # commit.  The inventory approvals remain exact-artifact approvals;
           # this new Worker source requires a new Candidate build.
-          ref: 14186a9e6393c278fa3ae04cd0f7c6b915ea9f15
+          ref: cc2a3d0777ba997f9b4e4baebe61975f25b02507
       - name: Restore byte-exact approval evidence line endings
         shell: bash
         run: |
@@ -155,7 +155,7 @@ jobs:
           mkdir -p artifacts/python-supply-chain/evidence
           actual_head="$(git rev-parse HEAD)"
           echo "Worker source HEAD: $actual_head"
-          test "$actual_head" = '14186a9e6393c278fa3ae04cd0f7c6b915ea9f15'
+          test "$actual_head" = 'cc2a3d0777ba997f9b4e4baebe61975f25b02507'
           if ! binding_output=$(node tools/code-c-python-supply-chain/verify_build_approval_binding.mjs \
             --code-c-head "$actual_head" \
             --main-quality-baseline d4909631456029b50c8c6bd6011719fd69ddef95 \
@@ -554,6 +554,17 @@ jobs:
             --model-root artifacts/packaged-text-e2e/model-pack \
             --output artifacts/python-supply-chain/evidence/windows-packaged-text-search-e2e.json
 
+      - name: Run Desktop Main sidecar-client literal Chinese E2E
+        if: matrix.target == 'windows'
+        shell: bash
+        env:
+          CODE_C_WORKER_EXECUTABLE: ${{ matrix.worker }}
+          CODE_C_REAL_MODEL_ROOT: artifacts/packaged-text-e2e/model-pack
+          CODE_C_SIDECAR_UTF8_E2E_REPORT: artifacts/python-supply-chain/evidence/windows-desktop-sidecar-utf8-e2e.json
+        run: |
+          set -euo pipefail
+          pnpm exec vitest run tests/e2e/windows-packaged-sidecar-utf8.test.ts --reporter=dot
+
       - name: Stage transient Windows Worker artifact
         if: matrix.target == 'windows'
         shell: bash
@@ -562,7 +573,7 @@ jobs:
           worker='${{ matrix.worker }}'
           test -f "$worker"
           source_head="$(git rev-parse HEAD)"
-          test "$source_head" = '14186a9e6393c278fa3ae04cd0f7c6b915ea9f15'
+          test "$source_head" = 'cc2a3d0777ba997f9b4e4baebe61975f25b02507'
           mkdir -p artifacts/transient-worker
           cp -- "$worker" artifacts/transient-worker/media-worker.exe
           worker_sha="$(python - <<'PY'
@@ -705,6 +716,7 @@ jobs:
             --path "artifacts/python-supply-chain/evidence/${target}-worker-runtime-smoke.json" \
             --path "artifacts/python-supply-chain/evidence/${target}-packaged-text-search-e2e.json" \
             --path "artifacts/python-supply-chain/evidence/${target}-packaged-text-model-evidence.json" \
+            --path "artifacts/python-supply-chain/evidence/${target}-desktop-sidecar-utf8-e2e.json" \
             --path "artifacts/python-supply-chain/evidence/${target}-target-evidence.json" \
             --path "artifacts/python-supply-chain/diagnostics/${target}-native-reconciliation.json" \
             --path "artifacts/python-supply-chain/inspection/${target}-worker-onefile.json" \
@@ -746,6 +758,7 @@ jobs:
             artifacts/python-supply-chain/evidence/${{ matrix.target }}-worker-runtime-smoke.json
             artifacts/python-supply-chain/evidence/${{ matrix.target }}-packaged-text-search-e2e.json
             artifacts/python-supply-chain/evidence/${{ matrix.target }}-packaged-text-model-evidence.json
+            artifacts/python-supply-chain/evidence/${{ matrix.target }}-desktop-sidecar-utf8-e2e.json
             artifacts/python-supply-chain/evidence/${{ matrix.target }}-target-evidence.json
             artifacts/python-supply-chain/diagnostics/${{ matrix.target }}-native-reconciliation.json
             artifacts/python-supply-chain/inspection/${{ matrix.target }}-worker-onefile.json
