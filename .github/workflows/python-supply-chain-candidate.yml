@@ -34,6 +34,16 @@ jobs:
           persist-credentials: false
           # Keep this validation bound to the exact root-cause-fix source commit.
           ref: 072393b97b19a9a920184734a34aa4a2ec5ca573
+      - name: Restore byte-exact approval evidence line endings
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Windows Git may apply CRLF conversion to checked-out JSON.  Approval
+          # and snapshot identities are canonical UTF-8/LF bytes, so restore the
+          # exact committed blobs before any hash-bound verification.
+          git config core.autocrlf false
+          git config core.eol lf
+          git reset --hard HEAD
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
         with:
           version: 11.19.0
