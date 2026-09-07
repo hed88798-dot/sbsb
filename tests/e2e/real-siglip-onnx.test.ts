@@ -228,7 +228,7 @@ describe.skipIf(!enabled)('real SigLIP ONNX Video → Index → SQLite → Cache
               signature_hash: generationSignature,
               model_root: modelRoot,
               dimension: 768,
-              query_text: 'veterinary medicine bottle for livestock',
+              query_text: '猪场',
               top_k: 2,
             },
             networkEnvironment,
@@ -279,7 +279,7 @@ describe.skipIf(!enabled)('real SigLIP ONNX Video → Index → SQLite → Cache
             shot_count: manifest.shots.length,
             sqlite_embedding_truth_rows: truth.length,
             cache_generation_id: generationId,
-            query: 'veterinary medicine bottle for livestock',
+            query: '猪场',
             worker_execution: workerExecutable ? 'PYINSTALLER_ONEFILE' : 'PYTHON_MODULE',
             network_observation: {
               instrumentation: 'HTTP_PROXY_HTTPS_PROXY_ALL_PROXY_LOOPBACK_DENY_OBSERVER',

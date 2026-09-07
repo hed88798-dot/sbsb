@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import io
 import json
 import os
 import subprocess
 import sys
 import unittest
+from unittest.mock import patch
+
+from media_worker import worker
+from media_worker.contracts import WorkerError
 
 
 class WorkerContractTests(unittest.TestCase):
@@ -41,6 +46,36 @@ class WorkerContractTests(unittest.TestCase):
         events = self.call("not-owned.v1")
         self.assertEqual(events[-1]["type"], "error")
         self.assertEqual(events[-1]["error"]["code"], "METHOD_NOT_SUPPORTED")
+
+    def test_unexpected_value_error_is_not_misreported_as_request_invalid(self) -> None:
+        request = {
+            "type": "request",
+            "protocol_version": "1.0",
+            "request_id": "runtime_error",
+            "method": "media.search.exact.v1",
+            "payload": {},
+        }
+        output = io.StringIO()
+        with patch.object(worker, "handle", side_effect=ValueError("text model failure")), patch.object(
+            worker.sys, "stdin", io.StringIO(json.dumps(request) + "\n")
+        ), patch.object(worker.sys, "stdout", output):
+            worker.main()
+        event = json.loads(output.getvalue())
+        self.assertEqual(event["error"]["code"], "WORKER_INTERNAL")
+        self.assertIn("ValueError", event["error"]["message"])
+
+    def test_search_rejects_explicit_non_positive_dimension(self) -> None:
+        with self.assertRaises(WorkerError) as context:
+            worker._search_payload(
+                {
+                    "cache_root": "/tmp/cache",
+                    "signature_hash": "a" * 64,
+                    "model_root": "/tmp/model",
+                    "query_text": "猪场",
+                    "dimension": 0,
+                }
+            )
+        self.assertEqual(context.exception.code, "REQUEST_INVALID")
 
 
 if __name__ == "__main__":

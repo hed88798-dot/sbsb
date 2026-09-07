@@ -25,12 +25,40 @@ def aggregate_shot_embeddings(vectors: list[np.ndarray]) -> np.ndarray:
 
 
 def tokenize_siglip_text(tokenizer: Any, text: str, max_length: int = 64) -> dict[str, np.ndarray]:
+    if not isinstance(text, str):
+        raise WorkerError("QUERY_TEXT_INVALID", "Text query must be a string")
+    if not isinstance(max_length, int) or isinstance(max_length, bool) or max_length < 2:
+        raise WorkerError("MODEL_INPUT_CONTRACT_INVALID", "Text sequence length is invalid")
     query = text.strip()
     if not query or len(query) > 2000:
         raise WorkerError("QUERY_TEXT_INVALID", "Text query must contain 1-2000 characters")
-    tokens = list(tokenizer.encode(query, out_type=int))
-    eos_id = int(tokenizer.piece_to_id("<eos>"))
-    pad_id = int(tokenizer.piece_to_id("<pad>"))
+    try:
+        encoded = tokenizer.encode(query, out_type=int)
+        tokens = list(encoded)
+        eos_id = tokenizer.piece_to_id("<eos>")
+        pad_id = tokenizer.piece_to_id("<pad>")
+    except WorkerError:
+        raise
+    except Exception as error:
+        raise WorkerError(
+            "TOKENIZER_RUNTIME_ERROR",
+            f"SentencePiece tokenization failed ({type(error).__name__}): {error}",
+        ) from error
+    if not all(
+        isinstance(token, (int, np.integer)) and not isinstance(token, bool) for token in tokens
+    ):
+        raise WorkerError("TOKENIZER_MODEL_INVALID", "SentencePiece returned a non-integer token")
+    try:
+        eos_id = int(eos_id)
+        pad_id = int(pad_id)
+    except (TypeError, ValueError) as error:
+        raise WorkerError(
+            "TOKENIZER_MODEL_INVALID",
+            f"SentencePiece special-token ids are invalid ({type(error).__name__}): {error}",
+        ) from error
+    if eos_id < 0 or pad_id < 0:
+        raise WorkerError("TOKENIZER_MODEL_INVALID", "SentencePiece special-token ids are unavailable")
+    tokens = [int(token) for token in tokens]
     tokens = tokens[: max_length - 1] + [eos_id]
     tokens.extend([pad_id] * (max_length - len(tokens)))
     return {"input_ids": np.asarray([tokens], dtype=np.int64)}
@@ -113,15 +141,77 @@ class SiglipOnnx:
                 raise WorkerError("TOKENIZER_RUNTIME_MISSING", "SentencePiece is unavailable") from error
             text_model = self._verified_artifact("text_encoder")
             tokenizer_model = self._verified_artifact("tokenizer_model")
-            self._text_session = self._ort.InferenceSession(
-                str(text_model), self._session_options, providers=["CPUExecutionProvider"]
-            )
-            self._tokenizer = sentencepiece.SentencePieceProcessor(model_file=str(tokenizer_model))
+            try:
+                text_session = self._ort.InferenceSession(
+                    str(text_model), self._session_options, providers=["CPUExecutionProvider"]
+                )
+            except Exception as error:
+                raise WorkerError(
+                    "MODEL_RUNTIME_ERROR",
+                    f"Text encoder session initialization failed ({type(error).__name__}): {error}",
+                ) from error
+            self._validate_text_session_contract(text_session)
+            try:
+                tokenizer = sentencepiece.SentencePieceProcessor()
+                loaded = tokenizer.Load(str(tokenizer_model))
+            except Exception as error:
+                raise WorkerError(
+                    "TOKENIZER_RUNTIME_ERROR",
+                    f"SentencePiece model initialization failed ({type(error).__name__}): {error}",
+                ) from error
+            if not loaded:
+                raise WorkerError("TOKENIZER_MODEL_INVALID", "SentencePiece model failed to load")
+            self._text_session = text_session
+            self._tokenizer = tokenizer
         inputs = tokenize_siglip_text(self._tokenizer, text)
-        outputs = self._text_session.run(None, inputs)
+        try:
+            outputs = self._text_session.run(None, inputs)
+        except Exception as error:
+            raise WorkerError(
+                "MODEL_RUNTIME_ERROR",
+                f"Text encoder execution failed ({type(error).__name__}): {error}",
+            ) from error
         if not outputs:
             raise WorkerError("MODEL_OUTPUT_INVALID", "ONNX returned no text embedding")
-        embedding = normalize(np.asarray(outputs[0], dtype=np.float32))
+        try:
+            embedding = normalize(np.asarray(outputs[0], dtype=np.float32))
+        except WorkerError:
+            raise
+        except Exception as error:
+            raise WorkerError(
+                "MODEL_OUTPUT_INVALID",
+                f"Text encoder output could not be decoded ({type(error).__name__}): {error}",
+            ) from error
         if embedding.size != self._dimension:
             raise WorkerError("MODEL_OUTPUT_INVALID", "Text embedding dimension mismatch")
         return embedding
+
+    @staticmethod
+    def _validate_text_session_contract(session: Any) -> None:
+        try:
+            inputs = list(session.get_inputs())
+        except Exception as error:
+            raise WorkerError(
+                "MODEL_INPUT_CONTRACT_INVALID",
+                f"Text encoder input metadata is unavailable ({type(error).__name__}): {error}",
+            ) from error
+        if len(inputs) != 1:
+            raise WorkerError(
+                "MODEL_INPUT_CONTRACT_INVALID",
+                f"Text encoder must expose exactly one input, found {len(inputs)}",
+            )
+        input_info = inputs[0]
+        if getattr(input_info, "name", None) != "input_ids":
+            raise WorkerError(
+                "MODEL_INPUT_CONTRACT_INVALID", "Text encoder input must be named input_ids"
+            )
+        if getattr(input_info, "type", None) != "tensor(int64)":
+            raise WorkerError(
+                "MODEL_INPUT_CONTRACT_INVALID", "Text encoder input_ids must be tensor(int64)"
+            )
+        shape = getattr(input_info, "shape", None)
+        if not isinstance(shape, (list, tuple)) or len(shape) != 2 or shape[1] not in {64, "64"}:
+            raise WorkerError(
+                "MODEL_INPUT_CONTRACT_INVALID",
+                f"Text encoder input_ids shape must be [batch,64], found {shape!r}",
+            )
