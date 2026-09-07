@@ -95,6 +95,25 @@ jobs:
           cp "artifacts/approved-inputs/${target}-target-descriptor.json" \
             "artifacts/python-supply-chain/target/${target}.json"
 
+      - name: Materialize the approved authority-policy bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          source = Path('compliance/approval/authority-policy-v1.json')
+          destination = Path('artifacts/approved-inputs/authority-policy-v1.json')
+          value = json.loads(source.read_text(encoding='utf-8'))
+          destination.write_bytes((json.dumps(value, indent=2, ensure_ascii=False) + '\n').encode('utf-8'))
+          expected = 'e4f8eb4eb82e9ae5a12764b5f950211e2ef18b8727647e65108efd452ea4aa12'
+          actual = hashlib.sha256(destination.read_bytes()).hexdigest()
+          if actual != expected:
+              raise SystemExit(f'approved authority policy byte mismatch: {actual} != {expected}')
+          print(f'authority-policy: PASS ({actual})')
+          PY
+
       - name: Bind current Code C HEAD to the 4+2 active approvals
         shell: bash
         run: |
@@ -108,7 +127,7 @@ jobs:
             --main-quality-baseline d4909631456029b50c8c6bd6011719fd69ddef95 \
             --review-snapshot compliance/approval/review-snapshot-v2/review-snapshot-code-c-python-inventory-v3-v2-20260901.json \
             --approval-contract schemas/compliance/artifact-approval-provenance/v2/approval.schema.json \
-            --authority-policy compliance/approval/authority-policy-v1.json \
+            --authority-policy artifacts/approved-inputs/authority-policy-v1.json \
             --subject artifacts/approved-inputs/linux-runtime.json \
             --subject artifacts/approved-inputs/linux-worker-build.json \
             --subject artifacts/approved-inputs/windows-runtime.json \
