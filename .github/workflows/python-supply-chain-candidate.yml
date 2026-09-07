@@ -44,6 +44,14 @@ jobs:
           git config core.autocrlf false
           git config core.eol lf
           git reset --hard HEAD
+          # The Worker source remains pinned to the requested fix commit, while
+          # the current workflow's upload-budget helper carries the explicit
+          # one-day transient-binary policy used below.
+          test -n "${GITHUB_SHA:-}"
+          git cat-file -e "${GITHUB_SHA}:tools/actions-artifact-budget.mjs"
+          git show "${GITHUB_SHA}:tools/actions-artifact-budget.mjs" > tools/actions-artifact-budget.mjs
+          test "$(sha256sum tools/actions-artifact-budget.mjs | cut -d' ' -f1)" = \
+            'ae116b487573b449503251cfd81f7dac6d80875fac60e301ea89719129356704'
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
         with:
           version: 11.19.0
