@@ -17,23 +17,14 @@ concurrency:
 
 jobs:
   current-head-worker-native:
-    if: ${{ github.event_name != 'push' || matrix.target == 'windows' }}
     strategy:
       fail-fast: true
-      matrix:
-        include:
-          - target: linux
-            runner: ubuntu-24.04
-            distribution: python-3.13.15-linux-24.04-x64.tar.gz
-            pyinstaller_wheel: pyinstaller-6.22.2-py3-none-manylinux2014_x86_64.whl
-            venv_python: artifacts/candidate-venv/bin/python
-            worker: artifacts/python-supply-chain/pyinstaller-build/linux/dist/media-worker
-          - target: windows
-            runner: windows-2022
-            distribution: python-3.13.15-win32-x64.zip
-            pyinstaller_wheel: pyinstaller-6.22.2-py3-none-win_amd64.whl
-            venv_python: artifacts/candidate-venv/Scripts/python.exe
-            worker: artifacts/python-supply-chain/pyinstaller-build/windows/dist/media-worker.exe
+      matrix: >-
+        ${{ fromJSON(
+          github.ref == 'refs/heads/code-c/ffprobe-companion-build'
+          && '{"include":[{"target":"windows","runner":"windows-2022","distribution":"python-3.13.15-win32-x64.zip","pyinstaller_wheel":"pyinstaller-6.22.2-py3-none-win_amd64.whl","venv_python":"artifacts/candidate-venv/Scripts/python.exe","worker":"artifacts/python-supply-chain/pyinstaller-build/windows/dist/media-worker.exe"}]}'
+          || '{"include":[{"target":"linux","runner":"ubuntu-24.04","distribution":"python-3.13.15-linux-24.04-x64.tar.gz","pyinstaller_wheel":"pyinstaller-6.22.2-py3-none-manylinux2014_x86_64.whl","venv_python":"artifacts/candidate-venv/bin/python","worker":"artifacts/python-supply-chain/pyinstaller-build/linux/dist/media-worker"},{"target":"windows","runner":"windows-2022","distribution":"python-3.13.15-win32-x64.zip","pyinstaller_wheel":"pyinstaller-6.22.2-py3-none-win_amd64.whl","venv_python":"artifacts/candidate-venv/Scripts/python.exe","worker":"artifacts/python-supply-chain/pyinstaller-build/windows/dist/media-worker.exe"}]}'
+        ) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 150
     steps:
