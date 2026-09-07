@@ -101,7 +101,7 @@ jobs:
           set -euo pipefail
           mkdir -p artifacts/python-supply-chain/evidence
           node tools/code-c-python-supply-chain/verify_build_approval_binding.mjs \
-            --code-c-head "$GITHUB_SHA" \
+            --code-c-head "$(git rev-parse HEAD)" \
             --main-quality-baseline d4909631456029b50c8c6bd6011719fd69ddef95 \
             --review-snapshot compliance/approval/review-snapshot-v2/review-snapshot-code-c-python-inventory-v3-v2-20260901.json \
             --approval-contract schemas/compliance/artifact-approval-provenance/v2/approval.schema.json \
