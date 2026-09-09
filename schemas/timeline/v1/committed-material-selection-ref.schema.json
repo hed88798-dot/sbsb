@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/timeline/v1/committed-material-selection-ref.schema.json",
+  "title": "CommittedMaterialSelectionRefV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["selection_request_id", "decision_receipt_hash", "asset_id", "shot_id"],
+  "properties": {
+    "selection_request_id": { "$ref": "#/$defs/identity" },
+    "decision_receipt_hash": { "$ref": "#/$defs/hash" },
+    "asset_id": { "$ref": "#/$defs/identity" },
+    "shot_id": { "$ref": "#/$defs/identity" }
+  },
+  "$defs": {
+    "identity": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

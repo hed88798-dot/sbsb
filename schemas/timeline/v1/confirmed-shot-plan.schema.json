@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/timeline/v1/confirmed-shot-plan.schema.json",
+  "title": "ConfirmedShotPlanV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "shot_plan_id",
+    "shot_plan_version",
+    "shot_plan_hash",
+    "source_document_id",
+    "source_document_version",
+    "source_document_hash",
+    "review_state",
+    "source_offset_unit",
+    "slots"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "shot_plan_id": { "$ref": "#/$defs/identity" },
+    "shot_plan_version": { "type": "integer", "minimum": 1 },
+    "shot_plan_hash": { "$ref": "#/$defs/hash" },
+    "source_document_id": { "$ref": "#/$defs/identity" },
+    "source_document_version": { "type": "integer", "minimum": 1 },
+    "source_document_hash": { "$ref": "#/$defs/hash" },
+    "review_state": { "const": "CONFIRMED" },
+    "source_offset_unit": { "const": "UNICODE_CODE_POINT" },
+    "slots": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/slot" } }
+  },
+  "$defs": {
+    "identity": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "slot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slot_id",
+        "order_index",
+        "source_start",
+        "source_end",
+        "source_text",
+        "route",
+        "visual_continuity_group_id"
+      ],
+      "properties": {
+        "slot_id": { "$ref": "#/$defs/identity" },
+        "order_index": { "type": "integer", "minimum": 0 },
+        "source_start": { "type": "integer", "minimum": 0 },
+        "source_end": { "type": "integer", "minimum": 1 },
+        "source_text": { "type": "string", "minLength": 1 },
+        "route": { "enum": ["ANIMAL", "PRODUCT", "NO_MATCH"] },
+        "visual_continuity_group_id": { "$ref": "#/$defs/identity" }
+      }
+    }
+  }
+}

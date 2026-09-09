@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/timeline/v1/narration-timing-snapshot.schema.json",
+  "title": "NarrationTimingSnapshotV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "timing_snapshot_id",
+    "timing_snapshot_version",
+    "timing_snapshot_hash",
+    "timing_kind",
+    "shot_plan_id",
+    "shot_plan_hash",
+    "source_document_id",
+    "source_document_hash",
+    "narration_audio_id",
+    "narration_audio_hash",
+    "total_duration_ms",
+    "slot_timings",
+    "pause_intervals"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "timing_snapshot_id": { "$ref": "#/$defs/identity" },
+    "timing_snapshot_version": { "type": "integer", "minimum": 1 },
+    "timing_snapshot_hash": { "$ref": "#/$defs/hash" },
+    "timing_kind": { "const": "EXACT" },
+    "shot_plan_id": { "$ref": "#/$defs/identity" },
+    "shot_plan_hash": { "$ref": "#/$defs/hash" },
+    "source_document_id": { "$ref": "#/$defs/identity" },
+    "source_document_hash": { "$ref": "#/$defs/hash" },
+    "narration_audio_id": { "$ref": "#/$defs/identity" },
+    "narration_audio_hash": { "$ref": "#/$defs/hash" },
+    "total_duration_ms": { "type": "integer", "minimum": 1 },
+    "slot_timings": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/slotTiming" }
+    },
+    "pause_intervals": { "type": "array", "items": { "$ref": "#/$defs/pause" } }
+  },
+  "$defs": {
+    "identity": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "slotTiming": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slot_id", "start_ms", "end_ms"],
+      "properties": {
+        "slot_id": { "$ref": "#/$defs/identity" },
+        "start_ms": { "type": "integer", "minimum": 0 },
+        "end_ms": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "pause": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pause_id", "start_ms", "end_ms"],
+      "properties": {
+        "pause_id": { "$ref": "#/$defs/identity" },
+        "start_ms": { "type": "integer", "minimum": 0 },
+        "end_ms": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

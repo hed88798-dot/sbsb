@@ -228,6 +228,15 @@ importers:
         specifier: workspace:*
         version: link:../domain-product
 
+  packages/timeline:
+    dependencies:
+      '@app/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@app/domain-media-index':
+        specifier: workspace:*
+        version: link:../domain-media-index
+
 packages:
 
   '@ant-design/colors@8.0.1':
