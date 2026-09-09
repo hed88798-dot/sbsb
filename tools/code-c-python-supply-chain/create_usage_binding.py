@@ -24,6 +24,25 @@ def inventory_path(target: str, scope_name: str) -> Path:
     )
 
 
+def component_id(component: dict[str, object], target: str) -> str:
+    if component.get("component_id"):
+        return str(component["component_id"])
+    kind = str(component.get("component_kind", "")).lower().replace("_", "-")
+    digest = str(component.get("sha256", ""))[:16]
+    if not kind or len(digest) != 16:
+        raise SystemExit("approved Toolchain component identity is incomplete")
+    return f"code-c-{target}-toolchain-{kind}-{digest}"
+
+
+def component_sha256(component: dict[str, object]) -> str:
+    artifact = component.get("artifact")
+    if isinstance(artifact, dict) and artifact.get("sha256"):
+        return str(artifact["sha256"])
+    if component.get("sha256"):
+        return str(component["sha256"])
+    raise SystemExit("approved Toolchain component is missing an artifact SHA-256")
+
+
 def canonical_compact_hash(value: object) -> str:
     payload = json.dumps(
         value,
@@ -88,9 +107,9 @@ def main() -> None:
     ):
         raise SystemExit("Build Provenance target differs from the requested formal target")
     artifact_hash = evidence["artifact"]["sha256"]
-    if wheel["sha256"] != artifact_hash or tool["artifact"]["sha256"] != artifact_hash:
+    if wheel["sha256"] != artifact_hash or component_sha256(tool) != artifact_hash:
         raise SystemExit("PyInstaller evidence, wheel inventory and toolchain identity differ")
-    if build["inputs"]["pyinstaller_component_id"] != tool["component_id"]:
+    if build["inputs"]["pyinstaller_component_id"] != component_id(tool, arguments.target):
         raise SystemExit("Build Provenance does not reference the exact PyInstaller component")
 
     policy_hash = canonical_compact_hash(policy)

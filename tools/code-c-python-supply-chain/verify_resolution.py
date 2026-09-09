@@ -58,6 +58,12 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", choices=["windows", "linux"], required=True)
     parser.add_argument("--artifact-root", type=Path, required=True)
+    parser.add_argument(
+        "--scope",
+        choices=["runtime", "worker-build", "model-export", "model-evaluation"],
+        action="append",
+        help="approved dependency scope(s) to verify; defaults to every declared scope",
+    )
     arguments = parser.parse_args()
     if packaging.__version__ != "25.0":
         raise SystemExit("resolution verification requires locked packaging 25.0")
@@ -72,7 +78,11 @@ def main() -> None:
         canonicalize_name(name): str(version) for name, version in definitions["versions"].items()
     }
     verified_scopes = 0
-    for scope_name, scope in definitions["scopes"].items():
+    selected_scopes = arguments.scope or list(definitions["scopes"])
+    for scope_name in selected_scopes:
+        scope = definitions["scopes"].get(scope_name)
+        if scope is None:
+            raise SystemExit(f"unknown dependency scope: {scope_name}")
         if arguments.target not in scope["targets"]:
             continue
         inventory = json.loads(inventory_path(arguments.target, scope_name).read_text(encoding="utf-8"))

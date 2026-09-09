@@ -13,6 +13,13 @@ from policy import sha256_file
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+TOOLCHAIN_SOURCE_LOCK = (
+    REPOSITORY_ROOT
+    / "sidecars"
+    / "media-worker"
+    / "supply-chain"
+    / "toolchain-source-lock.json"
+)
 INSPECT_ONEFILE = (
     REPOSITORY_ROOT / "tools" / "python-supply-chain" / "inspect-pyinstaller-onefile.py"
 )
@@ -27,6 +34,25 @@ def inventory_path(target: str, scope_name: str) -> Path:
     raise SystemExit(
         f"approved inventory is missing for {target}/{scope_name} (expected v3 or v2 subject)"
     )
+
+
+def component_id(component: dict[str, object], target: str) -> str:
+    if component.get("component_id"):
+        return str(component["component_id"])
+    kind = str(component.get("component_kind", "")).lower().replace("_", "-")
+    digest = str(component.get("sha256", ""))[:16]
+    if not kind or len(digest) != 16:
+        raise SystemExit("approved Toolchain component identity is incomplete")
+    return f"code-c-{target}-toolchain-{kind}-{digest}"
+
+
+def component_sha256(component: dict[str, object]) -> str:
+    artifact = component.get("artifact")
+    if isinstance(artifact, dict) and artifact.get("sha256"):
+        return str(artifact["sha256"])
+    if component.get("sha256"):
+        return str(component["sha256"])
+    raise SystemExit("approved Toolchain component is missing an artifact SHA-256")
 
 
 def git_head() -> str:
@@ -46,6 +72,7 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--run-identity", default=os.environ.get("GITHUB_RUN_ID", "local-explicit-build"))
     arguments = parser.parse_args()
+    source_lock = json.loads(TOOLCHAIN_SOURCE_LOCK.read_text(encoding="utf-8"))
     runtime_inventory_path = inventory_path(arguments.target, "runtime")
     worker_build_inventory_path = inventory_path(arguments.target, "worker-build")
     toolchain_path = (
@@ -54,6 +81,11 @@ def main() -> None:
     runtime = json.loads(runtime_inventory_path.read_text(encoding="utf-8"))
     worker_build = json.loads(worker_build_inventory_path.read_text(encoding="utf-8"))
     toolchain = json.loads(toolchain_path.read_text(encoding="utf-8"))
+    toolchain_python_version = (
+        toolchain["python"]["version"]
+        if isinstance(toolchain.get("python"), dict)
+        else toolchain["target"]["python_version"]
+    )
     by_kind = {component["component_kind"]: component for component in toolchain["components"]}
     worker_build_by_name = {
         package["package_name"].lower().replace("_", "-"): package
@@ -66,8 +98,8 @@ def main() -> None:
     if pyinstaller_wheel is None:
         raise SystemExit("WORKER_BUILD inventory omits PyInstaller")
     if (
-        pyinstaller_wheel["version"] != by_kind["PYINSTALLER"]["version"]
-        or pyinstaller_wheel["sha256"] != by_kind["PYINSTALLER"]["artifact"]["sha256"]
+        pyinstaller_wheel["version"] != source_lock["targets"][arguments.target]["pyinstaller"]["version"]
+        or pyinstaller_wheel["sha256"] != component_sha256(by_kind["PYINSTALLER"])
     ):
         raise SystemExit("WORKER_BUILD PyInstaller differs from Toolchain Inventory v1")
     inspection = json.loads(
@@ -90,7 +122,7 @@ def main() -> None:
         "target": {
             "os": arguments.target,
             "architecture": "x86_64",
-            "python_version": toolchain["target"]["python_version"],
+            "python_version": toolchain_python_version,
         },
         "build_configuration": {
             "path": specification.relative_to(REPOSITORY_ROOT).as_posix(),
@@ -114,10 +146,10 @@ def main() -> None:
                 "manifest_path": toolchain_path.relative_to(REPOSITORY_ROOT).as_posix(),
                 "manifest_sha256": sha256_file(toolchain_path),
             },
-            "cpython_component_id": by_kind["CPYTHON_DISTRIBUTION"]["component_id"],
-            "pip_component_id": by_kind["PIP"]["component_id"],
-            "pyinstaller_component_id": by_kind["PYINSTALLER"]["component_id"],
-            "bootloader_component_id": by_kind["PYINSTALLER_BOOTLOADER"]["component_id"],
+            "cpython_component_id": component_id(by_kind["CPYTHON_DISTRIBUTION"], arguments.target),
+            "pip_component_id": component_id(by_kind["PIP"], arguments.target),
+            "pyinstaller_component_id": component_id(by_kind["PYINSTALLER"], arguments.target),
+            "bootloader_component_id": component_id(by_kind["PYINSTALLER_BOOTLOADER"], arguments.target),
         },
         "output_layers": {
             "bootloader_sha256": inspection["bootloader_layer"]["sha256"],

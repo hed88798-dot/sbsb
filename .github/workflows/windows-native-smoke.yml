@@ -139,7 +139,8 @@ jobs:
             --target windows --artifact-root artifacts/python-approved/wheels
           PYTHONPATH="$PWD/artifacts/python-compliance-tools/site-packages" \
             artifacts/worker-venv/Scripts/python.exe tools/code-c-python-supply-chain/verify_resolution.py \
-            --target windows --artifact-root artifacts/python-approved/wheels
+            --target windows --artifact-root artifacts/python-approved/wheels \
+            --scope runtime --scope worker-build
       - name: Install approved runtime and Worker build graph
         shell: bash
         env:
