@@ -25,6 +25,17 @@ DEFINITIONS = (
 INSPECT_WHEEL = REPOSITORY_ROOT / "tools" / "python-supply-chain" / "inspect-wheel.py"
 
 
+def inventory_path(target: str, scope_name: str) -> Path:
+    inventory_root = REPOSITORY_ROOT / "compliance" / "python-artifacts" / target
+    for schema_version in ("v3", "v2"):
+        candidate = inventory_root / f"{scope_name}.{schema_version}.json"
+        if candidate.is_file():
+            return candidate
+    raise SystemExit(
+        f"approved inventory is missing for {target}/{scope_name} (expected v3 or v2 subject)"
+    )
+
+
 def inspect(path: Path) -> dict[str, object]:
     result = subprocess.run(
         [sys.executable, str(INSPECT_WHEEL), str(path)],
@@ -64,14 +75,7 @@ def main() -> None:
     for scope_name, scope in definitions["scopes"].items():
         if arguments.target not in scope["targets"]:
             continue
-        inventory_path = (
-            REPOSITORY_ROOT
-            / "compliance"
-            / "python-artifacts"
-            / arguments.target
-            / f"{scope_name}.v2.json"
-        )
-        inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+        inventory = json.loads(inventory_path(arguments.target, scope_name).read_text(encoding="utf-8"))
         if inventory["target"]["python_version"] != definitions["python_version"]:
             raise SystemExit(f"{scope_name}: inventory target patch drift")
         packages = {
