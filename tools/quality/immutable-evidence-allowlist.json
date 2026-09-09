@@ -1,0 +1,167 @@
+{
+  "allowlist_scope": "EXACT_PATH_AND_SHA256",
+  "classification": "IMMUTABLE_HISTORICAL_EVIDENCE",
+  "entries": [
+    {
+      "path": "compliance/license-reconciliations/post-f-license-2026-09-02/evidence/linux/candidates/code-c-linux-runtime.v3.json",
+      "sha256": "b6397a493afb9c555dde18a5c44947aee88692cf837f84f226bb9cdab451e9f2"
+    },
+    {
+      "path": "compliance/license-reconciliations/post-f-license-2026-09-02/evidence/linux/candidates/code-c-linux-worker-build.v3.json",
+      "sha256": "de1538e8753bbee056f238f6483d3f9d080eb018ec74b5f5926a58a078fcf56c"
+    },
+    {
+      "path": "compliance/license-reconciliations/post-f-license-2026-09-02/evidence/windows/candidates/code-c-windows-runtime.v3.json",
+      "sha256": "5d7cd9e0e93af5606f33af97d54588f1fdfb9949089c658e62ad5b185f0cce8a"
+    },
+    {
+      "path": "compliance/license-reconciliations/post-f-license-2026-09-02/evidence/windows/candidates/code-c-windows-worker-build.v3.json",
+      "sha256": "c7ed5092c627fdbad3d28c7cd85246a03c1cacbbb65664c377fce94d23de7cc7"
+    },
+    {
+      "path": "compliance/license-reconciliations/post-f-license-current-head-76529014/evidence/linux/candidates/code-c-linux-runtime.v3.json",
+      "sha256": "b6397a493afb9c555dde18a5c44947aee88692cf837f84f226bb9cdab451e9f2"
+    },
+    {
+      "path": "compliance/license-reconciliations/post-f-license-current-head-76529014/evidence/linux/candidates/code-c-linux-worker-build.v3.json",
+      "sha256": "de1538e8753bbee056f238f6483d3f9d080eb018ec74b5f5926a58a078fcf56c"
+    },
+    {
+      "path": "compliance/license-reconciliations/post-f-license-current-head-76529014/evidence/windows/candidates/code-c-windows-runtime.v3.json",
+      "sha256": "5d7cd9e0e93af5606f33af97d54588f1fdfb9949089c658e62ad5b185f0cce8a"
+    },
+    {
+      "path": "compliance/license-reconciliations/post-f-license-current-head-76529014/evidence/windows/candidates/code-c-windows-worker-build.v3.json",
+      "sha256": "c7ed5092c627fdbad3d28c7cd85246a03c1cacbbb65664c377fce94d23de7cc7"
+    },
+    {
+      "path": "compliance/license-reconciliations/post-f-license-2026-09-02/evidence/linux/diagnostics/linux-native-reconciliation.json",
+      "sha256": "1e7a9036929ff7348f448e7ede1119b512a088523995af96d0ec87b4afa3d2f3"
+    },
+    {
+      "path": "compliance/license-reconciliations/post-f-license-2026-09-02/evidence/linux/evidence/linux-target-evidence.json",
+      "sha256": "773b3684a7fa5dd77e40aab37b6dc6c20b86daf0bb032f52ea4d2077a38ca039"
+    },
+    {
+      "path": "compliance/license-reconciliations/post-f-license-current-head-76529014/evidence/linux/diagnostics/linux-native-reconciliation.json",
+      "sha256": "bfd52552b6458b337e49258952d368d28e92b139acd910de4094dc2b248fdb61"
+    },
+    {
+      "path": "compliance/license-reconciliations/post-f-license-current-head-76529014/evidence/linux/evidence/linux-target-evidence.json",
+      "sha256": "14c0bf9b7b8e9ac1b465f7ce3abf3918d638d52b85c5a2aff53e8295bc72a9ee"
+    },
+    {
+      "path": "compliance/python-artifacts/linux/runtime.v3.json",
+      "sha256": "b6397a493afb9c555dde18a5c44947aee88692cf837f84f226bb9cdab451e9f2"
+    },
+    {
+      "path": "compliance/python-artifacts/linux/worker-build.v3.json",
+      "sha256": "de1538e8753bbee056f238f6483d3f9d080eb018ec74b5f5926a58a078fcf56c"
+    },
+    {
+      "path": "compliance/python-artifacts/windows/runtime.v3.json",
+      "sha256": "5d7cd9e0e93af5606f33af97d54588f1fdfb9949089c658e62ad5b185f0cce8a"
+    },
+    {
+      "path": "compliance/python-artifacts/windows/worker-build.v3.json",
+      "sha256": "c7ed5092c627fdbad3d28c7cd85246a03c1cacbbb65664c377fce94d23de7cc7"
+    },
+    {
+      "path": "compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-2026-09-03/advisories/CVE-2026-15310.json",
+      "sha256": "9e59fb9bda77556e837ca9b9024b03e46375a9a6af521526573fb328cb2478ec"
+    },
+    {
+      "path": "compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-2026-09-03/advisories/CVE-2026-15806.json",
+      "sha256": "bbf4d1276c26ff5ce7b236102f836fb61286d13dfd592fc0553d767a10daa5ac"
+    },
+    {
+      "path": "compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-2026-09-03/advisories/CVE-2026-3087.json",
+      "sha256": "aa15b3c56f05405ea0dcb217ca3f8032f53287477e7ec47e25917573196d06ec"
+    },
+    {
+      "path": "compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-2026-09-03/STAGE_A_ADVISORY_SNAPSHOT.json",
+      "sha256": "fdd5f256147e21ed74dec39c47e74f81c96f421e97a7a9d23d19ffde725ea028"
+    },
+    {
+      "path": "compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-current-head-76529014/advisories/CVE-2026-15310.json",
+      "sha256": "9e59fb9bda77556e837ca9b9024b03e46375a9a6af521526573fb328cb2478ec"
+    },
+    {
+      "path": "compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-current-head-76529014/advisories/CVE-2026-15806.json",
+      "sha256": "bbf4d1276c26ff5ce7b236102f836fb61286d13dfd592fc0553d767a10daa5ac"
+    },
+    {
+      "path": "compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-current-head-76529014/advisories/CVE-2026-3087.json",
+      "sha256": "aa15b3c56f05405ea0dcb217ca3f8032f53287477e7ec47e25917573196d06ec"
+    },
+    {
+      "path": "compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-current-head-76529014/STAGE_A_ADVISORY_SNAPSHOT.json",
+      "sha256": "fdd5f256147e21ed74dec39c47e74f81c96f421e97a7a9d23d19ffde725ea028"
+    },
+    {
+      "path": "compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-current-head-76529014/worker-inspection/linux-worker-onefile.json",
+      "sha256": "912e81d8ea6c3e21bc923ebd7a40873d54e2cefa9587fdc231db00cc06bf8ad0"
+    },
+    {
+      "path": "compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-current-head-76529014/worker-inspection/windows-worker-onefile.json",
+      "sha256": "86efe81ae4fac81b8b0c325a80e7a8e15f69fecd90b23079c52353c58699e0e4"
+    },
+    {
+      "path": "compliance/vulnerability-reviews/cpython-3.13.15-stage-b-reachability-2026-09-03/ARCHIVE_API_SENTINEL_POSITIVE_CONTROL.json",
+      "sha256": "44c7048c720c755e5de15bfb53bc607c46e672c89a2977da7768e4eb1a1e45ba"
+    },
+    {
+      "path": "compliance/vulnerability-reviews/cpython-3.13.15-stage-b-reachability-2026-09-03/CALLSITE_INVENTORY.json",
+      "sha256": "e04be23e9d0900bcaf98da92cd0010e10b06e8fbbc22f7af33b139dde91625bb"
+    },
+    {
+      "path": "compliance/vulnerability-reviews/cpython-3.13.15-stage-b-reachability-2026-09-03/RUNTIME_NEGATIVE_TESTS.json",
+      "sha256": "59e0e977bc64c67de7b08cece93cd6bcb7f69c5f8c59b625da56be94aea6ccc0"
+    },
+    {
+      "path": "compliance/vulnerability-reviews/cpython-3.13.15-final-vulnerability-review-current-candidate/FINAL_VULNERABILITY_REVIEW_RECORD_V2.json",
+      "sha256": "5a3ce03bf73164df9e5b931edca18632e641b228820b939e8bc2afe9732fb35f"
+    },
+    {
+      "path": "compliance/functional-acceptance/2026-09-09/v3/evidence/inputs/GOLDEN_BENCHMARK_V3_README.txt",
+      "sha256": "ba93b9b96e18d9a46183d5101d14abf36245ae9ed90c374aa1d6ed0f81f53d86"
+    },
+    {
+      "path": "compliance/functional-acceptance/2026-09-09/v3/evidence/inputs/benchmark-queries-v1.csv",
+      "sha256": "fd3a6c3d4748b80b0e97450d4817a512218a0b1c43cf9efa12f886bdbc9f17e9"
+    },
+    {
+      "path": "compliance/functional-acceptance/2026-09-09/v3/evidence/inputs/corpus-map-v3.csv",
+      "sha256": "291a9d77fa2a3301a95539b12dbda2ec77f607e48f0abf3e1fd05e6847c84f51"
+    },
+    {
+      "path": "compliance/functional-acceptance/2026-09-09/v3/evidence/inputs/ground-truth-v1.csv",
+      "sha256": "93c72feb1bacdf485333d56ccbdbd2ad1ef4dbd1c284ee7d994230ab595487cf"
+    },
+    {
+      "path": "compliance/functional-acceptance/2026-09-09/v3/evidence/inputs/run-golden-benchmark-v3.ps1",
+      "sha256": "0523139fddb876e459954187783570361924d62a1e1b7102f45e171b2a77d88f"
+    },
+    {
+      "path": "compliance/functional-acceptance/2026-09-09/v3/evidence/outputs/benchmark-ranked-top5-v3.csv",
+      "sha256": "f14f0b1b8d32517c42b56aa7d9746a9bec8ccf7f061be07ee891e9e6405053e9"
+    },
+    {
+      "path": "compliance/functional-acceptance/2026-09-09/v3/evidence/outputs/benchmark-summary-v3.csv",
+      "sha256": "19b784a113b13b45c4e8f12bfd556e8da1c4d9397f2a3ebbd1f8238181133812"
+    },
+    {
+      "path": "compliance/functional-acceptance/2026-09-09/v3/evidence/outputs/run-manifest-v3.json",
+      "sha256": "4449bb281f6f09e796e01c8590fe26d3aeef64bf00729a706549478d484678aa"
+    },
+    {
+      "path": "compliance/functional-acceptance/2026-09-09/v3/evidence/outputs/variant-summary-v3.csv",
+      "sha256": "98a8ac561059319ec1235c448ab5c6ebabbe4b47b144cce1fd140dc1d908cbc7"
+    },
+    {
+      "path": "docs/performance/CODE_C_REAL_CORPUS_V3_CLOSEOUT.md",
+      "sha256": "f77c8a9c3649c36547aead835d3a8c70a53efe275a812a60cafcd64035faf7a5"
+    }
+  ],
+  "schema_version": "1"
+}

@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/material-selection/v1/material-selection-result.schema.json",
+  "title": "MaterialSelectionResultV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "selection_request_id",
+    "batch_id",
+    "video_id",
+    "slot_id",
+    "status",
+    "selected_asset_id",
+    "selected_shot_id",
+    "selected_semantic_rank",
+    "selected_semantic_score",
+    "degradation_level",
+    "reason_codes",
+    "candidate_set_hash",
+    "history_snapshot_hash",
+    "policy_snapshot_hash",
+    "decision_receipt_hash",
+    "committed_at"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "selection_request_id": { "$ref": "#/$defs/identity" },
+    "batch_id": { "$ref": "#/$defs/identity" },
+    "video_id": { "$ref": "#/$defs/identity" },
+    "slot_id": { "$ref": "#/$defs/identity" },
+    "status": { "enum": ["SELECTED", "NO_MATCH"] },
+    "selected_asset_id": { "anyOf": [{ "$ref": "#/$defs/identity" }, { "type": "null" }] },
+    "selected_shot_id": { "anyOf": [{ "$ref": "#/$defs/identity" }, { "type": "null" }] },
+    "selected_semantic_rank": {
+      "anyOf": [{ "type": "integer", "minimum": 1 }, { "type": "null" }]
+    },
+    "selected_semantic_score": { "type": ["number", "null"] },
+    "degradation_level": { "type": "integer", "minimum": 0 },
+    "reason_codes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/reason" } },
+    "candidate_set_hash": { "$ref": "#/$defs/hash" },
+    "history_snapshot_hash": { "$ref": "#/$defs/hash" },
+    "policy_snapshot_hash": { "$ref": "#/$defs/hash" },
+    "decision_receipt_hash": { "$ref": "#/$defs/hash" },
+    "committed_at": { "type": "string", "format": "date-time" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "SELECTED" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "selected_asset_id": { "$ref": "#/$defs/identity" },
+          "selected_shot_id": { "$ref": "#/$defs/identity" },
+          "selected_semantic_rank": { "type": "integer", "minimum": 1 },
+          "selected_semantic_score": { "type": "number" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "NO_MATCH" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "selected_asset_id": { "type": "null" },
+          "selected_shot_id": { "type": "null" },
+          "selected_semantic_rank": { "type": "null" },
+          "selected_semantic_score": { "type": "null" },
+          "degradation_level": { "const": 0 }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "identity": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "reason": {
+      "enum": [
+        "FRESH_UNUSED_CANDIDATE",
+        "LOWEST_BATCH_USAGE",
+        "RECENCY_PREFERRED",
+        "LOWEST_TOTAL_USAGE",
+        "SEMANTIC_RANK_PREFERRED",
+        "SAME_ASSET_DIFFERENT_SHOT",
+        "REPEAT_DUE_TO_SCARCITY",
+        "NO_UPSTREAM_CANDIDATES",
+        "ALL_CANDIDATES_HARD_REJECTED",
+        "STABLE_IDENTITY_TIE_BREAK"
+      ]
+    }
+  }
+}

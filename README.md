@@ -1,6 +1,7 @@
 # AI 电商短视频桌面端
 
-本仓库承载本地优先的 Windows 桌面产品与其最小云网关。当前里程碑是 `v0.1 Desktop Foundation + Product + Copywriting`。
+本仓库承载本地优先的 Windows 桌面产品与其最小云网关。Code C 分支在已合并的
+`v0.1 Desktop Foundation + Product + Copywriting` 基线上实现 `v0.3 Local Media Intelligence + CPU Index`。
 
 ## 架构基线
 
@@ -29,5 +30,6 @@ Quality/Release/Compliance 门禁见根目录的 `CI_GATE_MATRIX.md`、`DEPENDEN
 - SQLite migrations 与产品库
 - AI 文案、Product Fact Lock 与本地 Job 历史
 - Mock Gateway、Text capability contract 与 mock sidecar smoke
+- Shot 级本地素材索引、增量/恢复、SQLite float16 真源与 mmap exact search
 
-图片/视频生成、素材索引、Auto Edit、Timeline、FFmpeg 成片和数字人不在 v0.1 范围。
+Auto Edit、Matcher、Timeline、FFmpeg 最终成片和数字人不在 Code C v0.3 范围。

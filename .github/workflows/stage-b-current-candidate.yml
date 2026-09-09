@@ -1,0 +1,286 @@
+name: Code C current Candidate Stage B runtime reachability
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - code-c/new-distribution-candidate-build
+    paths:
+      - .github/workflows/stage-b-current-candidate.yml
+      - tools/code-c-python-supply-chain/run_stage_b_current_candidate.py
+      - tools/code-c-python-supply-chain/create_stage_b_current_candidate_bundle.py
+      - tools/code-c-python-supply-chain/run_stage_b_candidate_negative.py
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: code-c-stage-b-current-candidate-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  runtime:
+    name: Exact frozen Worker runtime (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux
+            runner: ubuntu-24.04
+            transport_artifact: candidate-transfer-linux-76529014f47945fc2916d0488115822bc28d16c7
+          - target: windows
+            runner: windows-2022
+            transport_artifact: candidate-transfer-windows-76529014f47945fc2916d0488115822bc28d16c7
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - name: Checkout evaluator
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Preserve approved Stage A evidence bytes on Windows
+        if: ${{ matrix.target == 'windows' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git cat-file blob HEAD:compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-current-head-76529014/STAGE_A_REBIND_BUNDLE.json \
+            > compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-current-head-76529014/STAGE_A_REBIND_BUNDLE.json
+          while IFS= read -r path; do
+            mkdir -p "$(dirname "$path")"
+            git cat-file blob "HEAD:$path" > "$path"
+          done < <(
+            git ls-files \
+              'schemas/sidecar/v1/*.json' \
+              'packages/contracts/src/index.ts' \
+              'sidecars/media-worker/src/media_worker/*.py' \
+              'tools/code-c-python-supply-chain/canonical_evidence.py' \
+              'tools/code-c-python-supply-chain/collect_stage_b_reachability.py' \
+              'tools/code-c-python-supply-chain/collect_stage_b_static_evidence.py' \
+              'tools/code-c-python-supply-chain/run_stage_b_candidate_negative.py' \
+              'tools/code-c-python-supply-chain/run_stage_b_current_candidate.py'
+          )
+
+      - name: Download exact Candidate transport bytes
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ matrix.transport_artifact }}
+          run-id: 33838635766
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
+          path: transport/${{ matrix.target }}
+
+      - name: Verify target runner architecture and resolve ffprobe
+        id: runner
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os
+          import platform
+
+          accepted = {'x64', 'x86_64', 'amd64'}
+          runner_arch = os.environ.get('RUNNER_ARCH', '')
+          machine = platform.machine()
+          if runner_arch.lower() not in accepted or machine.lower() not in accepted:
+              raise SystemExit(
+                  f"{os.environ['TARGET']} runner architecture must be x86-64: "
+                  f"RUNNER_ARCH={runner_arch!r}, platform.machine={machine!r}"
+              )
+          print(f"{os.environ['TARGET']}-runner-architecture: PASS ({runner_arch}/{machine})")
+          PY
+          mkdir -p "artifacts/stage-b/${TARGET}"
+          ffprobe="$(python -c 'import shutil; print(shutil.which("ffprobe") or "")')"
+          ffprobe_mode='HOST_DISCOVERED'
+          if [[ -z "$ffprobe" ]]; then
+            # The reachability fixtures are deliberately non-media archives.
+            # A deterministic reject-only probe is sufficient to prove that
+            # they are refused before any archive extraction.  It is not a
+            # replacement for a production ffprobe and is hash-bound in the
+            # runtime evidence.
+            if [[ "$TARGET" == 'windows' ]]; then
+              # Windows CreateProcess does not reliably launch a .cmd path
+              # with shell=False.  The locked runner Python executable is a
+              # regular PE executable; passing probe flags to it deterministically
+              # returns a non-zero code and therefore exercises the Worker's
+              # safe MEDIA_PROBE_FAILED rejection without a shell wrapper.
+              ffprobe="$(python -c 'import sys; print(sys.executable)')"
+            else
+              stub='artifacts/stage-b/linux/ffprobe-stage-b-reject'
+              printf '#!/bin/sh\nexit 1\n' > "$stub"
+              chmod 755 "$stub"
+              ffprobe="$(python -c 'from pathlib import Path; import sys; print(Path(sys.argv[1]).resolve())' "$stub")"
+            fi
+            ffprobe_mode='DETERMINISTIC_REJECT_ONLY'
+          fi
+          printf 'ffprobe=%s\n' "$ffprobe" >> "$GITHUB_OUTPUT"
+          printf 'ffprobe_mode=%s\n' "$ffprobe_mode" >> "$GITHUB_OUTPUT"
+
+      - name: Locate transport manifest and exact files
+        id: inputs
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          root="transport/${TARGET}"
+          worker="$(find "$root" -type f -name "worker-${TARGET}" -print -quit)"
+          carchive="$(find "$root" -type f -name "carchive-${TARGET}.pkg" -print -quit)"
+          manifest="$(find "$root" -type f -name 'candidate-transfer-manifest.json' -print -quit)"
+          [[ -n "$worker" && -n "$carchive" && -n "$manifest" ]]
+          if [[ "$TARGET" == 'linux' ]]; then
+            # ZIP transport does not preserve the executable mode.  Restoring
+            # normal execution permission is not a byte mutation and is
+            # required to execute the exact recovered ELF.
+            chmod 755 "$worker"
+          fi
+          printf 'worker=%s\n' "$worker" >> "$GITHUB_OUTPUT"
+          printf 'carchive=%s\n' "$carchive" >> "$GITHUB_OUTPUT"
+          printf 'manifest=%s\n' "$manifest" >> "$GITHUB_OUTPUT"
+
+      - name: Run exact Worker Stage B runtime evaluator
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+          CODE_C_FFPROBE_MODE: ${{ steps.runner.outputs.ffprobe_mode }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/stage-b/${TARGET}
+          set +e
+          python tools/code-c-python-supply-chain/run_stage_b_current_candidate.py \
+            --target "$TARGET" \
+            --worker '${{ steps.inputs.outputs.worker }}' \
+            --carchive '${{ steps.inputs.outputs.carchive }}' \
+            --manifest '${{ steps.inputs.outputs.manifest }}' \
+            --ffprobe '${{ steps.runner.outputs.ffprobe }}' \
+            --output "artifacts/stage-b/${TARGET}/runtime.json" \
+            > "artifacts/stage-b/${TARGET}/evaluator.stdout" \
+            2> "artifacts/stage-b/${TARGET}/evaluator.stderr"
+          evaluator_status=$?
+          set -e
+          if [[ "$evaluator_status" != '0' ]]; then
+            diagnostic="$(tail -c 3000 "artifacts/stage-b/${TARGET}/evaluator.stderr" | tr '\n' ' ')"
+            echo "::error title=Stage B evaluator diagnostic (${TARGET})::${diagnostic}"
+            printf 'Stage B evaluator diagnostic (%s): %s\n' "$TARGET" "$diagnostic" >> "$GITHUB_STEP_SUMMARY"
+            tail -c 4000 "artifacts/stage-b/${TARGET}/evaluator.stderr" >&2 || true
+            echo "Stage B evaluator failed for ${TARGET}; preserving compact diagnostic output." >&2
+            exit "$evaluator_status"
+          fi
+
+      - name: Upload compact runtime evidence only
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ always() }}
+        with:
+          name: code-c-stage-b-current-runtime-${{ matrix.target }}-${{ github.sha }}
+          path: artifacts/stage-b/${{ matrix.target }}
+          if-no-files-found: error
+          retention-days: 3
+
+  aggregate:
+    name: Assemble Stage B evidence bundle
+    needs: runtime
+    if: ${{ always() && needs.runtime.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout evaluator
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download Linux compact evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: code-c-stage-b-current-runtime-linux-${{ github.sha }}
+          path: artifacts/runtime/linux
+
+      - name: Download Windows compact evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: code-c-stage-b-current-runtime-windows-${{ github.sha }}
+          path: artifacts/runtime/windows
+
+      - name: Assemble and validate the two-platform bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          python tools/code-c-python-supply-chain/create_stage_b_current_candidate_bundle.py \
+            --linux-evidence artifacts/runtime/linux/runtime.json \
+            --windows-evidence artifacts/runtime/windows/runtime.json \
+            --output-root compliance/vulnerability-reviews/cpython-3.13.15-stage-b-current-head \
+            > aggregate.stdout \
+            2> aggregate.stderr
+          aggregate_status=$?
+          set -e
+          if [[ "$aggregate_status" != '0' ]]; then
+            diagnostic="$(tail -c 4000 aggregate.stderr | tr '\n' ' ')"
+            echo "::error title=Stage B bundle assembly diagnostic::${diagnostic}"
+            printf 'Stage B bundle assembly diagnostic: %s\n' "$diagnostic" >> "$GITHUB_STEP_SUMMARY"
+            exit "$aggregate_status"
+          fi
+
+      - name: Publish compact Stage B bundle identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('compliance/vulnerability-reviews/cpython-3.13.15-stage-b-current-head')
+          bundle = json.loads((root / 'STAGE_B_REACHABILITY_BUNDLE.json').read_text(encoding='utf-8'))
+          sha = (root / 'STAGE_B_REACHABILITY_BUNDLE.sha256').read_text(encoding='utf-8').split()[0]
+          print(f"::notice title=Stage B bundle identity::{bundle['bundle_id']} sha256={sha} status={bundle['status']}")
+          print(f"Stage B bundle: {bundle['bundle_id']} / {sha} / {bundle['status']}")
+          summary = {
+              'bundle_id': bundle['bundle_id'],
+              'bundle_sha256': sha,
+              'validation_head_sha': bundle['validation_head_sha'],
+              'protocol': bundle['current_protocol'],
+              'evaluator': bundle['stage_b_evaluator'],
+              'evaluator_by_target': bundle['STAGE_B_EVALUATOR_IDENTITIES_BY_TARGET'],
+              'fixture_sets': {
+                  'network': bundle['network_test_fixture_set_sha256'],
+                  'archive': bundle['archive_test_fixture_set_sha256'],
+              },
+              'conclusions': bundle['conclusions'],
+              'targets': {
+                  target: {
+                      'job_id': item['job_id'],
+                      'worker_sha256': item['worker_sha256'],
+                      'carchive_sha256': item['carchive_sha256'],
+                      'runtime_evidence': item['runtime_evidence'],
+                      'packaged_module_inventory': item['packaged_module_inventory'],
+                      'network_fixture_set_sha256': item['network_fixture_set_sha256'],
+                      'archive_fixture_set_sha256': item['archive_fixture_set_sha256'],
+                      'network_counts': {
+                          key: item['network'][key]
+                          for key in ('affected_network_capability_call_count', 'user_controlled_affected_call_count', 'unexpected_network_side_effect_count')
+                      },
+                      'archive_counts': {
+                          key: item['archive'][key]
+                          for key in ('affected_api_callsite_count', 'user_reachable_callsite_count', 'unresolved_wrapper_count', 'affected_archive_extraction_call_count', 'extracted_member_count', 'unexpected_temp_output_count')
+                      },
+                  }
+                  for target, item in bundle['targets'].items()
+              },
+          }
+          import json as _json
+          print(f"::notice title=Stage B evidence summary::{_json.dumps(summary, sort_keys=True, separators=(',', ':'))}")
+          PY
+
+      - name: Upload compact Stage B evidence bundle
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: code-c-stage-b-current-candidate-bundle-${{ github.sha }}
+          path: |
+            compliance/vulnerability-reviews/cpython-3.13.15-stage-b-current-head
+            artifacts/runtime
+          if-no-files-found: error
+          retention-days: 7

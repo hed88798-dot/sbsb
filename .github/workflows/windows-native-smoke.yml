@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   packaged-native-addon:
-    runs-on: windows-latest
+    runs-on: windows-2022
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
@@ -28,7 +28,7 @@ jobs:
           cache: pnpm
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: '3.12.10'
+          python-version: '3.13.15'
       - run: pnpm install --frozen-lockfile
       - run: pnpm compliance:python:tooling:install
       - run: pnpm compliance:artifact-license:verify
@@ -45,7 +45,11 @@ jobs:
       - run: pnpm secret:scan
       - run: pnpm license:scan
       - run: pnpm vulnerability:scan
-      - run: pnpm compliance:python:verify
+      # This job validates desktop/native packaging. The exact approved
+      # Worker subjects are consumed by the dedicated binding gate below;
+      # repo-native-verify is intentionally not run against desktop dist.
+      - run: pnpm compliance:python:schema
+      - run: pnpm compliance:python:approved-subjects -- --output artifacts/compliance/APPROVED_SUBJECT_BINDING.json
       - run: pnpm compliance:python:target:verify
       - run: pnpm golden:verify
       - run: pnpm exec vitest run tests/contract/packaged-native-toolchain-provenance.test.ts --maxWorkers=1
@@ -53,7 +57,49 @@ jobs:
       - run: pnpm native:rebuild
       - run: pnpm package:dir
       - run: $env:REQUIRE_PACKAGED_SMOKE='1'; pnpm exec vitest run tests/integration/native-addon-packaging.test.ts --maxWorkers=1
-      - run: pnpm compliance:python:packaged:verify
-        env:
-          PYTHON_TARGET_OS: windows
-          PYTHON_TARGET_ARCHITECTURE: x86_64
+
+  # The accepted Toolchain v1 subjects are intake provenance evidence, not
+  # formal Toolchain Inventory v1 records. This integration gate verifies
+  # exact subject/approval bytes and deliberately makes no license,
+  # vulnerability, native, or distribution claim from them.
+  python-worker-supply-chain:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.13.15'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm compliance:python:tooling:install
+      - run: pnpm compliance:python:schema
+      - run: pnpm compliance:python:approved-subjects -- --output artifacts/compliance/APPROVED_SUBJECT_BINDING.json
+      - run: pnpm portability:check
+      - run: pnpm secret:scan
+      - name: Enforce approved-subject evidence upload budget
+        shell: bash
+        run: >-
+          node tools/actions-artifact-budget.mjs
+          --name windows-python-approved-subjects-${{ github.sha }}
+          --path artifacts/compliance
+          --inventory artifacts/compliance/ARTIFACT_UPLOAD_INVENTORY.json
+          --retention-days 3
+          --purpose approved-python-subject-provenance
+          --classification transient
+          --max-bytes 5242880
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-python-approved-subjects-${{ github.sha }}
+          path: artifacts/compliance
+          if-no-files-found: error
+          retention-days: 3

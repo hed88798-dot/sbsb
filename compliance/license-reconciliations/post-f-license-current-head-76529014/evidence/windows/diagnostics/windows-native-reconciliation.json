@@ -1,0 +1,263 @@
+{
+  "ambiguous_hash_owner_count": 0,
+  "ambiguous_hash_owner_resolution": "PASS",
+  "approved_cpython_native_count": 45,
+  "approved_native_universe_count": 81,
+  "approved_wheel_native_count": 36,
+  "bit_for_bit_match_previous": "NO",
+  "build_context_id": "code-c-pyinstaller-0081732df8b12e4167caf404f83204c1",
+  "candidate_worker": {
+    "filename": "media-worker.exe",
+    "sha256": "ba6b81f433beef8ee95615a45248251918a18a602b53f8db9ec02e35cf76d8b1",
+    "size": 79230657
+  },
+  "classification_complete_and_exclusive": "PASS",
+  "clean_isolated_buildpath": "PASS",
+  "code_c_head_sha": "76529014f47945fc2916d0488115822bc28d16c7",
+  "current_shared_contract_can_express_reality": "YES",
+  "downstream_gate_status": "BLOCKED_NOT_RERUN",
+  "evidence_capture_alters_build_inputs": "NO",
+  "evidence_parser_version": "code-c-pyinstaller-build-evidence-v1",
+  "external_prerequisite_final_count": 0,
+  "external_prerequisite_materialized_count": 0,
+  "external_prerequisite_selected_count": 4,
+  "final_carchive_capture": "PASS",
+  "final_carchive_identity": {
+    "sha256": "1a319765900d1b6cde0743efa902a5d8cb0468335f118775bbf65565e9b2c805",
+    "size": 78881985,
+    "trailing_data_size": 0
+  },
+  "final_embedded_native_count": 49,
+  "formal_contract_status": "READY_FOR_NATIVE_V3_VERIFIER",
+  "hash_match_recovered_count": 0,
+  "m1_proves_selected_set_required": "SUPERSEDED_BY_ADR_007",
+  "mandatory_stop": "PHASE_STOP_AFTER_NATIVE",
+  "materialized_native_set": {
+    "count": 49,
+    "path": "parsed/pyinstaller-materialized-native-set.json",
+    "sha256": "b355dcda6c37d4793b0b615fc67b9bbd040d181ce93988a13c15a2f998eed202"
+  },
+  "missing_approved_native_count": 9,
+  "missing_classification": {
+    "M1_APPROVED_NOT_SELECTED": 9,
+    "M2_SELECTED_BUT_MISSING": 0,
+    "M3_RELOCATED_OR_RENAMED": 0,
+    "M4_GRAPH_ERROR": 0,
+    "UNRESOLVED": 0
+  },
+  "missing_items": [
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "_operand_flag_tests.cp313-win_amd64.pyd",
+      "final_present": false,
+      "package_name": "numpy",
+      "packaged_relative_path": "REVIEW_REQUIRED/_operand_flag_tests.cp313-win_amd64.pyd",
+      "purl": "pkg:pypi/numpy@2.3.5",
+      "pyinstaller_selected": false,
+      "relative_path": "numpy/_core/_operand_flag_tests.cp313-win_amd64.pyd",
+      "sha256": "28560c499d8c3086be7db1438e68824337c4c5e3df27d9e67101333d57d28857",
+      "source_package": "numpy",
+      "type": "pyd",
+      "wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "_rational_tests.cp313-win_amd64.pyd",
+      "final_present": false,
+      "package_name": "numpy",
+      "packaged_relative_path": "REVIEW_REQUIRED/_rational_tests.cp313-win_amd64.pyd",
+      "purl": "pkg:pypi/numpy@2.3.5",
+      "pyinstaller_selected": false,
+      "relative_path": "numpy/_core/_rational_tests.cp313-win_amd64.pyd",
+      "sha256": "1400cb24611534b26d9ae7efd326cf99ab35fd59eea6f42cda567f6be70ea9b0",
+      "source_package": "numpy",
+      "type": "pyd",
+      "wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "_simd.cp313-win_amd64.pyd",
+      "final_present": false,
+      "package_name": "numpy",
+      "packaged_relative_path": "REVIEW_REQUIRED/_simd.cp313-win_amd64.pyd",
+      "purl": "pkg:pypi/numpy@2.3.5",
+      "pyinstaller_selected": false,
+      "relative_path": "numpy/_core/_simd.cp313-win_amd64.pyd",
+      "sha256": "29c67076acce4e18996e318ea5b8ce62667e5135fcbeb47d0db57a0567e47e80",
+      "source_package": "numpy",
+      "type": "pyd",
+      "wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "_struct_ufunc_tests.cp313-win_amd64.pyd",
+      "final_present": false,
+      "package_name": "numpy",
+      "packaged_relative_path": "REVIEW_REQUIRED/_struct_ufunc_tests.cp313-win_amd64.pyd",
+      "purl": "pkg:pypi/numpy@2.3.5",
+      "pyinstaller_selected": false,
+      "relative_path": "numpy/_core/_struct_ufunc_tests.cp313-win_amd64.pyd",
+      "sha256": "fc8c492d7e590d6924bbabd5f6ecdf6a4e7226cf36a68c9b52d9ef686c766f27",
+      "source_package": "numpy",
+      "type": "pyd",
+      "wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "_umath_tests.cp313-win_amd64.pyd",
+      "final_present": false,
+      "package_name": "numpy",
+      "packaged_relative_path": "REVIEW_REQUIRED/_umath_tests.cp313-win_amd64.pyd",
+      "purl": "pkg:pypi/numpy@2.3.5",
+      "pyinstaller_selected": false,
+      "relative_path": "numpy/_core/_umath_tests.cp313-win_amd64.pyd",
+      "sha256": "575c613565707e94d1ffa975aa2a5f96ded5c02bbe35941206fa7fdbe687b732",
+      "source_package": "numpy",
+      "type": "pyd",
+      "wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "lapack_lite.cp313-win_amd64.pyd",
+      "final_present": false,
+      "package_name": "numpy",
+      "packaged_relative_path": "REVIEW_REQUIRED/lapack_lite.cp313-win_amd64.pyd",
+      "purl": "pkg:pypi/numpy@2.3.5",
+      "pyinstaller_selected": false,
+      "relative_path": "numpy/linalg/lapack_lite.cp313-win_amd64.pyd",
+      "sha256": "f035059e2922723770f8c60af58e054102a0fb09c0b3455ee23fd95e2bd28f2a",
+      "source_package": "numpy",
+      "type": "pyd",
+      "wheel_sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+    },
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "_imagingft.cp313-win_amd64.pyd",
+      "final_present": false,
+      "package_name": "pillow",
+      "packaged_relative_path": "REVIEW_REQUIRED/_imagingft.cp313-win_amd64.pyd",
+      "purl": "pkg:pypi/pillow@12.3.0",
+      "pyinstaller_selected": false,
+      "relative_path": "PIL/_imagingft.cp313-win_amd64.pyd",
+      "sha256": "e94673a471a0b6fd5e92e8b6cdbdfe16e2e91bcf5689e9e4c9b391ab43788d85",
+      "source_package": "pillow",
+      "type": "pyd",
+      "wheel_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+    },
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "_imagingmorph.cp313-win_amd64.pyd",
+      "final_present": false,
+      "package_name": "pillow",
+      "packaged_relative_path": "REVIEW_REQUIRED/_imagingmorph.cp313-win_amd64.pyd",
+      "purl": "pkg:pypi/pillow@12.3.0",
+      "pyinstaller_selected": false,
+      "relative_path": "PIL/_imagingmorph.cp313-win_amd64.pyd",
+      "sha256": "9aa1903b1c4ecd1269a2f7575a62f764492b5510b43fe477970ecc606595cfc5",
+      "source_package": "pillow",
+      "type": "pyd",
+      "wheel_sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8"
+    },
+    {
+      "classification": "M1_APPROVED_NOT_SELECTED",
+      "evidence": "COMPLETE_PKG_TOC_SELECTED_SET_HAS_NO_MATCHING_SOURCE_OWNER",
+      "filename": "_message.pyd",
+      "final_present": false,
+      "package_name": "protobuf",
+      "packaged_relative_path": "REVIEW_REQUIRED/_message.pyd",
+      "purl": "pkg:pypi/protobuf@7.36.0",
+      "pyinstaller_selected": false,
+      "relative_path": "google/_upb/_message.pyd",
+      "sha256": "e05ec368a9fe4d2b723128c8a6ba7b68b7cbbfb140ecf1ab0f68ba6b11cc60ca",
+      "source_package": "protobuf",
+      "type": "pyd",
+      "wheel_sha256": "1781cc1de61249b750848029bca452c0a8b7e990080316b9bbc2518b2117b488"
+    }
+  ],
+  "native_reconciliation_v3": {
+    "path": "native-v3/windows/native-reconciliation.v3.json",
+    "sha256": "f0d6b3a54bfba9bee98996aad1bbeac18c6da48db60720851904dc92fb2dc9f2"
+  },
+  "owner_of_next_fix": "CODE_C_NEXT_PHASE",
+  "packaging_selection_evidence": {
+    "path": "native-v3/windows/packaging-selection-evidence.v1.json",
+    "sha256": "84f8d5d7507867a45b7c427162be0ceece37d11a7e5aaa7d2588c903ea3a6f64"
+  },
+  "previous_candidate_worker_sha256": "fdccca4cffcd6d399f959d38d11969d8773380b99476c9b19dec4dfcdf2c7c91",
+  "pyinstaller_analysis_capture": "PASS",
+  "pyinstaller_materialized_native_count": 49,
+  "pyinstaller_selected_native_count": 53,
+  "pyinstaller_selected_set_capture": "COMPLETE",
+  "pyinstaller_staging_capture": "PASS",
+  "pyinstaller_toc_capture": "PASS",
+  "pyinstaller_version": "6.22.2",
+  "qicr_required": "NO",
+  "raw_evidence": {
+    "Analysis": {
+      "preserved_path": "raw/Analysis-00.toc",
+      "sha256": "e5c400a73f298f25c4cfe8ecb06ccb6220b8246d8e266496e80a33a30353ed4c",
+      "size": 107682,
+      "source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\python-supply-chain\\pyinstaller-build\\windows\\work\\media-worker\\Analysis-00.toc"
+    },
+    "BUILD_LOG": {
+      "preserved_path": "raw/pyinstaller-build.log",
+      "sha256": "8015e442bb7480b6770bebdfa8b86de233f30467191e627da5f209d09cc70ffd",
+      "size": 8341,
+      "source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\python-supply-chain\\pyinstaller-build\\windows\\raw\\pyinstaller-build.log"
+    },
+    "EXE": {
+      "preserved_path": "raw/EXE-00.toc",
+      "sha256": "8244927e03e4aad98308571322265308ddc0ef04914822f9bfd50c656b0c3397",
+      "size": 16206,
+      "source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\python-supply-chain\\pyinstaller-build\\windows\\work\\media-worker\\EXE-00.toc"
+    },
+    "PKG": {
+      "preserved_path": "raw/PKG-00.toc",
+      "sha256": "47daaad5ebcfe91eabe9606d5c0472821e5200cfb951f59097adbcddc21efafa",
+      "size": 14441,
+      "source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\python-supply-chain\\pyinstaller-build\\windows\\work\\media-worker\\PKG-00.toc"
+    },
+    "PYZ": {
+      "preserved_path": "raw/PYZ-00.toc",
+      "sha256": "b2f983f24288d24c68093a64f2dbc76477d8ab0855d76d5ab61ff07ecda3964c",
+      "size": 72735,
+      "source_path": "D:\\a\\sbsb\\sbsb\\artifacts\\python-supply-chain\\pyinstaller-build\\windows\\work\\media-worker\\PYZ-00.toc"
+    },
+    "SPEC": {
+      "preserved_path": "raw/media-worker.spec",
+      "sha256": "1c12ea2d615bb7403e163b0615ca00bd48996adaf0ebb04ff522d9833c0ccb4a",
+      "size": 2568,
+      "source_path": "D:\\a\\sbsb\\sbsb\\sidecars\\media-worker\\media-worker.spec"
+    }
+  },
+  "schema_name": "NATIVE_RECONCILIATION_DIAGNOSTIC",
+  "schema_version": "2",
+  "selected_final_identity_complete": true,
+  "selected_native_set": {
+    "count": 49,
+    "path": "parsed/pyinstaller-selected-native-set.json",
+    "sha256": "b38bd03d81b39665d004e5bec386573c10dc26119297d1adb7a67660d00b3395"
+  },
+  "status": "PASS",
+  "superseded_gate_semantics": "ADR-007_PACKAGING_SELECTED_NATIVE_CONTRACT",
+  "symlink_metadata_count": 0,
+  "symlink_plan_final_match": true,
+  "unknown_classification": {
+    "U1_WHEEL_PATH_MAPPING": 0,
+    "U2_TOOLCHAIN_OWNED": 0,
+    "U3_BUNDLED_THIRD_PARTY": 0,
+    "U4_APPROVED_SYSTEM_BUILD_RUNTIME": 0,
+    "U5_TRULY_UNAPPROVED": 0,
+    "UNRESOLVED": 0
+  },
+  "unknown_embedded_count": 0,
+  "unknown_items": []
+}

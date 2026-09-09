@@ -1,0 +1,38 @@
+{
+  "schema_version": "code-c-small-real-baseline-v1",
+  "worker_sha256": "e56b32c1d547df0391e40a656230cdb2924b8ba6fb94f1b062632c5b1ca05d99",
+  "corpus_assets": 39,
+  "filenames_used_for_retrieval": false,
+  "status": "SANITY_ONLY_NOT_FORMAL_GATE",
+  "queries": [
+    { "query": "牛", "top1": "PASS" },
+    { "query": "牛吃料", "top1": "FAIL" },
+    { "query": "牛喝水", "top1": "PASS" },
+    { "query": "cattle eating feed", "top1": "PASS" },
+    { "query": "cattle drinking water", "top1": "PASS" },
+    { "query": "猪", "top1": "PASS" },
+    { "query": "猪吃料", "top1": "FAIL" },
+    { "query": "猪喝水", "top1": "PASS" },
+    { "query": "猪打疫苗", "top1": "FAIL" },
+    { "query": "羊", "top1": "PASS" },
+    { "query": "羊吃料", "top1": "FAIL" },
+    { "query": "羊喝水", "top1": "FAIL" },
+    { "query": "清理猪圈", "top1": "FAIL" },
+    { "query": "养殖场", "top1": "PASS" },
+    { "query": "兽药产品", "top1": "PASS" },
+    { "query": "产品包装", "top1": "PASS" },
+    { "query": "产品", "top1": "PASS" },
+    { "query": "牛在料槽前吃饲料", "top1": "PASS" }
+  ],
+  "top1_pass_count": 12,
+  "top1_total": 18,
+  "top1_accuracy": 0.667,
+  "product_assets": [
+    "437abf73c1b3471b987172b64ce09a19.mp4",
+    "69b5f841ba13510001a562ae3cca8995.mp4"
+  ],
+  "notes": [
+    "488709682.mp4 is manually identified as 猪喝水 and was not used as a retrieval key.",
+    "This baseline is a fixed sanity record, not a formal Golden Gate."
+  ]
+}

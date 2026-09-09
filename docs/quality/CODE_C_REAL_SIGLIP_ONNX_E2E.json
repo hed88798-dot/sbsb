@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "status": "PASS",
+  "source_fixture": "repository-generated synthetic MJPG AVI",
+  "index_stages": ["PROBE", "SHOT_DETECTION", "EMBEDDING", "EMBEDDING", "MANIFEST"],
+  "shot_count": 2,
+  "sqlite_embedding_truth_rows": 2,
+  "cache_generation_id": "generation_real_siglip_e2e",
+  "query": "veterinary medicine bottle for livestock",
+  "top_candidate": {
+    "schema_version": "1.0",
+    "asset_id": "asset_real_siglip_fixture",
+    "shot_id": "shot_d7c1ebf2-8d7c-53b8-b6a3-0b995a3da060",
+    "start_ms": 4000,
+    "end_ms": 8000,
+    "revision": 1,
+    "semantic_score": 0.13380347192287445,
+    "descriptor": {
+      "schema_version": "1.0",
+      "shot_id": "shot_d7c1ebf2-8d7c-53b8-b6a3-0b995a3da060",
+      "species": "unknown",
+      "scene": "unknown",
+      "action": "unknown",
+      "health_state": "unknown",
+      "people_present": null,
+      "product_present": null,
+      "shot_type": "unknown",
+      "description": "",
+      "quality": {
+        "score": 0.8950972900390626,
+        "blur": 0.16111572265624996,
+        "dark": 0,
+        "overexposed": 0.0814453125
+      },
+      "embedding_ref": "embedding_c76f2dad-05d4-4f65-9f20-4c1b9829db39",
+      "industry_metadata": { "veterinary": {} },
+      "confidence": {},
+      "provenance": { "rules_version": "visual-descriptor-rules-v1", "vlm": "OFF" },
+      "evidence": {
+        "motion_sensitive_guard": {
+          "value": null,
+          "confidence": 0,
+          "provenance": "static-keyframes-only",
+          "temporal_evidence": "INSUFFICIENT"
+        }
+      }
+    }
+  }
+}

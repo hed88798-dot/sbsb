@@ -1,0 +1,41 @@
+{
+  "schema_version": "code-d-read-only-code-c-candidate-smoke-v1",
+  "source": {
+    "benchmark": "Code C Golden Benchmark V3",
+    "query_id": "GQ006_SHORT_ZH",
+    "query": "猪喝水",
+    "source_file": "benchmark-ranked-top5-v3.csv",
+    "source_sha256": "f14f0b1b8d32517c42b56aa7d9746a9bec8ccf7f061be07ee891e9e6405053e9",
+    "derivation": "Rows marked relevant=1 only; the non-relevant rank-5 row is intentionally excluded."
+  },
+  "eligible_candidates": [
+    {
+      "asset_id": "v2_asset_084",
+      "shot_id": "shot_c66c5bd2-25c8-562e-ac29-3c88c847f8c6",
+      "semantic_score": 0.151116475462914,
+      "start_ms": 0,
+      "end_ms": 5167
+    },
+    {
+      "asset_id": "v2_asset_085",
+      "shot_id": "shot_a69359d9-131a-5741-b0c6-48c5f110cb46",
+      "semantic_score": 0.147446319460869,
+      "start_ms": 0,
+      "end_ms": 5167
+    },
+    {
+      "asset_id": "v2_asset_088",
+      "shot_id": "shot_880d64c8-e2df-5066-b665-cc04b3daa9ff",
+      "semantic_score": 0.143393337726593,
+      "start_ms": 0,
+      "end_ms": 5167
+    },
+    {
+      "asset_id": "v2_asset_086",
+      "shot_id": "shot_e8e2a932-6337-5e3d-aaae-1fe562ae1da4",
+      "semantic_score": 0.143366739153862,
+      "start_ms": 0,
+      "end_ms": 5167
+    }
+  ]
+}

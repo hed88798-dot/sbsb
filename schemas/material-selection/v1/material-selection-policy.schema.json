@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/material-selection/v1/material-selection-policy.schema.json",
+  "title": "MaterialSelectionPolicyV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "policy_id",
+    "policy_version",
+    "same_video_exact_shot_repeat",
+    "same_batch_shot_repeat",
+    "same_batch_asset_repeat",
+    "recent_use",
+    "high_frequency_asset",
+    "semantic_rank",
+    "scarcity_degradation",
+    "preference_order",
+    "tie_breaker"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "policy_id": { "const": "material-selection-policy-v1" },
+    "policy_version": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "same_video_exact_shot_repeat": { "const": "FORBIDDEN" },
+    "same_batch_shot_repeat": { "const": "AVOID" },
+    "same_batch_asset_repeat": { "const": "PENALIZE" },
+    "recent_use": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "window_size"],
+      "properties": {
+        "mode": { "const": "PENALIZE" },
+        "window_size": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "high_frequency_asset": { "const": "PENALIZE" },
+    "semantic_rank": { "const": "PREFER_HIGHER" },
+    "scarcity_degradation": { "const": "ENABLED" },
+    "preference_order": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ANIMAL", "PRODUCT"],
+      "properties": {
+        "ANIMAL": { "$ref": "#/$defs/preferences" },
+        "PRODUCT": { "$ref": "#/$defs/preferences" }
+      }
+    },
+    "tie_breaker": {
+      "type": "array",
+      "prefixItems": [{ "const": "asset_id" }, { "const": "shot_id" }],
+      "minItems": 2,
+      "maxItems": 2
+    }
+  },
+  "$defs": {
+    "preferences": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "enum": [
+          "FRESHNESS",
+          "BATCH_SHOT_USAGE",
+          "BATCH_ASSET_USAGE",
+          "RECENCY",
+          "TOTAL_SHOT_USAGE",
+          "TOTAL_ASSET_USAGE",
+          "SEMANTIC_RANK",
+          "SEMANTIC_SCORE"
+        ]
+      }
+    }
+  }
+}

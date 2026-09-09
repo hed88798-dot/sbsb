@@ -7,8 +7,44 @@ release/
 coverage/
 pnpm-lock.yaml
 
-# Immutable compliance authority; its exact bytes are protected by a SHA-256 sidecar.
+# Exact immutable historical evidence/approved subjects; hashes are verified before formatting.
+compliance/license-reconciliations/post-f-license-2026-09-02/evidence/linux/candidates/code-c-linux-runtime.v3.json
+compliance/license-reconciliations/post-f-license-2026-09-02/evidence/linux/candidates/code-c-linux-worker-build.v3.json
+compliance/license-reconciliations/post-f-license-2026-09-02/evidence/windows/candidates/code-c-windows-runtime.v3.json
+compliance/license-reconciliations/post-f-license-2026-09-02/evidence/windows/candidates/code-c-windows-worker-build.v3.json
+compliance/license-reconciliations/post-f-license-current-head-76529014/evidence/linux/candidates/code-c-linux-runtime.v3.json
+compliance/license-reconciliations/post-f-license-current-head-76529014/evidence/linux/candidates/code-c-linux-worker-build.v3.json
+compliance/license-reconciliations/post-f-license-current-head-76529014/evidence/windows/candidates/code-c-windows-runtime.v3.json
+compliance/license-reconciliations/post-f-license-current-head-76529014/evidence/windows/candidates/code-c-windows-worker-build.v3.json
+compliance/python-artifacts/linux/runtime.v3.json
+compliance/python-artifacts/linux/worker-build.v3.json
+compliance/python-artifacts/windows/runtime.v3.json
+compliance/python-artifacts/windows/worker-build.v3.json
+compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-2026-09-03/advisories/CVE-2026-15310.json
+compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-2026-09-03/advisories/CVE-2026-15806.json
+compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-2026-09-03/advisories/CVE-2026-3087.json
+compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-2026-09-03/STAGE_A_ADVISORY_SNAPSHOT.json
+compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-current-head-76529014/advisories/CVE-2026-15310.json
+compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-current-head-76529014/advisories/CVE-2026-15806.json
+compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-current-head-76529014/advisories/CVE-2026-3087.json
+compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-current-head-76529014/STAGE_A_ADVISORY_SNAPSHOT.json
+compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-current-head-76529014/worker-inspection/linux-worker-onefile.json
+compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-current-head-76529014/worker-inspection/windows-worker-onefile.json
+compliance/vulnerability-reviews/cpython-3.13.15-stage-b-reachability-2026-09-03/ARCHIVE_API_SENTINEL_POSITIVE_CONTROL.json
+compliance/vulnerability-reviews/cpython-3.13.15-stage-b-reachability-2026-09-03/CALLSITE_INVENTORY.json
+compliance/vulnerability-reviews/cpython-3.13.15-stage-b-reachability-2026-09-03/RUNTIME_NEGATIVE_TESTS.json
+docs/performance/CODE_C_REAL_CORPUS_V3_CLOSEOUT.md
+
+# Exact historical vulnerability authority; its hash is verified before formatting.
 compliance/vulnerability-reviews/cpython-3.13.15-final-vulnerability-review-current-candidate/FINAL_VULNERABILITY_REVIEW_RECORD_V2.json
 
-# V3 benchmark evidence is preserved byte-for-byte and verified by SHA-256.
-compliance/functional-acceptance/2026-09-09/v3/evidence/
+# Exact V3 benchmark evidence; hashes are verified before formatting.
+compliance/functional-acceptance/2026-09-09/v3/evidence/inputs/GOLDEN_BENCHMARK_V3_README.txt
+compliance/functional-acceptance/2026-09-09/v3/evidence/inputs/benchmark-queries-v1.csv
+compliance/functional-acceptance/2026-09-09/v3/evidence/inputs/corpus-map-v3.csv
+compliance/functional-acceptance/2026-09-09/v3/evidence/inputs/ground-truth-v1.csv
+compliance/functional-acceptance/2026-09-09/v3/evidence/inputs/run-golden-benchmark-v3.ps1
+compliance/functional-acceptance/2026-09-09/v3/evidence/outputs/benchmark-ranked-top5-v3.csv
+compliance/functional-acceptance/2026-09-09/v3/evidence/outputs/benchmark-summary-v3.csv
+compliance/functional-acceptance/2026-09-09/v3/evidence/outputs/run-manifest-v3.json
+compliance/functional-acceptance/2026-09-09/v3/evidence/outputs/variant-summary-v3.csv
