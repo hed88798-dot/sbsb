@@ -2,17 +2,17 @@
 
 ## Fixed toolchain for v0.1
 
-| Component                             |                                                                                         Version |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------: |
-| Node.js                               |                                                                                     24.19.0 x64 |
-| pnpm                                  |                                                                                         11.19.0 |
-| Electron                              |                                                                                          43.4.1 |
-| electron-builder                      |                                                                                         26.15.3 |
-| better-sqlite3                        |                                                                                          13.0.3 |
-| bundled SQLite                        |                                                                                          3.53.4 |
-| Python for sidecar/compliance tooling | 3.12.10 required (`.python-version`; final CPython 3.12 release with Windows binary installers) |
+| Component                             |                                                                                        Version |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------: |
+| Node.js                               |                                                                                    24.19.0 x64 |
+| pnpm                                  |                                                                                        11.19.0 |
+| Electron                              |                                                                                         43.4.1 |
+| electron-builder                      |                                                                                        26.15.3 |
+| better-sqlite3                        |                                                                                         13.0.3 |
+| bundled SQLite                        |                                                                                         3.53.4 |
+| Python for sidecar/compliance tooling | 3.13.15 required (`.python-version`; current maintained CPython with Windows binary artifacts) |
 
-Use Windows 10 22H2 or Windows 11 x64, Git for Windows, Visual Studio Build Tools with the Desktop C++ workload, and Python 3.12 x64. Do not use a network share for the repository, pnpm store, application database, or WAL files.
+Use Windows 10 22H2 or Windows 11 x64, Git for Windows, Visual Studio Build Tools with the Desktop C++ workload, and Python 3.13.15 x64. Do not use a network share for the repository, pnpm store, application database, or WAL files.
 
 ## Install and verify
 

@@ -13,6 +13,35 @@ def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
+def license_text_signatures(value: bytes) -> list[str]:
+    """Return conservative SPDX facts found in the exact license-file bytes.
+
+    These are machine suggestions only.  The bytes and their SHA-256 remain the
+    authority; a reviewer or the pinned policy still makes the final decision.
+    """
+    text = value.decode("utf-8", errors="replace").lower()
+    signatures: list[str] = []
+    if (
+        "redistribution and use in source and binary forms" in text
+        and "neither the name" in text
+        and "all rights reserved" in text
+    ):
+        signatures.append("BSD-3-Clause")
+    if (
+        "permission is hereby granted, free of charge" in text
+        and "the software" in text
+        and "without warranty" in text
+    ):
+        signatures.append("MIT")
+    if "mozilla public license" in text and "version 2.0" in text:
+        signatures.append("MPL-2.0")
+    if "gnu general public license" in text and "version 2" in text:
+        signatures.append("GPL-2.0-or-later")
+    if "apache license" in text and "version 2.0" in text:
+        signatures.append("Apache-2.0")
+    return sorted(set(signatures))
+
+
 def native_type(path: str) -> str | None:
     lower = path.lower()
     if lower.endswith(".pyd"):
@@ -87,6 +116,7 @@ def inspect(path: Path) -> dict[str, object]:
                         "kind": kind,
                         "sha256": sha256_bytes(value),
                         "size": len(value),
+                        "spdx_signatures": license_text_signatures(value),
                     }
                 )
         native_entries = []

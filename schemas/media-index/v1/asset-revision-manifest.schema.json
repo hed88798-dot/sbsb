@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/media-index/v1/asset-revision-manifest.schema.json",
+  "title": "AssetRevisionManifestV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "asset_id",
+    "revision",
+    "source_path",
+    "file_hash",
+    "size_bytes",
+    "mtime_ns",
+    "duration_ms",
+    "width",
+    "height",
+    "rotation",
+    "fps",
+    "index_signature",
+    "index_signature_hash",
+    "generation_key_hash",
+    "artifact_root",
+    "shots",
+    "worker_version",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "asset_id": { "type": "string", "minLength": 1 },
+    "revision": { "type": "integer", "minimum": 1 },
+    "source_path": { "type": "string", "minLength": 1 },
+    "file_hash": { "$ref": "#/$defs/sha256" },
+    "size_bytes": { "type": "integer", "minimum": 0 },
+    "mtime_ns": { "type": "string", "pattern": "^[0-9]+$" },
+    "duration_ms": { "type": "integer", "minimum": 1 },
+    "width": { "type": "integer", "minimum": 1 },
+    "height": { "type": "integer", "minimum": 1 },
+    "rotation": { "type": "integer" },
+    "fps": { "type": "number", "exclusiveMinimum": 0 },
+    "index_signature": { "$ref": "#/$defs/signature" },
+    "index_signature_hash": { "$ref": "#/$defs/sha256" },
+    "generation_key_hash": { "$ref": "#/$defs/sha256" },
+    "artifact_root": { "type": "string", "minLength": 1 },
+    "shots": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/shot" } },
+    "worker_version": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score", "blur", "dark", "overexposed"],
+      "properties": {
+        "score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "blur": { "type": "number", "minimum": 0, "maximum": 1 },
+        "dark": { "type": "number", "minimum": 0, "maximum": 1 },
+        "overexposed": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index_schema_version",
+        "index_signature_version",
+        "embedding_model",
+        "embedding_model_version",
+        "embedding_preprocess_version",
+        "vlm_model",
+        "vlm_model_version",
+        "vlm_prompt_version",
+        "shot_detector",
+        "shot_detector_version",
+        "shot_detector_params_hash",
+        "keyframe_policy_version",
+        "file_hash"
+      ],
+      "properties": {
+        "index_schema_version": { "const": "1.0" },
+        "index_signature_version": { "const": "1.0" },
+        "embedding_model": { "type": "string", "minLength": 1 },
+        "embedding_model_version": { "type": "string", "minLength": 1 },
+        "embedding_preprocess_version": { "type": "string", "minLength": 1 },
+        "vlm_model": { "type": ["string", "null"] },
+        "vlm_model_version": { "type": ["string", "null"] },
+        "vlm_prompt_version": { "type": ["string", "null"] },
+        "shot_detector": { "type": "string", "minLength": 1 },
+        "shot_detector_version": { "type": "string", "minLength": 1 },
+        "shot_detector_params_hash": { "$ref": "#/$defs/sha256" },
+        "keyframe_policy_version": { "type": "string", "minLength": 1 },
+        "file_hash": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "keyframe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["keyframe_id", "role", "timestamp_ms", "relative_path", "sha256", "quality"],
+      "properties": {
+        "keyframe_id": { "type": "string", "minLength": 1 },
+        "role": { "enum": ["SAFE_EARLY", "MIDPOINT", "BEST_QUALITY"] },
+        "timestamp_ms": { "type": "integer", "minimum": 0 },
+        "relative_path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "quality": { "$ref": "#/$defs/quality" }
+      }
+    },
+    "embedding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "embedding_id",
+        "model_id",
+        "model_version",
+        "preprocess_version",
+        "dimension",
+        "dtype",
+        "normalized",
+        "relative_path",
+        "sha256"
+      ],
+      "properties": {
+        "embedding_id": { "type": "string", "minLength": 1 },
+        "model_id": { "const": "google/siglip2-base-patch32-256" },
+        "model_version": { "type": "string", "minLength": 1 },
+        "preprocess_version": { "type": "string", "minLength": 1 },
+        "dimension": { "type": "integer", "minimum": 1 },
+        "dtype": { "const": "float16" },
+        "normalized": { "const": true },
+        "relative_path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "descriptor": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "shot_id",
+        "species",
+        "scene",
+        "action",
+        "health_state",
+        "people_present",
+        "product_present",
+        "shot_type",
+        "description",
+        "quality",
+        "embedding_ref",
+        "industry_metadata",
+        "confidence",
+        "provenance",
+        "evidence"
+      ],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "shot_id": { "type": "string", "minLength": 1 },
+        "species": {},
+        "scene": {},
+        "action": {},
+        "health_state": {},
+        "people_present": { "type": ["boolean", "null"] },
+        "product_present": { "type": ["boolean", "null"] },
+        "shot_type": {},
+        "description": { "type": "string" },
+        "quality": { "$ref": "#/$defs/quality" },
+        "embedding_ref": { "type": "string", "minLength": 1 },
+        "industry_metadata": { "type": "object" },
+        "confidence": { "type": "object" },
+        "provenance": { "type": "object" },
+        "evidence": { "type": "object" }
+      }
+    },
+    "shot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "shot_id",
+        "start_ms",
+        "end_ms",
+        "keyframes",
+        "quality",
+        "descriptor",
+        "embedding"
+      ],
+      "properties": {
+        "shot_id": { "type": "string", "minLength": 1 },
+        "start_ms": { "type": "integer", "minimum": 0 },
+        "end_ms": { "type": "integer", "minimum": 1 },
+        "keyframes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": { "$ref": "#/$defs/keyframe" }
+        },
+        "quality": { "$ref": "#/$defs/quality" },
+        "descriptor": { "$ref": "#/$defs/descriptor" },
+        "embedding": { "$ref": "#/$defs/embedding" }
+      }
+    }
+  }
+}

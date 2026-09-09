@@ -3,7 +3,7 @@ import { accessSync, constants } from 'node:fs';
 import { delimiter, extname, isAbsolute, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const PYTHON_312_PATTERN = /^Python 3\.12\.10$/;
+const APPROVED_PYTHON_PATTERN = /^Python 3\.13\.15$/;
 
 function executableExtensions(platform: NodeJS.Platform, pathExt?: string): string[] {
   if (platform !== 'win32') return [''];
@@ -55,7 +55,7 @@ export function readPythonVersion(executable: string): string | undefined {
 }
 
 export function isSupportedPythonVersion(version: string): boolean {
-  return PYTHON_312_PATTERN.test(version.trim());
+  return APPROVED_PYTHON_PATTERN.test(version.trim());
 }
 
 export function resolvePythonExecutable(options?: {
@@ -78,7 +78,7 @@ export function resolvePythonExecutable(options?: {
     if (version && isSupportedPythonVersion(version)) return executable;
   }
 
-  throw new Error('PYTHON_RUNTIME_NOT_FOUND: Python 3.12.10 is required');
+  throw new Error('PYTHON_RUNTIME_NOT_FOUND: Python 3.13.15 is required');
 }
 
 export function resolveMockSidecarScript(): string {

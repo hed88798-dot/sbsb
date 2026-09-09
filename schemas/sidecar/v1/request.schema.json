@@ -9,7 +9,18 @@
     "type": { "const": "request" },
     "protocol_version": { "const": "1.0" },
     "request_id": { "type": "string", "minLength": 1 },
-    "method": { "enum": ["hello", "ping", "echo", "progress", "cancel", "error"] },
+    "method": {
+      "enum": [
+        "hello",
+        "ping",
+        "echo",
+        "progress",
+        "cancel",
+        "error",
+        "media.index.asset.v1",
+        "media.search.exact.v1"
+      ]
+    },
     "payload": { "type": "object" }
   }
 }

@@ -253,11 +253,22 @@ export interface DesktopApiV1 {
 }
 
 export const SIDECAR_PROTOCOL_VERSION_V1 = '1.0' as const;
+export const SHA256_PATTERN = /^[a-f0-9]{64}$/u;
+export const mediaWorkerMethodV1Schema = z.enum([
+  'hello',
+  'ping',
+  'echo',
+  'progress',
+  'cancel',
+  'error',
+  'media.index.asset.v1',
+  'media.search.exact.v1',
+]);
 export const sidecarRequestV1Schema = z.object({
   type: z.literal('request'),
   protocol_version: z.literal(SIDECAR_PROTOCOL_VERSION_V1),
   request_id: z.string().min(1),
-  method: z.enum(['hello', 'ping', 'echo', 'progress', 'cancel', 'error']),
+  method: mediaWorkerMethodV1Schema,
   payload: z.record(z.string(), z.unknown()).default({}),
 });
 export type SidecarRequestV1 = z.infer<typeof sidecarRequestV1Schema>;
@@ -270,6 +281,202 @@ export const sidecarEventV1Schema = z.object({
   error: z.object({ code: z.string(), message: z.string(), retryable: z.boolean() }).optional(),
 });
 export type SidecarEventV1 = z.infer<typeof sidecarEventV1Schema>;
+
+export const MEDIA_INDEX_SCHEMA_VERSION_V1 = '1.0' as const;
+export const INDEX_SIGNATURE_VERSION_V1 = '1.0' as const;
+export const KEYFRAME_POLICY_VERSION_V1 = 'safe-mid-best-v1' as const;
+
+const sha256Schema = z.string().regex(SHA256_PATTERN);
+const unknownableStringArraySchema = z.union([
+  z.literal('unknown'),
+  z.array(z.string().min(1)).min(1),
+]);
+const unknownableStringSchema = z.union([z.literal('unknown'), z.string().min(1)]);
+
+export const mediaQualityV1Schema = z.object({
+  score: z.number().min(0).max(1),
+  blur: z.number().min(0).max(1),
+  dark: z.number().min(0).max(1),
+  overexposed: z.number().min(0).max(1),
+});
+export type MediaQualityV1 = z.infer<typeof mediaQualityV1Schema>;
+
+export const visualEvidenceV1Schema = z.object({
+  value: z.union([z.string(), z.array(z.string()), z.boolean(), z.null()]),
+  confidence: z.number().min(0).max(1),
+  provenance: z.string().min(1),
+  temporal_evidence: z.enum(['SUFFICIENT', 'INSUFFICIENT', 'NOT_REQUIRED']),
+});
+
+export const visualDescriptorV1Schema = z.object({
+  schema_version: z.literal(MEDIA_INDEX_SCHEMA_VERSION_V1),
+  shot_id: z.string().min(1),
+  species: unknownableStringArraySchema,
+  scene: unknownableStringSchema,
+  action: unknownableStringArraySchema,
+  health_state: unknownableStringSchema,
+  people_present: z.boolean().nullable(),
+  product_present: z.boolean().nullable(),
+  shot_type: unknownableStringSchema,
+  description: z.string(),
+  quality: mediaQualityV1Schema,
+  embedding_ref: z.string().min(1),
+  industry_metadata: z.record(z.string(), z.unknown()),
+  confidence: z.record(z.string(), z.number().min(0).max(1)),
+  provenance: z.record(z.string(), z.unknown()),
+  evidence: z.record(z.string(), visualEvidenceV1Schema),
+});
+export type VisualDescriptorV1 = z.infer<typeof visualDescriptorV1Schema>;
+
+export const indexSignatureInputV1Schema = z.object({
+  index_schema_version: z.literal(MEDIA_INDEX_SCHEMA_VERSION_V1),
+  index_signature_version: z.literal(INDEX_SIGNATURE_VERSION_V1),
+  embedding_model: z.string().min(1),
+  embedding_model_version: z.string().min(1),
+  embedding_preprocess_version: z.string().min(1),
+  vlm_model: z.string().min(1).nullable(),
+  vlm_model_version: z.string().min(1).nullable(),
+  vlm_prompt_version: z.string().min(1).nullable(),
+  shot_detector: z.string().min(1),
+  shot_detector_version: z.string().min(1),
+  shot_detector_params_hash: sha256Schema,
+  keyframe_policy_version: z.string().min(1),
+  file_hash: sha256Schema,
+});
+export type IndexSignatureInputV1 = z.infer<typeof indexSignatureInputV1Schema>;
+
+export const keyframeArtifactV1Schema = z.object({
+  keyframe_id: z.string().min(1),
+  role: z.enum(['SAFE_EARLY', 'MIDPOINT', 'BEST_QUALITY']),
+  timestamp_ms: z.number().int().nonnegative(),
+  relative_path: z.string().min(1),
+  sha256: sha256Schema,
+  quality: mediaQualityV1Schema,
+});
+
+export const embeddingArtifactV1Schema = z.object({
+  embedding_id: z.string().min(1),
+  model_id: z.literal('google/siglip2-base-patch32-256'),
+  model_version: z.string().min(1),
+  preprocess_version: z.string().min(1),
+  dimension: z.number().int().positive(),
+  dtype: z.literal('float16'),
+  normalized: z.literal(true),
+  relative_path: z.string().min(1),
+  sha256: sha256Schema,
+});
+
+export const shotManifestV1Schema = z
+  .object({
+    shot_id: z.string().min(1),
+    start_ms: z.number().int().nonnegative(),
+    end_ms: z.number().int().positive(),
+    keyframes: z.array(keyframeArtifactV1Schema).min(1).max(3),
+    quality: mediaQualityV1Schema,
+    descriptor: visualDescriptorV1Schema,
+    embedding: embeddingArtifactV1Schema,
+  })
+  .refine((value) => value.start_ms < value.end_ms, {
+    message: 'shot start_ms must be before end_ms',
+  });
+export type ShotManifestV1 = z.infer<typeof shotManifestV1Schema>;
+
+export const assetRevisionManifestV1Schema = z.object({
+  schema_version: z.literal(MEDIA_INDEX_SCHEMA_VERSION_V1),
+  asset_id: z.string().min(1),
+  revision: z.number().int().positive(),
+  source_path: z.string().min(1),
+  file_hash: sha256Schema,
+  size_bytes: z.number().int().nonnegative(),
+  mtime_ns: z.string().regex(/^\d+$/u),
+  duration_ms: z.number().int().positive(),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  rotation: z.number().int(),
+  fps: z.number().positive(),
+  index_signature: indexSignatureInputV1Schema,
+  index_signature_hash: sha256Schema,
+  generation_key_hash: sha256Schema,
+  artifact_root: z.string().min(1),
+  shots: z.array(shotManifestV1Schema).min(1),
+  worker_version: z.string().min(1),
+  created_at: z.string().datetime(),
+});
+export type AssetRevisionManifestV1 = z.infer<typeof assetRevisionManifestV1Schema>;
+
+export const mediaArtifactResultV1Schema = z.object({
+  manifest_path: z.string().min(1),
+  manifest_sha256: sha256Schema,
+  index_signature_hash: sha256Schema,
+});
+export type MediaArtifactResultV1 = z.infer<typeof mediaArtifactResultV1Schema>;
+
+export const shotSearchFiltersV1Schema = z.object({
+  species: z.array(z.string().min(1)).optional(),
+  scene: z.array(z.string().min(1)).optional(),
+  people_present: z.boolean().optional(),
+  product_present: z.boolean().optional(),
+  minimum_quality: z.number().min(0).max(1).optional(),
+  minimum_duration_ms: z.number().int().positive().optional(),
+  maximum_duration_ms: z.number().int().positive().optional(),
+});
+export type ShotSearchFiltersV1 = z.infer<typeof shotSearchFiltersV1Schema>;
+export const shotSearchRequestV1Schema = z.object({
+  schema_version: z.literal(MEDIA_INDEX_SCHEMA_VERSION_V1),
+  query_text: z.string().trim().min(1).max(2000),
+  filters: shotSearchFiltersV1Schema.default({}),
+  top_k: z.number().int().min(1).max(200),
+  index_signature_hash: sha256Schema,
+});
+export type ShotSearchRequestV1 = z.infer<typeof shotSearchRequestV1Schema>;
+
+export const shotSearchCandidateV1Schema = z.object({
+  schema_version: z.literal(MEDIA_INDEX_SCHEMA_VERSION_V1),
+  asset_id: z.string().min(1),
+  shot_id: z.string().min(1),
+  start_ms: z.number().int().nonnegative(),
+  end_ms: z.number().int().positive(),
+  revision: z.number().int().positive(),
+  semantic_score: z.number(),
+  descriptor: visualDescriptorV1Schema,
+});
+export type ShotSearchCandidateV1 = z.infer<typeof shotSearchCandidateV1Schema>;
+
+export const mediaIndexStageV1Schema = z.enum([
+  'INVENTORY',
+  'HASH',
+  'PROBE',
+  'SHOT_DETECTION',
+  'KEYFRAMES',
+  'QUALITY',
+  'EMBEDDING',
+  'DESCRIPTOR',
+  'MANIFEST',
+  'COMMIT',
+  'CACHE',
+]);
+export const mediaIndexJobV1Schema = z.object({
+  schema_version: z.literal(MEDIA_INDEX_SCHEMA_VERSION_V1),
+  job_id: z.string().min(1),
+  source_folder_id: z.string().min(1).nullable(),
+  profile: z.enum(['POWER_SAVER', 'BALANCED', 'FAST']),
+  checkpoint: z.record(z.string(), z.unknown()),
+  created_at: z.string().datetime(),
+});
+export type MediaIndexJobV1 = z.infer<typeof mediaIndexJobV1Schema>;
+
+export const mediaIndexJobStepV1Schema = z.object({
+  schema_version: z.literal(MEDIA_INDEX_SCHEMA_VERSION_V1),
+  job_id: z.string().min(1),
+  asset_id: z.string().min(1),
+  revision: z.number().int().positive(),
+  stage: mediaIndexStageV1Schema,
+  state: jobStateV1Schema,
+  checkpoint: z.record(z.string(), z.unknown()),
+  error_code: z.string().min(1).nullable(),
+  updated_at: z.string().datetime(),
+});
+export type MediaIndexJobStepV1 = z.infer<typeof mediaIndexJobStepV1Schema>;
 
 export const textGatewayRequestV1Schema = z.object({
   schema_version: schemaVersionV1,

@@ -46,6 +46,11 @@ const rules = [
     forbidden: [/@app\/domain-digital-human/, /domain-digital-human/],
     message: 'domain-auto-edit 不得依赖 domain-digital-human',
   },
+  {
+    within: 'sidecars/media-worker',
+    forbidden: [/better-sqlite3/, /\bsqlite3\b/, /\bFastAPI\b/, /\bFlask\b/],
+    message: 'media-worker 不得写业务 SQLite 或开放 localhost HTTP 服务',
+  },
 ];
 
 const failures = [];

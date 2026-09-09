@@ -1,0 +1,40 @@
+{
+  "schema_version": "2",
+  "context_id": "code-c-context-76529014f47945fc2916d0488115822b-linux",
+  "context_sha256": "ace1dbbf7f61498ad4b552258d60e8a35010f232afbe8182806e4d7c26e5eae0",
+  "created_before_build": true,
+  "status": "FROZEN_BEFORE_BUILD",
+  "source_identity": {
+    "repository_id": "hed88798-dot/sbsb",
+    "commit_sha": "76529014f47945fc2916d0488115822bc28d16c7",
+    "tree_sha": "42c17d980331bcb39c0434e00e19875989f8853b",
+    "submodule_state": "NONE",
+    "untracked_build_input_count": 0
+  },
+  "build_recipe": {
+    "recipe_id": "code-c-recipe-76529014f47945fc2916d0488115822b-linux",
+    "recipe_sha256": "8d76acdd6f47268152139313b95c9c4057850f02156899db1dd4db32888d2c18"
+  },
+  "environment_descriptor": {
+    "descriptor_id": "code-c-environment-76529014f47945fc2916d0488115822b-linux",
+    "descriptor_sha256": "e341132744136ddc15734e3c4b0196073fb453ade7177479c3f0e063e8b5091a"
+  },
+  "inventory_approved_subject_set_sha256": "67b00a4e3b0858548895e857c85229b9c556b8766c350fced5b8d7501564ecf9",
+  "toolchain_approved_subject_set_sha256": "692bb956be766425f10d0659b46d7a640669cc1d6be5972a353a77a80f2fcd8a",
+  "target_descriptor": {
+    "descriptor_id": "code-c-target-2b71b8be5739e2ef139ac4e6d3e15a6b",
+    "descriptor_sha256": "2b71b8be5739e2ef139ac4e6d3e15a6bdd7dd1805484ce227dbfcf094a36da67"
+  },
+  "cpython_exact_artifact_sha256": "2b33ea85bdbb129c1c6bf2f2398fcfe7a5d52eb7730f7a67ae264aeafe7290b6",
+  "pyinstaller_spec": {
+    "path": "sidecars/media-worker/media-worker.spec",
+    "sha256": "35f7093a1247bd6cd9d71e83988807ab6bd80f3df72fee0481c850754b4dec5e"
+  },
+  "build_policy": {
+    "dependency_resolution": "LOCKFILE_EXACT_NO_NEW_RESOLUTION",
+    "network": "DECLARED_READ_ONLY_ALLOWLIST",
+    "sdist_build": "FORBIDDEN",
+    "unapproved_download": "FORBIDDEN"
+  },
+  "created_at": "2026-09-04T04:57:35.107Z"
+}

@@ -67,6 +67,8 @@ function selectionIdentity(entry) {
     pyinstaller_stage: entry.pyinstaller_stage,
     pyinstaller_category: entry.pyinstaller_category,
     required_in_final: entry.required_in_final,
+    disposition: entry.disposition ?? 'INTERNAL',
+    external_prerequisite: entry.external_prerequisite ?? null,
   });
 }
 
@@ -139,6 +141,23 @@ export function validatePackagingSelectionEvidence(document) {
     'authoritative native entries',
     failures,
   );
+  for (const entry of document.selected_native_entries) {
+    const disposition = entry.disposition ?? 'INTERNAL';
+    if (disposition === 'EXTERNAL_PREREQUISITE') {
+      if (entry.required_in_final !== false || !entry.external_prerequisite) {
+        failures.push(
+          `external selected entry lacks non-final prerequisite disposition: ${entry.entry_id}`,
+        );
+      }
+      if (!/^[a-f0-9]{64}$/u.test(entry.external_prerequisite?.manifest_sha256 ?? '')) {
+        failures.push(
+          `external selected entry lacks exact prerequisite manifest hash: ${entry.entry_id}`,
+        );
+      }
+    } else if (disposition !== 'INTERNAL' || entry.required_in_final !== true) {
+      failures.push(`invalid native selection disposition: ${entry.entry_id}`);
+    }
+  }
   assertBuildContext(
     document.selected_native_entries,
     context,
@@ -174,6 +193,9 @@ function validateLayerRequirements(document, failures) {
       failures.push(`late-stage approval has no approval_basis: ${entry.entry_id}`);
   }
   for (const entry of document.materialized_native_entries) {
+    if (entry.disposition === 'EXTERNAL_PREREQUISITE') {
+      failures.push(`external prerequisite was materialized: ${entry.entry_id}`);
+    }
     if (!entry.selected_entry_id || !entry.transformation) {
       failures.push(`materialized entry lacks selected trace/transformation: ${entry.entry_id}`);
     } else if (entry.transformation.kind === 'DERIVED') {
@@ -187,6 +209,9 @@ function validateLayerRequirements(document, failures) {
     }
   }
   for (const entry of document.final_native_entries) {
+    if (entry.disposition === 'EXTERNAL_PREREQUISITE') {
+      failures.push(`external prerequisite appears in final CArchive: ${entry.entry_id}`);
+    }
     if (!entry.materialized_entry_id || entry.carchive_typecode !== 'b') {
       failures.push(
         `final native lacks materialized provenance or native typecode: ${entry.entry_id}`,
@@ -238,6 +263,7 @@ export function reconcilePackagingNativeEvidence(selectionDocument, reconciliati
     approvalsByProvenance.set(key, candidates);
   }
   for (const entry of selected) {
+    if (entry.disposition === 'EXTERNAL_PREREQUISITE') continue;
     const candidates = approvalsByProvenance.get(provenanceIdentity(entry)) ?? [];
     if (candidates.length === 0)
       failures.push(`selected native has no approved provenance: ${entry.entry_id}`);
@@ -251,6 +277,10 @@ export function reconcilePackagingNativeEvidence(selectionDocument, reconciliati
     const source = selectedById.get(entry.selected_entry_id);
     if (!source) {
       failures.push(`materialized native has no selected provenance: ${entry.entry_id}`);
+      continue;
+    }
+    if (source.disposition === 'EXTERNAL_PREREQUISITE') {
+      failures.push(`external prerequisite was materialized: ${source.entry_id}`);
       continue;
     }
     const existing = materializedBySelected.get(source.entry_id);
@@ -268,6 +298,12 @@ export function reconcilePackagingNativeEvidence(selectionDocument, reconciliati
     }
   }
   for (const entry of selected) {
+    if (entry.disposition === 'EXTERNAL_PREREQUISITE') {
+      if (materializedBySelected.has(entry.entry_id)) {
+        failures.push(`external prerequisite was materialized: ${entry.entry_id}`);
+      }
+      continue;
+    }
     if (!materializedBySelected.has(entry.entry_id)) {
       failures.push(`selected native was not materialized: ${entry.entry_id}`);
     }
@@ -327,8 +363,11 @@ export function reconcilePackagingNativeEvidence(selectionDocument, reconciliati
   }
   fail(failures);
 
+  const internalSelected = selected.filter(
+    (entry) => entry.disposition !== 'EXTERNAL_PREREQUISITE',
+  );
   const selectedApprovalIds = new Set(
-    selected
+    internalSelected
       .flatMap((entry) => approvalsByProvenance.get(provenanceIdentity(entry)) ?? [])
       .map((entry) => entry.entry_id),
   );
@@ -353,12 +392,21 @@ export function reconcilePackagingNativeEvidence(selectionDocument, reconciliati
             (candidate) => provenanceIdentity(candidate) === provenanceIdentity(entry),
           ),
       ).length,
-      selected_without_any_approval: selected.filter(
+      selected_without_any_approval: internalSelected.filter(
         (entry) => (approvalsByProvenance.get(provenanceIdentity(entry)) ?? []).length === 0,
       ).length,
       selected_intersect_materialized: materializedBySelected.size,
       selected_not_materialized: selected.filter(
-        (entry) => !materializedBySelected.has(entry.entry_id),
+        (entry) =>
+          entry.disposition !== 'EXTERNAL_PREREQUISITE' &&
+          !materializedBySelected.has(entry.entry_id),
+      ).length,
+      external_selected: selected.filter((entry) => entry.disposition === 'EXTERNAL_PREREQUISITE')
+        .length,
+      external_selected_not_materialized: selected.filter(
+        (entry) =>
+          entry.disposition === 'EXTERNAL_PREREQUISITE' &&
+          !materializedBySelected.has(entry.entry_id),
       ).length,
       materialized_not_selected: materialized.filter(
         (entry) => !selectedById.has(entry.selected_entry_id),

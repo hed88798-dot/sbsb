@@ -34,9 +34,9 @@ baseline below. The earlier baseline is retained only as historical provenance;
 it is not the current review or required-main baseline.
 
 ```text
-CHECKPOINT_BASELINE_REFERENCE: e6f18f9409e7ae4f7273dc0676c45795652b44c2
-CURRENT_MAIN_BASELINE: e6f18f9409e7ae4f7273dc0676c45795652b44c2
-CURRENT_MAIN_BASELINE_ROLE: MAIN_AFTER_TRUST_CHAIN
+CHECKPOINT_BASELINE_REFERENCE: d4909631456029b50c8c6bd6011719fd69ddef95
+CURRENT_MAIN_BASELINE: d4909631456029b50c8c6bd6011719fd69ddef95
+CURRENT_MAIN_BASELINE_ROLE: MAIN_AFTER_CANDIDATE_EGRESS_CHECKPOINT
 ORIGINAL_BASELINE: 06c4620e8738bd63f8674e15d1158042a65c1d28 (historical only)
 CHECKPOINT_EVIDENCE_BINDS_SYNCED_HEAD: PASS
 ```
@@ -97,6 +97,13 @@ The runner creates the manifest and computes `BUILD_HOST_WORKER_SHA256` and
 Mac, `retain-local` rechecks both hashes, writes `manifest.json` beside the retained
 files, performs the local Recovery Drill, and emits the hash-bound v2 retention and
 recovery records. A failed or mismatched transfer is fail-closed.
+
+The operator sequence is intentionally explicit: complete and retain the Linux
+transport first, verify its receipt and recovery drill under
+`frozen-candidates/<candidate-id>/linux/`, delete the downloaded transient
+extraction, then run the Windows transport and repeat the same local retention
+procedure. The Actions ZIP is never the Worker identity and is not a permanent
+copy.
 
 Artifact-level inventory, toolchain and license approvals may be reused only when
 their exact subject hashes, evidence snapshots, active status and policy version

@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "model_id": "google/siglip2-base-patch32-256",
+  "source": "https://huggingface.co/google/siglip2-base-patch32-256",
+  "source_revision": "9e7ee68506177b546b2d5dc578f54afdc5e425f1",
+  "license": "Apache-2.0",
+  "files": {
+    "config.json": {
+      "sha256": "52deee7a2d6fb2e73c45720d9c4056f0e4dc582ef84524aac229c6d5aa348dee",
+      "size": 298
+    },
+    "model.safetensors": {
+      "sha256": "7d241bb3becad218f211f480487f491df4f8c0a472ecf7afdec5615815a301f1",
+      "size": 1507473288
+    },
+    "preprocessor_config.json": {
+      "sha256": "d14ba2ee3fd816f3de8abaddc31953565128eaf37c73ad4bed32101a98465aff",
+      "size": 394
+    },
+    "special_tokens_map.json": {
+      "sha256": "baec30ea10906f16adb8c18af7a34023002c1746542612b8b41c9f09e1351351",
+      "size": 636
+    },
+    "tokenizer.json": {
+      "sha256": "cb9140fae3ac5122c972d37adf83e1248471a38147ad76f8215c8872c6fd8322",
+      "size": 34363039
+    },
+    "tokenizer.model": {
+      "sha256": "61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2",
+      "size": 4241003
+    },
+    "tokenizer_config.json": {
+      "sha256": "14afe629fe4959b9e0d51e1852b8d9f7ad074f90a1a7125a4fcdd17f06e78fc8",
+      "size": 47164
+    }
+  }
+}

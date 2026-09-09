@@ -222,17 +222,25 @@ describe('Python Artifact Inventory v2 wheel compatibility', () => {
     'accepts the pnpm argument separator used by Windows workflow shells',
     () => {
       const targetPath = join(directory, 'current-target.json');
+      const directTargetPath = join(directory, 'direct-current-target.json');
       const described = runNode(targetDescriptorTool, [
         '--',
         'describe-current',
         '--output',
         targetPath,
       ]);
+      const direct = runNode(targetDescriptorTool, [
+        'describe-current',
+        '--output',
+        directTargetPath,
+      ]);
       expect(described.status, described.stderr).toBe(0);
-      expect(JSON.parse(readFileSync(targetPath, 'utf8'))).toMatchObject({
+      expect(direct.status, direct.stderr).toBe(0);
+      const target = JSON.parse(readFileSync(targetPath, 'utf8'));
+      expect(target).toEqual(JSON.parse(readFileSync(directTargetPath, 'utf8')));
+      expect(target).toMatchObject({
         target_descriptor_version: '1',
         implementation: 'cpython',
-        python_version: '3.12.10',
       });
     },
   );

@@ -44,9 +44,22 @@ jobs:
             --prerequisite compliance/runtime-prerequisites/msvc-v14-x64/external-prerequisite.v1.json `
             --output artifacts/runtime-prerequisite/WINDOWS_PROVIDER_PROBE.json
           Remove-Item artifacts/runtime-prerequisite/WINDOWS_PROVIDER_PROBE.raw.json
+      - name: Enforce runtime provider evidence upload budget
+        shell: bash
+        run: >-
+          node tools/actions-artifact-budget.mjs
+          --name windows-runtime-provider-${{ github.sha }}
+          --path artifacts/runtime-prerequisite/WINDOWS_PROVIDER_PROBE.json
+          --inventory artifacts/runtime-prerequisite/ARTIFACT_UPLOAD_INVENTORY.json
+          --retention-days 7
+          --purpose authoritative-runtime-provider-probe
+          --classification authoritative
+          --max-bytes 1048576
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: windows-runtime-provider-${{ github.sha }}
-          path: artifacts/runtime-prerequisite/WINDOWS_PROVIDER_PROBE.json
+          path: |
+            artifacts/runtime-prerequisite/WINDOWS_PROVIDER_PROBE.json
+            artifacts/runtime-prerequisite/ARTIFACT_UPLOAD_INVENTORY.json
           if-no-files-found: error
-          retention-days: 90
+          retention-days: 7

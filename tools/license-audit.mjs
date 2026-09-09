@@ -43,6 +43,45 @@ try {
   process.exit(1);
 }
 
+const auditedPythonRuntime = new Map([
+  ['click==8.5.0', 'BSD-3-Clause'],
+  ['flatbuffers==25.12.19', 'Apache-2.0'],
+  ['numpy==2.3.5', 'BSD-3-Clause'],
+  ['onnxruntime==1.29.0', 'MIT'],
+  ['opencv-python-headless==4.14.0.94', 'Apache-2.0'],
+  ['packaging==26.3', 'Apache-2.0 OR BSD-2-Clause'],
+  ['Pillow==12.3.0', 'MIT-CMU'],
+  ['platformdirs==4.11.4', 'MIT'],
+  ['protobuf==7.36.0', 'BSD-3-Clause'],
+  ['scenedetect-headless==0.7.1', 'BSD-3-Clause'],
+  ['sentencepiece==0.2.1', 'Apache-2.0'],
+  ['tqdm==4.70.0', 'MPL-2.0 AND MIT'],
+]);
+const pythonRuntimeLock = resolve(repositoryRoot, 'sidecars/media-worker/requirements.lock');
+const pythonRuntimeEntries = readFileSync(pythonRuntimeLock, 'utf8')
+  .split('\n')
+  .map((line) => line.trim())
+  .filter((line) => line && !line.startsWith('#'));
+const pythonAuditFailures = pythonRuntimeEntries
+  .filter((requirement) => !auditedPythonRuntime.has(requirement))
+  .map((requirement) => `Python runtime dependency not audited: ${requirement}`);
+const modelSourceLock = JSON.parse(
+  readFileSync(
+    resolve(
+      repositoryRoot,
+      'sidecars/media-worker/model-manifests/siglip2-base-patch32-256.source-lock.json',
+    ),
+    'utf8',
+  ),
+);
+if (modelSourceLock.license !== 'Apache-2.0') {
+  pythonAuditFailures.push(`SigLIP 2 source lock license: ${modelSourceLock.license ?? 'UNKNOWN'}`);
+}
+if (pythonAuditFailures.length > 0) {
+  console.error(`license-scan: FAIL\n${pythonAuditFailures.join('\n')}`);
+  process.exit(1);
+}
+
 const results = packages.map((entry) => ({
   name: entry.name,
   version: entry.version,
