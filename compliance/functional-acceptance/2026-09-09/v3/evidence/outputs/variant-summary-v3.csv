@@ -1,0 +1,4 @@
+﻿"query_variant","searches","top1_accuracy","hit_at_5","precision_at_5","recall_at_5","coverage_at_5"
+"SHORT_ZH","40","0.425","0.675","0.285","0.5005","0.5133"
+"VISUAL_ZH","40","0.525","0.775","0.37","0.5921","0.6146"
+"VISUAL_EN","40","0.675","0.925","0.42","0.7477","0.7704"

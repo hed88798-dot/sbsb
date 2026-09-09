@@ -19,3 +19,6 @@ schemas/compliance/ffprobe-build-profile/** text eol=lf
 tools/ffprobe-build-profile/** text eol=lf
 tests/contract/ffprobe-build-profile.test.ts text eol=lf
 docs/quality/CODE_F_FFPROBE_SOURCE_RELEASE_AND_BUILD_PROFILE_PIN.md text eol=lf
+
+# Benchmark V3 evidence is hash-bound to the exact Windows-produced bytes.
+compliance/functional-acceptance/2026-09-09/v3/evidence/** -text whitespace=cr-at-eol

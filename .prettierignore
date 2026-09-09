@@ -9,3 +9,6 @@ pnpm-lock.yaml
 
 # Immutable compliance authority; its exact bytes are protected by a SHA-256 sidecar.
 compliance/vulnerability-reviews/cpython-3.13.15-final-vulnerability-review-current-candidate/FINAL_VULNERABILITY_REVIEW_RECORD_V2.json
+
+# V3 benchmark evidence is preserved byte-for-byte and verified by SHA-256.
+compliance/functional-acceptance/2026-09-09/v3/evidence/
