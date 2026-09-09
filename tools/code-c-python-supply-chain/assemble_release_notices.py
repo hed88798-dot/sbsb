@@ -15,6 +15,17 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 PUBLIC_NOTICE_TOOL = REPOSITORY_ROOT / "tools" / "license-policy" / "notices.mjs"
 
 
+def inventory_path(target: str, scope_name: str) -> Path:
+    inventory_root = REPOSITORY_ROOT / "compliance" / "python-artifacts" / target
+    for schema_version in ("v3", "v2"):
+        candidate = inventory_root / f"{scope_name}.{schema_version}.json"
+        if candidate.is_file():
+            return candidate
+    raise SystemExit(
+        f"approved inventory is missing for {target}/{scope_name} (expected v3 or v2 subject)"
+    )
+
+
 def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
@@ -146,13 +157,7 @@ def main() -> None:
     parser.add_argument("--report", type=Path, required=True)
     arguments = parser.parse_args()
 
-    runtime_path = (
-        REPOSITORY_ROOT
-        / "compliance"
-        / "python-artifacts"
-        / arguments.target
-        / "runtime.v2.json"
-    )
+    runtime_path = inventory_path(arguments.target, "runtime")
     toolchain_path = (
         REPOSITORY_ROOT
         / "compliance"

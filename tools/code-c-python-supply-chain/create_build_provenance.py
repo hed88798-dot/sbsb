@@ -18,6 +18,17 @@ INSPECT_ONEFILE = (
 )
 
 
+def inventory_path(target: str, scope_name: str) -> Path:
+    inventory_root = REPOSITORY_ROOT / "compliance" / "python-artifacts" / target
+    for schema_version in ("v3", "v2"):
+        candidate = inventory_root / f"{scope_name}.{schema_version}.json"
+        if candidate.is_file():
+            return candidate
+    raise SystemExit(
+        f"approved inventory is missing for {target}/{scope_name} (expected v3 or v2 subject)"
+    )
+
+
 def git_head() -> str:
     return subprocess.run(
         ["git", "rev-parse", "HEAD"],
@@ -35,9 +46,8 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--run-identity", default=os.environ.get("GITHUB_RUN_ID", "local-explicit-build"))
     arguments = parser.parse_args()
-    inventory_root = REPOSITORY_ROOT / "compliance" / "python-artifacts" / arguments.target
-    runtime_inventory_path = inventory_root / "runtime.v2.json"
-    worker_build_inventory_path = inventory_root / "worker-build.v2.json"
+    runtime_inventory_path = inventory_path(arguments.target, "runtime")
+    worker_build_inventory_path = inventory_path(arguments.target, "worker-build")
     toolchain_path = (
         REPOSITORY_ROOT / "compliance" / "python-toolchain" / f"{arguments.target}.v1.json"
     )

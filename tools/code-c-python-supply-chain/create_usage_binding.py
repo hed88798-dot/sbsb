@@ -13,6 +13,17 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 PYTHON_CLI = REPOSITORY_ROOT / "tools" / "python-supply-chain" / "cli.mjs"
 
 
+def inventory_path(target: str, scope_name: str) -> Path:
+    inventory_root = REPOSITORY_ROOT / "compliance" / "python-artifacts" / target
+    for schema_version in ("v3", "v2"):
+        candidate = inventory_root / f"{scope_name}.{schema_version}.json"
+        if candidate.is_file():
+            return candidate
+    raise SystemExit(
+        f"approved inventory is missing for {target}/{scope_name} (expected v3 or v2 subject)"
+    )
+
+
 def canonical_compact_hash(value: object) -> str:
     payload = json.dumps(
         value,
@@ -47,13 +58,7 @@ def main() -> None:
             else "linux-x86_64.scan.json"
         )
     )
-    inventory_path = (
-        REPOSITORY_ROOT
-        / "compliance"
-        / "python-artifacts"
-        / arguments.target
-        / "worker-build.v2.json"
-    )
+    inventory_manifest_path = inventory_path(arguments.target, "worker-build")
     toolchain_path = (
         REPOSITORY_ROOT / "compliance" / "python-toolchain" / f"{arguments.target}.v1.json"
     )
@@ -61,7 +66,7 @@ def main() -> None:
         REPOSITORY_ROOT / "compliance" / "license-policy" / "python-spdx-v1" / "policy.json"
     )
     evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
-    inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+    inventory = json.loads(inventory_manifest_path.read_text(encoding="utf-8"))
     toolchain = json.loads(toolchain_path.read_text(encoding="utf-8"))
     build = json.loads(arguments.build_provenance.read_text(encoding="utf-8"))
     policy = json.loads(policy_path.read_text(encoding="utf-8"))

@@ -19,6 +19,17 @@ SOURCE_LOCK = (
 )
 
 
+def inventory_path(target: str, scope_name: str) -> Path:
+    inventory_root = REPOSITORY_ROOT / "compliance" / "python-artifacts" / target
+    for schema_version in ("v3", "v2"):
+        candidate = inventory_root / f"{scope_name}.{schema_version}.json"
+        if candidate.is_file():
+            return candidate
+    raise SystemExit(
+        f"approved inventory is missing for {target}/{scope_name} (expected v3 or v2 subject)"
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", choices=["windows", "linux"], required=True)
@@ -31,15 +42,7 @@ def main() -> None:
     arguments = parser.parse_args()
     expected: dict[str, dict[str, object]] = {}
     for scope in arguments.scope:
-        inventory = json.loads(
-            (
-                REPOSITORY_ROOT
-                / "compliance"
-                / "python-artifacts"
-                / arguments.target
-                / f"{scope}.v2.json"
-            ).read_text(encoding="utf-8")
-        )
+        inventory = json.loads(inventory_path(arguments.target, scope).read_text(encoding="utf-8"))
         for package in inventory["packages"]:
             name = canonicalize_name(package["package_name"])
             previous = expected.get(name)
