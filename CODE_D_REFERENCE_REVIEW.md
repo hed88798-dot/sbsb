@@ -1,7 +1,9 @@
 # Code D Open-Source Reference Review
 
-Review date: 2026-09-09  
-Review mode: architecture-compatible patterns only  
+Review date: 2026-09-09
+
+Review mode: architecture-compatible patterns only
+
 Default outcome: `BORROW_PATTERN: YES`, `COPY_CODE: NO`, `PRODUCTION_DEPENDENCY: NO`
 
 This is a commercial-use precheck, not legal advice. No reviewed source code or runtime dependency is incorporated, so no reviewed repository creates a distribution obligation for Code D V0.1.
