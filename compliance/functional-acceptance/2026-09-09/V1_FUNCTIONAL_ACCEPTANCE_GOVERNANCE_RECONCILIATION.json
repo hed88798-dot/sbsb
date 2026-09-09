@@ -1,0 +1,92 @@
+{
+  "schema_version": "1",
+  "record_kind": "V1_FUNCTIONAL_ACCEPTANCE_GOVERNANCE_RECONCILIATION",
+  "record_id": "code-f-v1-functional-acceptance-governance-reconciliation-20260909-v1",
+  "record_sha256": "390a3f9c540ce56393c52db970b9c8e094dafb2e41d0118709d2e79180a07f1f",
+  "reconciliation_status": "PASS_GOVERNANCE_ONLY",
+  "owner_scope_decision": {
+    "v1_real_world_functional_acceptance_scope": "100_DIVERSE_AUTHORIZED_REAL_ASSETS; 100_OF_100_INDEXED; 103_SHOTS",
+    "legacy_500_asset_gate": "SUPERSEDED_FOR_V1_CODE_C_FUNCTIONAL_ACCEPTANCE",
+    "legacy_500_corpus_execution": "NOT_RUN",
+    "legacy_100_canonical_query_gate": "SUPERSEDED_FOR_V1",
+    "v1_canonical_query_count": 40,
+    "v1_query_variants": ["SHORT_ZH", "VISUAL_ZH", "VISUAL_EN"],
+    "v1_total_searches": 120,
+    "v1_search_errors": 0,
+    "legacy_universal_recall_at_5_0_90_gate": "SUPERSEDED_FOR_V1",
+    "future_hard_threshold_policy": "NEW_VERSION_AND_PROSPECTIVE_OWNER_DECISION_REQUIRED"
+  },
+  "benchmark_authority": {
+    "record_id": "code-f-golden-benchmark-authority-20260909-v3",
+    "semantic_sha256": "dd4889b6dd5246bb8011ddd101eacf97d0aaca16e5c08ce597785f44edb4112e",
+    "status": "AUTHORITATIVE_V3_ONLY",
+    "v1_status": "INVALIDATED_AND_NON_AUTHORITATIVE",
+    "v2_status": "INVALIDATED_AND_NON_AUTHORITATIVE"
+  },
+  "windows_validation": {
+    "environment": "Windows Server 2019 Datacenter x64; AMD EPYC 2 physical/4 logical; 15.7 GiB RAM; no GPU",
+    "functional_validation_status": "PASS",
+    "low_end_4c_8gb_profile": "NOT_RUN_NOT_CLAIMED",
+    "low_end_4c_16gb_profile": "NOT_RUN_NOT_CLAIMED",
+    "low_end_profiles_block_code_d": "NO"
+  },
+  "worker_binding": {
+    "sha256": "e56b32c1d547df0391e40a656230cdb2924b8ba6fb94f1b062632c5b1ca05d99",
+    "python_version": "3.13.15",
+    "role": "FUNCTIONAL_VALIDATION_WORKER",
+    "release_candidate_promotion": "NOT_RUN_AND_NOT_IMPLIED"
+  },
+  "code_c_boundary": {
+    "owned": [
+      "ingest",
+      "shot_detection",
+      "keyframe",
+      "visual_embedding",
+      "local_index",
+      "query_embedding",
+      "semantic_retrieval",
+      "top_n_candidate_output"
+    ],
+    "deferred_to_code_d": [
+      "batch_asset_deduplication",
+      "recent_use_cooling",
+      "cross_video_rotation",
+      "material_frequency_balancing",
+      "final_material_selection_policy"
+    ],
+    "implementation_change_this_round": "NO"
+  },
+  "code_c_closeout": {
+    "final_commit": "4df253f9b181043ab10a1d97a888f7980f1b9dde",
+    "technical_implementation": "PASS_OWNER_FROZEN_FACT",
+    "real_windows_v1_functional_validation": "PASS_OWNER_FROZEN_FACT",
+    "closeout_evidence_remote": "BLOCKED_PUBLICATION_ACCESS",
+    "access_blocker_is_technical_failure": "NO",
+    "experiment_rerun_required": "NO"
+  },
+  "acceptance_readiness": {
+    "code_c_implementation_acceptance": "PASS",
+    "code_c_real_world_v1_functional_acceptance": "PASS",
+    "code_c_version_acceptance": "BLOCKED_PUBLICATION_ACCESS",
+    "code_c_closeout": "BLOCKED_PUBLICATION_ACCESS",
+    "code_d_entry_gate": "BLOCKED_PUBLICATION_ACCESS",
+    "brain1_signature": "NOT_REQUESTED"
+  },
+  "release_boundaries": {
+    "release_artifact_promotion": "NOT_RUN",
+    "stable_release_license_gate": "BLOCKED_BY_EXTERNAL_MSVC_REDISTRIBUTION",
+    "native_rerun": "NO",
+    "license_rerun": "NO",
+    "vulnerability_rerun": "NO",
+    "stage_a_rerun": "NO",
+    "stage_b_rerun": "NO",
+    "siglip_index_rerun": "NO"
+  },
+  "recheck_triggers": [
+    "Code C closeout commit/evidence becomes remotely reviewable",
+    "V3 benchmark input/output bytes, corpus, query, ground truth, model, Worker, or cache signature changes",
+    "Media Index retrieval contract or UTF-8 transport changes",
+    "Windows environment semantics or low-end profile contract changes",
+    "Release candidate promotion of the functional validation Worker"
+  ]
+}

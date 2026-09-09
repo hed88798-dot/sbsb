@@ -3,6 +3,7 @@ packages:
   - packages/*
 
 overrides:
+  js-yaml: 4.3.2
   shell-quote: 1.10.0
 
 allowBuilds:

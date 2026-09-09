@@ -1,0 +1,121 @@
+﻿benchmark_query_id,canonical_query_id,group,role,query_variant,query_text,top_k_raw,unique_asset_k
+GQ001_SHORT_ZH,GQ001,动物-动作,CORE,SHORT_ZH,牛吃料,20,5
+GQ001_VISUAL_ZH,GQ001,动物-动作,CORE,VISUAL_ZH,牛在料槽或饲料筐前采食饲料,20,5
+GQ001_VISUAL_EN,GQ001,动物-动作,CORE,VISUAL_EN,cattle eating feed from a trough or feed basket,20,5
+GQ002_SHORT_ZH,GQ002,动物-动作,CORE,SHORT_ZH,牛喝水,20,5
+GQ002_VISUAL_ZH,GQ002,动物-动作,CORE,VISUAL_ZH,牛正在水槽、水盆或水桶前喝水,20,5
+GQ002_VISUAL_EN,GQ002,动物-动作,CORE,VISUAL_EN,"cattle drinking water from a trough, basin or bucket",20,5
+GQ003_SHORT_ZH,GQ003,动物-动作,CORE,SHORT_ZH,羊吃料,20,5
+GQ003_VISUAL_ZH,GQ003,动物-动作,CORE,VISUAL_ZH,羊在料槽或料盆前采食饲料,20,5
+GQ003_VISUAL_EN,GQ003,动物-动作,CORE,VISUAL_EN,sheep eating feed from a trough or feed basin,20,5
+GQ004_SHORT_ZH,GQ004,动物-动作,CORE,SHORT_ZH,羊喝水,20,5
+GQ004_VISUAL_ZH,GQ004,动物-动作,CORE,VISUAL_ZH,羊正在水盆、水桶或水槽前喝水,20,5
+GQ004_VISUAL_EN,GQ004,动物-动作,CORE,VISUAL_EN,"sheep drinking water from a basin, bucket or trough",20,5
+GQ005_SHORT_ZH,GQ005,动物-动作,CORE,SHORT_ZH,猪吃料,20,5
+GQ005_VISUAL_ZH,GQ005,动物-动作,CORE,VISUAL_ZH,猪在料槽或饲料盆前采食饲料,20,5
+GQ005_VISUAL_EN,GQ005,动物-动作,CORE,VISUAL_EN,pigs eating feed from a trough or feed basin,20,5
+GQ006_SHORT_ZH,GQ006,动物-动作,CORE,SHORT_ZH,猪喝水,20,5
+GQ006_VISUAL_ZH,GQ006,动物-动作,CORE,VISUAL_ZH,猪正在饮水槽或自动饮水器前喝水,20,5
+GQ006_VISUAL_EN,GQ006,动物-动作,CORE,VISUAL_EN,pigs drinking water from a trough or automatic drinker,20,5
+GQ007_SHORT_ZH,GQ007,人物-动物交互,CORE,SHORT_ZH,猪打疫苗,20,5
+GQ007_VISUAL_ZH,GQ007,人物-动物交互,CORE,VISUAL_ZH,工作人员正在给猪注射疫苗,20,5
+GQ007_VISUAL_EN,GQ007,人物-动物交互,CORE,VISUAL_EN,a worker vaccinating a pig,20,5
+GQ008_SHORT_ZH,GQ008,仔猪-动作,CORE,SHORT_ZH,小猪吃奶,20,5
+GQ008_VISUAL_ZH,GQ008,仔猪-动作,CORE,VISUAL_ZH,仔猪在母猪身旁吃奶,20,5
+GQ008_VISUAL_EN,GQ008,仔猪-动作,CORE,VISUAL_EN,piglets nursing from a sow,20,5
+GQ009_SHORT_ZH,GQ009,人物-场景动作,CORE,SHORT_ZH,清理猪圈,20,5
+GQ009_VISUAL_ZH,GQ009,人物-场景动作,CORE,VISUAL_ZH,工作人员正在猪圈或猪舍内进行清理,20,5
+GQ009_VISUAL_EN,GQ009,人物-场景动作,CORE,VISUAL_EN,a worker cleaning a pig pen or pig house,20,5
+GQ010_SHORT_ZH,GQ010,人物-产品,CORE,SHORT_ZH,工作人员手持产品,20,5
+GQ010_VISUAL_ZH,GQ010,人物-产品,CORE,VISUAL_ZH,工作人员在猪舍内手持产品进行讲解或展示,20,5
+GQ010_VISUAL_EN,GQ010,人物-产品,CORE,VISUAL_EN,a worker holding and presenting a product inside a pig house,20,5
+GQ011_SHORT_ZH,GQ011,产品,CORE,SHORT_ZH,产品包装展示,20,5
+GQ011_VISUAL_ZH,GQ011,产品,CORE,VISUAL_ZH,画面主要展示产品包装,20,5
+GQ011_VISUAL_EN,GQ011,产品,CORE,VISUAL_EN,product packaging prominently displayed,20,5
+GQ012_SHORT_ZH,GQ012,产品,DIAGNOSTIC,SHORT_ZH,户外草地手持产品,20,5
+GQ012_VISUAL_ZH,GQ012,产品,DIAGNOSTIC,VISUAL_ZH,手持产品包装，背景为户外草地,20,5
+GQ012_VISUAL_EN,GQ012,产品,DIAGNOSTIC,VISUAL_EN,hand holding product packaging against an outdoor grass background,20,5
+GQ013_SHORT_ZH,GQ013,产品,DIAGNOSTIC,SHORT_ZH,猪场蓝白产品包装袋,20,5
+GQ013_VISUAL_ZH,GQ013,产品,DIAGNOSTIC,VISUAL_ZH,猪场背景中展示蓝白色产品包装袋,20,5
+GQ013_VISUAL_EN,GQ013,产品,DIAGNOSTIC,VISUAL_EN,blue and white product bag displayed in a pig farm,20,5
+GQ014_SHORT_ZH,GQ014,产品,DIAGNOSTIC,SHORT_ZH,户外草地白色饲料袋,20,5
+GQ014_VISUAL_ZH,GQ014,产品,DIAGNOSTIC,VISUAL_ZH,户外草地背景中手持白色饲料袋,20,5
+GQ014_VISUAL_EN,GQ014,产品,DIAGNOSTIC,VISUAL_EN,white feed bag held outdoors on grass,20,5
+GQ015_SHORT_ZH,GQ015,人物,CORE,SHORT_ZH,工作人员在猪舍讲解,20,5
+GQ015_VISUAL_ZH,GQ015,人物,CORE,VISUAL_ZH,穿工作服的工作人员在猪舍内讲解,20,5
+GQ015_VISUAL_EN,GQ015,人物,CORE,VISUAL_EN,a worker explaining something inside a pig house,20,5
+GQ016_SHORT_ZH,GQ016,人物,DIAGNOSTIC,SHORT_ZH,工作人员展示牛群,20,5
+GQ016_VISUAL_ZH,GQ016,人物,DIAGNOSTIC,VISUAL_ZH,工作人员在牛舍内展示或介绍牛群,20,5
+GQ016_VISUAL_EN,GQ016,人物,DIAGNOSTIC,VISUAL_EN,a worker presenting cattle inside a cattle barn,20,5
+GQ017_SHORT_ZH,GQ017,母猪-动作,DIAGNOSTIC,SHORT_ZH,母猪进食,20,5
+GQ017_VISUAL_ZH,GQ017,母猪-动作,DIAGNOSTIC,VISUAL_ZH,母猪在猪舍料槽前进食,20,5
+GQ017_VISUAL_EN,GQ017,母猪-动作,DIAGNOSTIC,VISUAL_EN,a sow eating at a feeding trough in a pig house,20,5
+GQ018_SHORT_ZH,GQ018,母猪-动作,DIAGNOSTIC,SHORT_ZH,母猪拒食,20,5
+GQ018_VISUAL_ZH,GQ018,母猪-动作,DIAGNOSTIC,VISUAL_ZH,母猪在料槽前拒绝进食或食欲不佳,20,5
+GQ018_VISUAL_EN,GQ018,母猪-动作,DIAGNOSTIC,VISUAL_EN,a sow refusing feed at a trough,20,5
+GQ019_SHORT_ZH,GQ019,母猪-状态,CORE,SHORT_ZH,母猪躺卧休息,20,5
+GQ019_VISUAL_ZH,GQ019,母猪-状态,CORE,VISUAL_ZH,母猪在猪舍内躺卧休息,20,5
+GQ019_VISUAL_EN,GQ019,母猪-状态,CORE,VISUAL_EN,a sow lying down and resting in a pig house,20,5
+GQ020_SHORT_ZH,GQ020,母猪-状态,CORE,SHORT_ZH,母猪站立,20,5
+GQ020_VISUAL_ZH,GQ020,母猪-状态,CORE,VISUAL_ZH,母猪在猪舍内站立,20,5
+GQ020_VISUAL_EN,GQ020,母猪-状态,CORE,VISUAL_EN,a sow standing inside a pig house,20,5
+GQ021_SHORT_ZH,GQ021,母猪-体况,DIAGNOSTIC,SHORT_ZH,体况偏瘦的母猪,20,5
+GQ021_VISUAL_ZH,GQ021,母猪-体况,DIAGNOSTIC,VISUAL_ZH,体况偏瘦的母猪在猪舍内,20,5
+GQ021_VISUAL_EN,GQ021,母猪-体况,DIAGNOSTIC,VISUAL_EN,a thin sow inside a pig house,20,5
+GQ022_SHORT_ZH,GQ022,母猪-体况,DIAGNOSTIC,SHORT_ZH,体况过肥的母猪,20,5
+GQ022_VISUAL_ZH,GQ022,母猪-体况,DIAGNOSTIC,VISUAL_ZH,体况过肥的母猪在猪舍内,20,5
+GQ022_VISUAL_EN,GQ022,母猪-体况,DIAGNOSTIC,VISUAL_EN,an overweight sow inside a pig house,20,5
+GQ023_SHORT_ZH,GQ023,仔猪-场景,CORE,SHORT_ZH,产房里的仔猪,20,5
+GQ023_VISUAL_ZH,GQ023,仔猪-场景,CORE,VISUAL_ZH,仔猪在产房栏位内活动,20,5
+GQ023_VISUAL_EN,GQ023,仔猪-场景,CORE,VISUAL_EN,piglets moving inside a farrowing room pen,20,5
+GQ024_SHORT_ZH,GQ024,仔猪-场景,DIAGNOSTIC,SHORT_ZH,户外活动的仔猪,20,5
+GQ024_VISUAL_ZH,GQ024,仔猪-场景,DIAGNOSTIC,VISUAL_ZH,一群仔猪在户外草地或户外猪舍活动,20,5
+GQ024_VISUAL_EN,GQ024,仔猪-场景,DIAGNOSTIC,VISUAL_EN,a group of piglets moving outdoors,20,5
+GQ025_SHORT_ZH,GQ025,羊羔,DIAGNOSTIC,SHORT_ZH,羊羔群体,20,5
+GQ025_VISUAL_ZH,GQ025,羊羔,DIAGNOSTIC,VISUAL_ZH,一群幼羊或羊羔在羊舍内活动,20,5
+GQ025_VISUAL_EN,GQ025,羊羔,DIAGNOSTIC,VISUAL_EN,a group of lambs moving inside a sheep barn,20,5
+GQ026_SHORT_ZH,GQ026,鸭,CORE,SHORT_ZH,鸭群活动,20,5
+GQ026_VISUAL_ZH,GQ026,鸭,CORE,VISUAL_ZH,鸭在户外或鸭舍内成群活动,20,5
+GQ026_VISUAL_EN,GQ026,鸭,CORE,VISUAL_EN,ducks moving as a group outdoors or in a duck house,20,5
+GQ027_SHORT_ZH,GQ027,猪舍-设备,DIAGNOSTIC,SHORT_ZH,猪舍风机,20,5
+GQ027_VISUAL_ZH,GQ027,猪舍-设备,DIAGNOSTIC,VISUAL_ZH,猪舍内可以看到通风风机,20,5
+GQ027_VISUAL_EN,GQ027,猪舍-设备,DIAGNOSTIC,VISUAL_EN,a ventilation fan visible inside a pig house,20,5
+GQ028_SHORT_ZH,GQ028,猪舍-设备,DIAGNOSTIC,SHORT_ZH,猪舍环境控制屏,20,5
+GQ028_VISUAL_ZH,GQ028,猪舍-设备,DIAGNOSTIC,VISUAL_ZH,猪舍内可以看到环境控制屏或控制设备,20,5
+GQ028_VISUAL_EN,GQ028,猪舍-设备,DIAGNOSTIC,VISUAL_EN,an environmental control screen inside a pig house,20,5
+GQ029_SHORT_ZH,GQ029,猪舍-环境,DIAGNOSTIC,SHORT_ZH,明亮猪舍采光,20,5
+GQ029_VISUAL_ZH,GQ029,猪舍-环境,DIAGNOSTIC,VISUAL_ZH,采光明亮的猪舍环境中有猪活动,20,5
+GQ029_VISUAL_EN,GQ029,猪舍-环境,DIAGNOSTIC,VISUAL_EN,pigs inside a brightly lit pig house,20,5
+GQ030_SHORT_ZH,GQ030,猪舍-环境,DIAGNOSTIC,SHORT_ZH,空猪栏,20,5
+GQ030_VISUAL_ZH,GQ030,猪舍-环境,DIAGNOSTIC,VISUAL_ZH,干净、没有猪的空栏位或空猪舍,20,5
+GQ030_VISUAL_EN,GQ030,猪舍-环境,DIAGNOSTIC,VISUAL_EN,a clean empty pig pen with no pigs,20,5
+GQ031_SHORT_ZH,GQ031,猪-状态,CORE,SHORT_ZH,猪躺卧休息,20,5
+GQ031_VISUAL_ZH,GQ031,猪-状态,CORE,VISUAL_ZH,猪在猪舍内躺卧或安静休息,20,5
+GQ031_VISUAL_EN,GQ031,猪-状态,CORE,VISUAL_EN,pigs lying down or resting inside a pig house,20,5
+GQ032_SHORT_ZH,GQ032,猪-动作场景,CORE,SHORT_ZH,猪在猪舍饮水槽喝水,20,5
+GQ032_VISUAL_ZH,GQ032,猪-动作场景,CORE,VISUAL_ZH,猪在猪舍内的饮水槽前喝水,20,5
+GQ032_VISUAL_EN,GQ032,猪-动作场景,CORE,VISUAL_EN,pigs drinking from a water trough inside a pig house,20,5
+GQ033_SHORT_ZH,GQ033,牛-动作场景,CORE,SHORT_ZH,牛在牛舍水槽喝水,20,5
+GQ033_VISUAL_ZH,GQ033,牛-动作场景,CORE,VISUAL_ZH,牛在牛舍内的水槽前喝水,20,5
+GQ033_VISUAL_EN,GQ033,牛-动作场景,CORE,VISUAL_EN,cattle drinking from a water trough inside a cattle barn,20,5
+GQ034_SHORT_ZH,GQ034,羊-动作场景,CORE,SHORT_ZH,羊在羊舍水盆喝水,20,5
+GQ034_VISUAL_ZH,GQ034,羊-动作场景,CORE,VISUAL_ZH,羊在羊舍内的水盆或水槽前喝水,20,5
+GQ034_VISUAL_EN,GQ034,羊-动作场景,CORE,VISUAL_EN,sheep drinking from a basin or trough inside a sheep barn,20,5
+GQ035_SHORT_ZH,GQ035,牛-动作场景,CORE,SHORT_ZH,户外牧场的牛喝水,20,5
+GQ035_VISUAL_ZH,GQ035,牛-动作场景,CORE,VISUAL_ZH,牛在户外牧场的水盆、水桶或水管附近喝水,20,5
+GQ035_VISUAL_EN,GQ035,牛-动作场景,CORE,VISUAL_EN,cattle drinking water outdoors in a pasture,20,5
+GQ036_SHORT_ZH,GQ036,羊-动作场景,DIAGNOSTIC,SHORT_ZH,户外牧场的羊吃料,20,5
+GQ036_VISUAL_ZH,GQ036,羊-动作场景,DIAGNOSTIC,VISUAL_ZH,羊在户外牧场的料盆前吃料,20,5
+GQ036_VISUAL_EN,GQ036,羊-动作场景,DIAGNOSTIC,VISUAL_EN,sheep eating feed outdoors in a pasture,20,5
+GQ037_SHORT_ZH,GQ037,羊-动作场景,DIAGNOSTIC,SHORT_ZH,羊在长料槽吃料,20,5
+GQ037_VISUAL_ZH,GQ037,羊-动作场景,DIAGNOSTIC,VISUAL_ZH,羊在羊舍的长料槽前吃料,20,5
+GQ037_VISUAL_EN,GQ037,羊-动作场景,DIAGNOSTIC,VISUAL_EN,sheep eating from a long feeding trough inside a sheep barn,20,5
+GQ038_SHORT_ZH,GQ038,牛-动作场景,DIAGNOSTIC,SHORT_ZH,牛在长料槽吃料,20,5
+GQ038_VISUAL_ZH,GQ038,牛-动作场景,DIAGNOSTIC,VISUAL_ZH,牛在牛舍的长料槽前吃料,20,5
+GQ038_VISUAL_EN,GQ038,牛-动作场景,DIAGNOSTIC,VISUAL_EN,cattle eating from a long feeding trough inside a cattle barn,20,5
+GQ039_SHORT_ZH,GQ039,猪-动作场景,CORE,SHORT_ZH,猪在长料槽吃料,20,5
+GQ039_VISUAL_ZH,GQ039,猪-动作场景,CORE,VISUAL_ZH,猪在猪舍的长料槽前吃料,20,5
+GQ039_VISUAL_EN,GQ039,猪-动作场景,CORE,VISUAL_EN,pigs eating from a long feeding trough inside a pig house,20,5
+GQ040_SHORT_ZH,GQ040,人物-动物交互,DIAGNOSTIC,SHORT_ZH,工作人员给黑猪打疫苗,20,5
+GQ040_VISUAL_ZH,GQ040,人物-动物交互,DIAGNOSTIC,VISUAL_ZH,工作人员在户外猪场给黑猪注射疫苗,20,5
+GQ040_VISUAL_EN,GQ040,人物-动物交互,DIAGNOSTIC,VISUAL_EN,a worker vaccinating a black pig outdoors,20,5

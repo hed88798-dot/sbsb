@@ -58,6 +58,7 @@ jobs:
       - run: pnpm compliance:python:target:verify
       - run: pnpm compliance:approval:verify
       - run: pnpm golden:verify
+      - run: pnpm functional:authority:v3:verify
       - run: pnpm build
       - run: pnpm sbom:generate
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
