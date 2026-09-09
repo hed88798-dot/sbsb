@@ -106,6 +106,7 @@ try {
     // hydrated only by the platform-specific Worker jobs.  Validate the subjects here
     // without pretending a clean checkout contains materialized artifacts.
     ['compliance:python:schema'],
+    ['compliance:python:approved-subjects'],
     ['compliance:python:target:verify'],
     ['golden:verify'],
     ['build'],

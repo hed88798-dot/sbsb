@@ -37,6 +37,7 @@
     "compliance:license-policy:notices": "node tools/license-policy/notices.mjs",
     "compliance:python:verify": "node tools/python-supply-chain/cli.mjs repo-verify",
     "compliance:python:target:verify": "node tools/python-supply-chain/cli.mjs repo-target-verify-current",
+    "compliance:python:approved-subjects": "node tools/code-c-python-supply-chain/verify_approved_subject_bindings.mjs",
     "compliance:python:inventory": "node tools/python-supply-chain/cli.mjs verify",
     "compliance:python:schema": "node tools/python-supply-chain/cli.mjs validate",
     "compliance:python:candidate": "node tools/python-supply-chain/create-candidate.mjs",

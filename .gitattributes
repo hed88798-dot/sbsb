@@ -37,6 +37,15 @@ compliance/python-artifacts/linux/runtime.v3.json -text
 compliance/python-artifacts/linux/worker-build.v3.json -text
 compliance/python-artifacts/windows/runtime.v3.json -text
 compliance/python-artifacts/windows/worker-build.v3.json -text
+compliance/approval/records/approval-code-c-linux-runtime-py31315.json -text
+compliance/approval/records/approval-code-c-linux-worker-build-py31315.json -text
+compliance/approval/records/approval-code-c-windows-runtime-py31315.json -text
+compliance/approval/records/approval-code-c-windows-worker-build-py31315.json -text
+compliance/approval/records/approval-code-c-linux-toolchain-intake-evidence.json -text
+compliance/approval/records/approval-code-c-windows-toolchain-intake-evidence.json -text
+compliance/approval/review-snapshot-v2/review-snapshot-code-c-python-inventory-v3-v2-20260901.json -text
+compliance/approval/authority-policy-v1.json -text
+schemas/compliance/artifact-approval-provenance/v2/approval.schema.json -text
 compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-2026-09-03/advisories/CVE-2026-15310.json -text
 compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-2026-09-03/advisories/CVE-2026-15806.json -text
 compliance/vulnerability-reviews/cpython-3.13.15-stage-a-rebind-2026-09-03/advisories/CVE-2026-3087.json -text
