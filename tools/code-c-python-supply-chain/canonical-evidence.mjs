@@ -93,7 +93,9 @@ function prettierJsonBytes(value, target) {
   try {
     formattedValue = JSON.parse(formattedBytes.toString('utf8'));
   } catch (error) {
-    throw new Error(`repository-pinned Prettier emitted invalid JSON for ${target}: ${error}`);
+    throw new Error(`repository-pinned Prettier emitted invalid JSON for ${target}: ${error}`, {
+      cause: error,
+    });
   }
   if (canonicalJson(formattedValue) !== canonicalJson(value)) {
     throw new Error(`repository-pinned Prettier changed JSON semantics for ${target}`);

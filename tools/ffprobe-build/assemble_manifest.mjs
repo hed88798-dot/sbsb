@@ -30,9 +30,6 @@ const bundle = resolve(options.bundle);
 const records = JSON.parse(readFileSync(resolve(options.records, 'records-summary.json'), 'utf8'));
 const context = JSON.parse(readFileSync(resolve(options.records, 'build-context.json'), 'utf8'));
 const recipe = JSON.parse(readFileSync(resolve(options.records, 'build-recipe.json'), 'utf8'));
-const environment = JSON.parse(
-  readFileSync(resolve(options.records, 'environment-descriptor.json'), 'utf8'),
-);
 const deps = JSON.parse(readFileSync(resolve(options['runtime-deps']), 'utf8'));
 const licensePath = resolve(options.license);
 const license = JSON.parse(readFileSync(licensePath, 'utf8'));

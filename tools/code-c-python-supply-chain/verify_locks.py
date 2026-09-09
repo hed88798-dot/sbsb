@@ -35,7 +35,7 @@ def main() -> None:
     verified = 0
     for path in inventories:
         inventory = json.loads(path.read_text(encoding="utf-8"))
-        scope_name = path.name.removesuffix(".v2.json")
+        scope_name = path.name.removesuffix(".v3.json").removesuffix(".v2.json")
         lock_path = (
             REPOSITORY_ROOT
             / "sidecars"

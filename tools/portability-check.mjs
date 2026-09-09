@@ -27,7 +27,7 @@ async function loadImmutableAllowlist() {
     }
     return entries;
   } catch (error) {
-    throw new Error(`immutable-evidence-allowlist: FAIL (${error.message})`);
+    throw new Error(`immutable-evidence-allowlist: FAIL (${error.message})`, { cause: error });
   }
 }
 

@@ -4,8 +4,6 @@ import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repositoryRoot = process.cwd();
-const allowlistPath = resolve(repositoryRoot, 'tools/quality/immutable-evidence-allowlist.json');
-
 function sha256(bytes) {
   return createHash('sha256').update(bytes).digest('hex');
 }
