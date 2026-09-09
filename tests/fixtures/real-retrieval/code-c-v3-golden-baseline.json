@@ -1,0 +1,98 @@
+{
+  "schema_version": "code-c-real-retrieval-v3",
+  "benchmark_version": "v3",
+  "transport": "direct_utf8_bytes_via_System.Diagnostics.Process",
+  "worker": {
+    "sha256": "e56b32c1d547df0391e40a656230cdb2924b8ba6fb94f1b062632c5b1ca05d99",
+    "python": "3.13.15"
+  },
+  "environment": {
+    "os": "Windows Server 2019 Datacenter x64",
+    "cpu": "AMD EPYC, 2 physical cores, 4 logical processors",
+    "ram_gb": 15.7,
+    "gpu": "NONE",
+    "vc_runtime": "14.51.36247.0"
+  },
+  "corpus": {
+    "authorized_real_assets": 100,
+    "indexed_assets": 100,
+    "shots": 103,
+    "filenames_used_for_retrieval": false
+  },
+  "golden": {
+    "canonical_queries": 40,
+    "query_variants": 3,
+    "total_searches": 120,
+    "search_errors": 0,
+    "strict_positive_count": 119,
+    "explicit_negative_count": 2,
+    "evaluation_unit": "UNIQUE_ASSET_TOP5",
+    "gq006": {
+      "query": "猪喝水",
+      "status": "PASS",
+      "transport": "direct_utf8_bytes_via_System.Diagnostics.Process",
+      "cache_signature": "fb20dae0be37cc347f975cdec9d630600f06696575f2f2677d412d1520731f6d",
+      "top5_unique_assets": [
+        { "asset_id": "v2_asset_084", "ground_truth": true },
+        { "asset_id": "v2_asset_085", "ground_truth": true },
+        { "asset_id": "v2_asset_088", "ground_truth": true },
+        { "asset_id": "v2_asset_086", "ground_truth": true },
+        { "asset_id": "v2_asset_065", "ground_truth": false }
+      ]
+    }
+  },
+  "metrics": {
+    "SHORT_ZH": {
+      "top1_accuracy": 0.425,
+      "hit_at_5": 0.675,
+      "precision_at_5": 0.285,
+      "recall_at_5": 0.501,
+      "coverage_at_5": 0.513
+    },
+    "VISUAL_ZH": {
+      "top1_accuracy": 0.525,
+      "hit_at_5": 0.775,
+      "precision_at_5": 0.37,
+      "recall_at_5": 0.592,
+      "coverage_at_5": 0.615
+    },
+    "VISUAL_EN": {
+      "top1_accuracy": 0.675,
+      "hit_at_5": 0.925,
+      "precision_at_5": 0.42,
+      "recall_at_5": 0.748,
+      "coverage_at_5": 0.77
+    },
+    "core_queries": {
+      "VISUAL_ZH_hit_at_5": 0.955,
+      "VISUAL_EN_top1_accuracy": 0.773,
+      "VISUAL_EN_hit_at_5": 0.955
+    }
+  },
+  "legacy_sanity": {
+    "corpus_assets": 39,
+    "query_count": 18,
+    "top1_pass_count": 12,
+    "top1_total": 18,
+    "top1_accuracy": 0.667,
+    "status": "SANITY_ONLY_NOT_FORMAL_GATE"
+  },
+  "cache": {
+    "path": "C:\\ai-video-smoke\\batch-search-cache-v3",
+    "signature": "fb20dae0be37cc347f975cdec9d630600f06696575f2f2677d412d1520731f6d"
+  },
+  "scope": {
+    "siglip_baseline": "KEEP",
+    "embedding_model_changed": false,
+    "media_index_contract_changed": false,
+    "sidecar_protocol_changed": false,
+    "code_d_logic_implemented": false,
+    "500_corpus": "NOT_RUN",
+    "legacy_500_gate_reconciliation": "REQUIRED"
+  },
+  "validity": {
+    "authoritative_benchmark": "V3_ONLY",
+    "v1_v2_status": "REJECTED",
+    "v1_v2_reason": "Windows PowerShell 5.1 native text transport corrupted scripted Unicode requests; direct UTF-8 byte transport is required."
+  }
+}

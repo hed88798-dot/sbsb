@@ -1,0 +1,17 @@
+{
+  "schema_version": "code-c-golden-regression-v1",
+  "query_id": "GQ006",
+  "query": "猪喝水",
+  "transport": "direct_utf8_bytes_via_System.Diagnostics.Process",
+  "worker_sha256": "e56b32c1d547df0391e40a656230cdb2924b8ba6fb94f1b062632c5b1ca05d99",
+  "evaluation_unit": "UNIQUE_ASSET_TOP5",
+  "filename_used_for_retrieval": false,
+  "status": "PASS",
+  "top5_unique_assets": [
+    { "asset_id": "v2_asset_084", "ground_truth": true },
+    { "asset_id": "v2_asset_085", "ground_truth": true },
+    { "asset_id": "v2_asset_088", "ground_truth": true },
+    { "asset_id": "v2_asset_086", "ground_truth": true },
+    { "asset_id": "v2_asset_065", "ground_truth": false }
+  ]
+}
