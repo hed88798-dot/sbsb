@@ -1,4 +1,11 @@
-import { existsSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import BetterSqlite3 from 'better-sqlite3';
@@ -19,14 +26,15 @@ afterEach(() => {
 });
 
 describe('desktop SQLite migrations', () => {
-  it('migrates an empty database to version 2 with WAL and foreign keys', async () => {
+  it('migrates an empty database to version 3 with WAL and foreign keys', async () => {
     const dbPath = join(temporaryDirectory('desktop-empty-'), 'app.db');
     const { db, migration } = await openDatabase({ dbPath, migrationsDirectory });
-    expect(migration.currentVersion).toBe(2);
-    expect(migration.appliedVersions).toEqual([1, 2]);
+    expect(migration.currentVersion).toBe(3);
+    expect(migration.appliedVersions).toEqual([1, 2, 3]);
     expect(migration.backupPath).toBeNull();
     expect(db.pragma('journal_mode', { simple: true })).toBe('wal');
     expect(db.pragma('foreign_keys', { simple: true })).toBe(1);
+    expect(db.pragma('foreign_key_check')).toEqual([]);
     const tables = db
       .prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")
       .all() as { name: string }[];
@@ -47,6 +55,7 @@ describe('desktop SQLite migrations', () => {
         'shots',
         'embeddings',
         'index_generations',
+        'material_selection_decisions',
       ]),
     );
     db.close();
@@ -67,6 +76,34 @@ describe('desktop SQLite migrations', () => {
     db.close();
   });
 
+  it('upgrades the Code C version-2 schema to Code D version 3 without rewriting history', async () => {
+    const directory = temporaryDirectory('desktop-v2-upgrade-');
+    const dbPath = join(directory, 'app.db');
+    const v2Migrations = join(directory, 'v2-migrations');
+    mkdirSync(v2Migrations);
+    for (const filename of ['001_initial.sql', '002_media_index_v1.sql']) {
+      copyFileSync(join(migrationsDirectory, filename), join(v2Migrations, filename));
+    }
+    const v2 = await openDatabase({ dbPath, migrationsDirectory: v2Migrations });
+    expect(v2.migration.currentVersion).toBe(2);
+    v2.db.close();
+
+    const upgraded = await openDatabase({ dbPath, migrationsDirectory });
+    expect(upgraded.migration.currentVersion).toBe(3);
+    expect(upgraded.migration.appliedVersions).toEqual([3]);
+    expect(upgraded.migration.backupPath).not.toBeNull();
+    expect(
+      upgraded.db
+        .prepare(
+          "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'material_selection_decisions'",
+        )
+        .pluck()
+        .get(),
+    ).toBe('material_selection_decisions');
+    expect(upgraded.db.pragma('foreign_key_check')).toEqual([]);
+    upgraded.db.close();
+  });
+
   it('rolls back an interrupted migration and keeps a recoverable backup', async () => {
     const directory = temporaryDirectory('desktop-failure-');
     const dbPath = join(directory, 'app.db');
@@ -76,7 +113,6 @@ describe('desktop SQLite migrations', () => {
       "CREATE TABLE legacy_fixture(value TEXT); INSERT INTO legacy_fixture VALUES ('safe')",
     );
     legacy.close();
-    const { mkdirSync } = await import('node:fs');
     mkdirSync(brokenDirectory);
     writeFileSync(
       join(brokenDirectory, '001_broken.sql'),
@@ -96,7 +132,7 @@ describe('desktop SQLite migrations', () => {
     ).toBeUndefined();
     original.close();
     const recovered = await openDatabase({ dbPath, migrationsDirectory });
-    expect(recovered.migration.currentVersion).toBe(2);
+    expect(recovered.migration.currentVersion).toBe(3);
     recovered.db.close();
   });
 });

@@ -102,6 +102,9 @@ importers:
       '@app/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@app/domain-auto-edit':
+        specifier: workspace:*
+        version: link:../../packages/domain-auto-edit
       '@app/domain-copywriting':
         specifier: workspace:*
         version: link:../../packages/domain-copywriting
@@ -160,6 +163,12 @@ importers:
       zod:
         specifier: 4.1.13
         version: 4.1.13
+
+  packages/domain-auto-edit:
+    dependencies:
+      '@app/contracts':
+        specifier: workspace:*
+        version: link:../contracts
 
   packages/domain-copywriting:
     dependencies:

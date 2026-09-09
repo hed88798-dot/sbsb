@@ -1,0 +1,51 @@
+{
+  "schema_version": "material-selection-10-video-regression-v1",
+  "policy_id": "material-selection-policy-v1",
+  "policy_version": "1.0.0",
+  "scenarios": [
+    {
+      "id": "rich-animal",
+      "material_family": "ANIMAL",
+      "candidates": [
+        ["asset_a", "shot_a", 0.95],
+        ["asset_b", "shot_b", 0.94],
+        ["asset_c", "shot_c", 0.93],
+        ["asset_d", "shot_d", 0.92],
+        ["asset_e", "shot_e", 0.91]
+      ],
+      "expected": {
+        "unique_assets": 5,
+        "unique_shots": 5,
+        "repeat_count": 5,
+        "degradation_count": 5
+      }
+    },
+    {
+      "id": "medium-product",
+      "material_family": "PRODUCT",
+      "candidates": [
+        ["asset_a", "shot_a_1", 0.95],
+        ["asset_a", "shot_a_2", 0.94],
+        ["asset_b", "shot_b_1", 0.93],
+        ["asset_b", "shot_b_2", 0.92]
+      ],
+      "expected": {
+        "unique_assets": 2,
+        "unique_shots": 4,
+        "repeat_count": 6,
+        "degradation_count": 8
+      }
+    },
+    {
+      "id": "scarce-animal",
+      "material_family": "ANIMAL",
+      "candidates": [["asset_only", "shot_only", 0.95]],
+      "expected": {
+        "unique_assets": 1,
+        "unique_shots": 1,
+        "repeat_count": 9,
+        "degradation_count": 9
+      }
+    }
+  ]
+}

@@ -3,6 +3,7 @@ export { ProductRepository } from './product-repository.js';
 export { JobRepository } from './job-repository.js';
 export { CopywritingRepository } from './copywriting-repository.js';
 export { SettingsRepository } from './settings-repository.js';
+export { MaterialSelectionRepository } from './material-selection-repository.js';
 export {
   MediaIndexRepository,
   type ActiveEmbeddingTruthRow,

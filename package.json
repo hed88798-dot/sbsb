@@ -77,6 +77,7 @@
     "golden:verify": "node tools/golden/validate-manifest.mjs",
     "functional:authority:verify": "node tools/functional-acceptance/verify-authority-graph.mjs",
     "functional:authority:v3:verify": "node tools/functional-acceptance/verify-v3-authority.mjs",
+    "code-d:regression": "pnpm ci:prepare && node tools/material-selection-regression.mjs",
     "golden:update": "node tools/golden/update-manifest.mjs",
     "golden:validate": "pnpm golden:verify",
     "sbom:generate": "node tools/compliance/generate-sbom.mjs --output artifacts/compliance/SBOM.cdx.json",

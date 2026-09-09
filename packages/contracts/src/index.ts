@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export * from './material-selection.js';
+
 export const SCHEMA_VERSION_V1 = '1.0' as const;
 export const schemaVersionV1 = z.literal(SCHEMA_VERSION_V1);
 

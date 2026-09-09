@@ -8,3 +8,4 @@ Code 0 的批准基线保存在 `docs/architecture/code-0/`，不得直接重写
 
 - [ADR-007: Packaging Selected Native Contract](ADR-007-packaging-selected-native-contract.md)
 - [ADR-006: Two-stage Toolchain Vulnerability Disposition](ADR-006-two-stage-toolchain-vulnerability-disposition.md)
+- [ADR-021: Material Selection Policy V1](ADR-021-material-selection-policy-v1.md)

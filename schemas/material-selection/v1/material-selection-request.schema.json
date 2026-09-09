@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/material-selection/v1/material-selection-request.schema.json",
+  "title": "MaterialSelectionRequestV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "selection_request_id",
+    "batch_id",
+    "video_id",
+    "slot_id",
+    "material_family",
+    "candidate_set_id",
+    "candidate_set_contract_version",
+    "candidates",
+    "usage_history_snapshot",
+    "policy_id",
+    "policy_version",
+    "candidate_set_hash",
+    "history_snapshot_hash",
+    "policy_snapshot_hash"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "selection_request_id": { "$ref": "#/$defs/identity" },
+    "batch_id": { "$ref": "#/$defs/identity" },
+    "video_id": { "$ref": "#/$defs/identity" },
+    "slot_id": { "$ref": "#/$defs/identity" },
+    "material_family": { "$ref": "#/$defs/family" },
+    "candidate_set_id": { "$ref": "#/$defs/identity" },
+    "candidate_set_contract_version": { "const": "code-c-shot-search-v1" },
+    "candidates": { "type": "array", "items": { "$ref": "#/$defs/candidate" } },
+    "usage_history_snapshot": { "$ref": "#/$defs/history" },
+    "policy_id": { "const": "material-selection-policy-v1" },
+    "policy_version": { "$ref": "#/$defs/identity" },
+    "candidate_set_hash": { "$ref": "#/$defs/hash" },
+    "history_snapshot_hash": { "$ref": "#/$defs/hash" },
+    "policy_snapshot_hash": { "$ref": "#/$defs/hash" }
+  },
+  "$defs": {
+    "identity": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "family": { "enum": ["ANIMAL", "PRODUCT"] },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "asset_id",
+        "shot_id",
+        "semantic_rank",
+        "semantic_score",
+        "material_family",
+        "enabled",
+        "metadata"
+      ],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "asset_id": { "$ref": "#/$defs/identity" },
+        "shot_id": { "$ref": "#/$defs/identity" },
+        "semantic_rank": { "type": "integer", "minimum": 1 },
+        "semantic_score": { "type": "number" },
+        "material_family": { "$ref": "#/$defs/family" },
+        "enabled": { "type": "boolean" },
+        "start_ms": { "type": "integer", "minimum": 0 },
+        "end_ms": { "type": "integer", "minimum": 1 },
+        "revision": { "type": "integer", "minimum": 1 },
+        "metadata": { "type": "object" }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "selection_request_id",
+        "batch_id",
+        "video_id",
+        "slot_id",
+        "material_family",
+        "asset_id",
+        "shot_id",
+        "committed_at",
+        "decision_receipt_hash"
+      ],
+      "properties": {
+        "selection_request_id": { "$ref": "#/$defs/identity" },
+        "batch_id": { "$ref": "#/$defs/identity" },
+        "video_id": { "$ref": "#/$defs/identity" },
+        "slot_id": { "$ref": "#/$defs/identity" },
+        "material_family": { "$ref": "#/$defs/family" },
+        "asset_id": { "$ref": "#/$defs/identity" },
+        "shot_id": { "$ref": "#/$defs/identity" },
+        "committed_at": { "type": "string", "format": "date-time" },
+        "decision_receipt_hash": { "$ref": "#/$defs/hash" }
+      }
+    },
+    "history": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "selected_decisions"],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "selected_decisions": { "type": "array", "items": { "$ref": "#/$defs/usage" } }
+      }
+    }
+  }
+}

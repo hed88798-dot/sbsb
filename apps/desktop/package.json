@@ -18,6 +18,7 @@
   "dependencies": {
     "@app/contracts": "workspace:*",
     "@app/domain-copywriting": "workspace:*",
+    "@app/domain-auto-edit": "workspace:*",
     "@app/domain-product": "workspace:*",
     "@app/local-db": "workspace:*",
     "@app/provider-client": "workspace:*",
