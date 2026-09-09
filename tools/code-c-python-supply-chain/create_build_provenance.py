@@ -55,6 +55,14 @@ def component_sha256(component: dict[str, object]) -> str:
     raise SystemExit("approved Toolchain component is missing an artifact SHA-256")
 
 
+def toolchain_inventory_id(toolchain: dict[str, object], target: str) -> str:
+    if toolchain.get("inventory_id"):
+        return str(toolchain["inventory_id"])
+    if toolchain.get("evidence_type") == "PYTHON_TOOLCHAIN_INTAKE_EVIDENCE":
+        return f"code-c-{target}-toolchain-intake-evidence"
+    raise SystemExit("approved Toolchain subject is missing inventory identity")
+
+
 def git_head() -> str:
     return subprocess.run(
         ["git", "rev-parse", "HEAD"],
@@ -142,7 +150,7 @@ def main() -> None:
                 },
             ],
             "toolchain_inventory": {
-                "inventory_id": toolchain["inventory_id"],
+                "inventory_id": toolchain_inventory_id(toolchain, arguments.target),
                 "manifest_path": toolchain_path.relative_to(REPOSITORY_ROOT).as_posix(),
                 "manifest_sha256": sha256_file(toolchain_path),
             },

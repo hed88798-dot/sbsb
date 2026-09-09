@@ -102,7 +102,10 @@ try {
     ['secret:scan'],
     ['license:scan'],
     ['vulnerability:scan'],
-    ['compliance:python:verify'],
+    // Candidate inventories are committed subjects; their external wheel bytes are
+    // hydrated only by the platform-specific Worker jobs.  Validate the subjects here
+    // without pretending a clean checkout contains materialized artifacts.
+    ['compliance:python:schema'],
     ['compliance:python:target:verify'],
     ['golden:verify'],
     ['build'],
