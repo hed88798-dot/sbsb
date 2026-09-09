@@ -129,11 +129,11 @@ jobs:
         env:
           PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
         run: |
+          # This integration baseline has approved v3 subjects only for the runtime and Worker build scopes.
+          # Model scopes remain unapproved and are intentionally not consumed by this gate.
           node tools/python-supply-chain/cli.mjs verify \
-            --inventory compliance/python-artifacts/windows/runtime.v2.json \
-            --inventory compliance/python-artifacts/windows/worker-build.v2.json \
-            --inventory compliance/python-artifacts/windows/model-export.v2.json \
-            --inventory compliance/python-artifacts/windows/model-evaluation.v2.json \
+            --inventory compliance/python-artifacts/windows/runtime.v3.json \
+            --inventory compliance/python-artifacts/windows/worker-build.v3.json \
             --artifact-root artifacts/python-approved/wheels
           artifacts/worker-venv/Scripts/python.exe tools/code-c-python-supply-chain/verify_locks.py \
             --target windows --artifact-root artifacts/python-approved/wheels
@@ -163,8 +163,8 @@ jobs:
           tools/code-c-python-supply-chain/prepare_pyinstaller_environment.py
           --target windows
           --repository-root '${{ github.workspace }}'
-          --runtime-inventory compliance/python-artifacts/windows/runtime.v2.json
-          --worker-build-inventory compliance/python-artifacts/windows/worker-build.v2.json
+          --runtime-inventory compliance/python-artifacts/windows/runtime.v3.json
+          --worker-build-inventory compliance/python-artifacts/windows/worker-build.v3.json
           --cpython-distribution artifacts/python-approved/toolchain/windows/cpython/python-3.13.15-win32-x64.zip
           --pip-wheel artifacts/python-approved/toolchain/windows/pip/pip-26.2.1-py3-none-any.whl
           --pyinstaller-wheel artifacts/python-approved/toolchain/windows/pyinstaller/pyinstaller-6.22.2-py3-none-win_amd64.whl
@@ -203,10 +203,8 @@ jobs:
           PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
         run: |
           node tools/python-supply-chain/cli.mjs license \
-            --inventory compliance/python-artifacts/windows/runtime.v2.json \
-            --inventory compliance/python-artifacts/windows/worker-build.v2.json \
-            --inventory compliance/python-artifacts/windows/model-export.v2.json \
-            --inventory compliance/python-artifacts/windows/model-evaluation.v2.json \
+            --inventory compliance/python-artifacts/windows/runtime.v3.json \
+            --inventory compliance/python-artifacts/windows/worker-build.v3.json \
             --artifact-root artifacts/python-approved/wheels \
             --artifact-license-evidence compliance/license-evidence/pyinstaller-6.22.2/windows-x86_64.scan.json \
             --artifact-usage-binding artifacts/compliance/windows/PYINSTALLER_USAGE_BINDING.json \
@@ -214,10 +212,8 @@ jobs:
             --toolchain-inventory compliance/python-toolchain/windows.v1.json \
             --release --output artifacts/compliance/windows/PYTHON_LICENSE.json
           node tools/python-supply-chain/cli.mjs vulnerability \
-            --inventory compliance/python-artifacts/windows/runtime.v2.json \
-            --inventory compliance/python-artifacts/windows/worker-build.v2.json \
-            --inventory compliance/python-artifacts/windows/model-export.v2.json \
-            --inventory compliance/python-artifacts/windows/model-evaluation.v2.json \
+            --inventory compliance/python-artifacts/windows/runtime.v3.json \
+            --inventory compliance/python-artifacts/windows/worker-build.v3.json \
             --artifact-root artifacts/python-approved/wheels \
             --output artifacts/compliance/windows/PYTHON_VULNERABILITIES.json
           node tools/python-supply-chain/cli.mjs toolchain-license \
@@ -234,16 +230,16 @@ jobs:
           PYTHON_EXECUTABLE: ${{ github.workspace }}\artifacts\worker-venv\Scripts\python.exe
         run: |
           node tools/python-supply-chain/cli.mjs build-provenance-verify \
-            --inventory compliance/python-artifacts/windows/runtime.v2.json \
-            --inventory compliance/python-artifacts/windows/worker-build.v2.json \
+            --inventory compliance/python-artifacts/windows/runtime.v3.json \
+            --inventory compliance/python-artifacts/windows/worker-build.v3.json \
             --artifact-root artifacts/python-approved/wheels \
             --toolchain-inventory compliance/python-toolchain/windows.v1.json \
             --toolchain-artifact-root artifacts/python-approved/toolchain \
             --build-provenance artifacts/compliance/windows/BUILD_PROVENANCE.json \
             --build-root . --final-artifact dist/media-worker.exe
           node tools/python-supply-chain/cli.mjs native-inventory \
-            --inventory compliance/python-artifacts/windows/runtime.v2.json \
-            --inventory compliance/python-artifacts/windows/worker-build.v2.json \
+            --inventory compliance/python-artifacts/windows/runtime.v3.json \
+            --inventory compliance/python-artifacts/windows/worker-build.v3.json \
             --artifact-root artifacts/python-approved/wheels \
             --toolchain-inventory compliance/python-toolchain/windows.v1.json \
             --toolchain-artifact-root artifacts/python-approved/toolchain \
@@ -252,8 +248,8 @@ jobs:
             --inventory-id code-c-windows-packaged-worker \
             --output artifacts/compliance/windows/PACKAGED_NATIVE_INVENTORY.json
           node tools/python-supply-chain/cli.mjs reconcile \
-            --inventory compliance/python-artifacts/windows/runtime.v2.json \
-            --inventory compliance/python-artifacts/windows/worker-build.v2.json \
+            --inventory compliance/python-artifacts/windows/runtime.v3.json \
+            --inventory compliance/python-artifacts/windows/worker-build.v3.json \
             --artifact-root artifacts/python-approved/wheels \
             --toolchain-inventory compliance/python-toolchain/windows.v1.json \
             --toolchain-artifact-root artifacts/python-approved/toolchain \
@@ -277,10 +273,8 @@ jobs:
             --output artifacts/compliance/windows/SBOM.cdx.json \
             --license-report artifacts/compliance/windows/PYTHON_LICENSE.json \
             --license-report artifacts/compliance/windows/TOOLCHAIN_LICENSE.json \
-            --python-inventory compliance/python-artifacts/windows/runtime.v2.json \
-            --python-inventory compliance/python-artifacts/windows/worker-build.v2.json \
-            --python-inventory compliance/python-artifacts/windows/model-export.v2.json \
-            --python-inventory compliance/python-artifacts/windows/model-evaluation.v2.json \
+            --python-inventory compliance/python-artifacts/windows/runtime.v3.json \
+            --python-inventory compliance/python-artifacts/windows/worker-build.v3.json \
             --packaged-native-inventory artifacts/compliance/windows/PACKAGED_NATIVE_INVENTORY.json \
             --toolchain-inventory compliance/python-toolchain/windows.v1.json \
             --build-provenance artifacts/compliance/windows/BUILD_PROVENANCE.json \

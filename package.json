@@ -15,7 +15,7 @@
     "ci:typecheck": "pnpm -r --if-present typecheck",
     "dev": "pnpm --filter @app/desktop dev",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format:check": "node tools/quality/format-check.mjs",
     "lint": "eslint .",
     "typecheck": "pnpm ci:prepare && pnpm ci:typecheck",
     "test": "pnpm ci:prepare && pnpm ci:test",

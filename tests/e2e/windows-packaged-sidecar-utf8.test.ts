@@ -4,7 +4,10 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { callSidecar } from '../../apps/desktop/src/main/sidecar-client.js';
-import { buildSearchCache, encodeNormalizedVector } from '../../packages/domain-media-index/src/index.js';
+import {
+  buildSearchCache,
+  encodeNormalizedVector,
+} from '../../packages/domain-media-index/src/index.js';
 
 const workerExecutable = process.env.CODE_C_WORKER_EXECUTABLE;
 const modelRoot = process.env.CODE_C_REAL_MODEL_ROOT;
@@ -70,7 +73,9 @@ describe.skipIf(!enabled)('packaged Windows Worker through the Desktop sidecar c
           status: 'PASS',
           protocol_version: '1.0',
           query_text: '猪场',
-          worker_sha256: createHash('sha256').update(await readFile(workerExecutable!)).digest('hex'),
+          worker_sha256: createHash('sha256')
+            .update(await readFile(workerExecutable!))
+            .digest('hex'),
           candidate_count: candidateList.length,
           semantic_score_finite: true,
         };

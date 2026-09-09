@@ -275,9 +275,7 @@ def run_archive_positive_control() -> dict[str, Any]:
 def exact_worker_availability() -> dict[str, Any]:
     candidates: dict[str, list[dict[str, Any]]] = {"linux": [], "windows": []}
     local_linux = REPOSITORY_ROOT / "dist/media-worker"
-    archived_linux = Path(
-        "/Users/sungaoang/Desktop/兽药电商ai混剪桌面端/Code-F-Local-Archive/code-c/run-33268789319/extracted-artifacts/python-supply-chain-candidate-linux-5ead2a171f57213de59ee5f1d416875a724d7418/pyinstaller-build/linux/dist/media-worker"
-    )
+    archived_linux = REPOSITORY_ROOT / "frozen-candidates" / "code-c-linux-worker-build" / "linux" / "dist" / "media-worker"
     paths_by_target = {
         "linux": [
             ("repo-dist-media-worker", local_linux),

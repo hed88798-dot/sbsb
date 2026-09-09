@@ -151,8 +151,8 @@ jobs:
           PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
         run: |
           node tools/python-supply-chain/cli.mjs verify \
-            --inventory compliance/python-artifacts/linux/runtime.v2.json \
-            --inventory compliance/python-artifacts/linux/worker-build.v2.json \
+            --inventory compliance/python-artifacts/linux/runtime.v3.json \
+            --inventory compliance/python-artifacts/linux/worker-build.v3.json \
             --artifact-root artifacts/python-approved/wheels
           artifacts/worker-venv/bin/python tools/code-c-python-supply-chain/verify_locks.py \
             --target linux --artifact-root artifacts/python-approved/wheels
@@ -192,8 +192,8 @@ jobs:
           PYTHON_EXECUTABLE: ${{ steps.locked-python.outputs.python }}
         run: |
           node tools/python-supply-chain/cli.mjs license \
-            --inventory compliance/python-artifacts/linux/runtime.v2.json \
-            --inventory compliance/python-artifacts/linux/worker-build.v2.json \
+            --inventory compliance/python-artifacts/linux/runtime.v3.json \
+            --inventory compliance/python-artifacts/linux/worker-build.v3.json \
             --artifact-root artifacts/python-approved/wheels \
             --artifact-license-evidence compliance/license-evidence/pyinstaller-6.22.2/linux-x86_64.scan.json \
             --artifact-usage-binding artifacts/compliance/linux/PYINSTALLER_USAGE_BINDING.json \
@@ -201,8 +201,8 @@ jobs:
             --toolchain-inventory compliance/python-toolchain/linux.v1.json \
             --release --output artifacts/compliance/linux/PYTHON_LICENSE.json
           node tools/python-supply-chain/cli.mjs vulnerability \
-            --inventory compliance/python-artifacts/linux/runtime.v2.json \
-            --inventory compliance/python-artifacts/linux/worker-build.v2.json \
+            --inventory compliance/python-artifacts/linux/runtime.v3.json \
+            --inventory compliance/python-artifacts/linux/worker-build.v3.json \
             --artifact-root artifacts/python-approved/wheels \
             --output artifacts/compliance/linux/PYTHON_VULNERABILITIES.json
           node tools/python-supply-chain/cli.mjs toolchain-license \
@@ -218,16 +218,16 @@ jobs:
           PYTHON_EXECUTABLE: ${{ github.workspace }}/artifacts/worker-venv/bin/python
         run: |
           node tools/python-supply-chain/cli.mjs build-provenance-verify \
-            --inventory compliance/python-artifacts/linux/runtime.v2.json \
-            --inventory compliance/python-artifacts/linux/worker-build.v2.json \
+            --inventory compliance/python-artifacts/linux/runtime.v3.json \
+            --inventory compliance/python-artifacts/linux/worker-build.v3.json \
             --artifact-root artifacts/python-approved/wheels \
             --toolchain-inventory compliance/python-toolchain/linux.v1.json \
             --toolchain-artifact-root artifacts/python-approved/toolchain \
             --build-provenance artifacts/compliance/linux/BUILD_PROVENANCE.json \
             --build-root . --final-artifact dist/media-worker
           node tools/python-supply-chain/cli.mjs native-inventory \
-            --inventory compliance/python-artifacts/linux/runtime.v2.json \
-            --inventory compliance/python-artifacts/linux/worker-build.v2.json \
+            --inventory compliance/python-artifacts/linux/runtime.v3.json \
+            --inventory compliance/python-artifacts/linux/worker-build.v3.json \
             --artifact-root artifacts/python-approved/wheels \
             --toolchain-inventory compliance/python-toolchain/linux.v1.json \
             --toolchain-artifact-root artifacts/python-approved/toolchain \
@@ -236,8 +236,8 @@ jobs:
             --inventory-id code-c-linux-packaged-worker \
             --output artifacts/compliance/linux/PACKAGED_NATIVE_INVENTORY.json
           node tools/python-supply-chain/cli.mjs reconcile \
-            --inventory compliance/python-artifacts/linux/runtime.v2.json \
-            --inventory compliance/python-artifacts/linux/worker-build.v2.json \
+            --inventory compliance/python-artifacts/linux/runtime.v3.json \
+            --inventory compliance/python-artifacts/linux/worker-build.v3.json \
             --artifact-root artifacts/python-approved/wheels \
             --toolchain-inventory compliance/python-toolchain/linux.v1.json \
             --toolchain-artifact-root artifacts/python-approved/toolchain \
@@ -260,8 +260,8 @@ jobs:
             --output artifacts/compliance/linux/SBOM.cdx.json \
             --license-report artifacts/compliance/linux/PYTHON_LICENSE.json \
             --license-report artifacts/compliance/linux/TOOLCHAIN_LICENSE.json \
-            --python-inventory compliance/python-artifacts/linux/runtime.v2.json \
-            --python-inventory compliance/python-artifacts/linux/worker-build.v2.json \
+            --python-inventory compliance/python-artifacts/linux/runtime.v3.json \
+            --python-inventory compliance/python-artifacts/linux/worker-build.v3.json \
             --packaged-native-inventory artifacts/compliance/linux/PACKAGED_NATIVE_INVENTORY.json \
             --toolchain-inventory compliance/python-toolchain/linux.v1.json \
             --build-provenance artifacts/compliance/linux/BUILD_PROVENANCE.json \
