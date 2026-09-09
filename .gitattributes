@@ -37,6 +37,8 @@ compliance/python-artifacts/linux/runtime.v3.json -text
 compliance/python-artifacts/linux/worker-build.v3.json -text
 compliance/python-artifacts/windows/runtime.v3.json -text
 compliance/python-artifacts/windows/worker-build.v3.json -text
+compliance/python-toolchain/linux.v1.json -text
+compliance/python-toolchain/windows.v1.json -text
 compliance/approval/records/approval-code-c-linux-runtime-py31315.json -text
 compliance/approval/records/approval-code-c-linux-worker-build-py31315.json -text
 compliance/approval/records/approval-code-c-windows-runtime-py31315.json -text
