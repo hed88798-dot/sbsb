@@ -189,6 +189,11 @@ function verifyProfile(profile, codeGProfile) {
     'Windows h264_mf is not explicitly enabled',
   );
   assert(
+    JSON.stringify(profile.required_components.video_encoder_input_formats.windows) ===
+      JSON.stringify(['nv12']),
+    'Windows h264_mf input format must be the safer NV12 path',
+  );
+  assert(
     profile.platform_builds['macos-arm64'].configure_arguments.includes('--enable-videotoolbox'),
     'macOS VideoToolbox is not explicitly enabled',
   );

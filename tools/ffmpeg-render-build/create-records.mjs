@@ -98,6 +98,7 @@ const recipe = {
     ...profile.required_components.audio_filters.map((value) => `filter:${value}`),
     'encoder:aac',
     `encoder:${platform === 'windows' ? 'h264_mf' : 'h264_videotoolbox'}`,
+    'encoder-input-format:nv12',
     'muxer:mov',
     'muxer:mp4',
     'protocol:file',

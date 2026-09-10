@@ -3,7 +3,7 @@
   "profile_kind": "FFMPEG_RENDER_BUILD_PROFILE",
   "profile_id": "code-f-ffmpeg-render-build-profile-v1",
   "profile_version": 1,
-  "profile_sha256": "0be47aac293dc768adbde21cef91bf80d290fa7a2c2f5e6cb35913939e540e25",
+  "profile_sha256": "5882b57077b414fd9bd37d5486c3afdfddb884fad10e4dc83d98def5120875eb",
   "code_g_capability_profile": {
     "path": "docs/render/ffmpeg-required-capability-profile.v1.json",
     "commit": "9cc2326bf5059290f1a8498d0683e7e7d6f3bf9d",
@@ -63,6 +63,10 @@
     "video_encoders": {
       "windows": ["h264_mf"],
       "macos": ["h264_videotoolbox"]
+    },
+    "video_encoder_input_formats": {
+      "windows": ["nv12"],
+      "macos": ["nv12"]
     },
     "audio_encoders": ["aac"],
     "muxers": ["mov", "mp4"],

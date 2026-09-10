@@ -46,8 +46,8 @@ rm -f "$video" "$audio" "$output" "$progress"
 # and machine-readable progress is emitted on the approved stdout pipe.
 if ! "$FFMPEG" -hide_banner -loglevel error \
   -f rawvideo -pix_fmt rgb24 -video_size 16x16 -framerate 30 -i "$FIXTURES/input.rgb24" \
-  -an -vf 'trim=start=0:end=0.5,setpts=PTS-STARTPTS,scale=32:32,pad=32:32:0:0:black,setsar=1,fps=30,format=yuv420p' \
-  -c:v h264_mf -b:v 500k -movflags +faststart -progress pipe:1 -f mp4 "$video" > "$progress"; then
+  -an -vf 'trim=start=0:end=0.5,setpts=PTS-STARTPTS,scale=32:32,pad=32:32:0:0:black,setsar=1,fps=30,format=nv12' \
+  -c:v h264_mf -pix_fmt nv12 -b:v 500k -movflags +faststart -progress pipe:1 -f mp4 "$video" > "$progress"; then
   fail 'H.264 Media Foundation encode failed'
 fi
 require_line "$progress" '^progress=end' 'terminal progress marker'
