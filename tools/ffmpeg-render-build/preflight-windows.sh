@@ -29,11 +29,21 @@ for package in mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-binutils mingw-w6
 done
 
 make_command="${MAKE_COMMAND:-mingw32-make}"
-compiler_path="$(command -v gcc)"
-linker_path="$(command -v ld)"
-assembler_path="$(command -v nasm)"
-objdump_path="$(command -v objdump)"
-make_path="$(command -v "$make_command")"
+resolve_executable_path() {
+  local candidate="$1"
+  if [ -f "$candidate" ]; then
+    printf '%s\n' "$candidate"
+  elif [ -f "${candidate}.exe" ]; then
+    printf '%s\n' "${candidate}.exe"
+  else
+    return 1
+  fi
+}
+compiler_path="$(resolve_executable_path "$(command -v gcc)")"
+linker_path="$(resolve_executable_path "$(command -v ld)")"
+assembler_path="$(resolve_executable_path "$(command -v nasm)")"
+objdump_path="$(resolve_executable_path "$(command -v objdump)")"
+make_path="$(resolve_executable_path "$(command -v "$make_command")")"
 case "$compiler_path" in /ucrt64/bin/gcc*) ;; *) echo "unexpected compiler path: $compiler_path" >&2; false ;; esac
 case "$linker_path" in /ucrt64/bin/ld*) ;; *) echo "unexpected linker path: $linker_path" >&2; false ;; esac
 case "$assembler_path" in /usr/bin/nasm*) ;; *) echo "unexpected assembler path: $assembler_path" >&2; false ;; esac
