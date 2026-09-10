@@ -1,0 +1,172 @@
+{
+  "schema_version": "1",
+  "profile_kind": "FFMPEG_RENDER_BUILD_PROFILE",
+  "profile_id": "code-f-ffmpeg-render-build-profile-v1",
+  "profile_version": 1,
+  "profile_sha256": "c52da34133a074c2f1234c36679376e4ead6fdce6eb452ec4b7df2c3601f2393",
+  "code_g_capability_profile": {
+    "path": "docs/render/ffmpeg-required-capability-profile.v1.json",
+    "commit": "9cc2326bf5059290f1a8498d0683e7e7d6f3bf9d",
+    "profile_id": "code-g-r1-ffmpeg-required-capabilities",
+    "profile_version": 1,
+    "profile_hash": "e05686e544bd31de1782b4b13cb23e993e6c26ef90408b1d19b8e59dd5ac5910"
+  },
+  "upstream_source": {
+    "project": "FFmpeg/FFmpeg",
+    "release": "9.0.1",
+    "tag": "n9.0.1",
+    "commit": "bf1b838f2ab88b4f8fd83443325c782ea0e0f7fa",
+    "archive": "ffmpeg-9.0.1.tar.xz",
+    "archive_sha256": "cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635",
+    "archive_locator": "https://ffmpeg.org/releases/ffmpeg-9.0.1.tar.xz"
+  },
+  "build_policy": {
+    "source_build_only": true,
+    "floating_binary_allowed": false,
+    "system_path_runtime_allowed": false,
+    "external_library_autodetection": "DISABLED",
+    "linkage": "SHARED",
+    "runtime_layout": "runtime/ffmpeg/<platform>/<architecture>/bundle",
+    "runtime_locator": "EXPLICIT_APP_LOCAL_BUNDLE",
+    "programs": ["ffmpeg", "ffprobe"],
+    "ffplay": "DISABLED",
+    "protocols": {
+      "required": ["file", "pipe"],
+      "forbidden": ["ftp", "http", "https", "rtmp", "rtsp"],
+      "network": "DISABLED",
+      "pipe_scope": "PROGRESS_AND_CONTROLLED_STANDARD_STREAMS_ONLY"
+    },
+    "license_constraints": {
+      "gpl": "FORBIDDEN",
+      "nonfree": "FORBIDDEN",
+      "libx264": "FORBIDDEN",
+      "libx265": "FORBIDDEN",
+      "expected_distribution_expression": "LGPL-2.1-or-later"
+    }
+  },
+  "required_components": {
+    "demuxers": "ALL_NON_GPL_AT_PINNED_RELEASE",
+    "parsers": "ALL_NON_GPL_AT_PINNED_RELEASE",
+    "decoders": "ALL_NON_GPL_AT_PINNED_RELEASE",
+    "video_filters": [
+      "concat",
+      "crop",
+      "format",
+      "fps",
+      "pad",
+      "scale",
+      "setsar",
+      "setpts",
+      "trim"
+    ],
+    "audio_filters": ["aformat", "aresample", "asetpts"],
+    "video_encoders": {
+      "windows": ["h264_mf"],
+      "macos": ["h264_videotoolbox"]
+    },
+    "audio_encoders": ["aac"],
+    "muxers": ["mov"],
+    "required_probe_facts": {
+      "video": ["codec", "duration", "frame_rate", "height", "pixel_format", "width"],
+      "audio": ["channels", "codec", "duration", "sample_rate"],
+      "container": ["duration", "format", "size"]
+    }
+  },
+  "common_configure_arguments": [
+    "--prefix=install",
+    "--disable-everything",
+    "--enable-ffmpeg",
+    "--enable-ffprobe",
+    "--disable-ffplay",
+    "--enable-demuxers",
+    "--enable-parsers",
+    "--enable-decoders",
+    "--enable-filter=concat",
+    "--enable-filter=crop",
+    "--enable-filter=format",
+    "--enable-filter=fps",
+    "--enable-filter=pad",
+    "--enable-filter=scale",
+    "--enable-filter=setsar",
+    "--enable-filter=setpts",
+    "--enable-filter=trim",
+    "--enable-filter=aformat",
+    "--enable-filter=aresample",
+    "--enable-filter=asetpts",
+    "--enable-encoder=aac",
+    "--enable-muxer=mov",
+    "--enable-protocol=file",
+    "--enable-protocol=pipe",
+    "--disable-network",
+    "--disable-autodetect",
+    "--disable-devices",
+    "--disable-indevs",
+    "--disable-outdevs",
+    "--disable-avdevice",
+    "--disable-postproc",
+    "--disable-gpl",
+    "--disable-nonfree",
+    "--disable-doc",
+    "--disable-debug",
+    "--enable-shared",
+    "--disable-static"
+  ],
+  "platform_builds": {
+    "windows-x86_64": {
+      "runner": "windows-2022",
+      "environment": "MSYS2_UCRT64",
+      "configure_arguments": [
+        "--target-os=mingw32",
+        "--arch=x86_64",
+        "--enable-cross-compile",
+        "--cc=gcc",
+        "--enable-mediafoundation",
+        "--enable-encoder=h264_mf",
+        "--extra-ldflags=-static-libgcc -static-libstdc++",
+        "--extra-libs=-Wl,-Bstatic -lwinpthread -Wl,-Bdynamic"
+      ],
+      "compiler_policy": "MSYS2_UCRT64_GCC_EXACT_PATH",
+      "os_prerequisites": ["WINDOWS_MEDIA_FOUNDATION", "WINDOWS_MSVC_RUNTIME_X64"]
+    },
+    "macos-arm64": {
+      "runner": "macos-14",
+      "environment": "APPLE_CLANG",
+      "configure_arguments": [
+        "--arch=arm64",
+        "--enable-videotoolbox",
+        "--enable-encoder=h264_videotoolbox"
+      ],
+      "compiler_policy": "APPLE_CLANG_SYSTEM_TOOLCHAIN",
+      "os_prerequisites": ["MACOS_VIDEOTOOLBOX"]
+    }
+  },
+  "verification_policy": {
+    "buildconf_must_bind_profile": true,
+    "required_capabilities_must_be_machine_verified": true,
+    "network_protocols_must_be_absent": true,
+    "wrong_profile_hash_rejected": true,
+    "wrong_binary_hash_rejected": true,
+    "modified_member_rejected": true,
+    "missing_member_rejected": true,
+    "path_and_cwd_decoys_must_not_be_consumed": true,
+    "unsupported_capability_must_fail": true,
+    "standalone_smoke_is_not_product_render": true
+  },
+  "artifact_status": {
+    "windows": "NOT_YET_PRODUCED",
+    "macos_dev": "NOT_YET_PRODUCED",
+    "license_review": "NOT_PERFORMED",
+    "vulnerability_review": "NOT_PERFORMED",
+    "distribution_approval": "NOT_PERFORMED"
+  },
+  "recheck_triggers": [
+    "Code G profile commit or profile hash changes",
+    "FFmpeg release, tag, or source archive hash changes",
+    "configure arguments or component selection changes",
+    "encoder implementation changes",
+    "network/protocol policy changes",
+    "external library or linkage policy changes",
+    "relevant upstream vulnerability facts change",
+    "Windows or macOS runtime prerequisite policy changes"
+  ]
+}
