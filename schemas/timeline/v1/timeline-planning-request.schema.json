@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/timeline/v1/timeline-planning-request.schema.json",
+  "title": "TimelinePlanningRequestV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "planning_request_id",
+    "timeline_request_hash",
+    "confirmed_shot_plan",
+    "narration_timing_snapshot",
+    "committed_selection_refs",
+    "timeline_policy_id",
+    "timeline_policy_version",
+    "timeline_policy_snapshot_hash"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "planning_request_id": { "$ref": "#/$defs/identity" },
+    "timeline_request_hash": { "$ref": "#/$defs/hash" },
+    "confirmed_shot_plan": {
+      "$ref": "https://local.app/schemas/timeline/v1/confirmed-shot-plan.schema.json"
+    },
+    "narration_timing_snapshot": {
+      "$ref": "https://local.app/schemas/timeline/v1/narration-timing-snapshot.schema.json"
+    },
+    "committed_selection_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "https://local.app/schemas/timeline/v1/committed-material-selection-ref.schema.json"
+      }
+    },
+    "timeline_policy_id": { "$ref": "#/$defs/identity" },
+    "timeline_policy_version": { "$ref": "#/$defs/identity" },
+    "timeline_policy_snapshot_hash": { "$ref": "#/$defs/hash" }
+  },
+  "$defs": {
+    "identity": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

@@ -47,6 +47,21 @@ const rules = [
     message: 'domain-auto-edit 不得依赖 domain-digital-human',
   },
   {
+    within: 'packages/timeline',
+    forbidden: [
+      /@app\/local-db/,
+      /@app\/desktop/,
+      /@app\/domain-auto-edit/,
+      /@app\/domain-digital-human/,
+      /@app\/provider-adapters/,
+      /better-sqlite3/,
+      /(?:node:)?fs(?:\/|['"])/,
+      /(?:node:)?child_process/,
+      /\belectron\b/,
+    ],
+    message: 'timeline 只能执行纯领域规划，不得依赖 DB、Desktop、selector、Provider 或系统能力',
+  },
+  {
     within: 'sidecars/media-worker',
     forbidden: [/better-sqlite3/, /\bsqlite3\b/, /\bFastAPI\b/, /\bFlask\b/],
     message: 'media-worker 不得写业务 SQLite 或开放 localhost HTTP 服务',

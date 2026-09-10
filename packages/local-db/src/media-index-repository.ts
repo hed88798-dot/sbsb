@@ -33,6 +33,16 @@ export interface SearchableShotRow {
   descriptor: VisualDescriptorV1;
 }
 
+export interface ExactExecutableShotV1 {
+  assetId: string;
+  revision: number;
+  shotId: string;
+  startMs: number;
+  endMs: number;
+  sourcePath: string;
+  fileHash: string;
+}
+
 function canonicalize(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonicalize);
   if (value !== null && typeof value === 'object') {
@@ -67,6 +77,77 @@ export class MediaIndexRepository {
 
   constructor(db: Database) {
     this.#db = db;
+  }
+
+  assertExactShotExecutable(input: {
+    asset_id: string;
+    revision: number;
+    shot_id: string;
+    start_ms: number;
+    end_ms: number;
+  }): ExactExecutableShotV1 {
+    if (
+      input.asset_id.length === 0 ||
+      input.shot_id.length === 0 ||
+      !Number.isSafeInteger(input.revision) ||
+      input.revision < 1 ||
+      !Number.isSafeInteger(input.start_ms) ||
+      input.start_ms < 0 ||
+      !Number.isSafeInteger(input.end_ms) ||
+      input.end_ms <= input.start_ms
+    ) {
+      throw new Error('EXACT_MEDIA_REVISION_NOT_EXECUTABLE');
+    }
+    const rows = this.#db
+      .prepare(
+        `SELECT r.file_hash, r.state AS revision_state,
+                s.start_ms, s.end_ms, s.analysis_status,
+                l.normalized_path, l.location_status
+         FROM asset_revisions r
+         JOIN shots s ON s.asset_id = r.asset_id AND s.revision = r.revision
+         LEFT JOIN media_asset_locations l ON l.asset_id = r.asset_id
+         WHERE r.asset_id = ? AND r.revision = ? AND s.shot_id = ?
+         ORDER BY l.normalized_path`,
+      )
+      .all(input.asset_id, input.revision, input.shot_id) as Array<{
+      file_hash: string;
+      revision_state: string;
+      start_ms: number;
+      end_ms: number;
+      analysis_status: string;
+      normalized_path: string | null;
+      location_status: string | null;
+    }>;
+    const exact = rows[0];
+    if (
+      !exact ||
+      exact.revision_state !== 'READY' ||
+      exact.analysis_status !== 'READY' ||
+      exact.start_ms !== input.start_ms ||
+      exact.end_ms !== input.end_ms
+    ) {
+      throw new Error('EXACT_MEDIA_REVISION_NOT_EXECUTABLE');
+    }
+    for (const row of rows) {
+      if (row.location_status !== 'PRESENT' || row.normalized_path === null) continue;
+      try {
+        const sourcePath = realpathSync(row.normalized_path);
+        if (!lstatSync(sourcePath).isFile()) continue;
+        if (sha256(readFileSync(sourcePath)) !== row.file_hash) continue;
+        return {
+          assetId: input.asset_id,
+          revision: input.revision,
+          shotId: input.shot_id,
+          startMs: input.start_ms,
+          endMs: input.end_ms,
+          sourcePath,
+          fileHash: row.file_hash,
+        };
+      } catch {
+        continue;
+      }
+    }
+    throw new Error('EXACT_MEDIA_REVISION_NOT_EXECUTABLE');
   }
 
   commitAssetRevision(input: {
