@@ -3,7 +3,10 @@ export { ProductRepository } from './product-repository.js';
 export { JobRepository } from './job-repository.js';
 export { CopywritingRepository } from './copywriting-repository.js';
 export { SettingsRepository } from './settings-repository.js';
-export { MaterialSelectionRepository } from './material-selection-repository.js';
+export {
+  MaterialSelectionRepository,
+  type CommittedMaterialSelectionEvidenceV1,
+} from './material-selection-repository.js';
 export {
   TimelinePlanRepository,
   computeTimelinePlanCommitReceiptHash,
@@ -14,5 +17,6 @@ export {
 export {
   MediaIndexRepository,
   type ActiveEmbeddingTruthRow,
+  type ExactExecutableShotV1,
   type SearchableShotRow,
 } from './media-index-repository.js';
