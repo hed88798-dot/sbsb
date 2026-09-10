@@ -21,9 +21,9 @@ command -v node >/dev/null
 
 # The runner image is the build host. Package metadata and exact executable
 # hashes are retained as evidence; no package is treated as a product runtime.
-pacman -Sy --noconfirm --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-binutils mingw-w64-ucrt-x86_64-make nasm
+pacman -Sy --noconfirm --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-binutils mingw-w64-ucrt-x86_64-make nasm diffutils
 
-for package in mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-binutils mingw-w64-ucrt-x86_64-make nasm; do
+for package in mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-binutils mingw-w64-ucrt-x86_64-make nasm diffutils; do
   pacman -Q "$package" > "$EVIDENCE/msys2-package-$package.txt"
   pacman -Qi "$package" > "$EVIDENCE/msys2-package-$package.info.txt"
 done
@@ -53,10 +53,12 @@ case "$linker_path" in /ucrt64/bin/ld*) ;; *) echo "unexpected linker path: $lin
 case "$assembler_path" in /usr/bin/nasm*) ;; *) echo "unexpected assembler path: $assembler_path" >&2; false ;; esac
 case "$objdump_path" in /ucrt64/bin/objdump*|/usr/bin/objdump*) ;; *) echo "unexpected objdump path: $objdump_path" >&2; false ;; esac
 case "$make_path" in /ucrt64/bin/mingw32-make*) ;; *) echo "unexpected make path: $make_path" >&2; false ;; esac
+cmp_path="$(resolve_executable_path "$(command -v cmp)")"
+case "$cmp_path" in /usr/bin/cmp*) ;; *) echo "unexpected cmp path: $cmp_path" >&2; false ;; esac
 
 sha() { sha256sum "$1" | awk '{print $1}'; }
 package_archive_hashes=()
-for package in mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-binutils mingw-w64-ucrt-x86_64-make nasm; do
+for package in mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-binutils mingw-w64-ucrt-x86_64-make nasm diffutils; do
   archive="$(find /var/cache/pacman/pkg -maxdepth 1 -type f -name "$package-*.pkg.tar.*" -print | sort | tail -1 || true)"
   if [ -n "$archive" ]; then
     package_archive_hashes+=("$package=$(sha "$archive")")

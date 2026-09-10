@@ -16,6 +16,7 @@ command -v node >/dev/null
 command -v curl >/dev/null
 command -v tar >/dev/null
 command -v sha256sum >/dev/null
+command -v cmp >/dev/null
 command -v "$MAKE_COMMAND" >/dev/null
 command -v gcc >/dev/null
 command -v objdump >/dev/null
