@@ -9,7 +9,7 @@ mkdir -p "$EVIDENCE"
 printf 'status=STARTED\n' > "$STATUS"
 on_error() {
   code=$?
-  printf 'status=FAIL\nexit_code=%s\n' "$code" >> "$STATUS"
+  printf 'status=FAIL\nexit_code=%s\nfailed_command=%s\n' "$code" "$BASH_COMMAND" >> "$STATUS"
   exit "$code"
 }
 trap on_error ERR
@@ -34,11 +34,11 @@ linker_path="$(command -v ld)"
 assembler_path="$(command -v nasm)"
 objdump_path="$(command -v objdump)"
 make_path="$(command -v "$make_command")"
-test "$compiler_path" = /ucrt64/bin/gcc
-test "$linker_path" = /ucrt64/bin/ld
-test "$assembler_path" = /usr/bin/nasm
-test "$objdump_path" = /usr/bin/objdump
-test "$make_path" = /ucrt64/bin/mingw32-make
+case "$compiler_path" in /ucrt64/bin/gcc*) ;; *) echo "unexpected compiler path: $compiler_path" >&2; false ;; esac
+case "$linker_path" in /ucrt64/bin/ld*) ;; *) echo "unexpected linker path: $linker_path" >&2; false ;; esac
+case "$assembler_path" in /usr/bin/nasm*) ;; *) echo "unexpected assembler path: $assembler_path" >&2; false ;; esac
+case "$objdump_path" in /ucrt64/bin/objdump*|/usr/bin/objdump*) ;; *) echo "unexpected objdump path: $objdump_path" >&2; false ;; esac
+case "$make_path" in /ucrt64/bin/mingw32-make*) ;; *) echo "unexpected make path: $make_path" >&2; false ;; esac
 
 sha() { sha256sum "$1" | awk '{print $1}'; }
 package_archive_hashes=()
