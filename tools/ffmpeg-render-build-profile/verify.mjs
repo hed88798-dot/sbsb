@@ -13,6 +13,7 @@ const codeGCommit = '3a212342b573d0f785c0bb9be91cb8a8bad0a113';
 const codeGProfileHash = 'e05686e544bd31de1782b4b13cb23e993e6c26ef90408b1d19b8e59dd5ac5910';
 const codeGProfileBlobId = 'fcc06449420523ea824fc0e414171ba2e3287964';
 const codeGProfileBlobSha256 = '4352c73c432a0bbf37a4937267b7785d1fac9c8fe55fab99fb6e7a09ccb9e8c6';
+const importedSnapshotCommit = '9cc2326bf5059290f1a8498d0683e7e7d6f3bf9d';
 const SHA256 = /^[0-9a-f]{64}$/u;
 
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
@@ -249,9 +250,14 @@ assert(
   'Code G profile Git blob identity differs from the approved exact blob',
 );
 try {
-  git(['merge-base', '--is-ancestor', codeGCommit, 'HEAD']);
+  git(['cat-file', '-e', `${codeGCommit}^{commit}`]);
 } catch {
-  fail(`Code G profile commit ${codeGCommit} is not an ancestor of HEAD`);
+  fail(`Code G authoritative source commit ${codeGCommit} is unavailable`);
+}
+try {
+  git(['merge-base', '--is-ancestor', importedSnapshotCommit, 'HEAD']);
+} catch {
+  fail(`Imported Code G snapshot commit ${importedSnapshotCommit} is not an ancestor of HEAD`);
 }
 
 const result = verifyProfile(profile, codeGProfile);
