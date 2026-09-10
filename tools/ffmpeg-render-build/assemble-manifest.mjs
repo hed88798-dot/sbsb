@@ -16,7 +16,6 @@ const options = args(process.argv);
 for (const key of ['bundle', 'records', 'runtime-deps', 'license', 'profile', 'output'])
   if (!options[key]) throw new Error(`missing --${key}`);
 const bundle = resolve(options.bundle);
-const profile = JSON.parse(readFileSync(resolve(options.profile), 'utf8'));
 const records = JSON.parse(readFileSync(resolve(options.records, 'records-summary.json'), 'utf8'));
 const recipe = JSON.parse(readFileSync(resolve(options.records, 'build-recipe.json'), 'utf8'));
 const context = JSON.parse(readFileSync(resolve(options.records, 'build-context.json'), 'utf8'));
