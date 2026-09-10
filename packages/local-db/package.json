@@ -14,6 +14,8 @@
   },
   "dependencies": {
     "@app/contracts": "workspace:*",
+    "@app/domain-media-index": "workspace:*",
+    "@app/timeline": "workspace:*",
     "better-sqlite3": "13.0.3"
   },
   "devDependencies": {

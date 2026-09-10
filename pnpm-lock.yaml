@@ -199,6 +199,12 @@ importers:
       '@app/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@app/domain-media-index':
+        specifier: workspace:*
+        version: link:../domain-media-index
+      '@app/timeline':
+        specifier: workspace:*
+        version: link:../timeline
       better-sqlite3:
         specifier: 13.0.3
         version: 13.0.3
