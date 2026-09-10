@@ -9,7 +9,10 @@ const profileRelative =
 const profilePath = resolve(repositoryRoot, profileRelative);
 const codeGRelative = 'docs/render/ffmpeg-required-capability-profile.v1.json';
 const codeGPath = resolve(repositoryRoot, codeGRelative);
-const codeGCommit = '9cc2326bf5059290f1a8498d0683e7e7d6f3bf9d';
+const codeGCommit = '3a212342b573d0f785c0bb9be91cb8a8bad0a113';
+const codeGProfileHash = 'e05686e544bd31de1782b4b13cb23e993e6c26ef90408b1d19b8e59dd5ac5910';
+const codeGProfileBlobId = 'fcc06449420523ea824fc0e414171ba2e3287964';
+const codeGProfileBlobSha256 = '4352c73c432a0bbf37a4937267b7785d1fac9c8fe55fab99fb6e7a09ccb9e8c6';
 const SHA256 = /^[0-9a-f]{64}$/u;
 
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
@@ -67,7 +70,11 @@ function verifyProfile(profile, codeGProfile) {
     binding.profile_version === codeGProfile.profile_version,
     'Code G profile version mismatch',
   );
-  assert(binding.profile_hash === codeGProfile.profile_hash, 'Code G profile hash mismatch');
+  assert(binding.profile_hash === codeGProfileHash, 'Code G profile hash mismatch');
+  assert(
+    codeGProfile.profile_hash === codeGProfileHash,
+    'Code G profile hash is not the approved hash',
+  );
   assert(
     canonicalHashWithout(codeGProfile, 'profile_hash') === codeGProfile.profile_hash,
     'Code G profile self hash mismatch',
@@ -232,6 +239,14 @@ const gitProfileBytes = git(['show', `${codeGCommit}:${codeGRelative}`], 'buffer
 assert(
   sha256(gitProfileBytes) === sha256(readFileSync(codeGPath)),
   'working Code G profile bytes differ from committed profile bytes',
+);
+assert(
+  sha256(gitProfileBytes) === codeGProfileBlobSha256,
+  'Code G profile committed blob differs from the approved exact blob',
+);
+assert(
+  git(['rev-parse', `${codeGCommit}:${codeGRelative}`]).trim() === codeGProfileBlobId,
+  'Code G profile Git blob identity differs from the approved exact blob',
 );
 try {
   git(['merge-base', '--is-ancestor', codeGCommit, 'HEAD']);

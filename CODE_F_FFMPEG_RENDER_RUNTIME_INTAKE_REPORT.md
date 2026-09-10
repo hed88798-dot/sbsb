@@ -34,7 +34,10 @@ CODE_G_CAPABILITY_PROFILE_FILE:
 docs/render/ffmpeg-required-capability-profile.v1.json
 
 CODE_G_CAPABILITY_PROFILE_COMMIT:
-9cc2326bf5059290f1a8498d0683e7e7d6f3bf9d
+3a212342b573d0f785c0bb9be91cb8a8bad0a113
+
+CODE_G_IMPORTED_VENDORED_SNAPSHOT_COMMIT:
+9cc2326bf5059290f1a8498d0683e7e7d6f3bf9d (historical F-branch snapshot only)
 
 CODE_G_CAPABILITY_PROFILE_HASH:
 e05686e544bd31de1782b4b13cb23e993e6c26ef90408b1d19b8e59dd5ac5910
@@ -49,7 +52,7 @@ FFMPEG_RENDER_BUILD_PROFILE:
 compliance/runtime-dependency-intake/ffmpeg-render-v1/FFMPEG_RENDER_BUILD_PROFILE_V1.json
 
 FFMPEG_RENDER_BUILD_PROFILE_HASH:
-5882b57077b414fd9bd37d5486c3afdfddb884fad10e4dc83d98def5120875eb
+8a8c032009beb90f57ba6a48f6bdb8d01ddf67b2c372c16795e1729c016e57ff
 
 FFMPEG_RENDER_BUILD_PROFILE_SELF_HASH_VERIFICATION:
 PASS
@@ -57,6 +60,10 @@ PASS
 SOURCE_BUILD_PROFILE_SEMANTICS:
 SEPARATE_FROM_FFPROBE
 ```
+
+The prior profile identity `5882b57077b414fd9bd37d5486c3afdfddb884fad10e4dc83d98def5120875eb`
+and its associated candidate/status remain historical evidence only. They are not an approved
+candidate after this source-provenance rebind.
 
 ## Source, build, and security policy
 
