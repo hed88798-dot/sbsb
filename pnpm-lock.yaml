@@ -117,6 +117,9 @@ importers:
       '@app/provider-client':
         specifier: workspace:*
         version: link:../../packages/provider-client
+      '@app/timeline':
+        specifier: workspace:*
+        version: link:../../packages/timeline
       '@tanstack/react-query':
         specifier: 5.90.20
         version: 5.90.20(react@19.2.3)
@@ -199,6 +202,12 @@ importers:
       '@app/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@app/domain-media-index':
+        specifier: workspace:*
+        version: link:../domain-media-index
+      '@app/timeline':
+        specifier: workspace:*
+        version: link:../timeline
       better-sqlite3:
         specifier: 13.0.3
         version: 13.0.3
@@ -227,6 +236,15 @@ importers:
       '@app/domain-product':
         specifier: workspace:*
         version: link:../domain-product
+
+  packages/timeline:
+    dependencies:
+      '@app/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@app/domain-media-index':
+        specifier: workspace:*
+        version: link:../domain-media-index
 
 packages:
 
