@@ -31,10 +31,14 @@ done
 make_command="${MAKE_COMMAND:-mingw32-make}"
 resolve_executable_path() {
   local candidate="$1"
-  if [ -f "$candidate" ]; then
-    printf '%s\n' "$candidate"
-  elif [ -f "${candidate}.exe" ]; then
+  # MSYS2's command lookup intentionally hides .exe, and its -e/-f tests
+  # treat the extensionless spelling as present. Prefer the concrete PE path
+  # so Windows-side Node can hash the same file without path translation
+  # ambiguity.
+  if [[ "$candidate" != *.exe && -e "${candidate}.exe" ]]; then
     printf '%s\n' "${candidate}.exe"
+  elif [ -e "$candidate" ]; then
+    printf '%s\n' "$candidate"
   else
     return 1
   fi
