@@ -3,7 +3,7 @@
   "profile_kind": "FFMPEG_RENDER_BUILD_PROFILE",
   "profile_id": "code-f-ffmpeg-render-build-profile-v1",
   "profile_version": 1,
-  "profile_sha256": "7bcd0809a2a74606677e5ba5e98d4ec78c7502b32f802fd55e391ba79de0e4fb",
+  "profile_sha256": "e0ddc2b1f3e8c58d4e5197123d766eaaf05e89dec4b343bfd5b8748e2b6aec1c",
   "code_g_capability_profile": {
     "path": "docs/render/ffmpeg-required-capability-profile.v1.json",
     "commit": "9cc2326bf5059290f1a8498d0683e7e7d6f3bf9d",
@@ -119,6 +119,7 @@
         "--arch=x86_64",
         "--enable-cross-compile",
         "--cc=gcc",
+        "--enable-d3d11va",
         "--enable-mediafoundation",
         "--enable-encoder=h264_mf",
         "--extra-ldflags=-static-libgcc -static-libstdc++",

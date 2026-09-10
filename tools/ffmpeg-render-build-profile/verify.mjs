@@ -172,6 +172,10 @@ function verifyProfile(profile, codeGProfile) {
     'Code G protocol outside approved local set',
   );
   assert(
+    profile.platform_builds['windows-x86_64'].configure_arguments.includes('--enable-d3d11va'),
+    'Windows D3D11VA support is not explicitly enabled for h264_mf',
+  );
+  assert(
     profile.platform_builds['windows-x86_64'].configure_arguments.includes(
       '--enable-mediafoundation',
     ),
