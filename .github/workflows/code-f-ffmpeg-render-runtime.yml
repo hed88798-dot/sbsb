@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - code-f/ffmpeg-render-runtime-intake
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
