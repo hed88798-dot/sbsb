@@ -3,7 +3,7 @@
   "profile_kind": "FFMPEG_RENDER_BUILD_PROFILE",
   "profile_id": "code-f-ffmpeg-render-build-profile-v1",
   "profile_version": 1,
-  "profile_sha256": "e0ddc2b1f3e8c58d4e5197123d766eaaf05e89dec4b343bfd5b8748e2b6aec1c",
+  "profile_sha256": "0be47aac293dc768adbde21cef91bf80d290fa7a2c2f5e6cb35913939e540e25",
   "code_g_capability_profile": {
     "path": "docs/render/ffmpeg-required-capability-profile.v1.json",
     "commit": "9cc2326bf5059290f1a8498d0683e7e7d6f3bf9d",
@@ -65,7 +65,7 @@
       "macos": ["h264_videotoolbox"]
     },
     "audio_encoders": ["aac"],
-    "muxers": ["mov"],
+    "muxers": ["mov", "mp4"],
     "required_probe_facts": {
       "video": ["codec", "duration", "frame_rate", "height", "pixel_format", "width"],
       "audio": ["channels", "codec", "duration", "sample_rate"],
@@ -95,6 +95,7 @@
     "--enable-filter=asetpts",
     "--enable-encoder=aac",
     "--enable-muxer=mov",
+    "--enable-muxer=mp4",
     "--enable-protocol=file",
     "--enable-protocol=pipe",
     "--disable-network",

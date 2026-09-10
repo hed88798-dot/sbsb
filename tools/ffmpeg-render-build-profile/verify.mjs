@@ -105,6 +105,7 @@ function verifyProfile(profile, codeGProfile) {
     '--enable-decoders',
     '--enable-encoder=aac',
     '--enable-muxer=mov',
+    '--enable-muxer=mp4',
     '--enable-protocol=file',
     '--enable-protocol=pipe',
     '--disable-network',

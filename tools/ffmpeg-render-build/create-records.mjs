@@ -99,6 +99,7 @@ const recipe = {
     'encoder:aac',
     `encoder:${platform === 'windows' ? 'h264_mf' : 'h264_videotoolbox'}`,
     'muxer:mov',
+    'muxer:mp4',
     'protocol:file',
     'protocol:pipe',
   ],

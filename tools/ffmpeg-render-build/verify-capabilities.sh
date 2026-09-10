@@ -27,6 +27,7 @@ done
 require_line "$OUT/encoders.txt" '[[:space:]]h264_mf([[:space:]]|$)' 'Windows h264_mf encoder'
 require_line "$OUT/encoders.txt" '[[:space:]]aac([[:space:]]|$)' 'AAC encoder'
 require_line "$OUT/muxers.txt" '[[:space:]]mov([[:space:]]|$)' 'MP4 mov muxer'
+require_line "$OUT/muxers.txt" '[[:space:]]mp4([[:space:]]|$)' 'MP4 muxer'
 require_line "$OUT/protocols.txt" '^[[:space:]]+file([[:space:]]|$)' 'file protocol'
 require_line "$OUT/protocols.txt" '^[[:space:]]+pipe([[:space:]]|$)' 'pipe protocol'
 for forbidden in ftp http https rtmp rtsp tcp udp; do
