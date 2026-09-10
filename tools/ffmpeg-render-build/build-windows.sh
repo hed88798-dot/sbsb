@@ -53,7 +53,14 @@ node "$ROOT/tools/ffmpeg-render-build/create-records.mjs" --platform windows --a
 
 cd "$SOURCE_DIR"
 ./configure "${CONFIGURE_ARGS[@]}" 2>&1 | tee "$OUT/evidence/configure.log"
-cp config.log "$OUT/evidence/config.log"
+if [ -f config.log ]; then
+  cp config.log "$OUT/evidence/config.log"
+elif [ -f ffbuild/config.log ]; then
+  cp ffbuild/config.log "$OUT/evidence/config.log"
+else
+  echo 'configure did not produce a recognized config.log path' >&2
+  false
+fi
 "$MAKE_COMMAND" -j"$BUILD_JOBS" 2>&1 | tee "$OUT/evidence/build.log"
 "$MAKE_COMMAND" install 2>&1 | tee -a "$OUT/evidence/build.log"
 
