@@ -42,7 +42,10 @@ function readJson(path) {
 }
 
 function git(args, encoding = 'utf8') {
-  return execFileSync('git', args, { cwd: repositoryRoot, encoding });
+  return execFileSync(process.env.GIT_PATH || 'git', args, {
+    cwd: repositoryRoot,
+    encoding,
+  });
 }
 
 function verifyProfile(profile, codeGProfile) {
