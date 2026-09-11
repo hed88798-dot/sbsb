@@ -75,12 +75,25 @@
     "desktop_gate_authority": "WINDOWS_11_DESKTOP_EVIDENCE"
   },
   "durable_artifact": {
-    "locator": "cold-archive://frozen-candidates/code-f-ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be/windows/ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be.zip",
-    "channel": "MAC_LOCAL_PROJECT_FOLDER",
+    "channel": "GITHUB_DRAFT_RELEASE_ASSET",
+    "release_visibility": "PRIVATE_DRAFT_NOT_PUBLISHED",
+    "stable_release_id": "untagged-0863212e642f66af0447",
+    "stable_release_tag": "code-f-ffmpeg-render-windows-75d929d7",
+    "stable_locator": "https://github.com/hed88798-dot/sbsb/releases/tag/untagged-0863212e642f66af0447",
+    "locator": "https://github.com/hed88798-dot/sbsb/releases/download/untagged-0863212e642f66af0447/ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be.zip",
+    "asset_filename": "ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be.zip",
     "artifact_kind": "EXACT_CANDIDATE_TRANSPORT_ZIP",
     "artifact_sha256": "5aba48f781f56165eb5cf623eb067fc745bfbc50b9c80cfb8b7430651b4d9dbd",
     "transport_tar_sha256": "97a427f59ca34b4d67c667ccf7792f4006819de06b811f0e753577cad115d28b",
     "recovery_copy_locator": "frozen-candidates/code-f-ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be/windows/",
+    "mac_local_copy_role": "SECONDARY_RECOVERY_COPY",
+    "recovery_verification": "PASS",
+    "durable_retrieval_verification": {
+      "status": "PASS",
+      "retrieved_sha256": "5aba48f781f56165eb5cf623eb067fc745bfbc50b9c80cfb8b7430651b4d9dbd",
+      "retrieval_locator": "https://github.com/hed88798-dot/sbsb/releases/download/untagged-0863212e642f66af0447/ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be.zip",
+      "verified_at": "2026-09-11T12:13:09Z"
+    },
     "actions_artifact_final_retention_authority": false,
     "retrieval_contract": "CONTROLLED_TRANSFER_THEN_SHA256_VERIFY"
   },

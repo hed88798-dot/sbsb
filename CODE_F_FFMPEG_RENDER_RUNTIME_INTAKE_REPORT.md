@@ -122,8 +122,7 @@ same manifest and member-hash verification.
 
 The machine-readable approval receipt is
 `compliance/runtime-dependency-intake/ffmpeg-render-v1/FFMPEG_RENDER_RUNTIME_APPROVAL_V1.json`.
-Its exact SHA-256 is
-`ab84da87dd35f3abdbcb4438edad82d9e5327b503dc00f9fab7db80b42cb8971`.
+Its exact SHA-256 is recorded below after the retention closeout update.
 The receipt binds the approved candidate, the Windows 11 Desktop evidence
 identity, runtime closure, license/vulnerability/SBOM records, and the durable
 candidate locator. The original build profile remains unchanged; its
@@ -136,10 +135,16 @@ FFMPEG_RENDER_RUNTIME_APPROVAL:
 APPROVED
 
 APPROVAL_RECEIPT_SHA256:
-f0ee056d79ce68be7a3f7cbd9e0b52b31b7865fc38632f62bacbe576d5318175
+bcfad4490263904b9f8c71b19b66f5c0d6a033d4ab6bdb8896372072501ea714
 
 DURABLE_ARTIFACT_LOCATOR:
-cold-archive://frozen-candidates/code-f-ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be/windows/ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be.zip
+https://github.com/hed88798-dot/sbsb/releases/download/untagged-0863212e642f66af0447/ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be.zip
+
+DURABLE_ARTIFACT_CHANNEL:
+GITHUB_DRAFT_RELEASE_ASSET
+
+DURABLE_ARTIFACT_STABLE_ID:
+untagged-0863212e642f66af0447 / ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be.zip
 
 DURABLE_ARTIFACT_SHA256:
 5aba48f781f56165eb5cf623eb067fc745bfbc50b9c80cfb8b7430651b4d9dbd
@@ -147,14 +152,21 @@ DURABLE_ARTIFACT_SHA256:
 MAC_RECOVERY_COPY:
 frozen-candidates/code-f-ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be/windows/
 
+MAC_LOCAL_COPY_ROLE:
+SECONDARY_RECOVERY_COPY
+
+DURABLE_RETRIEVAL_VERIFICATION:
+PASS — independent download SHA-256 matches the approved ZIP
+
 RETRIEVAL_CONTRACT:
 CONTROLLED_TRANSFER_THEN_SHA256_VERIFY
 ```
 
-The durable locator is the retained Mac project-folder archive; future R1B/CI
-must retrieve that exact ZIP through the controlled transfer path and verify the
-recorded digest before use. GitHub Actions remains transport-only and is not the
-final retention authority.
+The durable locator is the private Draft Release asset; future R1B/CI must
+retrieve that exact ZIP through the stable asset locator and verify the recorded
+digest before use. The Mac project-folder copy is retained as a secondary
+recovery copy. GitHub Actions transient artifacts remain transport-only and are
+not the final retention authority.
 
 ## Hosted workflow responsibility boundary
 
