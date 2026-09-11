@@ -5,6 +5,7 @@ FFMPEG="${FFMPEG_BIN:?FFMPEG_BIN is required}"
 FFPROBE="${FFPROBE_BIN:?FFPROBE_BIN is required}"
 FIXTURES="${FIXTURES_DIR:?FIXTURES_DIR is required}"
 OUT="${CAPABILITY_OUT:?CAPABILITY_OUT is required}"
+MODE="${FFMPEG_CAPABILITY_MODE:-FULL_SMOKE}"
 mkdir -p "$OUT"
 test -x "$FFMPEG" -o -f "$FFMPEG"
 test -x "$FFPROBE" -o -f "$FFPROBE"
@@ -35,6 +36,34 @@ for forbidden in ftp http https rtmp rtsp tcp udp; do
     fail "forbidden network protocol is enabled: $forbidden"
   fi
 done
+
+if [ "$MODE" = 'STATIC_SERVER' ]; then
+  # A hosted Windows Server runner can prove source/build/provenance and the
+  # static capability inventory, but it cannot establish the Desktop-only
+  # Media Foundation product capability. Keep this distinction explicit and
+  # fail closed for any unrecognised mode.
+  printf '%s\n' \
+    '{' \
+    '  "schema_version": "1",' \
+    '  "status": "PASS",' \
+    '  "verification_mode": "STATIC_CAPABILITY_INVENTORY",' \
+    '  "dynamic_product_capability_smoke": "NOT_RUN_SERVER_ENVIRONMENT",' \
+    '  "encoder_inventory": ["h264_mf"],' \
+    '  "audio_encoder_inventory": ["aac"],' \
+    '  "muxer_inventory": ["mov", "mp4"],' \
+    '  "required_protocols": ["file", "pipe"],' \
+    '  "forbidden_network_protocols_present": [],' \
+    '  "network_control": "STATIC_RESTRICTION_VERIFIED",' \
+    '  "product_render": "NOT_RUN"' \
+    '}' > "$OUT/capability-verification.json"
+  cat "$OUT/capability-verification.json"
+  echo 'FFMPEG_RENDER_STATIC_CAPABILITY_INVENTORY: PASS'
+  exit 0
+fi
+
+if [ "$MODE" != 'FULL_SMOKE' ]; then
+  fail "unsupported capability verification mode: $MODE"
+fi
 
 video="$OUT/rendered-video.mp4"
 audio="$OUT/rendered-narration.m4a"

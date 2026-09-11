@@ -28,6 +28,12 @@ jobs:
     name: Windows x86_64 FFmpeg Render Runtime
     runs-on: windows-2022
     timeout-minutes: 180
+    # windows-2022 is a Windows Server image. It is authoritative for source
+    # build, static inventory, provenance, manifest, closure, and compliance
+    # evidence only. Desktop-only h264_mf execution is supplied by the
+    # separately retained Windows 11 Desktop evidence.
+    env:
+      FFMPEG_CAPABILITY_MODE: STATIC_SERVER
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
@@ -76,7 +82,7 @@ jobs:
           $nodePath = (Get-Command node).Source
           $nodeBin = (& $cygpath -u (Split-Path -Parent $nodePath)).Trim()
           $gitPath = (Get-Command git).Source
-          $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 NODE_BIN='$nodeBin' GIT_PATH='$gitPath' MAKE_COMMAND=mingw32-make PATH='/ucrt64/bin:/usr/bin:/bin:$nodeBin' GITHUB_SHA='$env:GITHUB_SHA' GITHUB_RUN_ID='$env:GITHUB_RUN_ID' && ./tools/ffmpeg-render-build/build-windows.sh"
+          $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 NODE_BIN='$nodeBin' GIT_PATH='$gitPath' MAKE_COMMAND=mingw32-make FFMPEG_CAPABILITY_MODE='$env:FFMPEG_CAPABILITY_MODE' PATH='/ucrt64/bin:/usr/bin:/bin:$nodeBin' GITHUB_SHA='$env:GITHUB_SHA' GITHUB_RUN_ID='$env:GITHUB_RUN_ID' && ./tools/ffmpeg-render-build/build-windows.sh"
           & $bash --noprofile --norc -lc $command
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Package immutable transient transport

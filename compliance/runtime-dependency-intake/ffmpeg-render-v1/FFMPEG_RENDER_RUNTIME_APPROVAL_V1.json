@@ -1,0 +1,100 @@
+{
+  "schema_version": "1",
+  "record_kind": "FFMPEG_RENDER_RUNTIME_APPROVAL",
+  "approval_id": "code-f-ffmpeg-render-windows-x86_64-34529358057-approval-v1",
+  "approval_status": "APPROVED",
+  "approval_scope": "STANDALONE_RUNTIME_INTAKE_ONLY",
+  "platform": "windows-x86_64",
+  "authority": {
+    "code_g_profile_commit": "3a212342b573d0f785c0bb9be91cb8a8bad0a113",
+    "code_g_profile_hash": "e05686e544bd31de1782b4b13cb23e993e6c26ef90408b1d19b8e59dd5ac5910",
+    "code_f_build_profile_hash": "8a8c032009beb90f57ba6a48f6bdb8d01ddf67b2c372c16795e1729c016e57ff",
+    "FFMPEG_RENDER_BUILD_PROFILE_V1": {
+      "artifact_status": "HISTORICAL_PROFILE_CREATION_STATE",
+      "final_approval_authority": false
+    }
+  },
+  "source": {
+    "project": "FFmpeg/FFmpeg",
+    "release": "9.0.1",
+    "tag": "n9.0.1",
+    "upstream_commit": "bf1b838f2ab88b4f8fd83443325c782ea0e0f7fa",
+    "source_archive": "ffmpeg-9.0.1.tar.xz",
+    "source_archive_sha256": "cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635"
+  },
+  "candidate": {
+    "candidate_id": "code-f-ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be",
+    "build_source_commit": "75d929d7862bbc9af3d3010b4618351e63ce00be",
+    "workflow_run_id": 34529358057,
+    "manifest_sha256": "d01be7ca70d541b5f1bee788a823634dd4c6883aa483c95b52c7bef10214cbaf",
+    "runtime_identity_sha256": "30c50b522998bc3d0d733988b20cdb415b0ccf823ee716b99446e53db14c967e",
+    "entrypoints": {
+      "ffmpeg.exe": "4ca74875cd4a8f458b21db6834ece1351f72307bd9acdfd9ccae11b26029b4a8",
+      "ffprobe.exe": "ffacd628c9936b1988f7a3e8be168d3839a5b57cf12bacfd1098fdea64268b35"
+    }
+  },
+  "desktop_evidence": {
+    "record_kind": "FFMPEG_RENDER_WINDOWS_11_DESKTOP_CAPABILITY_EVIDENCE",
+    "record_sha256": "bdfd4e0ff63442d6e2f2639ef5428128d0d65b798b13d1b3764e5951fd7fe289",
+    "logical_locator": "frozen-candidates/code-f-ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be/windows/evidence/WINDOWS_11_DESKTOP_CAPABILITY_EVIDENCE.json",
+    "environment": "Alibaba Cloud Wuying Desktop / Microsoft Windows 11 Pro 10.0.22631 x64",
+    "h264_mf_product_capability": "PASS"
+  },
+  "runtime_closure": {
+    "status": "PASS",
+    "evidence_sha256": "c8b0c9e1080a2a839a6b4a97657c162c2d100f78022f144e7f4daabad2d3bfac",
+    "internal_bundle_members": 6,
+    "allowlisted_os_imports": 17,
+    "unresolved_imports": 0,
+    "loader_policy": "APP_LOCAL_SAME_DIRECTORY_V1 / COMPANION_BUNDLE_ONLY"
+  },
+  "license": {
+    "status": "PASS",
+    "disposition": "ALLOW_WITH_CONDITIONS",
+    "software_license_expression": "LGPL-2.1-or-later",
+    "evidence_sha256": "c0c211f9f1994fa9355b8d550ad86d6768335ffe2fc09db434b09500141e2372",
+    "gpl": "DISABLED",
+    "nonfree": "DISABLED",
+    "libx264": "NOT_INCLUDED",
+    "libx265": "NOT_INCLUDED",
+    "codec_patent_boundary": "H264_AAC_PATENT_OR_CODEC_PROGRAM_REVIEW_SEPARATE"
+  },
+  "vulnerability": {
+    "status": "PASS",
+    "evidence_sha256": "6d163b93047926377b3164c28d45ea531c8c7e50012d2b6f5b7759b4c0681901",
+    "blocking_advisories": 0
+  },
+  "sbom_notice": {
+    "status": "PASS",
+    "sbom_sha256": "611de3cccf73c93899789b7476d9ff574f097f768727cb540b9ef94a7e7bedbb",
+    "notice_sha256": "7d5143a2fe49487439df95e6f43dd0a8b8948eb12b41313491b0b2b2ca77bc59"
+  },
+  "hosted_server_workflow": {
+    "semantics": "BUILD_AND_STATIC_GOVERNANCE_ONLY",
+    "dynamic_h264_mf_product_gate": "NOT_RUN_ON_WINDOWS_SERVER",
+    "desktop_gate_authority": "WINDOWS_11_DESKTOP_EVIDENCE"
+  },
+  "durable_artifact": {
+    "locator": "cold-archive://frozen-candidates/code-f-ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be/windows/ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be.zip",
+    "channel": "MAC_LOCAL_PROJECT_FOLDER",
+    "artifact_kind": "EXACT_CANDIDATE_TRANSPORT_ZIP",
+    "artifact_sha256": "5aba48f781f56165eb5cf623eb067fc745bfbc50b9c80cfb8b7430651b4d9dbd",
+    "transport_tar_sha256": "97a427f59ca34b4d67c667ccf7792f4006819de06b811f0e753577cad115d28b",
+    "recovery_copy_locator": "frozen-candidates/code-f-ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be/windows/",
+    "actions_artifact_final_retention_authority": false,
+    "retrieval_contract": "CONTROLLED_TRANSFER_THEN_SHA256_VERIFY"
+  },
+  "recheck_triggers": [
+    "Code G profile commit or profile hash changes",
+    "FFmpeg source release, tag, or source archive hash changes",
+    "Render build profile or configure arguments change",
+    "Runtime member set, entrypoint bytes, or loader policy changes",
+    "Windows Desktop capability evidence or prerequisite changes",
+    "Relevant upstream vulnerability or license facts change"
+  ],
+  "product_boundary": {
+    "electron_packaged_integration": "NOT_RUN",
+    "code_g_product_render": "NOT_RUN",
+    "code_g_r1b": "NOT_STARTED"
+  }
+}

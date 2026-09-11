@@ -11,6 +11,7 @@ const allowedPathPatterns = [
   /^\.github\/workflows\/code-f-ffmpeg-render-runtime\.yml$/u,
   /^CODE_F_FFMPEG_RENDER_RUNTIME_INTAKE_REPORT\.md$/u,
   /^compliance\/runtime-dependency-intake\/ffmpeg-render-v1\/(?:FFMPEG_RENDER_BUILD_PROFILE_V1\.json|FFMPEG_RENDER_BUILD_PROFILE_V1\.sha256)$/u,
+  /^compliance\/runtime-dependency-intake\/ffmpeg-render-v1\/FFMPEG_RENDER_RUNTIME_APPROVAL_V1\.(?:json|sha256)$/u,
   /^docs\/render\/(?:FFMPEG_REQUIRED_CAPABILITY_PROFILE_V1\.md|ffmpeg-required-capability-profile\.v1\.json)$/u,
   /^package\.json$/u,
   /^tools\/ffmpeg-render-build-profile\/verify\.mjs$/u,

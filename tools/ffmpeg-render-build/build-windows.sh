@@ -83,5 +83,5 @@ node "$ROOT/tools/ffmpeg-render-build/create-transfer-manifest.mjs" --root "$OUT
 
 sha256sum "$OUT/bundle/ffmpeg.exe" "$OUT/bundle/ffprobe.exe" > "$OUT/evidence/entrypoints.sha256"
 sha256sum "$OUT/manifest.json" "$OUT/SBOM.cdx.json" "$OUT/candidate-transfer-manifest.json" > "$OUT/evidence/authority-files.sha256"
-printf 'system_path_used=NO\nnetwork_protocols=DISABLED\nexternal_library_autodetection=DISABLED\nproduct_render=NOT_RUN\nelectron_packaged_integration=NOT_RUN\n' > "$OUT/evidence/build-policy.txt"
+printf 'system_path_used=NO\nnetwork_protocols=DISABLED\nexternal_library_autodetection=DISABLED\ncapability_mode=%s\ndesktop_h264_mf_product_gate=NOT_RUN_ON_SERVER\nproduct_render=NOT_RUN\nelectron_packaged_integration=NOT_RUN\n' "${FFMPEG_CAPABILITY_MODE:-FULL_SMOKE}" > "$OUT/evidence/build-policy.txt"
 echo 'FFMPEG_RENDER_WINDOWS_BUILD: PASS'

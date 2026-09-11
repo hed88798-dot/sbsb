@@ -118,6 +118,63 @@ All eight bundle member hashes are recorded in the manifest and the retained
 `evidence/bundle-members.sha256` inventory. The local recovery copy passed the
 same manifest and member-hash verification.
 
+## Final approval receipt and durable retrieval
+
+The machine-readable approval receipt is
+`compliance/runtime-dependency-intake/ffmpeg-render-v1/FFMPEG_RENDER_RUNTIME_APPROVAL_V1.json`.
+Its exact SHA-256 is
+`ab84da87dd35f3abdbcb4438edad82d9e5327b503dc00f9fab7db80b42cb8971`.
+The receipt binds the approved candidate, the Windows 11 Desktop evidence
+identity, runtime closure, license/vulnerability/SBOM records, and the durable
+candidate locator. The original build profile remains unchanged; its
+`FFMPEG_RENDER_BUILD_PROFILE_V1.artifact_status` is
+`HISTORICAL_PROFILE_CREATION_STATE / NOT_FINAL_APPROVAL_AUTHORITY` and is not
+the final approval authority.
+
+```text
+FFMPEG_RENDER_RUNTIME_APPROVAL:
+APPROVED
+
+APPROVAL_RECEIPT_SHA256:
+f0ee056d79ce68be7a3f7cbd9e0b52b31b7865fc38632f62bacbe576d5318175
+
+DURABLE_ARTIFACT_LOCATOR:
+cold-archive://frozen-candidates/code-f-ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be/windows/ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be.zip
+
+DURABLE_ARTIFACT_SHA256:
+5aba48f781f56165eb5cf623eb067fc745bfbc50b9c80cfb8b7430651b4d9dbd
+
+MAC_RECOVERY_COPY:
+frozen-candidates/code-f-ffmpeg-render-windows-75d929d7862bbc9af3d3010b4618351e63ce00be/windows/
+
+RETRIEVAL_CONTRACT:
+CONTROLLED_TRANSFER_THEN_SHA256_VERIFY
+```
+
+The durable locator is the retained Mac project-folder archive; future R1B/CI
+must retrieve that exact ZIP through the controlled transfer path and verify the
+recorded digest before use. GitHub Actions remains transport-only and is not the
+final retention authority.
+
+## Hosted workflow responsibility boundary
+
+```text
+HOSTED_SERVER_WORKFLOW_SEMANTICS:
+BUILD_AND_STATIC_GOVERNANCE_ONLY
+
+WINDOWS_SERVER_DYNAMIC_H264_PRODUCT_GATE:
+NOT_RUN
+
+WINDOWS_DESKTOP_H264_PRODUCT_GATE_AUTHORITY:
+WINDOWS_11_DESKTOP_EVIDENCE
+```
+
+The `windows-2022` job still performs the exact source build, static capability
+inventory, profile/provenance binding, manifest, runtime closure, license,
+vulnerability, SBOM/NOTICE, and transient transport upload. Its static
+capability record explicitly reports the Desktop-only dynamic Media Foundation
+smoke as `NOT_RUN_SERVER_ENVIRONMENT`; it cannot manufacture a Desktop PASS.
+
 ## Windows 11 Desktop environment
 
 ```text
