@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 
 function args(argv) {
   const result = {};
-  for (let index = 2; index < argv.length; index += 2) {
+  for (let index = 2; index < argv.length; index += 1) {
     const key = argv[index];
     const value = argv[index + 1];
     if (!key?.startsWith('--')) throw new Error(`invalid argument: ${key}`);
@@ -76,7 +76,7 @@ function verify(bundlePath, manifest, profile) {
     manifest.distribution.resolver_mode !== 'EXPLICIT_BUNDLED_LOCATOR'
   )
     fail('system PATH fallback is not disabled');
-  const actual = readdirSync(bundle, { withFileTypes: true })
+  const actual = readdirSync(bundlePath, { withFileTypes: true })
     .filter((entry) => entry.isFile())
     .map((entry) => entry.name)
     .sort();
@@ -85,7 +85,7 @@ function verify(bundlePath, manifest, profile) {
     fail(`bundle member set mismatch: actual=${actual.join(',')} declared=${declared.join(',')}`);
   const members = new Map(manifest.bundle_members.map((member) => [member.path, member]));
   for (const member of manifest.bundle_members) {
-    const actualHash = sha256(readFileSync(join(bundle, member.path)));
+    const actualHash = sha256(readFileSync(join(bundlePath, member.path)));
     if (actualHash !== member.sha256) fail(`member hash mismatch: ${member.path}`);
   }
   for (const entrypoint of manifest.entrypoints) {
