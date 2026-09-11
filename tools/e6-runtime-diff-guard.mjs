@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 
 const E5_FROZEN_BASELINE = 'd227ee2c586ceedc726e6764c52ac749ac87d50b';
+const E6_FROZEN_COMMIT = 'c9587a46d75aede2919fe354312517394b671d75';
 const allowedPathPatterns = [
   /^tests\//u,
   /^tools\/e6-runtime-diff-guard\.mjs$/u,
@@ -12,10 +13,10 @@ function gitLines(args) {
   return output.length === 0 ? [] : output.split(/\r?\n/u);
 }
 
+// E6 provenance is a stage-local historical claim. Keep the diff endpoints
+// frozen so later production commits cannot turn this check into a HEAD gate.
 const changedPaths = new Set([
-  ...gitLines(['diff', '--name-only', E5_FROZEN_BASELINE, '--']),
-  ...gitLines(['diff', '--cached', '--name-only', E5_FROZEN_BASELINE, '--']),
-  ...gitLines(['ls-files', '--others', '--exclude-standard']),
+  ...gitLines(['diff', '--name-only', E5_FROZEN_BASELINE, E6_FROZEN_COMMIT, '--']),
 ]);
 const forbiddenPaths = [...changedPaths]
   .filter((path) => !allowedPathPatterns.some((pattern) => pattern.test(path)))
