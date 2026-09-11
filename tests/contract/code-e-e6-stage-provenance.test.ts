@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { unlinkSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -10,6 +11,7 @@ const frozenCommits = [
   ['E4', '0c04ca9534d6ff5c2c6ad338b6d0e64f8ab6c470'],
   ['E3.1', '15c927966f42ee4a2fffb54e4f2ab74b04f1b4b5'],
   ['E5', 'd227ee2c586ceedc726e6764c52ac749ac87d50b'],
+  ['E6', 'c9587a46d75aede2919fe354312517394b671d75'],
 ] as const;
 
 describe('Code E E6 stage provenance', () => {
@@ -22,11 +24,28 @@ describe('Code E E6 stage provenance', () => {
     ).not.toThrow();
   });
 
-  it('contains validation-only changes after the E5 frozen baseline', () => {
+  it('contains only the original validation-only E5-to-E6 changes', () => {
     const output = execFileSync('node', ['tools/e6-runtime-diff-guard.mjs'], {
       cwd: root,
       encoding: 'utf8',
     });
     expect(output).toMatch(/^E6_RUNTIME_DIFF_GUARD: PASS/u);
+  });
+
+  it('does not let legitimate post-E6 production files invalidate historical provenance', () => {
+    const postE6ProductionPath = resolve(
+      root,
+      `apps/desktop/.e6-post-production-regression-${process.pid}.tmp`,
+    );
+    writeFileSync(postE6ProductionPath, 'post-E6 production fixture\n', 'utf8');
+    try {
+      const output = execFileSync('node', ['tools/e6-runtime-diff-guard.mjs'], {
+        cwd: root,
+        encoding: 'utf8',
+      });
+      expect(output).toMatch(/^E6_RUNTIME_DIFF_GUARD: PASS/u);
+    } finally {
+      unlinkSync(postE6ProductionPath);
+    }
   });
 });
