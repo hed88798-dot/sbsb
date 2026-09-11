@@ -289,7 +289,7 @@ describe('Code E E4 migration and database immutability', () => {
     }
   });
 
-  it('applies migration 004 cleanly with the required table and triggers', () => {
+  it('preserves migration 004 objects after all current migrations', () => {
     const objects = database
       .prepare(
         "SELECT type, name FROM sqlite_master WHERE name LIKE 'timeline_plan_versions%' ORDER BY type, name",
@@ -302,7 +302,7 @@ describe('Code E E4 migration and database immutability', () => {
         { type: 'trigger', name: 'timeline_plan_versions_reject_delete' },
       ]),
     );
-    expect(database.prepare('SELECT max(version) FROM schema_migrations').pluck().get()).toBe(5);
+    expect(database.prepare('SELECT max(version) FROM schema_migrations').pluck().get()).toBe(6);
   });
 
   it('introduces no planning_request_hash field or column', () => {

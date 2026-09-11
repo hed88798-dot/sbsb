@@ -26,11 +26,11 @@ afterEach(() => {
 });
 
 describe('desktop SQLite migrations', () => {
-  it('migrates an empty database to version 5 with WAL and foreign keys', async () => {
+  it('migrates an empty database to version 6 with WAL and foreign keys', async () => {
     const dbPath = join(temporaryDirectory('desktop-empty-'), 'app.db');
     const { db, migration } = await openDatabase({ dbPath, migrationsDirectory });
-    expect(migration.currentVersion).toBe(5);
-    expect(migration.appliedVersions).toEqual([1, 2, 3, 4, 5]);
+    expect(migration.currentVersion).toBe(6);
+    expect(migration.appliedVersions).toEqual([1, 2, 3, 4, 5, 6]);
     expect(migration.backupPath).toBeNull();
     expect(db.pragma('journal_mode', { simple: true })).toBe('wal');
     expect(db.pragma('foreign_keys', { simple: true })).toBe(1);
@@ -64,6 +64,7 @@ describe('desktop SQLite migrations', () => {
         'render_execution_snapshots',
         'render_artifacts',
         'render_receipts',
+        'render_execution_attempts',
       ]),
     );
     db.close();
@@ -97,8 +98,8 @@ describe('desktop SQLite migrations', () => {
     v2.db.close();
 
     const upgraded = await openDatabase({ dbPath, migrationsDirectory });
-    expect(upgraded.migration.currentVersion).toBe(5);
-    expect(upgraded.migration.appliedVersions).toEqual([3, 4, 5]);
+    expect(upgraded.migration.currentVersion).toBe(6);
+    expect(upgraded.migration.appliedVersions).toEqual([3, 4, 5, 6]);
     expect(upgraded.migration.backupPath).not.toBeNull();
     expect(
       upgraded.db
@@ -161,8 +162,8 @@ describe('desktop SQLite migrations', () => {
     v3.db.close();
 
     const upgraded = await openDatabase({ dbPath, migrationsDirectory });
-    expect(upgraded.migration.currentVersion).toBe(5);
-    expect(upgraded.migration.appliedVersions).toEqual([4, 5]);
+    expect(upgraded.migration.currentVersion).toBe(6);
+    expect(upgraded.migration.appliedVersions).toEqual([4, 5, 6]);
     expect(upgraded.migration.backupPath).not.toBeNull();
     expect(
       upgraded.db
@@ -180,6 +181,51 @@ describe('desktop SQLite migrations', () => {
         .pluck()
         .get(),
     ).toBe('timeline_plan_versions');
+    upgraded.db.close();
+  });
+
+  it('upgrades the accepted Render foundation from version 5 to version 6 without changing 005', async () => {
+    const directory = temporaryDirectory('desktop-v5-render-upgrade-');
+    const dbPath = join(directory, 'app.db');
+    const v5Migrations = join(directory, 'v5-migrations');
+    mkdirSync(v5Migrations);
+    for (const filename of [
+      '001_initial.sql',
+      '002_media_index_v1.sql',
+      '003_material_selection_v1.sql',
+      '004_timeline_plan_v1.sql',
+      '005_render_foundation_v1.sql',
+    ]) {
+      copyFileSync(join(migrationsDirectory, filename), join(v5Migrations, filename));
+    }
+    const v5 = await openDatabase({ dbPath, migrationsDirectory: v5Migrations });
+    expect(v5.migration.currentVersion).toBe(5);
+    v5.db
+      .prepare(
+        "INSERT INTO app_settings(setting_key, setting_value, updated_at) VALUES ('kept', 'yes', ?)",
+      )
+      .run('2026-09-12T00:00:00.000Z');
+    v5.db.close();
+
+    const upgraded = await openDatabase({ dbPath, migrationsDirectory });
+    expect(upgraded.migration.currentVersion).toBe(6);
+    expect(upgraded.migration.appliedVersions).toEqual([6]);
+    expect(upgraded.migration.backupPath).not.toBeNull();
+    expect(
+      upgraded.db
+        .prepare("SELECT setting_value FROM app_settings WHERE setting_key = 'kept'")
+        .pluck()
+        .get(),
+    ).toBe('yes');
+    expect(
+      upgraded.db
+        .prepare(
+          "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'render_execution_attempts'",
+        )
+        .pluck()
+        .get(),
+    ).toBe('render_execution_attempts');
+    expect(upgraded.db.pragma('foreign_key_check')).toEqual([]);
     upgraded.db.close();
   });
 
@@ -211,7 +257,7 @@ describe('desktop SQLite migrations', () => {
     ).toBeUndefined();
     original.close();
     const recovered = await openDatabase({ dbPath, migrationsDirectory });
-    expect(recovered.migration.currentVersion).toBe(5);
+    expect(recovered.migration.currentVersion).toBe(6);
     recovered.db.close();
   });
 });

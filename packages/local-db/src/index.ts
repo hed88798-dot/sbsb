@@ -4,6 +4,12 @@ export { JobRepository } from './job-repository.js';
 export { NarrationAudioRepository } from './narration-audio-repository.js';
 export { RenderPolicyRepository } from './render-policy-repository.js';
 export {
+  RenderExecutionRepository,
+  type ExistingRenderSuccessV1,
+  type RenderExecutionAttemptRecordV1,
+  type RenderExecutionAttemptStateV1,
+} from './render-execution-repository.js';
+export {
   RenderPreparationRepository,
   type RenderPreparationRecordV1,
   type RenderPreparationStateV1,
