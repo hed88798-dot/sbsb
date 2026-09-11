@@ -108,6 +108,9 @@ importers:
       '@app/domain-copywriting':
         specifier: workspace:*
         version: link:../../packages/domain-copywriting
+      '@app/domain-media-index':
+        specifier: workspace:*
+        version: link:../../packages/domain-media-index
       '@app/domain-product':
         specifier: workspace:*
         version: link:../../packages/domain-product
@@ -117,6 +120,9 @@ importers:
       '@app/provider-client':
         specifier: workspace:*
         version: link:../../packages/provider-client
+      '@app/render':
+        specifier: workspace:*
+        version: link:../../packages/render
       '@app/timeline':
         specifier: workspace:*
         version: link:../../packages/timeline
@@ -205,6 +211,9 @@ importers:
       '@app/domain-media-index':
         specifier: workspace:*
         version: link:../domain-media-index
+      '@app/render':
+        specifier: workspace:*
+        version: link:../render
       '@app/timeline':
         specifier: workspace:*
         version: link:../timeline
@@ -227,6 +236,21 @@ importers:
       '@app/contracts':
         specifier: workspace:*
         version: link:../contracts
+
+  packages/render:
+    dependencies:
+      '@app/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@app/domain-media-index':
+        specifier: workspace:*
+        version: link:../domain-media-index
+      '@app/timeline':
+        specifier: workspace:*
+        version: link:../timeline
+      zod:
+        specifier: 4.1.13
+        version: 4.1.13
 
   packages/test-fixtures:
     dependencies:

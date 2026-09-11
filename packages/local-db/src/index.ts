@@ -1,6 +1,14 @@
 export { migrateDatabase, openDatabase, type MigrationResult } from './database.js';
 export { ProductRepository } from './product-repository.js';
 export { JobRepository } from './job-repository.js';
+export { NarrationAudioRepository } from './narration-audio-repository.js';
+export { RenderPolicyRepository } from './render-policy-repository.js';
+export {
+  RenderPreparationRepository,
+  type RenderPreparationRecordV1,
+  type RenderPreparationStateV1,
+  type VerifiedStagedArtifactRecordV1,
+} from './render-preparation-repository.js';
 export { CopywritingRepository } from './copywriting-repository.js';
 export { SettingsRepository } from './settings-repository.js';
 export {
