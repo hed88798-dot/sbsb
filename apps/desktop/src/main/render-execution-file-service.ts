@@ -28,6 +28,12 @@ export interface RenderAttemptPathsV1 {
   managed_relative_path: string;
 }
 
+export interface ExistingOutputAssessmentV1 {
+  disposition: 'TRUSTED' | 'MISSING' | 'HASH_INVALID' | 'SIZE_INVALID' | 'OTHER_INTEGRITY_FAILURE';
+  observed_sha256: string | null;
+  observed_size_bytes: number | null;
+}
+
 export interface RenderExecutionFilePortV1 {
   reverifyPreparedSnapshot(snapshot: RenderExecutionSnapshotV1): Promise<void>;
   createAttemptPaths(input: {
@@ -49,6 +55,11 @@ export interface RenderExecutionFilePortV1 {
     expected_size_bytes: number;
   }): Promise<'ATOMIC_SAME_VOLUME_RENAME'>;
   removePartial(path: string): Promise<void>;
+  assessExistingOutput(
+    path: string,
+    expectedHash: string,
+    expectedSize: number,
+  ): Promise<ExistingOutputAssessmentV1>;
   verifyExistingOutput(path: string, expectedHash: string, expectedSize: number): Promise<void>;
 }
 
@@ -135,6 +146,7 @@ export class RenderExecutionFileService implements RenderExecutionFilePortV1 {
     }
     const approvedManifestSha256 = await this.#verifyApprovalReceipt();
     await this.#verifyRuntime(snapshot, approvedManifestSha256);
+    throw new Error('RENDER_ROTATION_RUNTIME_CAPABILITY_V2_REQUIRED');
   }
 
   async createAttemptPaths(input: {
@@ -248,9 +260,83 @@ export class RenderExecutionFileService implements RenderExecutionFilePortV1 {
     expectedHash: string,
     expectedSize: number,
   ): Promise<void> {
-    const facts = await this.assertStableFile(path, expectedHash);
-    if (facts.size_bytes !== expectedSize)
-      throw new Error('RENDER_EXISTING_SUCCESS_OUTPUT_INVALID');
+    const assessment = await this.assessExistingOutput(path, expectedHash, expectedSize);
+    if (assessment.disposition !== 'TRUSTED') {
+      throw new Error(`RENDER_HISTORICAL_OUTPUT_${assessment.disposition}`);
+    }
+  }
+
+  async assessExistingOutput(
+    path: string,
+    expectedHash: string,
+    expectedSize: number,
+  ): Promise<ExistingOutputAssessmentV1> {
+    const outputRoot = await controlledDirectory(this.#configuredOutputRoot);
+    const requested = resolve(path);
+    let resolvedCandidate: string;
+    try {
+      resolvedCandidate = join(await realpath(dirname(requested)), basename(requested));
+    } catch {
+      return {
+        disposition: 'OTHER_INTEGRITY_FAILURE',
+        observed_sha256: null,
+        observed_size_bytes: null,
+      };
+    }
+    if (!isInside(outputRoot, resolvedCandidate)) {
+      return {
+        disposition: 'OTHER_INTEGRITY_FAILURE',
+        observed_sha256: null,
+        observed_size_bytes: null,
+      };
+    }
+    try {
+      const facts = await lstat(resolvedCandidate);
+      if (!facts.isFile() || facts.isSymbolicLink()) {
+        return {
+          disposition: 'OTHER_INTEGRITY_FAILURE',
+          observed_sha256: null,
+          observed_size_bytes: facts.size,
+        };
+      }
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        return { disposition: 'MISSING', observed_sha256: null, observed_size_bytes: null };
+      }
+      return {
+        disposition: 'OTHER_INTEGRITY_FAILURE',
+        observed_sha256: null,
+        observed_size_bytes: null,
+      };
+    }
+    try {
+      const observed = await this.assertStableFile(resolvedCandidate);
+      if (observed.size_bytes !== expectedSize) {
+        return {
+          disposition: 'SIZE_INVALID',
+          observed_sha256: observed.sha256,
+          observed_size_bytes: observed.size_bytes,
+        };
+      }
+      if (observed.sha256 !== expectedHash) {
+        return {
+          disposition: 'HASH_INVALID',
+          observed_sha256: observed.sha256,
+          observed_size_bytes: observed.size_bytes,
+        };
+      }
+      return {
+        disposition: 'TRUSTED',
+        observed_sha256: observed.sha256,
+        observed_size_bytes: observed.size_bytes,
+      };
+    } catch {
+      return {
+        disposition: 'OTHER_INTEGRITY_FAILURE',
+        observed_sha256: null,
+        observed_size_bytes: null,
+      };
+    }
   }
 
   async #verifyApprovalReceipt(): Promise<string> {

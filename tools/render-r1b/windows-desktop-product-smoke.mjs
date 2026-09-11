@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { isAbsolute, resolve } from 'node:path';
 import {
@@ -24,6 +25,8 @@ const expectedKeys = [
   'expected_timeline_version',
   'expected_timeline_commit_receipt_hash',
   'expected_logical_render_hash',
+  'smoke_bundle_manifest_hash',
+  'smoke_bundle_hash',
 ];
 
 function fail(code) {
@@ -45,7 +48,12 @@ function exactConfig(value) {
       fail('R1B_SMOKE_CONFIG_INVALID');
     }
   }
-  for (const key of ['expected_timeline_commit_receipt_hash', 'expected_logical_render_hash']) {
+  for (const key of [
+    'expected_timeline_commit_receipt_hash',
+    'expected_logical_render_hash',
+    'smoke_bundle_manifest_hash',
+    'smoke_bundle_hash',
+  ]) {
     if (typeof value[key] !== 'string' || !/^[a-f0-9]{64}$/u.test(value[key])) {
       fail('R1B_SMOKE_AUTHORITY_HASH_INVALID');
     }
@@ -98,6 +106,10 @@ try {
     fail('R1B_SMOKE_HISTORICAL_AUTHORITY_BINDING_MISMATCH');
   }
   const executions = new RenderExecutionRepository(db);
+  const lifecycle = [];
+  const processes = new NodeRenderProcessAdapterV1({
+    onLifecycle: (event) => lifecycle.push(event),
+  });
   const service = new RenderExecutionServiceV1({
     preparations,
     policies: new RenderPolicyRepository(db),
@@ -108,10 +120,114 @@ try {
       runtimeRoot: config.runtime_root,
       approvalReceiptPath: config.approval_receipt_path,
     }),
-    processes: new NodeRenderProcessAdapterV1(),
+    processes,
   });
   const interrupted = await service.recoverInterruptedExecutions();
   if (interrupted.length > 0) fail('R1B_SMOKE_INTERRUPTED_ATTEMPT_RECOVERED_RETRY_REQUIRED');
+
+  const cancellationExecution = service.executePreparedRender(config.job_id);
+  let earlyCancellationError = null;
+  let earlyCancellationCompletion = false;
+  void cancellationExecution.then(
+    () => {
+      earlyCancellationCompletion = true;
+    },
+    (error) => {
+      earlyCancellationError = error;
+    },
+  );
+  const deadline = Date.now() + 30_000;
+  let cancellationAttempt = null;
+  while (Date.now() < deadline) {
+    if (earlyCancellationError) throw earlyCancellationError;
+    if (earlyCancellationCompletion) fail('R1B_SMOKE_FFMPEG_COMPLETED_BEFORE_CANCELLATION');
+    const active = executions.findActive(config.job_id);
+    if (
+      active?.state === 'RUNNING' &&
+      lifecycle.some(
+        (event) =>
+          event.execution_attempt_id === active.execution_attempt_id &&
+          event.kind === 'FFMPEG' &&
+          event.event === 'PROCESS_STARTED',
+      )
+    ) {
+      cancellationAttempt = active;
+      break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  if (!cancellationAttempt) fail('R1B_SMOKE_FFMPEG_PROCESS_DID_NOT_START_FOR_CANCELLATION');
+  if (!(await service.cancelPreparedRender(config.job_id))) fail('R1B_SMOKE_CANCEL_NOT_ACCEPTED');
+  let cancellationError = null;
+  try {
+    await cancellationExecution;
+  } catch (error) {
+    cancellationError = error;
+  }
+  if (!(cancellationError instanceof Error) || cancellationError.message !== 'FFMPEG_CANCELLED') {
+    fail('R1B_SMOKE_CANCELLATION_RESULT_INVALID');
+  }
+  const cancelledAttempt = executions.require(cancellationAttempt.execution_attempt_id);
+  if (
+    cancelledAttempt.state !== 'CANCELLED' ||
+    cancelledAttempt.output_artifact_record_id !== null ||
+    !cancelledAttempt.receipt_id ||
+    existsSync(cancelledAttempt.partial_output_path) ||
+    existsSync(cancelledAttempt.final_output_path)
+  ) {
+    fail('R1B_SMOKE_CANCELLED_ATTEMPT_INTEGRITY_INVALID');
+  }
+  const cancelledReceipt = JSON.parse(
+    db
+      .prepare('SELECT receipt_json FROM render_receipts WHERE receipt_id = ?')
+      .pluck()
+      .get(cancelledAttempt.receipt_id),
+  );
+  if (
+    cancelledReceipt.terminal_state !== 'CANCELLED' ||
+    cancelledReceipt.output_artifact !== null ||
+    cancelledReceipt.verification_facts !== null
+  ) {
+    fail('R1B_SMOKE_CANCELLED_RECEIPT_INVALID');
+  }
+  const cancellationEvents = lifecycle.filter(
+    (event) => event.execution_attempt_id === cancelledAttempt.execution_attempt_id,
+  );
+  const startedEvent = cancellationEvents.find((event) => event.event === 'PROCESS_STARTED');
+  const gracefulEvent = cancellationEvents.find(
+    (event) => event.event === 'WINDOWS_TREE_GRACEFUL_REQUESTED',
+  );
+  const forcedEvent = cancellationEvents.find(
+    (event) => event.event === 'WINDOWS_TREE_FORCED_REQUESTED',
+  );
+  const closedEvent = cancellationEvents.find((event) => event.event === 'PROCESS_CLOSED');
+  if (!startedEvent?.pid || !gracefulEvent || !closedEvent) {
+    fail('R1B_SMOKE_WINDOWS_PROCESS_TREE_EVIDENCE_MISSING');
+  }
+  let processAlive = false;
+  try {
+    process.kill(startedEvent.pid, 0);
+    processAlive = true;
+  } catch {
+    processAlive = false;
+  }
+  if (processAlive) fail('R1B_SMOKE_ORPHAN_FFMPEG_PROCESS');
+  const cancellationElapsedMs =
+    Date.parse(closedEvent.observed_at) - Date.parse(gracefulEvent.observed_at);
+  const policy = new RenderPolicyRepository(db).require(
+    prepared.logical_plan.render_policy_id,
+    prepared.logical_plan.render_policy_version,
+  );
+  if (
+    cancellationElapsedMs < 0 ||
+    cancellationElapsedMs >
+      policy.execution.graceful_cancel_timeout_ms +
+        policy.execution.forced_cancel_timeout_ms +
+        2_000
+  ) {
+    fail('R1B_SMOKE_CANCELLATION_BOUND_EXCEEDED');
+  }
+
   const result = await service.executePreparedRender(config.job_id);
   const attempt = executions.require(result.execution_attempt_id);
   console.log(
@@ -134,6 +250,20 @@ try {
       source_video_audio: 'DROP',
       narration: 'ONLY',
       subtitle: 'OFF',
+      smoke_bundle_manifest_hash: config.smoke_bundle_manifest_hash,
+      smoke_bundle_hash: config.smoke_bundle_hash,
+      WINDOWS_CANCELLATION_PRODUCT_HARNESS: 'PASS',
+      cancellation_attempt_id: cancelledAttempt.execution_attempt_id,
+      cancellation_receipt_hash: cancelledReceipt.receipt_hash,
+      cancellation_terminal_state: cancelledAttempt.state,
+      ffmpeg_process_started: true,
+      windows_taskkill_tree_path_exercised: true,
+      graceful_bounded_stage_observed: true,
+      forced_stage_exercised: Boolean(forcedEvent),
+      forced_stage_required: Boolean(forcedEvent),
+      no_orphan_ffmpeg_process: true,
+      cancellation_partial_promoted: false,
+      cancellation_verified_output_created: false,
     }),
   );
 } finally {

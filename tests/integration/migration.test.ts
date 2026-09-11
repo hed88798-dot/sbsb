@@ -26,11 +26,11 @@ afterEach(() => {
 });
 
 describe('desktop SQLite migrations', () => {
-  it('migrates an empty database to version 6 with WAL and foreign keys', async () => {
+  it('migrates an empty database to version 7 with WAL and foreign keys', async () => {
     const dbPath = join(temporaryDirectory('desktop-empty-'), 'app.db');
     const { db, migration } = await openDatabase({ dbPath, migrationsDirectory });
-    expect(migration.currentVersion).toBe(6);
-    expect(migration.appliedVersions).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(migration.currentVersion).toBe(7);
+    expect(migration.appliedVersions).toEqual([1, 2, 3, 4, 5, 6, 7]);
     expect(migration.backupPath).toBeNull();
     expect(db.pragma('journal_mode', { simple: true })).toBe('wal');
     expect(db.pragma('foreign_keys', { simple: true })).toBe(1);
@@ -65,6 +65,7 @@ describe('desktop SQLite migrations', () => {
         'render_artifacts',
         'render_receipts',
         'render_execution_attempts',
+        'render_output_recoverability_observations',
       ]),
     );
     db.close();
@@ -98,8 +99,8 @@ describe('desktop SQLite migrations', () => {
     v2.db.close();
 
     const upgraded = await openDatabase({ dbPath, migrationsDirectory });
-    expect(upgraded.migration.currentVersion).toBe(6);
-    expect(upgraded.migration.appliedVersions).toEqual([3, 4, 5, 6]);
+    expect(upgraded.migration.currentVersion).toBe(7);
+    expect(upgraded.migration.appliedVersions).toEqual([3, 4, 5, 6, 7]);
     expect(upgraded.migration.backupPath).not.toBeNull();
     expect(
       upgraded.db
@@ -162,8 +163,8 @@ describe('desktop SQLite migrations', () => {
     v3.db.close();
 
     const upgraded = await openDatabase({ dbPath, migrationsDirectory });
-    expect(upgraded.migration.currentVersion).toBe(6);
-    expect(upgraded.migration.appliedVersions).toEqual([4, 5, 6]);
+    expect(upgraded.migration.currentVersion).toBe(7);
+    expect(upgraded.migration.appliedVersions).toEqual([4, 5, 6, 7]);
     expect(upgraded.migration.backupPath).not.toBeNull();
     expect(
       upgraded.db
@@ -184,7 +185,7 @@ describe('desktop SQLite migrations', () => {
     upgraded.db.close();
   });
 
-  it('upgrades the accepted Render foundation from version 5 to version 6 without changing 005', async () => {
+  it('upgrades the accepted Render foundation from version 5 without changing 005', async () => {
     const directory = temporaryDirectory('desktop-v5-render-upgrade-');
     const dbPath = join(directory, 'app.db');
     const v5Migrations = join(directory, 'v5-migrations');
@@ -208,8 +209,8 @@ describe('desktop SQLite migrations', () => {
     v5.db.close();
 
     const upgraded = await openDatabase({ dbPath, migrationsDirectory });
-    expect(upgraded.migration.currentVersion).toBe(6);
-    expect(upgraded.migration.appliedVersions).toEqual([6]);
+    expect(upgraded.migration.currentVersion).toBe(7);
+    expect(upgraded.migration.appliedVersions).toEqual([6, 7]);
     expect(upgraded.migration.backupPath).not.toBeNull();
     expect(
       upgraded.db
@@ -225,6 +226,41 @@ describe('desktop SQLite migrations', () => {
         .pluck()
         .get(),
     ).toBe('render_execution_attempts');
+    expect(upgraded.db.pragma('foreign_key_check')).toEqual([]);
+    upgraded.db.close();
+  });
+
+  it('upgrades R1B version 6 to cancellation and recoverability version 7', async () => {
+    const directory = temporaryDirectory('desktop-v6-r1b-upgrade-');
+    const dbPath = join(directory, 'app.db');
+    const v6Migrations = join(directory, 'v6-migrations');
+    mkdirSync(v6Migrations);
+    for (const filename of readdirSync(migrationsDirectory).filter((name) =>
+      /^(?:001|002|003|004|005|006)_/u.test(name),
+    )) {
+      copyFileSync(join(migrationsDirectory, filename), join(v6Migrations, filename));
+    }
+    const v6 = await openDatabase({ dbPath, migrationsDirectory: v6Migrations });
+    expect(v6.migration.currentVersion).toBe(6);
+    v6.db
+      .prepare(
+        "INSERT INTO app_settings(setting_key, setting_value, updated_at) VALUES ('v6-kept', 'yes', ?)",
+      )
+      .run('2026-09-12T00:00:00.000Z');
+    v6.db.close();
+
+    const upgraded = await openDatabase({ dbPath, migrationsDirectory });
+    expect(upgraded.migration.currentVersion).toBe(7);
+    expect(upgraded.migration.appliedVersions).toEqual([7]);
+    expect(
+      upgraded.db
+        .prepare("SELECT setting_value FROM app_settings WHERE setting_key = 'v6-kept'")
+        .pluck()
+        .get(),
+    ).toBe('yes');
+    expect(upgraded.db.prepare('PRAGMA table_info(render_execution_attempts)').all()).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: 'cancellation_requested_at' })]),
+    );
     expect(upgraded.db.pragma('foreign_key_check')).toEqual([]);
     upgraded.db.close();
   });
@@ -257,7 +293,7 @@ describe('desktop SQLite migrations', () => {
     ).toBeUndefined();
     original.close();
     const recovered = await openDatabase({ dbPath, migrationsDirectory });
-    expect(recovered.migration.currentVersion).toBe(6);
+    expect(recovered.migration.currentVersion).toBe(7);
     recovered.db.close();
   });
 });

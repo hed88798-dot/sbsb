@@ -4,6 +4,7 @@ import type {
   RenderPreparationRepository,
   RenderPolicyRepository,
   RenderExecutionAttemptRecordV1,
+  ExistingRenderSuccessV1,
 } from '@app/local-db';
 import {
   buildFfmpegInvocationV1,
@@ -44,6 +45,9 @@ function errorCode(error: unknown): string {
 
 function processFailure(result: RenderProcessResultV1, kind: 'FFMPEG' | 'FFPROBE'): void {
   const prefix = kind === 'FFMPEG' ? 'FFMPEG' : 'FFPROBE';
+  if (result.termination_reason === 'PROGRESS_PROTOCOL_INVALID') {
+    throw new RenderExecutionFailure('FFMPEG_PROGRESS_PROTOCOL_INVALID');
+  }
   if (result.termination_reason === 'CANCELLED') {
     throw new RenderExecutionFailure(`${prefix}_CANCELLED`, 'CANCELLED');
   }
@@ -109,20 +113,7 @@ export class RenderExecutionServiceV1 {
 
     const existing = this.#executions.findSucceeded(jobId);
     if (existing) {
-      const output = existing.receipt.output_artifact;
-      if (!output) throw new Error('RENDER_EXECUTION_SUCCESS_RECEIPT_INVALID');
-      await this.#files.verifyExistingOutput(
-        existing.attempt.final_output_path,
-        output.output_sha256,
-        output.size_bytes,
-      );
-      return {
-        recovered_existing_success: true,
-        execution_attempt_id: existing.attempt.execution_attempt_id,
-        output_path: existing.attempt.final_output_path,
-        output_sha256: output.output_sha256,
-        receipt: existing.receipt,
-      };
+      return this.#recoverExistingSuccess(existing);
     }
 
     const attemptToken = `attempt_${this.#id()}`.replaceAll('-', '_');
@@ -138,32 +129,29 @@ export class RenderExecutionServiceV1 {
       final_output_path: paths.final_output_path,
     });
     if ('receipt' in reservation) {
-      const output = reservation.receipt.output_artifact;
-      if (!output) throw new Error('RENDER_EXECUTION_SUCCESS_RECEIPT_INVALID');
-      await this.#files.verifyExistingOutput(
-        reservation.attempt.final_output_path,
-        output.output_sha256,
-        output.size_bytes,
-      );
-      return {
-        recovered_existing_success: true,
-        execution_attempt_id: reservation.attempt.execution_attempt_id,
-        output_path: reservation.attempt.final_output_path,
-        output_sha256: output.output_sha256,
-        receipt: reservation.receipt,
-      };
+      return this.#recoverExistingSuccess(reservation);
     }
     let attempt = reservation;
     let promoted = false;
     try {
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      this.#assertPreSpawnCancellationClear(attempt.execution_attempt_id);
       await this.#files.reverifyPreparedSnapshot(snapshot);
+      this.#assertPreSpawnCancellationClear(attempt.execution_attempt_id);
       const invocation = buildFfmpegInvocationV1({
         plan,
         snapshot,
         policy,
         partial_output_path: paths.partial_output_path,
       });
-      attempt = this.#executions.markRunning(attempt.execution_attempt_id);
+      try {
+        attempt = this.#executions.claimSpawn(attempt.execution_attempt_id);
+      } catch (error) {
+        if (error instanceof Error && error.message === 'RENDER_EXECUTION_CANCELLATION_REQUESTED') {
+          throw new RenderExecutionFailure('RENDER_EXECUTION_CANCELLED_BEFORE_SPAWN', 'CANCELLED');
+        }
+        throw error;
+      }
       const ffmpegResult = await this.#processes.run({
         execution_attempt_id: attempt.execution_attempt_id,
         kind: 'FFMPEG',
@@ -295,9 +283,11 @@ export class RenderExecutionServiceV1 {
   }
 
   async cancelPreparedRender(jobId: string): Promise<boolean> {
-    const active = this.#executions.findActive(jobId);
+    const active = this.#executions.requestCancellation(jobId);
     if (!active) return false;
-    return this.#processes.cancel(active.execution_attempt_id);
+    if (active.state === 'STARTING') return true;
+    await this.#processes.cancel(active.execution_attempt_id);
+    return true;
   }
 
   async recoverInterruptedExecutions(): Promise<RenderExecutionAttemptRecordV1[]> {
@@ -315,15 +305,24 @@ export class RenderExecutionServiceV1 {
       const plan = prepared.logical_plan;
       const snapshot = this.#preparations.getReadySnapshot(attempt.job_id);
       if (!plan || !snapshot) throw new Error('RENDER_INTERRUPTED_AUTHORITY_MISSING');
+      const cancellationRequested = attempt.cancellation_requested_at !== null;
+      const terminalState = cancellationRequested ? 'CANCELLED' : 'INTERRUPTED';
+      const recoveryError = cleanupFailed
+        ? cancellationRequested
+          ? 'CANCELLED_OUTPUT_CLEANUP_FAILED'
+          : 'APP_INTERRUPTED_OUTPUT_CLEANUP_FAILED'
+        : cancellationRequested
+          ? 'RENDER_EXECUTION_CANCELLED_BEFORE_SPAWN'
+          : 'APP_INTERRUPTED';
       const receipt = buildRenderReceiptV1({
         receipt_id: `render_receipt_${this.#id()}`,
         job_id: attempt.job_id,
         plan,
         snapshot,
-        terminal_state: 'INTERRUPTED',
+        terminal_state: terminalState,
         output_artifact: null,
         verification_facts: null,
-        error_id: cleanupFailed ? 'APP_INTERRUPTED_OUTPUT_CLEANUP_FAILED' : 'APP_INTERRUPTED',
+        error_id: recoveryError,
         created_at: this.#clock(),
       });
       recovered.push(
@@ -335,5 +334,48 @@ export class RenderExecutionServiceV1 {
       );
     }
     return recovered;
+  }
+
+  #assertPreSpawnCancellationClear(executionAttemptId: string): void {
+    try {
+      this.#executions.assertCancellationNotRequested(executionAttemptId);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'RENDER_EXECUTION_CANCELLATION_REQUESTED') {
+        throw new RenderExecutionFailure('RENDER_EXECUTION_CANCELLED_BEFORE_SPAWN', 'CANCELLED');
+      }
+      throw error;
+    }
+  }
+
+  async #recoverExistingSuccess(
+    existing: ExistingRenderSuccessV1,
+  ): Promise<ExecutedRenderResultV1> {
+    const output = existing.receipt.output_artifact;
+    if (!output) throw new Error('RENDER_EXECUTION_SUCCESS_RECEIPT_INVALID');
+    const current = this.#executions.currentOutputRecoverability(existing.attempt.job_id);
+    if (current && current.disposition !== 'TRUSTED') {
+      throw new Error(`RENDER_HISTORICAL_OUTPUT_RECOVERY_BLOCKED_${current.disposition}`);
+    }
+    const assessment = await this.#files.assessExistingOutput(
+      existing.attempt.final_output_path,
+      output.output_sha256,
+      output.size_bytes,
+    );
+    if (!current || assessment.disposition !== 'TRUSTED') {
+      this.#executions.recordOutputRecoverability({
+        job_id: existing.attempt.job_id,
+        disposition: assessment.disposition,
+        observed_sha256: assessment.observed_sha256,
+        observed_size_bytes: assessment.observed_size_bytes,
+      });
+      throw new Error(`RENDER_HISTORICAL_OUTPUT_${assessment.disposition}`);
+    }
+    return {
+      recovered_existing_success: true,
+      execution_attempt_id: existing.attempt.execution_attempt_id,
+      output_path: existing.attempt.final_output_path,
+      output_sha256: output.output_sha256,
+      receipt: existing.receipt,
+    };
   }
 }

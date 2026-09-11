@@ -34,6 +34,27 @@ export interface RenderExecutionAttemptRecordV1 {
   started_at: string;
   updated_at: string;
   finished_at: string | null;
+  cancellation_requested_at: string | null;
+}
+
+export type RenderOutputRecoverabilityDispositionV1 =
+  | 'TRUSTED'
+  | 'MISSING'
+  | 'HASH_INVALID'
+  | 'SIZE_INVALID'
+  | 'OTHER_INTEGRITY_FAILURE';
+
+export interface RenderOutputRecoverabilityObservationV1 {
+  observation_id: string;
+  job_id: string;
+  execution_attempt_id: string;
+  output_artifact_record_id: string;
+  disposition: RenderOutputRecoverabilityDispositionV1;
+  expected_sha256: string;
+  expected_size_bytes: number;
+  observed_sha256: string | null;
+  observed_size_bytes: number | null;
+  observed_at: string;
 }
 
 export interface ExistingRenderSuccessV1 {
@@ -179,8 +200,48 @@ export class RenderExecutionRepository {
     return row ? this.#map(row) : null;
   }
 
+  requestCancellation(jobId: string): RenderExecutionAttemptRecordV1 | null {
+    const operation = this.#db.transaction(() => {
+      const active = this.findActive(jobId);
+      if (!active) return null;
+      const requestedAt = active.cancellation_requested_at ?? this.#clock();
+      const changed = this.#db
+        .prepare(
+          `UPDATE render_execution_attempts SET cancellation_requested_at = ?, updated_at = ?
+           WHERE execution_attempt_id = ? AND state IN ('STARTING', 'RUNNING', 'VERIFYING')`,
+        )
+        .run(requestedAt, requestedAt, active.execution_attempt_id).changes;
+      if (changed !== 1) throw new Error('RENDER_EXECUTION_STATE_CONFLICT');
+      return this.require(active.execution_attempt_id);
+    });
+    return operation.immediate();
+  }
+
+  assertCancellationNotRequested(executionAttemptId: string): void {
+    const attempt = this.require(executionAttemptId);
+    if (attempt.cancellation_requested_at !== null) {
+      throw new Error('RENDER_EXECUTION_CANCELLATION_REQUESTED');
+    }
+  }
+
+  claimSpawn(executionAttemptId: string): RenderExecutionAttemptRecordV1 {
+    const changed = this.#db
+      .prepare(
+        `UPDATE render_execution_attempts SET state = 'RUNNING', updated_at = ?
+         WHERE execution_attempt_id = ? AND state = 'STARTING'
+         AND cancellation_requested_at IS NULL`,
+      )
+      .run(this.#clock(), executionAttemptId).changes;
+    if (changed === 1) return this.require(executionAttemptId);
+    const attempt = this.require(executionAttemptId);
+    if (attempt.state === 'STARTING' && attempt.cancellation_requested_at !== null) {
+      throw new Error('RENDER_EXECUTION_CANCELLATION_REQUESTED');
+    }
+    throw new Error('RENDER_EXECUTION_STATE_CONFLICT');
+  }
+
   markRunning(executionAttemptId: string): RenderExecutionAttemptRecordV1 {
-    return this.#transition(executionAttemptId, ['STARTING'], 'RUNNING');
+    return this.claimSpawn(executionAttemptId);
   }
 
   recordProgress(
@@ -269,6 +330,18 @@ export class RenderExecutionRepository {
           attempt.execution_attempt_id,
         ).changes;
       if (changed !== 1) throw new Error('RENDER_EXECUTION_STATE_CONFLICT');
+      this.#insertOutputRecoverability({
+        observation_id: `render_output_recoverability_${this.#id()}`,
+        job_id: attempt.job_id,
+        execution_attempt_id: attempt.execution_attempt_id,
+        output_artifact_record_id: artifactRecordId,
+        disposition: 'TRUSTED',
+        expected_sha256: input.output_artifact.output_sha256,
+        expected_size_bytes: input.output_artifact.size_bytes,
+        observed_sha256: input.output_artifact.output_sha256,
+        observed_size_bytes: input.output_artifact.size_bytes,
+        observed_at: receipt.created_at,
+      });
       const genericJobChanged = this.#db
         .prepare(
           `UPDATE jobs SET state = 'SUCCEEDED', progress = 1, finished_at = ?,
@@ -346,6 +419,62 @@ export class RenderExecutionRepository {
     ).map((row) => this.#map(row));
   }
 
+  currentOutputRecoverability(jobId: string): RenderOutputRecoverabilityObservationV1 | null {
+    const row = this.#db
+      .prepare(
+        `SELECT observation_id, job_id, execution_attempt_id, output_artifact_record_id,
+         disposition, expected_sha256, expected_size_bytes, observed_sha256,
+         observed_size_bytes, observed_at
+         FROM render_output_recoverability_observations WHERE job_id = ?
+         ORDER BY rowid DESC LIMIT 1`,
+      )
+      .get(jobId) as RenderOutputRecoverabilityObservationV1 | undefined;
+    return row ?? null;
+  }
+
+  recordOutputRecoverability(input: {
+    job_id: string;
+    disposition: RenderOutputRecoverabilityDispositionV1;
+    observed_sha256: string | null;
+    observed_size_bytes: number | null;
+  }): RenderOutputRecoverabilityObservationV1 {
+    const operation = this.#db.transaction(() => {
+      const success = this.findSucceeded(input.job_id);
+      if (!success?.attempt.output_artifact_record_id || !success.receipt.output_artifact) {
+        throw new Error('RENDER_HISTORICAL_SUCCESS_NOT_FOUND');
+      }
+      const current = this.currentOutputRecoverability(input.job_id);
+      if (current && (current.disposition !== 'TRUSTED' || input.disposition === 'TRUSTED')) {
+        return current;
+      }
+      const observation: RenderOutputRecoverabilityObservationV1 = {
+        observation_id: `render_output_recoverability_${this.#id()}`,
+        job_id: input.job_id,
+        execution_attempt_id: success.attempt.execution_attempt_id,
+        output_artifact_record_id: success.attempt.output_artifact_record_id,
+        disposition: input.disposition,
+        expected_sha256: success.receipt.output_artifact.output_sha256,
+        expected_size_bytes: success.receipt.output_artifact.size_bytes,
+        observed_sha256: input.observed_sha256,
+        observed_size_bytes: input.observed_size_bytes,
+        observed_at: this.#clock(),
+      };
+      this.#insertOutputRecoverability(observation);
+      if (input.disposition !== 'TRUSTED') {
+        const code = `RENDER_HISTORICAL_OUTPUT_${input.disposition}`;
+        const changed = this.#db
+          .prepare(
+            `UPDATE jobs SET state = 'FAILED', finished_at = ?, error_code = ?, error_message = ?
+             WHERE job_id = ? AND state = 'SUCCEEDED'`,
+          )
+          .run(observation.observed_at, code, code, input.job_id).changes;
+        if (changed !== 1) throw new Error('RENDER_GENERIC_JOB_STATE_CONFLICT');
+      }
+      return observation;
+    });
+    return operation.immediate();
+  }
+
   #insertReceipt(receipt: RenderReceiptV1): void {
     const bytes = canonicalJson(receipt);
     const existing = this.#db
@@ -371,6 +500,28 @@ export class RenderExecutionRepository {
         receipt.receipt_hash,
         bytes,
         receipt.created_at,
+      );
+  }
+
+  #insertOutputRecoverability(observation: RenderOutputRecoverabilityObservationV1): void {
+    this.#db
+      .prepare(
+        `INSERT INTO render_output_recoverability_observations(
+          observation_id, job_id, execution_attempt_id, output_artifact_record_id, disposition,
+          expected_sha256, expected_size_bytes, observed_sha256, observed_size_bytes, observed_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(
+        observation.observation_id,
+        observation.job_id,
+        observation.execution_attempt_id,
+        observation.output_artifact_record_id,
+        observation.disposition,
+        observation.expected_sha256,
+        observation.expected_size_bytes,
+        observation.observed_sha256,
+        observation.observed_size_bytes,
+        observation.observed_at,
       );
   }
 

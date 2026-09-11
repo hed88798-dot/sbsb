@@ -8,6 +8,8 @@ export {
   type ExistingRenderSuccessV1,
   type RenderExecutionAttemptRecordV1,
   type RenderExecutionAttemptStateV1,
+  type RenderOutputRecoverabilityDispositionV1,
+  type RenderOutputRecoverabilityObservationV1,
 } from './render-execution-repository.js';
 export {
   RenderPreparationRepository,

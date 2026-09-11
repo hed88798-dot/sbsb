@@ -17,6 +17,11 @@ runtime paths, codecs, encoders, filter graphs, or raw process arguments.
 - Windows uses only the approved `h264_mf` runtime identity. No PATH lookup or encoder fallback is
   present.
 
+Runtime v1 remains historically approved, but it is now blocked from product execution because its
+declared filter surface cannot satisfy the rotation-capable contract. See
+`R1B_A_RUNTIME_ROTATION_COMPATIBILITY_CHECKPOINT.md`. A new profile/runtime v2 and real 90°/180°/270°
+product evidence are required; v1 evidence is not modified.
+
 ## Process and output lifecycle
 
 The executor spawns an absolute executable with an argument array and `shell: false`. FFmpeg uses
@@ -39,9 +44,18 @@ Startup converts unfinished attempts to `INTERRUPTED`, removes controlled partia
 never infers success from an MP4. A valid existing success is returned only after its path, size, and
 SHA-256 are reverified.
 
+Migration 007 adds durable cancellation intent while STARTING and append-only current output
+recoverability observations. The executor checks cancellation before and after re-verification and
+atomically refuses the STARTING→RUNNING spawn claim when cancellation is present. Historical success
+receipts and `VERIFIED_OUTPUT` rows remain immutable when current bytes later become missing or
+invalid; a separate disposition blocks trusted reuse and changes only the user-facing current job
+envelope.
+
 ## Acceptance boundary
 
-The repository provides one Windows 11 Desktop smoke command under `tools/render-r1b`. It consumes
-an already accepted historical C→D→E→R1A authority chain and calls the product service; it does not
-recompute upstream semantics. Until that command passes on a supported Windows 11 x64 Desktop with
-the exact Code F runtime, product acceptance remains `PENDING_WINDOWS_11_DESKTOP_EXECUTION`.
+The repository provides controlled export/import commands plus one Windows 11 Desktop smoke command
+under `tools/render-r1b`. The portable bundle carries relative, hash-bound files and accepted
+authority records, then creates only a new machine-local execution snapshot. The final smoke calls
+the product service for both real Windows process-tree cancellation and success; it does not
+recompute upstream semantics. Until Runtime v2 and those cases pass on supported Windows 11 x64
+Desktop, product acceptance remains `PENDING_WINDOWS_11_DESKTOP_EXECUTION`.

@@ -302,7 +302,7 @@ describe('Code E E4 migration and database immutability', () => {
         { type: 'trigger', name: 'timeline_plan_versions_reject_delete' },
       ]),
     );
-    expect(database.prepare('SELECT max(version) FROM schema_migrations').pluck().get()).toBe(6);
+    expect(database.prepare('SELECT max(version) FROM schema_migrations').pluck().get()).toBe(7);
   });
 
   it('introduces no planning_request_hash field or column', () => {

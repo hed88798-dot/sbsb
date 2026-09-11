@@ -166,10 +166,22 @@ class FakeFiles implements RenderExecutionFilePortV1 {
   reverifyCalls = 0;
   removals: string[] = [];
   failReverify = false;
+  reverifyStarted: (() => void) | null = null;
+  reverifyBarrier: Promise<void> | null = null;
+  afterReverify: (() => void) | null = null;
+  existingOutputDisposition:
+    | 'TRUSTED'
+    | 'MISSING'
+    | 'HASH_INVALID'
+    | 'SIZE_INVALID'
+    | 'OTHER_INTEGRITY_FAILURE' = 'TRUSTED';
 
   async reverifyPreparedSnapshot(): Promise<void> {
     this.reverifyCalls += 1;
+    this.reverifyStarted?.();
+    if (this.reverifyBarrier) await this.reverifyBarrier;
     if (this.failReverify) throw new Error('RENDER_STAGED_INPUT_HASH_MISMATCH');
+    this.afterReverify?.();
   }
 
   async createAttemptPaths(): Promise<RenderAttemptPathsV1> {
@@ -200,6 +212,24 @@ class FakeFiles implements RenderExecutionFilePortV1 {
     if (expectedHash !== outputHash || expectedSize !== 512) {
       throw new Error('RENDER_EXISTING_SUCCESS_OUTPUT_INVALID');
     }
+  }
+
+  async assessExistingOutput() {
+    return {
+      disposition: this.existingOutputDisposition,
+      observed_sha256:
+        this.existingOutputDisposition === 'MISSING'
+          ? null
+          : this.existingOutputDisposition === 'TRUSTED'
+            ? outputHash
+            : hashB,
+      observed_size_bytes:
+        this.existingOutputDisposition === 'MISSING'
+          ? null
+          : this.existingOutputDisposition === 'SIZE_INVALID'
+            ? 513
+            : 512,
+    } as const;
   }
 }
 
@@ -312,6 +342,36 @@ async function setup() {
 }
 
 describe('Code G R1B READY_FOR_EXECUTION service integration', () => {
+  async function expectPreSpawnCancellation(
+    context: Awaited<ReturnType<typeof setup>>,
+    executionPromise: ReturnType<RenderExecutionServiceV1['executePreparedRender']>,
+  ) {
+    await expect(executionPromise).rejects.toThrowError('RENDER_EXECUTION_CANCELLED_BEFORE_SPAWN');
+    expect(context.processes.requests).toHaveLength(0);
+    expect(
+      context.fixture.database.prepare('SELECT state FROM render_execution_attempts').pluck().get(),
+    ).toBe('CANCELLED');
+    expect(
+      context.fixture.database
+        .prepare("SELECT count(*) FROM render_artifacts WHERE artifact_role = 'OUTPUT'")
+        .pluck()
+        .get(),
+    ).toBe(0);
+    const receipt = JSON.parse(
+      context.fixture.database
+        .prepare('SELECT receipt_json FROM render_receipts')
+        .pluck()
+        .get() as string,
+    ) as { terminal_state: string; output_artifact: unknown; error_id: string };
+    expect(receipt).toEqual(
+      expect.objectContaining({
+        terminal_state: 'CANCELLED',
+        output_artifact: null,
+        error_id: 'RENDER_EXECUTION_CANCELLED_BEFORE_SPAWN',
+      }),
+    );
+  }
+
   it('executes, verifies, atomically promotes, persists VERIFIED_OUTPUT and commits receipt', async () => {
     const context = await setup();
     try {
@@ -360,6 +420,117 @@ describe('Code G R1B READY_FOR_EXECUTION service integration', () => {
           .pluck()
           .get(),
       ).toBe(1);
+    } finally {
+      context.fixture.close();
+    }
+  });
+
+  it.each(['MISSING', 'HASH_INVALID', 'SIZE_INVALID'] as const)(
+    'preserves historical success but records current output %s and blocks trusted reuse',
+    async (disposition) => {
+      const context = await setup();
+      try {
+        const first = await context.service.executePreparedRender(context.job.job_id);
+        const originalReceiptJson = context.fixture.database
+          .prepare('SELECT receipt_json FROM render_receipts WHERE receipt_id = ?')
+          .pluck()
+          .get(first.receipt.receipt_id);
+        context.files.existingOutputDisposition = disposition;
+        await expect(
+          context.service.executePreparedRender(context.job.job_id),
+        ).rejects.toThrowError(`RENDER_HISTORICAL_OUTPUT_${disposition}`);
+        expect(
+          context.fixture.database
+            .prepare('SELECT state FROM render_execution_attempts')
+            .pluck()
+            .get(),
+        ).toBe('SUCCEEDED');
+        expect(
+          context.fixture.database
+            .prepare("SELECT state FROM render_artifacts WHERE artifact_role = 'OUTPUT'")
+            .pluck()
+            .get(),
+        ).toBe('VERIFIED_OUTPUT');
+        expect(
+          context.fixture.database
+            .prepare('SELECT receipt_json FROM render_receipts WHERE receipt_id = ?')
+            .pluck()
+            .get(first.receipt.receipt_id),
+        ).toBe(originalReceiptJson);
+        expect(
+          context.executions.currentOutputRecoverability(context.job.job_id)?.disposition,
+        ).toBe(disposition);
+        expect(() =>
+          context.fixture.database
+            .prepare(
+              "UPDATE render_output_recoverability_observations SET disposition = 'TRUSTED' WHERE job_id = ?",
+            )
+            .run(context.job.job_id),
+        ).toThrowError('RENDER_OUTPUT_RECOVERABILITY_APPEND_ONLY');
+        expect(context.fixture.database.prepare('SELECT state FROM jobs').pluck().get()).toBe(
+          'FAILED',
+        );
+        context.files.existingOutputDisposition = 'TRUSTED';
+        await expect(
+          context.service.executePreparedRender(context.job.job_id),
+        ).rejects.toThrowError(`RENDER_HISTORICAL_OUTPUT_RECOVERY_BLOCKED_${disposition}`);
+        expect(context.processes.requests).toHaveLength(2);
+      } finally {
+        context.fixture.close();
+      }
+    },
+  );
+
+  it('persists cancellation before pre-spawn re-verification and never spawns', async () => {
+    const context = await setup();
+    try {
+      const execution = context.service.executePreparedRender(context.job.job_id);
+      await Promise.resolve();
+      expect(await context.service.cancelPreparedRender(context.job.job_id)).toBe(true);
+      await expectPreSpawnCancellation(context, execution);
+      expect(context.files.reverifyCalls).toBe(0);
+    } finally {
+      context.fixture.close();
+    }
+  });
+
+  it('persists cancellation during slow re-verification and never spawns', async () => {
+    const context = await setup();
+    let release!: () => void;
+    let started!: () => void;
+    context.files.reverifyBarrier = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const reverifyStarted = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    context.files.reverifyStarted = started;
+    try {
+      const execution = context.service.executePreparedRender(context.job.job_id);
+      await reverifyStarted;
+      expect(await context.service.cancelPreparedRender(context.job.job_id)).toBe(true);
+      release();
+      await expectPreSpawnCancellation(context, execution);
+      expect(context.files.reverifyCalls).toBe(1);
+    } finally {
+      release?.();
+      context.fixture.close();
+    }
+  });
+
+  it('makes persisted cancellation win immediately after re-verification at spawn claim', async () => {
+    const context = await setup();
+    context.files.afterReverify = () => {
+      const cancelled = context.executions.requestCancellation(context.job.job_id);
+      expect(cancelled?.state).toBe('STARTING');
+      expect(() => context.executions.claimSpawn(cancelled!.execution_attempt_id)).toThrowError(
+        'RENDER_EXECUTION_CANCELLATION_REQUESTED',
+      );
+    };
+    try {
+      const execution = context.service.executePreparedRender(context.job.job_id);
+      await expectPreSpawnCancellation(context, execution);
+      expect(context.files.reverifyCalls).toBe(1);
     } finally {
       context.fixture.close();
     }
@@ -429,6 +600,35 @@ describe('Code G R1B READY_FOR_EXECUTION service integration', () => {
           terminal_state: 'FAILED',
           output_artifact: null,
           error_id: 'FFMPEG_NONZERO_EXIT',
+        }),
+      );
+    } finally {
+      context.fixture.close();
+    }
+  });
+
+  it('persists malformed FFmpeg progress as FAILED rather than CANCELLED', async () => {
+    const context = await setup();
+    try {
+      context.processes.ffmpegResult = {
+        ...context.processes.ffmpegResult,
+        exit_code: null,
+        progress_end_observed: false,
+        termination_reason: 'PROGRESS_PROTOCOL_INVALID',
+      };
+      await expect(context.service.executePreparedRender(context.job.job_id)).rejects.toThrowError(
+        'FFMPEG_PROGRESS_PROTOCOL_INVALID',
+      );
+      const receipt = JSON.parse(
+        context.fixture.database
+          .prepare('SELECT receipt_json FROM render_receipts')
+          .pluck()
+          .get() as string,
+      ) as { terminal_state: string; error_id: string };
+      expect(receipt).toEqual(
+        expect.objectContaining({
+          terminal_state: 'FAILED',
+          error_id: 'FFMPEG_PROGRESS_PROTOCOL_INVALID',
         }),
       );
     } finally {
@@ -522,6 +722,39 @@ describe('Code G R1B READY_FOR_EXECUTION service integration', () => {
           terminal_state: 'INTERRUPTED',
           output_artifact: null,
           error_id: 'APP_INTERRUPTED',
+        }),
+      );
+    } finally {
+      context.fixture.close();
+    }
+  });
+
+  it('recovers a durable STARTING cancellation intent as CANCELLED without spawning', async () => {
+    const context = await setup();
+    try {
+      const attempt = context.executions.reserve({
+        job_id: context.job.job_id,
+        execution_snapshot_hash: context.snapshot.execution_snapshot_hash,
+        partial_output_path: 'D:\\output\\job\\attempts\\cancelled\\output.partial.mp4',
+        final_output_path: 'D:\\output\\job\\artifacts\\output.mp4',
+      });
+      if ('receipt' in attempt) throw new Error('unexpected success');
+      context.executions.requestCancellation(context.job.job_id);
+      const recovered = await context.service.recoverInterruptedExecutions();
+      expect(recovered).toHaveLength(1);
+      expect(recovered[0]!.state).toBe('CANCELLED');
+      expect(context.processes.requests).toHaveLength(0);
+      const receipt = JSON.parse(
+        context.fixture.database
+          .prepare('SELECT receipt_json FROM render_receipts')
+          .pluck()
+          .get() as string,
+      ) as { terminal_state: string; error_id: string; output_artifact: unknown };
+      expect(receipt).toEqual(
+        expect.objectContaining({
+          terminal_state: 'CANCELLED',
+          error_id: 'RENDER_EXECUTION_CANCELLED_BEFORE_SPAWN',
+          output_artifact: null,
         }),
       );
     } finally {

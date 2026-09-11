@@ -58,15 +58,43 @@ describe('Code G R1B architecture and frozen-authority boundaries', () => {
     expect(profile.profile_hash).toBe(
       'e05686e544bd31de1782b4b13cb23e993e6c26ef90408b1d19b8e59dd5ac5910',
     );
+    expect(sha256('migrations/desktop-sqlite/006_render_execution_attempts_v1.sql')).toBe(
+      '8dd012b31a9404bb3a2960cac06cab30cfffa1b4d40e24ba7755db744b8ad3dd',
+    );
   });
 
   it('keeps the Windows smoke on the historical service path without C/D/E recomputation', () => {
     const harness = source('tools/render-r1b/windows-desktop-product-smoke.mjs');
     expect(harness).toContain("authority_mode !== 'HISTORICAL_ACCEPTED_CHAIN'");
     expect(harness).toContain('service.executePreparedRender(config.job_id)');
+    expect(harness).toContain('service.cancelPreparedRender(config.job_id)');
+    expect(harness).toContain("event.event === 'WINDOWS_TREE_GRACEFUL_REQUESTED'");
+    expect(harness).toContain('R1B_SMOKE_ORPHAN_FFMPEG_PROCESS');
     expect(harness).toContain("process.platform !== 'win32'");
     expect(harness).not.toMatch(
       /RenderPreparationService|MaterialSelectionRepository|MediaIndexRepository|TimelinePlanRepository|planAndCommit|retrieve|select\(/u,
+    );
+  });
+
+  it('blocks Runtime v1 product execution without weakening autorotation', () => {
+    const execution = source('packages/render/src/execution.ts');
+    const files = source('apps/desktop/src/main/render-execution-file-service.ts');
+    const checkpoint = source('docs/render/R1B_A_RUNTIME_ROTATION_COMPATIBILITY_CHECKPOINT.md');
+    expect(execution).toContain("args.push('-protocol_whitelist', 'file,pipe', '-autorotate'");
+    expect(files).toContain("throw new Error('RENDER_ROTATION_RUNTIME_CAPABILITY_V2_REQUIRED')");
+    expect(checkpoint).toContain('RUNTIME_V1_STATUS:');
+    expect(checkpoint).toContain('HISTORICALLY_APPROVED');
+    expect(checkpoint).toContain('INCOMPATIBLE_WITH_ROTATION_CAPABLE_R1B_CONTRACT');
+    expect(checkpoint).toContain('ROTATION_90_PRODUCT_EXECUTION: PENDING_RUNTIME_V2');
+  });
+
+  it('keeps portable smoke authority export free of C/D/E recomputation', () => {
+    const service = source('apps/desktop/src/main/render-smoke-bundle-service.ts');
+    expect(service).toContain("authority_mode: 'HISTORICAL_ACCEPTED_CHAIN'");
+    expect(service).toContain('original_execution_snapshot_hash');
+    expect(service).toContain('bundle_hash');
+    expect(service).not.toMatch(
+      /MaterialSelectionRepository|MediaIndexRepository|TimelinePlanRepository|RenderPreparationService|planAndCommit|retrieve|select\(/u,
     );
   });
 });

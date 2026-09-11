@@ -77,6 +77,24 @@ describe('Code G R1B direct process supervision', () => {
     expect(await adapter.cancel('attempt_cancel')).toBe(false);
   });
 
+  it('classifies malformed progress as protocol failure rather than cancellation', async () => {
+    const adapter = new NodeRenderProcessAdapterV1({ platform: process.platform });
+    const result = await adapter.run({
+      ...baseRequest,
+      execution_attempt_id: 'attempt_bad_progress',
+      kind: 'FFMPEG',
+      arguments: [
+        '-e',
+        "process.stdout.write('not-a-progress-line\\n'); setInterval(() => {}, 1000)",
+      ],
+      timeout_ms: 2_000,
+      no_progress_timeout_ms: 1_000,
+    });
+    expect(result.termination_reason).toBe('PROGRESS_PROTOCOL_INVALID');
+    expect(result.termination_reason).not.toBe('CANCELLED');
+    expect(result.progress_end_observed).toBe(false);
+  });
+
   it('captures ffprobe JSON with a hard byte bound', async () => {
     const adapter = new NodeRenderProcessAdapterV1({ platform: process.platform });
     const result = await adapter.run({

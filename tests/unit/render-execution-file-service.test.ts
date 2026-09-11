@@ -166,6 +166,32 @@ describe('Code G R1B filesystem fail-closed controls', () => {
     expect(await readFile(finalPath, 'utf8')).toBe('historical-output');
   });
 
+  it('classifies current historical output missing, size, and hash failures explicitly', async () => {
+    const context = await setup();
+    const artifactRoot = join(context.outputRoot, 'job', 'artifacts');
+    await mkdir(artifactRoot, { recursive: true });
+    const finalPath = join(artifactRoot, 'output.mp4');
+    expect(await context.service.assessExistingOutput(finalPath, 'a'.repeat(64), 4)).toEqual({
+      disposition: 'MISSING',
+      observed_sha256: null,
+      observed_size_bytes: null,
+    });
+    await writeFile(finalPath, 'wrong-size');
+    expect(
+      (await context.service.assessExistingOutput(finalPath, 'a'.repeat(64), 4)).disposition,
+    ).toBe('SIZE_INVALID');
+    await writeFile(finalPath, 'same');
+    expect(
+      (await context.service.assessExistingOutput(finalPath, 'a'.repeat(64), 4)).disposition,
+    ).toBe('HASH_INVALID');
+    const actualHash = await hashFile(finalPath);
+    expect(await context.service.assessExistingOutput(finalPath, actualHash, 4)).toEqual({
+      disposition: 'TRUSTED',
+      observed_sha256: actualHash,
+      observed_size_bytes: 4,
+    });
+  });
+
   it('rejects traversal-like job and attempt identities before creating paths', async () => {
     const context = await setup();
     await expect(

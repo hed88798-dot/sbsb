@@ -11,6 +11,7 @@ export type RenderProcessTerminationReasonV1 =
   | 'CANCELLED'
   | 'OVERALL_TIMEOUT'
   | 'NO_PROGRESS_TIMEOUT'
+  | 'PROGRESS_PROTOCOL_INVALID'
   | null;
 
 export interface RenderProcessRequestV1 {
@@ -42,6 +43,18 @@ export interface RenderProcessAdapterV1 {
   cancel(executionAttemptId: string): Promise<boolean>;
 }
 
+export interface RenderProcessLifecycleEventV1 {
+  execution_attempt_id: string;
+  kind: 'FFMPEG' | 'FFPROBE';
+  event:
+    | 'PROCESS_STARTED'
+    | 'WINDOWS_TREE_GRACEFUL_REQUESTED'
+    | 'WINDOWS_TREE_FORCED_REQUESTED'
+    | 'PROCESS_CLOSED';
+  pid: number | null;
+  observed_at: string;
+}
+
 interface ActiveProcess {
   child: ChildProcessByStdio<null, Readable, Readable>;
   request: RenderProcessRequestV1;
@@ -68,10 +81,18 @@ export class NodeRenderProcessAdapterV1 implements RenderProcessAdapterV1 {
   readonly #active = new Map<string, ActiveProcess>();
   readonly #platform: NodeJS.Platform;
   readonly #systemRoot: string;
+  readonly #onLifecycle: ((event: RenderProcessLifecycleEventV1) => void) | null;
 
-  constructor(options: { platform?: NodeJS.Platform; windowsSystemRoot?: string } = {}) {
+  constructor(
+    options: {
+      platform?: NodeJS.Platform;
+      windowsSystemRoot?: string;
+      onLifecycle?: (event: RenderProcessLifecycleEventV1) => void;
+    } = {},
+  ) {
     this.#platform = options.platform ?? process.platform;
     this.#systemRoot = options.windowsSystemRoot ?? process.env.SystemRoot ?? 'C:\\Windows';
+    this.#onLifecycle = options.onLifecycle ?? null;
   }
 
   async run(request: RenderProcessRequestV1): Promise<RenderProcessResultV1> {
@@ -98,6 +119,7 @@ export class NodeRenderProcessAdapterV1 implements RenderProcessAdapterV1 {
       finalTimer: null,
     };
     this.#active.set(request.execution_attempt_id, active);
+    this.#emit(active, 'PROCESS_STARTED');
 
     return new Promise<RenderProcessResultV1>((resolve, reject) => {
       let settled = false;
@@ -131,7 +153,7 @@ export class NodeRenderProcessAdapterV1 implements RenderProcessAdapterV1 {
           }
         } catch (error) {
           protocolError = error;
-          void this.#requestTermination(active, 'CANCELLED');
+          void this.#requestTermination(active, 'PROGRESS_PROTOCOL_INVALID');
         }
       });
       child.stderr.on('data', (chunk: Buffer) => stderr.append(chunk));
@@ -140,7 +162,7 @@ export class NodeRenderProcessAdapterV1 implements RenderProcessAdapterV1 {
         settled = true;
         cleanup();
         if (protocolError) {
-          reject(protocolError);
+          reject(new Error('FFMPEG_PROGRESS_PROTOCOL_INVALID', { cause: protocolError }));
           return;
         }
         reject(new Error('RENDER_PROCESS_SPAWN_FAILED', { cause: error }));
@@ -148,6 +170,7 @@ export class NodeRenderProcessAdapterV1 implements RenderProcessAdapterV1 {
       child.once('close', (exitCode, signal) => {
         if (settled) return;
         settled = true;
+        this.#emit(active, 'PROCESS_CLOSED');
         cleanup();
         let progressEnd = false;
         if (progress) {
@@ -184,19 +207,23 @@ export class NodeRenderProcessAdapterV1 implements RenderProcessAdapterV1 {
   ): Promise<void> {
     if (active.terminationReason !== null || active.child.exitCode !== null) return;
     active.terminationReason = reason;
-    await this.#terminate(active, false);
+    void this.#terminate(active, false);
     active.forcedTimer = setTimeout(() => {
       void this.#terminate(active, true);
-      active.finalTimer = setTimeout(() => {
-        if (active.child.exitCode === null) active.child.kill();
-      }, active.request.forced_cancel_timeout_ms);
     }, active.request.graceful_cancel_timeout_ms);
+    active.finalTimer = setTimeout(() => {
+      if (active.child.exitCode === null) active.child.kill();
+    }, active.request.graceful_cancel_timeout_ms + active.request.forced_cancel_timeout_ms);
   }
 
   async #terminate(active: ActiveProcess, forced: boolean): Promise<void> {
     const pid = active.child.pid;
     if (!pid || active.child.exitCode !== null) return;
     if (this.#platform === 'win32') {
+      this.#emit(
+        active,
+        forced ? 'WINDOWS_TREE_FORCED_REQUESTED' : 'WINDOWS_TREE_GRACEFUL_REQUESTED',
+      );
       const invocation = windowsTaskkillInvocationV1({
         pid,
         forced,
@@ -214,5 +241,19 @@ export class NodeRenderProcessAdapterV1 implements RenderProcessAdapterV1 {
       return;
     }
     active.child.kill(forced ? 'SIGKILL' : 'SIGTERM');
+  }
+
+  #emit(active: ActiveProcess, event: RenderProcessLifecycleEventV1['event']): void {
+    try {
+      this.#onLifecycle?.({
+        execution_attempt_id: active.request.execution_attempt_id,
+        kind: active.request.kind,
+        event,
+        pid: active.child.pid ?? null,
+        observed_at: new Date().toISOString(),
+      });
+    } catch {
+      // Observability cannot alter process ownership or termination semantics.
+    }
   }
 }
