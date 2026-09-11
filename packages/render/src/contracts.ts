@@ -304,7 +304,7 @@ export const renderExecutionSnapshotV1Schema = z
   .strict();
 export type RenderExecutionSnapshotV1 = z.infer<typeof renderExecutionSnapshotV1Schema>;
 
-const renderOutputArtifactV1Schema = z
+export const renderOutputArtifactV1Schema = z
   .object({
     artifact_id: identity,
     output_sha256: sha256,
@@ -312,8 +312,9 @@ const renderOutputArtifactV1Schema = z
     managed_relative_path: identity,
   })
   .strict();
+export type RenderOutputArtifactV1 = z.infer<typeof renderOutputArtifactV1Schema>;
 
-const renderVerificationFactsV1Schema = z
+export const renderVerificationFactsV1Schema = z
   .object({
     duration_ms: positiveInteger,
     width: positiveInteger,
@@ -323,8 +324,20 @@ const renderVerificationFactsV1Schema = z
     video_codec_family: z.literal('H264'),
     audio_codec_family: z.literal('AAC'),
     container: z.literal('MP4'),
+    frame_count: positiveInteger.optional(),
+    pixel_format: identity.optional(),
+    sample_rate_hz: positiveInteger.optional(),
+    channels: positiveInteger.optional(),
+    stream_count: positiveInteger.optional(),
+    subtitle_streams: nonnegativeInteger.optional(),
+    unexpected_streams: nonnegativeInteger.optional(),
+    video_profile: identity.optional(),
+    video_level: identity.optional(),
+    progress_end_observed: z.literal(true).optional(),
+    finalize_protocol: z.literal('ATOMIC_SAME_VOLUME_RENAME').optional(),
   })
   .strict();
+export type RenderVerificationFactsV1 = z.infer<typeof renderVerificationFactsV1Schema>;
 
 export const renderReceiptV1Schema = z
   .object({
