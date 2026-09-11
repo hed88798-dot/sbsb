@@ -4,4 +4,5 @@ Migrations are forward-only and ordered by the numeric filename prefix. Each app
 
 The runner creates an online backup before applying pending migrations to an existing database. A failed migration is rolled back and prevents the application from using the new schema.
 
-Current migration version: **4**.
+Current migration version: **5**. Version 5 adds immutable Render policy/narration authorities,
+preparation jobs, execution snapshots, staged artifacts, and receipt foundation.

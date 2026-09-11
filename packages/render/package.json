@@ -1,5 +1,5 @@
 {
-  "name": "@app/local-db",
+  "name": "@app/render",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -15,11 +15,7 @@
   "dependencies": {
     "@app/contracts": "workspace:*",
     "@app/domain-media-index": "workspace:*",
-    "@app/render": "workspace:*",
     "@app/timeline": "workspace:*",
-    "better-sqlite3": "13.0.3"
-  },
-  "devDependencies": {
-    "@types/better-sqlite3": "7.6.13"
+    "zod": "4.1.13"
   }
 }
