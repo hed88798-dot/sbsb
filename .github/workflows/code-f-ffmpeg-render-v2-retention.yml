@@ -38,6 +38,10 @@ jobs:
             --dir retention
           test -f retention/ffmpeg-render-windows-v2.tar
           test -f retention/ffmpeg-render-windows-v2.tar.sha256
+          mkdir -p retention/extracted
+          tar -xf retention/ffmpeg-render-windows-v2.tar -C retention/extracted
+          test -f retention/extracted/manifest.json
+          test -f retention/extracted/candidate-transfer-manifest.json
 
       - name: Verify exact transport bytes before publication
         run: |
@@ -57,8 +61,8 @@ jobs:
             --notes "Draft durable retention for exact pre-Windows Runtime v2 transport. Source run: $SOURCE_RUN_ID; source candidate: $SOURCE_ARTIFACT_NAME; transport SHA-256: $EXPECTED_TRANSPORT_SHA256. This draft is not a product release and does not approve Windows Desktop dynamic rotation." \
             retention/ffmpeg-render-windows-v2.tar \
             retention/ffmpeg-render-windows-v2.tar.sha256 \
-            retention/manifest.json \
-            retention/candidate-transfer-manifest.json
+            retention/extracted/manifest.json \
+            retention/extracted/candidate-transfer-manifest.json
 
       - name: Read back the durable asset and verify its digest
         env:
