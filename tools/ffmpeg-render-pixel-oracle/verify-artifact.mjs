@@ -40,7 +40,7 @@ function hasToken(output, token) {
 }
 
 function listing(binary, command) {
-  const result = spawnSync(binary, ['-hide_banner', '-loglevel', 'error', command], {
+  const result = spawnSync(binary, ['-hide_banner', command], {
     encoding: 'utf8',
     windowsHide: true,
   });
@@ -51,11 +51,10 @@ function listing(binary, command) {
 }
 
 function parserAvailable(binary, parser) {
-  const result = spawnSync(
-    binary,
-    ['-hide_banner', '-loglevel', 'error', '-h', `parser=${parser}`],
-    { encoding: 'utf8', windowsHide: true },
-  );
+  const result = spawnSync(binary, ['-hide_banner', '-h', `parser=${parser}`], {
+    encoding: 'utf8',
+    windowsHide: true,
+  });
   const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
   return result.status === 0 && new RegExp(`parser[=: ]+${parser}\\b`, 'iu').test(output);
 }
@@ -158,15 +157,15 @@ const evidence = {
   artifact_sha256: manifest.ffmpeg_sha256,
   checks,
   inspection_commands: {
-    demuxers: '-hide_banner -loglevel error -demuxers',
-    decoders: '-hide_banner -loglevel error -decoders',
-    encoders: '-hide_banner -loglevel error -encoders',
-    muxers: '-hide_banner -loglevel error -muxers',
-    filters: '-hide_banner -loglevel error -filters',
-    pixel_formats: '-hide_banner -loglevel error -pix_fmts',
-    protocols: '-hide_banner -loglevel error -protocols',
-    parser_h264: '-hide_banner -loglevel error -h parser=h264',
-    devices: '-hide_banner -loglevel error -devices',
+    demuxers: '-hide_banner -demuxers',
+    decoders: '-hide_banner -decoders',
+    encoders: '-hide_banner -encoders',
+    muxers: '-hide_banner -muxers',
+    filters: '-hide_banner -filters',
+    pixel_formats: '-hide_banner -pix_fmts',
+    protocols: '-hide_banner -protocols',
+    parser_h264: '-hide_banner -h parser=h264',
+    devices: '-hide_banner -devices',
   },
 };
 writeFileSync(
