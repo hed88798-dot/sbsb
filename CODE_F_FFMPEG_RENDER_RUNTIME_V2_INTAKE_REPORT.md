@@ -462,3 +462,168 @@ pixels, encode H.264, or act as a product fallback.
 FIRST_ACTUAL_BLOCKER:
 WINDOWS_11_DESKTOP_ROTATION_EVIDENCE_PENDING; approval receipt intentionally not issued
 ```
+
+## TEST_ONLY rotation pixel oracle v1 freeze
+
+The following is a separate test-only transport used to inspect decoded
+pixels after the product Runtime has produced an MP4. It is not the product
+Runtime v2, is not nested with it, and is forbidden from Electron packaging.
+The product Runtime v2 candidate, profile, hashes, and approval state above
+are unchanged.
+
+```text
+PIXEL_ORACLE_BUILD_STATUS:
+PASS
+
+PIXEL_ORACLE_TOOL_ID:
+code-f-rotation-pixel-oracle-windows-x86_64-34723469497
+
+PIXEL_ORACLE_ROLE:
+TEST_ONLY
+
+PRODUCT_RUNTIME_IDENTITY_EFFECT:
+NONE
+
+PRODUCT_PACKAGE_INCLUSION:
+FORBIDDEN
+
+PIXEL_ORACLE_SOURCE_HEAD_COMMIT:
+b29b1301cd28d91db4c003fee427595d51a23f17
+
+PIXEL_ORACLE_SOURCE_TREE_SHA:
+2b393c7454954745f3c651ea58ce9483bbafdbf9
+
+PIXEL_ORACLE_FFMPEG_SOURCE_COMMIT:
+bf1b838f2ab88b4f8fd83443325c782ea0e0f7fa
+
+PIXEL_ORACLE_FFMPEG_SOURCE_ARCHIVE_SHA256:
+cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635
+
+PIXEL_ORACLE_PROFILE_SHA256:
+aa1bdf0f1a9f8d6b6b106ac8803da8c4a6d328e13d979eaf226ab02da55d8439
+
+PIXEL_ORACLE_BUILD_RECIPE_SHA256:
+40f1912dc6f81a99e76a8e8274012ed7907216007ff1f381f2daef826542d301
+
+PIXEL_ORACLE_FFMPEG_SHA256:
+7ee80d4c0ff4ab4e609be0a2fc39ff30fdadcd7b7da424a6f33d2def5a25822f
+
+PIXEL_ORACLE_MANIFEST_SHA256:
+cb85c9f5f956058b98dd062c3a40743014ddb68fc639239e547401a2547f301
+
+PIXEL_ORACLE_TRANSPORT_SHA256:
+7759eb45ec48804d4311f7c15e343b3564709f9db83d3412090a287751974c92
+
+STATIC_MOV_DEMUX:
+PASS
+
+STATIC_H264_DECODE_AND_PARSER:
+PASS
+
+STATIC_FORMAT_FILTER:
+PASS
+
+STATIC_RGB24_CONVERSION:
+PASS
+
+STATIC_RAWVIDEO_ENCODER_AND_MUXER:
+PASS
+
+STATIC_FILE_PROTOCOL:
+PASS
+
+STATIC_NETWORK_PROTOCOLS:
+ABSENT
+
+STATIC_H264_MF_ENCODER:
+ABSENT
+
+STATIC_AAC_ENCODER:
+ABSENT
+
+STATIC_DEVICE_CAPTURE:
+ABSENT
+
+STATIC_MEMBER_RECONCILIATION:
+PASS — manifest contains only bundle/ffmpeg.exe with the recorded hash
+
+SOURCE_WORKFLOW_RUN_ID:
+34723469497
+
+ACTIONS_ARTIFACT_ID:
+10306729167
+
+ACTIONS_ARTIFACT_ENVELOPE_SHA256:
+251e853df85172f8cbb8c185a60ae5be03cc01e388fa2fb69225246b9f40c327
+
+ACTIONS_ARTIFACT_ENVELOPE_ROLE:
+TRANSIENT_TRANSFER_ONLY
+
+DURABLE_ARTIFACT_CHANNEL:
+PRIVATE_GITHUB_DRAFT_RELEASE_ASSET
+
+DURABLE_RELEASE_ID:
+387727300
+
+DURABLE_RELEASE_TAG:
+code-f-rotation-pixel-oracle-v1-b29b130-34723469497
+
+DURABLE_ASSET_ID:
+560088660
+
+DURABLE_ASSET_NAME:
+code-f-rotation-pixel-oracle-v1-windows-x86_64.tar
+
+DURABLE_ARTIFACT_LOGICAL_LOCATOR:
+https://github.com/hed88798-dot/sbsb/releases/387727300 (draft release asset 560088660)
+
+DURABLE_ARTIFACT_SHA256:
+7759eb45ec48804d4311f7c15e343b3564709f9db83d3412090a287751974c92
+
+DURABLE_RETRIEVAL_SHA256:
+7759eb45ec48804d4311f7c15e343b3564709f9db83d3412090a287751974c92
+
+DURABLE_RETRIEVAL_VERIFICATION:
+PASS — retention workflow independently downloaded the release asset and verified the transport hash
+
+MAC_LOCAL_COPY_ROLE:
+SECONDARY_RECOVERY_COPY
+
+MAC_LOCAL_COPY_LOGICAL_LOCATOR:
+frozen-candidates/code-f-rotation-pixel-oracle-v1-b29b130-34723469497/windows/
+
+PIXEL_ORACLE_HARNESS_IMPORT:
+Extract the transport into a separate test-only PixelOracleRoot (for example,
+runtime/pixel-oracle/windows/x86_64/). Verify the tool identity, manifest
+SHA-256, and ffmpeg.exe SHA-256 before invoking it. Do not nest it under the
+Runtime v2 root and do not package it in the product.
+
+EXPECTED_PIXEL_ORACLE_TOOL_ID:
+code-f-rotation-pixel-oracle-windows-x86_64-34723469497
+
+EXPECTED_PIXEL_ORACLE_MANIFEST_SHA256:
+cb85c9f5f956058b98dd062c3a40743014ddb68fc639239e547401a2547f301
+
+EXPECTED_PIXEL_ORACLE_FFMPEG_SHA256:
+7ee80d4c0ff4ab4e609be0a2fc39ff30fdadcd7b7da424a6f33d2def5a25822f
+
+WINDOWS_11_RERUN:
+NOT_RUN
+
+APPROVAL_RECEIPT:
+NOT_YET_PRODUCED — this oracle freeze does not approve Runtime v2
+
+RUNTIME_V2_MUTATED:
+NO
+
+PRODUCT_RENDER:
+NOT_RUN
+```
+
+The hosted build and retention workflows are both green. The static
+capability inspection is of the actual `ffmpeg.exe`; network, device capture,
+`h264_mf`, and AAC are absent. The one-day Actions artifact is only a
+transport envelope. The private draft release is the durable locator, and the
+Mac project-folder copy is a secondary recovery copy. Windows 11 dynamic
+rotation evidence remains pending and must consume the exact Runtime v2
+candidate separately; this oracle is not a replacement for that gate.
