@@ -17,13 +17,13 @@ BASE:
 8123bc798a91b77fc9d231de0a826d34ba2cdd18
 
 PRE_WINDOWS_BRANCH_HEAD:
-4cf1f152d84ef55e6b4f307eef0e100b066bc218
+1583cb2155852c7e868c0118ad9993828bc832f1
 
 SELECTED_CANDIDATE_SOURCE_HEAD:
 9ac58acd952fbb6f2f901e7fd401e8bfaf696727
 
 HARNESS_VALIDATION_COMMIT:
-4cf1f152d84ef55e6b4f307eef0e100b066bc218
+1583cb2155852c7e868c0118ad9993828bc832f1
 ```
 
 ## Authority binding
@@ -402,6 +402,60 @@ override. The override only clears consumed display authority; the selected
 transpose / flip filter remains the sole pixel rotation. Output verification
 continues to require absent-or-identity display metadata, normalized pixels,
 exact dimensions, 30 fps, 30 frames, SAR 1:1, and decoded `yuv420p`.
+
+## Historical fourth Desktop attempt (preserved)
+
+The fourth Windows 11 Desktop attempt reached the final visible-orientation
+pixel oracle after authentic fixture creation, display-angle verification,
+Desktop-sized `h264_mf` execution, explicit pixel rotation, identity display
+authority override, and all output stream/matrix checks passed. It stopped only
+when the harness asked the frozen product Runtime to emit `rawvideo`; that
+muxer is intentionally outside the approved product capability profile.
+
+```text
+WINDOWS_ATTEMPT_4:
+FAIL_HARNESS_PIXEL_ORACLE_UNDECLARED_CAPABILITY
+
+RUNTIME_REJECTION:
+NO
+
+AUTHENTIC_DISPLAY_MATRIX_FIXTURE:
+PASS
+
+DISPLAY_ANGLE_VERIFICATION:
+PASS
+
+DESKTOP_H264_MF_EXECUTION:
+PASS
+
+EXPLICIT_PIXEL_ROTATION:
+PASS
+
+IDENTITY_DISPLAY_AUTHORITY_OVERRIDE:
+PASS
+
+OUTPUT_DIMENSIONS_FPS_FRAMES_PIXFMT_SAR:
+PASS
+
+OUTPUT_DISPLAY_MATRIX:
+ABSENT_OR_IDENTITY
+
+FAILURE:
+product Runtime does not provide the `rawvideo` muxer required by the pixel oracle
+
+WINDOWS_ATTEMPT_4_CLASSIFICATION:
+HARNESS_PIXEL_ORACLE_UNDECLARED_CAPABILITY
+```
+
+`rawvideo` remains `NOT_REQUIRED` for the product Runtime. A separate
+`CODE_F_ROTATION_PIXEL_ORACLE_V1` test-only verifier is now defined and built
+from the same pinned FFmpeg 9.0.1 source lineage with only MOV/H.264 decoding,
+RGB24 conversion, rawvideo output, and the local file protocol. Its manifest
+must identify its tool hash, source pin, `TEST_ONLY` role, and `FORBIDDEN`
+product packaging disposition. The harness records product Runtime identity
+separately and invokes the oracle only after an output MP4 exists; the oracle
+cannot create fixtures, rotate pixels, encode H.264, or act as a product
+fallback.
 
 ```text
 FIRST_ACTUAL_BLOCKER:
