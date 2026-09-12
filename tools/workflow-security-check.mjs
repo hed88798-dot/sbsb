@@ -19,7 +19,7 @@ const sha256 = (value) => createHash('sha256').update(value, 'utf8').digest('hex
 
 for (const name of readdirSync(workflowDirectory).filter((entry) => /\.ya?ml$/u.test(entry))) {
   const path = join(workflowDirectory, name);
-  const displayPath = relative(repositoryRoot, path);
+  const displayPath = relative(repositoryRoot, path).replaceAll('\\', '/');
   const content = readFileSync(path, 'utf8');
   if (/\bpull_request_target\s*:/u.test(content)) {
     failures.push(`${displayPath}: pull_request_target is forbidden`);
