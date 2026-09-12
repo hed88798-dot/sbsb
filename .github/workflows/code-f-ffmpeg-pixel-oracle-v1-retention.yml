@@ -17,11 +17,11 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  SOURCE_RUN_ID: '34724223833'
-  SOURCE_HEAD: 47798d96ff1b99d12324138a4f244b3b046cbffb
-  SOURCE_ARTIFACT_NAME: code-f-rotation-pixel-oracle-v1-windows-x86_64-47798d96ff1b99d12324138a4f244b3b046cbffb
-  RELEASE_TAG: code-f-rotation-pixel-oracle-v1-47798d9-34724223833
-  EXPECTED_TRANSPORT_SHA256: cb49619268cd81b9cb91097d0dfc8d520ce06b0a7b7ea69f836daf2b1cf491bc
+  SOURCE_RUN_ID: '34723469497'
+  SOURCE_HEAD: b29b1301cd28d91db4c003fee427595d51a23f17
+  SOURCE_ARTIFACT_NAME: code-f-rotation-pixel-oracle-v1-windows-x86_64-b29b1301cd28d91db4c003fee427595d51a23f17
+  RELEASE_TAG: code-f-rotation-pixel-oracle-v1-b29b130-34723469497
+  EXPECTED_TRANSPORT_SHA256: 7759eb45ec48804d4311f7c15e343b3564709f9db83d3412090a287751974c92
 
 jobs:
   retain:
