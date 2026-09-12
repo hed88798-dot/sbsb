@@ -104,6 +104,7 @@ const manifest = {
   },
   provenance: {
     source_commit: context.source_commit,
+    source_tree_sha: context.source_tree_sha,
     code_g_capability_profile_commit: context.code_g_capability_profile_commit,
     code_g_capability_profile_hash: context.code_g_capability_profile_hash,
     build_profile_id: context.build_profile_id,

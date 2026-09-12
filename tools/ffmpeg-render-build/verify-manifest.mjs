@@ -67,6 +67,16 @@ function verify(bundlePath, manifest, profile) {
   )
     fail('Code G capability profile commit mismatch');
   if (
+    profile.profile_version >= 2 &&
+    !/^[a-f0-9]{40}$/u.test(manifest.provenance.source_commit ?? '')
+  )
+    fail('V2 source commit binding is missing');
+  if (
+    profile.profile_version >= 2 &&
+    !/^[a-f0-9]{40}$/u.test(manifest.provenance.source_tree_sha ?? '')
+  )
+    fail('V2 source tree binding is missing');
+  if (
     manifest.runtime_dependency_closure.status !== 'PASS' ||
     manifest.runtime_dependency_closure.unresolved_count !== 0
   )

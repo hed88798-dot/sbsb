@@ -53,6 +53,7 @@ if (!profile.platform_builds[`${platform}-${architecture}`])
 
 const runIdentity = process.env.GITHUB_RUN_ID ?? 'local';
 const commit = process.env.GITHUB_SHA ?? 'unknown';
+const sourceTree = process.env.FFMPEG_SOURCE_TREE_SHA ?? 'unknown';
 const idPrefix = `code-f-ffmpeg-render-${platform}-${architecture}-${runIdentity}`;
 const target = { platform, architecture };
 const upstream = {
@@ -77,6 +78,7 @@ const recipe = {
   record_kind: 'FFMPEG_RENDER_BUILD_RECIPE',
   record_id: `${idPrefix}-recipe`,
   source_commit: commit,
+  source_tree_sha: sourceTree,
   target,
   upstream,
   authority: {
@@ -159,6 +161,7 @@ const context = {
   record_kind: 'FFMPEG_RENDER_BUILD_CONTEXT',
   record_id: `${idPrefix}-context`,
   source_commit: commit,
+  source_tree_sha: sourceTree,
   target,
   upstream,
   code_g_capability_profile_commit: profile.code_g_capability_profile.commit,

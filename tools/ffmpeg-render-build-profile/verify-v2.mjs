@@ -194,15 +194,17 @@ assert(
 );
 assert(profile.version_history.runtime_v1_mutated === false, 'V1 mutation marker is not false');
 
+const candidateIndex = process.argv.indexOf('--candidate-dir');
 const candidateDir = process.argv.find((argument) => argument.startsWith('--candidate-dir='));
-const candidateStatus = candidateDir
+const candidatePath = candidateDir
+  ? candidateDir.slice('--candidate-dir='.length)
+  : candidateIndex >= 0
+    ? process.argv[candidateIndex + 1]
+    : undefined;
+const candidateStatus = candidatePath
   ? 'CANDIDATE_INSPECTION_REQUESTED'
   : 'PENDING_CANDIDATE_ARTIFACT';
-if (candidateDir)
-  assert(
-    existsSync(candidateDir.slice('--candidate-dir='.length)),
-    'candidate directory is unavailable',
-  );
+if (candidatePath) assert(existsSync(candidatePath), 'candidate directory is unavailable');
 
 console.log(
   JSON.stringify({

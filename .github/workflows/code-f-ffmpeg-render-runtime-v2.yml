@@ -4,9 +4,14 @@ on:
   push:
     branches:
       - code-f/ffmpeg-render-runtime-v2-intake
-  pull_request:
-    branches:
-      - main
+    paths:
+      - '.github/workflows/code-f-ffmpeg-render-runtime-v2.yml'
+      - 'compliance/runtime-dependency-intake/ffmpeg-render-v2/**'
+      - 'docs/render/ffmpeg-required-capability-profile.v2.json'
+      - 'tools/ffmpeg-render-build/**'
+      - 'tools/ffmpeg-render-build-profile/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
   workflow_dispatch:
 
 permissions:
@@ -45,6 +50,16 @@ jobs:
           git config --local core.autocrlf false
           git config --local core.eol lf
           git reset --hard HEAD
+      - name: Capture exact pushed source identity
+        shell: pwsh
+        run: |
+          $head = (git rev-parse HEAD).Trim()
+          if ($env:GITHUB_EVENT_NAME -eq 'push' -and $head -ne $env:GITHUB_SHA) {
+            throw "workflow checkout does not match pushed source head: $head != $env:GITHUB_SHA"
+          }
+          $tree = (git rev-parse "$head^{tree}").Trim()
+          "FFMPEG_SOURCE_HEAD_COMMIT=$head" >> $env:GITHUB_ENV
+          "FFMPEG_SOURCE_TREE_SHA=$tree" >> $env:GITHUB_ENV
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
         with:
           version: 11.19.0
@@ -82,7 +97,7 @@ jobs:
           $nodePath = (Get-Command node).Source
           $nodeBin = (& $cygpath -u (Split-Path -Parent $nodePath)).Trim()
           $gitPath = (Get-Command git).Source
-          $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 NODE_BIN='$nodeBin' GIT_PATH='$gitPath' MAKE_COMMAND=mingw32-make FFMPEG_CAPABILITY_MODE='$env:FFMPEG_CAPABILITY_MODE' FFMPEG_RENDER_PROFILE_RELATIVE='compliance/runtime-dependency-intake/ffmpeg-render-v2/FFMPEG_RENDER_BUILD_PROFILE_V2.json' FFMPEG_RENDER_OUT_RELATIVE='artifacts/ffmpeg-render-v2/windows' FFMPEG_RENDER_PREFLIGHT_OUT_RELATIVE='artifacts/ffmpeg-render/windows' FFMPEG_RENDER_PROFILE_VERIFY_SCRIPT='$workspace/tools/ffmpeg-render-build-profile/verify-v2.mjs' FFMPEG_RENDER_CONFIG_RESOLVER='$workspace/tools/ffmpeg-render-build/resolve-config-v2.mjs' FFMPEG_RENDER_CAPABILITY_SCRIPT='$workspace/tools/ffmpeg-render-build/verify-capabilities-v2.sh' PATH='/ucrt64/bin:/usr/bin:/bin:$nodeBin' GITHUB_SHA='$env:GITHUB_SHA' GITHUB_RUN_ID='$env:GITHUB_RUN_ID' && ./tools/ffmpeg-render-build/build-windows.sh"
+          $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 NODE_BIN='$nodeBin' GIT_PATH='$gitPath' MAKE_COMMAND=mingw32-make FFMPEG_CAPABILITY_MODE='$env:FFMPEG_CAPABILITY_MODE' FFMPEG_RENDER_PROFILE_RELATIVE='compliance/runtime-dependency-intake/ffmpeg-render-v2/FFMPEG_RENDER_BUILD_PROFILE_V2.json' FFMPEG_RENDER_OUT_RELATIVE='artifacts/ffmpeg-render-v2/windows' FFMPEG_RENDER_PREFLIGHT_OUT_RELATIVE='artifacts/ffmpeg-render/windows' FFMPEG_RENDER_PROFILE_VERIFY_SCRIPT='$workspace/tools/ffmpeg-render-build-profile/verify-v2.mjs' FFMPEG_RENDER_CONFIG_RESOLVER='$workspace/tools/ffmpeg-render-build/resolve-config-v2.mjs' FFMPEG_RENDER_CAPABILITY_SCRIPT='$workspace/tools/ffmpeg-render-build/verify-capabilities-v2.sh' PATH='/ucrt64/bin:/usr/bin:/bin:$nodeBin' GITHUB_SHA='$env:FFMPEG_SOURCE_HEAD_COMMIT' FFMPEG_SOURCE_TREE_SHA='$env:FFMPEG_SOURCE_TREE_SHA' GITHUB_RUN_ID='$env:GITHUB_RUN_ID' && ./tools/ffmpeg-render-build/build-windows.sh"
           & $bash --noprofile --norc -lc $command
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Package immutable transient v2 transport
