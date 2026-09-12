@@ -1,0 +1,84 @@
+name: Code F FFmpeg Rotation Pixel Oracle v1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - code-f/ffmpeg-render-runtime-v2-intake
+    paths:
+      - '.github/workflows/code-f-ffmpeg-pixel-oracle-v1.yml'
+      - 'tools/ffmpeg-render-pixel-oracle/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: code-f-ffmpeg-pixel-oracle-v1-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-windows-x86_64:
+    name: Build and freeze TEST_ONLY pixel oracle (Windows x86_64)
+    runs-on: windows-2022
+    timeout-minutes: 180
+    env:
+      PIXEL_ORACLE_OUT: artifacts/ffmpeg-pixel-oracle/windows
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Preserve exact checkout bytes
+        shell: pwsh
+        run: |
+          git config --local core.autocrlf false
+          git config --local core.eol lf
+          git checkout-index --all --force
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+
+      - name: Capture exact source head and tree
+        shell: pwsh
+        run: |
+          $head = (git rev-parse HEAD).Trim()
+          if ($head -ne $env:GITHUB_SHA) { throw "checkout does not match GITHUB_SHA: $head != $env:GITHUB_SHA" }
+          $tree = (git rev-parse "$head^{tree}").Trim()
+          "FFMPEG_SOURCE_TREE_SHA=$tree" >> $env:GITHUB_ENV
+
+      - name: Verify exact MSYS2 build toolchain
+        shell: pwsh
+        run: |
+          $bash = 'C:\msys64\usr\bin\bash.exe'
+          $cygpath = 'C:\msys64\usr\bin\cygpath.exe'
+          if (!(Test-Path $bash) -or !(Test-Path $cygpath)) { throw 'MSYS2 UCRT64 toolchain is unavailable' }
+          $workspace = (& $cygpath -u $env:GITHUB_WORKSPACE).Trim()
+          $runnerTemp = (& $cygpath -u $env:RUNNER_TEMP).Trim()
+          $nodeBin = (& $cygpath -u (Split-Path -Parent (Get-Command node).Source)).Trim()
+          $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 NODE_BIN='$nodeBin' MAKE_COMMAND=mingw32-make PATH='/ucrt64/bin:/usr/bin:/bin:$nodeBin' && ./tools/ffmpeg-render-build/preflight-windows.sh"
+          & $bash --noprofile --norc -lc $command
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build and statically verify TEST_ONLY pixel oracle
+        shell: pwsh
+        run: |
+          $bash = 'C:\msys64\usr\bin\bash.exe'
+          $cygpath = 'C:\msys64\usr\bin\cygpath.exe'
+          $workspace = (& $cygpath -u $env:GITHUB_WORKSPACE).Trim()
+          $runnerTemp = (& $cygpath -u $env:RUNNER_TEMP).Trim()
+          $nodeBin = (& $cygpath -u (Split-Path -Parent (Get-Command node).Source)).Trim()
+          $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 NODE_BIN='$nodeBin' MAKE_COMMAND=mingw32-make FFMPEG_SOURCE_TREE_SHA='$env:FFMPEG_SOURCE_TREE_SHA' PIXEL_ORACLE_OUT='artifacts/ffmpeg-pixel-oracle/windows' PATH='/ucrt64/bin:/usr/bin:/bin:$nodeBin' && ./tools/ffmpeg-render-pixel-oracle/build-windows.sh"
+          & $bash --noprofile --norc -lc $command
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Upload TEST_ONLY transport artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: code-f-rotation-pixel-oracle-v1-windows-x86_64-${{ github.sha }}
+          path: |
+            artifacts/ffmpeg-pixel-oracle/windows/code-f-rotation-pixel-oracle-v1-windows-x86_64.tar
+            artifacts/ffmpeg-pixel-oracle/windows/code-f-rotation-pixel-oracle-v1-windows-x86_64.tar.sha256
+          if-no-files-found: error
+          retention-days: 1

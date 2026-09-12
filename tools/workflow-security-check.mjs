@@ -1,19 +1,42 @@
+import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const repositoryRoot = process.cwd();
 const workflowDirectory = join(repositoryRoot, '.github', 'workflows');
 const failures = [];
+// The only workflow allowed to mint a durable release asset is the narrowly
+// scoped, branch-only Runtime-v2 retention workflow approved for this intake.
+// Bind both its exact path and bytes so a future write-capable workflow (or a
+// modified retention workflow) fails closed until separately reviewed.
+const approvedReleaseWorkflowHashes = new Map([
+  [
+    '.github/workflows/code-f-ffmpeg-render-v2-retention.yml',
+    '18b44f21781898827d2a950bce39db02740f2b1a23de0ae056713f9637db565d',
+  ],
+  [
+    '.github/workflows/code-f-ffmpeg-pixel-oracle-v1-retention.yml',
+    'd996e7cae138dce18491347ecaf03c412b47fe660c7499c00765543d9bc20bdb',
+  ],
+]);
+const sha256 = (value) => createHash('sha256').update(value, 'utf8').digest('hex');
 
 for (const name of readdirSync(workflowDirectory).filter((entry) => /\.ya?ml$/u.test(entry))) {
   const path = join(workflowDirectory, name);
-  const displayPath = relative(repositoryRoot, path);
+  const displayPath = relative(repositoryRoot, path).replaceAll('\\', '/');
   const content = readFileSync(path, 'utf8');
   if (/\bpull_request_target\s*:/u.test(content)) {
     failures.push(`${displayPath}: pull_request_target is forbidden`);
   }
   if (/\b(?:contents|actions|packages|deployments|id-token)\s*:\s*write\b/u.test(content)) {
-    failures.push(`${displayPath}: write permission requires a separately approved release design`);
+    const approvedHash = approvedReleaseWorkflowHashes.get(displayPath);
+    if (!approvedHash) {
+      failures.push(
+        `${displayPath}: write permission requires a separately approved release design`,
+      );
+    } else if (sha256(content.replaceAll('\r\n', '\n')) !== approvedHash) {
+      failures.push(`${displayPath}: approved release workflow bytes changed; re-review required`);
+    }
   }
   if (/\bpull_request\s*:/u.test(content) && /\$\{\{\s*secrets\./u.test(content)) {
     failures.push(`${displayPath}: PR workflow must not reference repository/environment secrets`);
