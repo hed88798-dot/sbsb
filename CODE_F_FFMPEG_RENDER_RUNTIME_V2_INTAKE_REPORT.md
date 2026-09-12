@@ -80,7 +80,7 @@ SOURCE_WORKFLOW_RUN_ID:
 34699695106
 
 PR_SYNTHETIC_MERGE_SHA:
-46a917f3fd8081165bbe5e7ff8ac17bbac56f1b5
+NOT_RETAINED_AS_AUTHORITY — ephemeral PR merge context only
 
 PR_SYNTHETIC_MERGE_ROLE:
 CI_CONTEXT_ONLY
@@ -266,7 +266,7 @@ APPROVAL_RECEIPT_HASH:
 NOT_YET_PRODUCED — v2 Desktop rotation approval is intentionally not issued
 
 CI:
-PASS — CI run 34699696589; V2 static intake run 34699695106; retention run 34700810486
+PASS — selected candidate validation: CI run 34701858275; Windows native smoke run 34701858274; V2 static intake run 34699695106; retention run 34700810486
 
 WINDOWS_11_RUNTIME_V2_HARNESS:
 READY — Runtime-level harness present; dynamic Desktop execution is pending
