@@ -1,0 +1,222 @@
+{
+  "schema_version": "2.0",
+  "profile_id": "code-g-r1-ffmpeg-required-capabilities",
+  "profile_version": 2,
+  "profile_hash": "2c19710e609b1ae769e7f007cffca1e552ce1158963bec2aa8a8bcad59a01c1b",
+  "authority_semantics": {
+    "owner": "CODE_G",
+    "purpose": "REQUIRED_CAPABILITIES_FOR_DETERMINISTIC_RENDER_EXECUTION",
+    "artifact_approval_owner": "CODE_F",
+    "render_phase": "R1B_OR_LATER",
+    "real_execution_authorized_by_this_profile": false
+  },
+  "required_capabilities": {
+    "programs": ["ffmpeg", "ffprobe"],
+    "input": {
+      "scope": "EXACT_HASH_VERIFIED_LOCAL_FILES_ONLY",
+      "video_extensions": ["avi", "m4v", "mkv", "mov", "mp4", "mpeg", "mpg", "webm"],
+      "video_demuxer_parser_decoder_policy": "NO_SILENT_NARROWING_FROM_CODE_C_EXECUTABLE_LOCAL_MEDIA_AT_THE_PINNED_RELEASE",
+      "narration_containers": ["m4a", "mp3", "mp4", "wav"],
+      "narration_codecs": ["aac", "mp3", "pcm_f32le", "pcm_s16le", "pcm_s24le", "pcm_s32le"],
+      "malformed_or_unsupported_input": "FAIL_CLOSED"
+    },
+    "video_operations": [
+      "trim_exact_source_interval",
+      "reset_timestamps",
+      "apply_declared_rotation",
+      "scale",
+      "pad",
+      "crop_when_render_policy_explicitly_requires_it",
+      "normalize_sample_aspect_ratio",
+      "convert_to_constant_frame_rate",
+      "convert_pixel_format",
+      "concatenate_multiple_segments_in_order"
+    ],
+    "video_filters": [
+      "concat",
+      "crop",
+      "format",
+      "fps",
+      "hflip",
+      "pad",
+      "rotate",
+      "scale",
+      "setsar",
+      "setpts",
+      "transpose",
+      "trim",
+      "vflip"
+    ],
+    "rotation_normalization": {
+      "input_authority": "ACCEPTED_DECLARED_ROTATION_OR_DISPLAY_MATRIX_METADATA",
+      "supported_degrees": [90, 180, 270],
+      "operation_order": [
+        "consume_declared_or_display_matrix_rotation",
+        "normalize_pixels_to_intended_visual_orientation",
+        "apply_render_policy_canvas_scale_pad_or_crop",
+        "normalize_sample_aspect_ratio",
+        "normalize_constant_frame_rate",
+        "convert_pixel_format"
+      ],
+      "rotation_application_count": "EXACTLY_ONCE",
+      "output_effective_rotation_metadata": "NONE_OR_IDENTITY_ONLY",
+      "output_nonidentity_display_matrix": "FORBIDDEN",
+      "semantic_timeline_duration_change": "FORBIDDEN",
+      "material_substitution": "FORBIDDEN",
+      "source_interval_change": "FORBIDDEN",
+      "timeline_change": "FORBIDDEN",
+      "extra_or_missing_frames": "FORBIDDEN"
+    },
+    "video_output": {
+      "codec_family": "H264",
+      "encoder_implementation": "CODE_F_APPROVED_PLATFORM_RUNTIME_IDENTITY",
+      "software_encoder_fallback": "FORBIDDEN_UNLESS_A_NEW_PROFILE_VERSION_REQUIRES_AND_CODE_F_APPROVES_IT",
+      "pixel_format": "yuv420p",
+      "rate_control": "EXPLICIT_RENDER_POLICY_ONLY"
+    },
+    "audio_operations": [
+      "decode_exact_narration_artifact",
+      "reset_timestamps",
+      "resample",
+      "normalize_channel_layout",
+      "encode_aac",
+      "mux_as_only_output_audio_stream"
+    ],
+    "audio_filters": ["aformat", "aresample", "asetpts"],
+    "audio_output": {
+      "codec_family": "AAC",
+      "encoder_implementation": "CODE_F_APPROVED_RUNTIME_IDENTITY",
+      "sample_rate_hz": 48000,
+      "channels": 2,
+      "source_video_audio": "DROP",
+      "duration_correction_by_trim_pad_or_time_stretch": "FORBIDDEN"
+    },
+    "container_output": {
+      "format": "MP4",
+      "muxer": "mov",
+      "network_output": "FORBIDDEN"
+    },
+    "protocols": {
+      "declared": ["file", "pipe"],
+      "file_use": "VERIFIED_STAGING_INPUT_AND_CONTROLLED_OUTPUT_ONLY",
+      "pipe_use": "MACHINE_READABLE_PROGRESS_AND_CONTROLLED_STANDARD_STREAMS_ONLY",
+      "undeclared": "FORBIDDEN"
+    },
+    "process_control": {
+      "direct_spawn": true,
+      "argument_array": true,
+      "shell": false,
+      "path_lookup": false,
+      "machine_readable_progress": true,
+      "bounded_log_capture": true,
+      "graceful_then_forced_termination": true,
+      "hang_timeout_owned_by_main": true
+    },
+    "verification": {
+      "ffprobe_json": true,
+      "required_video_facts": [
+        "codec",
+        "duration",
+        "frame_rate",
+        "height",
+        "pixel_format",
+        "width"
+      ],
+      "required_audio_facts": ["channels", "codec", "duration", "sample_rate"],
+      "required_container_facts": ["duration", "format", "size"],
+      "output_sha256": true
+    }
+  },
+  "evidence_gates": {
+    "static_runtime_capability": {
+      "required": true,
+      "owner": "CODE_F",
+      "candidate_machine_inspection_required": true,
+      "documentation_or_build_configuration_only_sufficient": false,
+      "required_rotation_filters": ["transpose", "hflip", "vflip", "rotate"]
+    },
+    "dynamic_rotation_capability": {
+      "required": true,
+      "final_evidence_owner": "CODE_G_R1B_PRODUCT_PATH",
+      "metadata_rotation_fixture_degrees": [90, 180, 270],
+      "actual_r1b_product_service_path_required": true,
+      "standalone_code_f_runtime_smoke_substitutes_for_product_path": false,
+      "pixel_normalization_verification": [
+        "visible_orientation",
+        "target_width_height",
+        "sample_aspect_ratio",
+        "frames_per_second",
+        "exact_expected_frame_count"
+      ],
+      "metadata_normalization_verification": [
+        "rotation_applied_exactly_once",
+        "output_effective_rotation_metadata_none_or_identity",
+        "output_nonidentity_display_matrix_absent",
+        "playback_requires_no_additional_orientation_transform"
+      ],
+      "unchanged_output_semantics": [
+        "h264_video",
+        "aac_narration_only",
+        "source_video_audio_drop",
+        "subtitle_off"
+      ],
+      "rotation_90_metadata_normalized": "REQUIRED",
+      "rotation_180_metadata_normalized": "REQUIRED",
+      "rotation_270_metadata_normalized": "REQUIRED"
+    }
+  },
+  "frozen_render_modes": {
+    "source_video_audio": "DROP",
+    "output_audio_authority": "NARRATION_ONLY",
+    "subtitle": "OFF",
+    "fallback_generation": "FORBIDDEN",
+    "digital_human": "OUTSIDE_RENDER"
+  },
+  "forbidden_capabilities": {
+    "network_protocols": ["ftp", "http", "https", "rtmp", "rtsp"],
+    "network_input_output": true,
+    "device_capture": true,
+    "server_or_listener_behavior": true,
+    "undeclared_protocols": true,
+    "gpl_components": true,
+    "nonfree_components": true,
+    "libraries": ["libx264", "libx265"],
+    "programs": ["ffplay"],
+    "arbitrary_shell": true,
+    "ui_supplied_executable_or_arguments": true,
+    "source_video_audio_keep_or_mix": true,
+    "background_music": true,
+    "subtitle_processing": true,
+    "fallback_generation": true,
+    "narration_time_stretch": true
+  },
+  "platform_constraints": {
+    "target_product": ["windows-x86_64"],
+    "development_candidates": ["macos-arm64", "macos-x86_64"],
+    "shared_semantic_profile_across_platforms": true,
+    "exact_encoder_and_runtime_members_are_machine_execution_identity": true,
+    "windows_packaged_smoke_required_before_product_release": true,
+    "macos_validation_cannot_substitute_for_windows": true
+  },
+  "version_history": {
+    "profile_v1": "HISTORICAL_FROZEN_CAPABILITY_CONTRACT",
+    "profile_v1_hash": "e05686e544bd31de1782b4b13cb23e993e6c26ef90408b1d19b8e59dd5ac5910",
+    "runtime_v1_status": "HISTORICALLY_APPROVED",
+    "runtime_v1_current_r1b_compatibility": "INCOMPATIBLE_WITH_ROTATION_CAPABLE_R1B_CONTRACT",
+    "historical_v1_approval_revoked": false,
+    "profile_v2": "CURRENT_ROTATION_CAPABLE_R1B_REQUIREMENT",
+    "runtime_v2": "NOT_YET_PRODUCED_CODE_F_REQUIRED"
+  },
+  "stability": {
+    "status": "FROZEN_FOR_CODE_F_INTAKE",
+    "change_rule": "PROFILE_VERSION_BUMP_NEW_HASH_NEW_COMMIT_AND_EXPLICIT_CODE_F_NOTIFICATION",
+    "prior_runtime_scope": "CURRENT_R1B_COMPATIBILITY_ONLY"
+  },
+  "artifact_status": {
+    "ffmpeg_binary": "NOT_PRODUCED_BY_CODE_G",
+    "license_review": "CODE_F_REQUIRED",
+    "vulnerability_review": "CODE_F_REQUIRED",
+    "distribution_approval": "CODE_F_REQUIRED",
+    "real_render": "NOT_AUTHORIZED"
+  }
+}
