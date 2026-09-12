@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { execFileSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 
@@ -40,34 +40,24 @@ function hasToken(output, token) {
 }
 
 function listing(binary, command) {
-  try {
-    return execFileSync(binary, ['-hide_banner', '-loglevel', 'error', command], {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-      windowsHide: true,
-    });
-  } catch (error) {
-    const stdout = error?.stdout?.toString?.() ?? '';
-    const stderr = error?.stderr?.toString?.() ?? '';
-    throw new Error(`${command} inspection failed: ${stdout}${stderr}`);
-  }
+  const result = spawnSync(binary, ['-hide_banner', '-loglevel', 'error', command], {
+    encoding: 'utf8',
+    windowsHide: true,
+  });
+  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
+  if (result.error || result.status !== 0)
+    throw new Error(`${command} inspection failed: ${result.error?.message ?? output}`);
+  return output;
 }
 
 function parserAvailable(binary, parser) {
-  try {
-    const output = execFileSync(
-      binary,
-      ['-hide_banner', '-loglevel', 'error', '-h', `parser=${parser}`],
-      {
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'pipe'],
-        windowsHide: true,
-      },
-    );
-    return new RegExp(`parser[=: ]+${parser}\\b`, 'iu').test(output);
-  } catch {
-    return false;
-  }
+  const result = spawnSync(
+    binary,
+    ['-hide_banner', '-loglevel', 'error', '-h', `parser=${parser}`],
+    { encoding: 'utf8', windowsHide: true },
+  );
+  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
+  return result.status === 0 && new RegExp(`parser[=: ]+${parser}\\b`, 'iu').test(output);
 }
 
 function bundleFiles(root) {
