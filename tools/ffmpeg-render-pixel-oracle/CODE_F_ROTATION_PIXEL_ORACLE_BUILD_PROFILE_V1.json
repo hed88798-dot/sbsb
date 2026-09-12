@@ -64,7 +64,13 @@
       "rawvideo_muxer",
       "file_protocol"
     ],
-    "forbidden": ["network_protocols", "h264_mf_encoder", "aac_encoder", "product_runtime_use"]
+    "forbidden": [
+      "network_protocols",
+      "device_capture",
+      "h264_mf_encoder",
+      "aac_encoder",
+      "product_runtime_use"
+    ]
   },
   "verification": {
     "input": "already-produced normalized MP4 only",

@@ -46,12 +46,14 @@ test -f "$SOURCE_DIR/install/bin/ffmpeg.exe"
 cp -a "$SOURCE_DIR/install/bin/ffmpeg.exe" "$OUT/bundle/ffmpeg.exe"
 
 FFMPEG_SHA256="$(sha256sum "$OUT/bundle/ffmpeg.exe" | awk '{print $1}')"
-BUILD_RECIPE_SHA256="$(printf '%s\n' "$CONFIGURE_JSON" "$TOOLCHAIN" | sha256sum | awk '{print $1}')"
 TOOL_ID="code-f-rotation-pixel-oracle-windows-x86_64-${GITHUB_RUN_ID:-local}"
-node - "$OUT/pixel-oracle-manifest.json" "$OUT/bundle/ffmpeg.exe" "$PROFILE_SHA256" "$BUILD_RECIPE_SHA256" "$TOOL_ID" "$FFMPEG_SHA256" "$TOOLCHAIN" "$EXPECTED_SOURCE_SHA" "$EXPECTED_SOURCE_COMMIT" <<'NODE'
+SOURCE_HEAD_COMMIT="${GITHUB_SHA:-unknown}"
+SOURCE_TREE_SHA="${FFMPEG_SOURCE_TREE_SHA:-unknown}"
+BUILD_RECIPE_SHA256="$(printf '%s\n' "$CONFIGURE_JSON" "$TOOLCHAIN" "$EXPECTED_SOURCE_COMMIT" "$EXPECTED_SOURCE_SHA" "$SOURCE_HEAD_COMMIT" "$SOURCE_TREE_SHA" | sha256sum | awk '{print $1}')"
+node - "$OUT/pixel-oracle-manifest.json" "$OUT/bundle/ffmpeg.exe" "$PROFILE_SHA256" "$BUILD_RECIPE_SHA256" "$TOOL_ID" "$FFMPEG_SHA256" "$TOOLCHAIN" "$EXPECTED_SOURCE_SHA" "$EXPECTED_SOURCE_COMMIT" "$SOURCE_HEAD_COMMIT" "$SOURCE_TREE_SHA" <<'NODE'
 const { createHash } = require('node:crypto');
 const { readFileSync, writeFileSync } = require('node:fs');
-const [output, ffmpeg, profileSha, recipeSha, toolId, ffmpegSha, toolchain, sourceSha, sourceCommit] = process.argv.slice(2);
+const [output, ffmpeg, profileSha, recipeSha, toolId, ffmpegSha, toolchain, sourceSha, sourceCommit, sourceHeadCommit, sourceTreeSha] = process.argv.slice(2);
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const value = {
   schema_version: '1',
@@ -66,6 +68,8 @@ const value = {
     tag: 'n9.0.1',
     commit: sourceCommit,
     archive_sha256: sourceSha,
+    build_source_head_commit: sourceHeadCommit,
+    build_source_tree_sha: sourceTreeSha,
   },
   build_profile: {
     path: 'tools/ffmpeg-render-pixel-oracle/CODE_F_ROTATION_PIXEL_ORACLE_BUILD_PROFILE_V1.json',
@@ -89,8 +93,21 @@ const value = {
 };
 writeFileSync(output, `${JSON.stringify(value, null, 2)}\n`);
 writeFileSync(`${output}.sha256`, `${hash(readFileSync(output))}  ${output.split('/').pop()}\n`);
-writeFileSync(`${output.replace(/pixel-oracle-manifest\.json$/u, '')}tool-identity.json`, `${JSON.stringify({ tool_id: toolId, ffmpeg_sha256: ffmpegSha, manifest_sha256: hash(readFileSync(output)), role: 'TEST_ONLY', package_inclusion: 'FORBIDDEN' }, null, 2)}\n`);
+writeFileSync(`${output.replace(/pixel-oracle-manifest\.json$/u, '')}tool-identity.json`, `${JSON.stringify({ tool_id: toolId, ffmpeg_sha256: ffmpegSha, manifest_sha256: hash(readFileSync(output)), build_recipe_sha256: recipeSha, source_head_commit: sourceHeadCommit, source_tree_sha: sourceTreeSha, role: 'TEST_ONLY', package_inclusion: 'FORBIDDEN' }, null, 2)}\n`);
 NODE
 sha256sum "$OUT/bundle/ffmpeg.exe" > "$OUT/evidence/entrypoint.sha256"
 printf 'product_runtime_dependency=NONE\npackage_inclusion=FORBIDDEN\nnetwork=DISABLED\n' > "$OUT/evidence/build-policy.txt"
+node "$ROOT/tools/ffmpeg-render-pixel-oracle/verify-artifact.mjs" --root "$OUT"
+rm -rf "$OUT/transport-root"
+mkdir -p "$OUT/transport-root/bundle" "$OUT/transport-root/evidence"
+cp "$OUT/pixel-oracle-manifest.json" "$OUT/transport-root/pixel-oracle-manifest.json"
+cp "$OUT/pixel-oracle-manifest.json.sha256" "$OUT/transport-root/pixel-oracle-manifest.json.sha256"
+cp "$OUT/tool-identity.json" "$OUT/transport-root/tool-identity.json"
+cp "$OUT/bundle/ffmpeg.exe" "$OUT/transport-root/bundle/ffmpeg.exe"
+cp "$OUT/evidence/entrypoint.sha256" "$OUT/transport-root/evidence/entrypoint.sha256"
+cp "$OUT/evidence/source-archive.sha256" "$OUT/transport-root/evidence/source-archive.sha256"
+cp "$OUT/evidence/configure.log" "$OUT/transport-root/evidence/configure.log"
+cp "$OUT/evidence/static-capability-inspection.json" "$OUT/transport-root/evidence/static-capability-inspection.json"
+tar --format=posix -cf "$OUT/code-f-rotation-pixel-oracle-v1-windows-x86_64.tar" -C "$OUT/transport-root" .
+sha256sum "$OUT/code-f-rotation-pixel-oracle-v1-windows-x86_64.tar" > "$OUT/code-f-rotation-pixel-oracle-v1-windows-x86_64.tar.sha256"
 echo 'CODE_F_ROTATION_PIXEL_ORACLE_BUILD: PASS'
