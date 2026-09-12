@@ -14,10 +14,10 @@ BRANCH:
 code-f/ffmpeg-render-runtime-v2-intake
 
 BASE:
-ebe411df646504d43162af3c8a588f42e633bd39
+8123bc798a91b77fc9d231de0a826d34ba2cdd18
 
 FINAL_COMMIT:
-3455bb655e1f32748665ed5ed475bd2733512cba
+9ac58acd952fbb6f2f901e7fd401e8bfaf696727
 ```
 
 ## Authority binding
@@ -65,52 +65,76 @@ verifier and remain unchanged.
 
 ```text
 RUNTIME_V2_ID:
-code-f-ffmpeg-render-windows-x86_64-34695738218
+code-f-ffmpeg-render-windows-x86_64-34699695106
+
+CANDIDATE_ID:
+code-f-ffmpeg-render-windows-9ac58acd952fbb6f2f901e7fd401e8bfaf696727-34699695106
+
+SELECTED_CANDIDATE_SOURCE_HEAD:
+9ac58acd952fbb6f2f901e7fd401e8bfaf696727
+
+SELECTED_CANDIDATE_SOURCE_TREE:
+6db4cd7304618af930e2e48f34b715de4c7eb24d
+
+SOURCE_WORKFLOW_RUN_ID:
+34699695106
+
+PR_SYNTHETIC_MERGE_SHA:
+NONE
+
+PR_SYNTHETIC_MERGE_ROLE:
+CI_CONTEXT_ONLY
 
 FFMPEG_V2_SHA256:
-68cd3efc374a3db49d3b3d69f81e1dd87819fc611fba71b5eb70758741720c99
+7fc910c87e37502f3ff1f7e56c0ee470d91597aece9cd873880ce3c477d0a933
 
 FFPROBE_V2_SHA256:
-876d06b87d7a7932d41ec239be67272b6585320cad2d3085a55a58391163b0c7
+641b8649c3d11702942a4b649d6ecee35231e04e09ce50a8d74b8c46b5295c4e
 
 MANIFEST_V2_SHA256:
-1ad0b6fd56eb01ab650346c97c09ec15a8212b296ad57ef284ef32898421d151
+5e57ef59bdf1c3d8cf17966b100358f4a16b96edb6c7dc7857e9d85bf3f03205
 
 MANIFEST_V2_FILE_SHA256:
-94782c814e5691cddf81ca231403e336310163519aaf0686745364b8b1742cf7
+95513b82f3e6c0544e90ad8e6d3dfb4e692e85183982354a0b80fb89e9b2de32
 
 RUNTIME_IDENTITY_V2_SHA256:
-11a92136b9145bb2286cb653fdbd6a815db434999814b2bad187d38fd2aa3528
+9df0552354769ab18846e5031caa77488f2c0b2fd1c882a7587af06cc0e71db9
 
-RUNTIME_V2_ZIP_SHA256:
-0403ca51bb04a428aa7a354ae8a3b5f39a315537997948c1811da3997b967812
+ACTIONS_ARTIFACT_ENVELOPE_SHA256:
+a7118ff8d297e093a12e4550d05efbb50c14dc643a3a6e23c2d671614bfb5846
+
+ACTIONS_ARTIFACT_ENVELOPE_DIGEST_SCOPE:
+GitHub Actions generated ZIP bytes
 
 TRANSIENT_ARTIFACT_ID:
-10298836491
+10300266594
 
 TRANSIENT_ARTIFACT_SIZE_BYTES:
-9909277
+9909417
 
 TRANSIENT_ARTIFACT_DIGEST_SCOPE:
 GitHub Actions artifact ZIP bytes
 
 BUILD_SOURCE_COMMIT:
-204f9732d35756531d92d369a83a555479d79e25
+9ac58acd952fbb6f2f901e7fd401e8bfaf696727
+
+BUILD_SOURCE_TREE_SHA:
+6db4cd7304618af930e2e48f34b715de4c7eb24d
 
 BUILD_CONTEXT_SHA256:
-2b9c5dc7e06a726738a91208351fe0ebcdbb83d8c099708530a0e7c6d99dc4a9
+c2cdf21af30bfb9770c16b53268944f2291cfc7eee96ead2fe7d425b46b61ca0
 
 BUILD_RECIPE_SHA256:
-3217ed84767617629fec2fe5b88cc76b38eb0c31f44d6f70ea5c3235fc0344fe
+7698ec5d167999717accb8625a82361faa93865857bf10513d0a22fc2ee8349d
 
 ENVIRONMENT_DESCRIPTOR_SHA256:
-377e13ec7913ec77b9783e07910df713300654de52ea37393af1712f71e5ed18
+49f5c68bd735adf3cdaa8bf7bb8f42902591fd5cdba959b4205920735ea46f9c
 
 TRANSFER_MANIFEST_SHA256:
-f6fa4c60d8fdd7cde80ffe961e022e705f4f9af9f5d448565a4b86264d7964ac
+e4e79e993bc73dbd340c7dc8f8910204ba7a9ab66c02741bb6ba2fad209d6329
 
-TRANSPORT_TAR_SHA256:
-8f5ec1d0b86a867e0fa2002aedfbc052fc3c3f89d9e74e73ec6861cc787bd160
+RUNTIME_V2_TRANSPORT_TAR_SHA256:
+a1d0bff4ea3c53dc56e7de7ee7436dfb872bf3e9bc1317acffb0c0254a3bcc01
 
 STATIC_CAPABILITY_EVIDENCE_SHA256:
 7e1b557410029c28affd4bdbd54bc49b90eb8850a7616ab31210d06d2dd173cb
@@ -133,8 +157,38 @@ b8aaa2763cca0aa31ec61aee2fc710ae74389bd6ba4b5480dd9213795801353f
 ENTRYPOINT_HASH_EVIDENCE_SHA256:
 5fc8718d54e35ec8f629e2edee5387898aa2639be9cd7820b5e451acf9c208d8
 
+DURABLE_ARTIFACT_CHANNEL:
+PRIVATE_GITHUB_DRAFT_RELEASE_ASSET
+
+DURABLE_RELEASE_ID:
+387604810
+
+DURABLE_RELEASE_TAG:
+code-f-ffmpeg-render-v2-prewindows-9ac58ac-34699695106
+
+DURABLE_ASSET_ID:
+559437104
+
+DURABLE_ASSET_NAME:
+ffmpeg-render-windows-v2.tar
+
 DURABLE_ARTIFACT_LOGICAL_LOCATOR:
-frozen-candidates/code-f-ffmpeg-render-windows-x86_64-34695738218/windows/
+https://github.com/hed88798-dot/sbsb/releases/download/untagged-f4d49c86902c16a07c31/ffmpeg-render-windows-v2.tar
+
+DURABLE_ARTIFACT_SHA256:
+a1d0bff4ea3c53dc56e7de7ee7436dfb872bf3e9bc1317acffb0c0254a3bcc01
+
+DURABLE_RETRIEVAL_SHA256:
+a1d0bff4ea3c53dc56e7de7ee7436dfb872bf3e9bc1317acffb0c0254a3bcc01
+
+DURABLE_RETRIEVAL_VERIFICATION:
+PASS — independent gh release download and sha256 verification
+
+MAC_LOCAL_COPY_ROLE:
+SECONDARY_RECOVERY_COPY
+
+MAC_LOCAL_COPY_LOGICAL_LOCATOR:
+frozen-candidates/code-f-ffmpeg-render-windows-9ac58acd952fbb6f2f901e7fd401e8bfaf696727-34699695106/windows/
 
 STATIC_TRANSPOSE:
 PASS
@@ -164,6 +218,28 @@ OUTPUT_NONIDENTITY_DISPLAY_MATRIX:
 PENDING_WINDOWS_DESKTOP
 ```
 
+The selected candidate is the only candidate built from the post-freeze
+branch head. The Actions envelope hash above covers only the generated ZIP;
+the runtime transport tar hash, manifest hash, runtime identity hash, and
+entrypoint hashes each retain their own byte scope. The draft release is a
+durable retention channel; the one-day Actions artifact is transport-only.
+
+## Historical candidates
+
+The following earlier hosted candidates are superseded and are not the
+selected pre-Windows candidate:
+
+```text
+SUPERSEDED_RUNTIME_V2_ID:
+code-f-ffmpeg-render-windows-x86_64-34695738218
+
+SUPERSEDED_SOURCE_RUN:
+34695738218
+
+SUPERSEDED_REASON:
+Replaced by the exact source-head candidate from 9ac58acd... / run 34699695106
+```
+
 The hosted Windows workflow is intentionally a source-build, static inventory,
 provenance, manifest, closure, and compliance job. It does not manufacture a
 Windows 11 Desktop dynamic rotation PASS. The v2 workflow uses the same exact
@@ -184,16 +260,16 @@ SBOM_NOTICE:
 PASS
 
 DURABLE_ARTIFACT:
-PASS — local Mac project-folder retention and hash verification
+PASS — private draft release asset, independently retrieved and hash verified
 
 APPROVAL_RECEIPT_HASH:
 NOT_YET_PRODUCED — v2 Desktop rotation approval is intentionally not issued
 
 CI:
-PASS — CI run 34695738227; V2 static intake run 34695738218
+PASS — CI run 34699696589; V2 static intake run 34699695106; retention run 34700810486
 
 WINDOWS_11_RUNTIME_V2_HARNESS:
-NOT_READY — no authorized R1B product-path rotation harness run
+READY — Runtime-level harness present; dynamic Desktop execution is pending
 
 CODE_G_R1B_PRODUCT_ROTATION_GATE:
 NOT_RUN
