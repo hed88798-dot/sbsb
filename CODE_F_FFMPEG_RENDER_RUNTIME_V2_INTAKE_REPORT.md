@@ -16,8 +16,14 @@ code-f/ffmpeg-render-runtime-v2-intake
 BASE:
 8123bc798a91b77fc9d231de0a826d34ba2cdd18
 
-FINAL_COMMIT:
+PRE_WINDOWS_BRANCH_HEAD:
+c41eff72ad211d84647313003a678d8bd3a2ef17
+
+SELECTED_CANDIDATE_SOURCE_HEAD:
 9ac58acd952fbb6f2f901e7fd401e8bfaf696727
+
+HARNESS_VALIDATION_COMMIT:
+c41eff72ad211d84647313003a678d8bd3a2ef17
 ```
 
 ## Authority binding
@@ -280,9 +286,12 @@ NO
 
 ## Stop condition
 
-The next authorized step is Windows 10/11 x64 Desktop dynamic 90°/180°/270°
-product rotation evidence captured by the Code G R1B product path. The hosted
-candidate has already passed static intake and exact-bundle inspection. This branch does not enter R1B, modify RenderPolicy, mutate runtime v1, or approve a v2 artifact without those exact bytes and evidence.
+The next authorized step is Code F Runtime-level Windows 11 Desktop rotation
+harness execution against the selected exact candidate. This is not the Code G
+R1B product path and does not constitute product Render testing. The hosted
+candidate has already passed static intake and exact-bundle inspection. This
+branch does not enter R1B, modify RenderPolicy, mutate runtime v1, or approve
+a v2 artifact without the required Desktop evidence.
 
 ```text
 FIRST_ACTUAL_BLOCKER:
