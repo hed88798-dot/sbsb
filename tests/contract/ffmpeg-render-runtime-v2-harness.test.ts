@@ -70,10 +70,14 @@ describe('Code F FFmpeg Render Runtime v2 pre-Windows freeze', () => {
       '270 = @(1080, 1920)',
       "'-display_rotation:v:0'",
       "'-c:v', 'copy'",
+      "'-display_rotation:v:0', '0', '-noautorotate', '-i', $fixture",
     ])
       expect(harness).toContain(marker);
     expect(harness).not.toContain("'-metadata:s:v:0'");
     expect(harness).not.toContain('-metadata:s:v:0 rotate=');
+    expect(harness.indexOf('Read-Probe $fixture "fixture-$angle"')).toBeLessThan(
+      harness.indexOf("'-display_rotation:v:0', '0', '-noautorotate', '-i', $fixture"),
+    );
     expect(harness.indexOf('Test-AngleEquivalent $fixtureRotation')).toBeLessThan(
       harness.indexOf("'-vf', \"$($filters[$angle])"),
     );

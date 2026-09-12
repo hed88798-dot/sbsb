@@ -330,7 +330,7 @@ try {
 
     $outputPath = Join-Path $rotationOutput "output-$angle.mp4"
     $outputCode = Invoke-Tool $ffmpeg @(
-      '-hide_banner', '-loglevel', 'error', '-noautorotate', '-i', $fixture, '-map', '0:v:0',
+      '-hide_banner', '-loglevel', 'error', '-display_rotation:v:0', '0', '-noautorotate', '-i', $fixture, '-map', '0:v:0',
       '-vf', "$($filters[$angle]),setsar=1,fps=30,format=nv12", '-fps_mode', 'cfr', '-r', '30',
       '-frames:v', "$frameCount", '-c:v', 'h264_mf', '-pix_fmt', 'nv12', '-map_metadata', '-1',
       '-movflags', '+faststart', $outputPath
