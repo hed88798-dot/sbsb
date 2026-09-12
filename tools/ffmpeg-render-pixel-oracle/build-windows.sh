@@ -85,6 +85,7 @@ const value = {
     autorotation: 'DISABLED',
     first_frame_only: true,
   },
+  members: [{ path: 'bundle/ffmpeg.exe', sha256: ffmpegSha }],
 };
 writeFileSync(output, `${JSON.stringify(value, null, 2)}\n`);
 writeFileSync(`${output}.sha256`, `${hash(readFileSync(output))}  ${output.split('/').pop()}\n`);

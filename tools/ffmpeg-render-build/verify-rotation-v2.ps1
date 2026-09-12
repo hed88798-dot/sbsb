@@ -229,6 +229,10 @@ try {
   $runtimeRootResolved = (Resolve-Path -LiteralPath $RuntimeRoot).Path
   $pixelOracleRootResolved = (Resolve-Path -LiteralPath $PixelOracleRoot).Path
   Assert-Condition ($runtimeRootResolved -ne $pixelOracleRootResolved) 'pixel oracle must be separate from the product Runtime root'
+  $runtimeRootPrefix = $runtimeRootResolved.TrimEnd('\\', '/') + [IO.Path]::DirectorySeparatorChar
+  $pixelOracleRootPrefix = $pixelOracleRootResolved.TrimEnd('\\', '/') + [IO.Path]::DirectorySeparatorChar
+  Assert-Condition (-not $pixelOracleRootResolved.StartsWith($runtimeRootPrefix, [StringComparison]::OrdinalIgnoreCase)) 'pixel oracle may not be nested under the product Runtime root'
+  Assert-Condition (-not $runtimeRootResolved.StartsWith($pixelOracleRootPrefix, [StringComparison]::OrdinalIgnoreCase)) 'product Runtime may not be nested under the pixel oracle root'
   $pixelOracleManifestPath = Join-Path $PixelOracleRoot 'pixel-oracle-manifest.json'
   $pixelOracleManifest = Get-Content -LiteralPath $pixelOracleManifestPath -Raw | ConvertFrom-Json
   $pixelOracleManifestHash = Hash-File $pixelOracleManifestPath
@@ -245,6 +249,15 @@ try {
   $pixelOracleFfmpegHash = Hash-File $pixelOracleFfmpeg
   Assert-Condition ($pixelOracleFfmpegHash -eq $ExpectedPixelOracleFfmpegSha256.ToLowerInvariant()) 'pixel oracle ffmpeg hash mismatch'
   Assert-Condition ($pixelOracleManifest.ffmpeg_sha256 -eq $pixelOracleFfmpegHash) 'pixel oracle manifest entrypoint hash mismatch'
+  $pixelOracleMembers = @($pixelOracleManifest.members | ForEach-Object { $_.path } | Sort-Object)
+  if ($pixelOracleMembers.Count -gt 0) {
+    $pixelOracleBundleRoot = Join-Path $pixelOracleRootResolved 'bundle'
+    $pixelOracleActualMembers = @(Get-ChildItem -LiteralPath $pixelOracleBundleRoot -File -Recurse | ForEach-Object { $_.FullName.Substring($pixelOracleRootResolved.Length + 1).Replace('\\', '/') } | Sort-Object)
+    Assert-Condition ((ConvertTo-Json $pixelOracleMembers -Compress) -eq (ConvertTo-Json $pixelOracleActualMembers -Compress)) 'pixel oracle member set mismatch'
+    foreach ($member in @($pixelOracleManifest.members)) {
+      Assert-Condition ((Hash-File (Join-Path $PixelOracleRoot $member.path)) -eq $member.sha256) "pixel oracle member hash mismatch: $($member.path)"
+    }
+  }
   Assert-Condition ($manifest.runtime_id -eq $ExpectedRuntimeId) "runtime id mismatch"
   Assert-Condition ($manifest.manifest_sha256 -eq $ExpectedManifestSha256) "manifest identity mismatch"
   Assert-Condition ($manifest.runtime_identity_sha256 -eq $ExpectedRuntimeIdentitySha256) "runtime identity mismatch"

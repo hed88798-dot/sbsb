@@ -75,6 +75,7 @@ describe('Code F rotation pixel oracle isolation', () => {
     expect(builder).toContain("product_runtime_identity_effect: 'NONE'");
     expect(builder).toContain("'rawvideo_encoder'");
     expect(builder).toContain("'rawvideo_muxer'");
+    expect(builder).toContain("members: [{ path: 'bundle/ffmpeg.exe', sha256: ffmpegSha }]");
     expect(builder).not.toContain('h264_mf');
     expect(builder).not.toContain('aac');
   });
