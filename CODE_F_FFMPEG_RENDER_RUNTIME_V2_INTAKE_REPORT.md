@@ -17,13 +17,13 @@ BASE:
 8123bc798a91b77fc9d231de0a826d34ba2cdd18
 
 PRE_WINDOWS_BRANCH_HEAD:
-43b307b0f2e5897be4bae542c6e1d432078ca0d0
+14b48114d4f2b0ff63769cca69079ca7a5c9f1c7
 
 SELECTED_CANDIDATE_SOURCE_HEAD:
 9ac58acd952fbb6f2f901e7fd401e8bfaf696727
 
 HARNESS_VALIDATION_COMMIT:
-43b307b0f2e5897be4bae542c6e1d432078ca0d0
+14b48114d4f2b0ff63769cca69079ca7a5c9f1c7
 ```
 
 ## Authority binding
@@ -292,6 +292,33 @@ R1B product path and does not constitute product Render testing. The hosted
 candidate has already passed static intake and exact-bundle inspection. This
 branch does not enter R1B, modify RenderPolicy, mutate runtime v1, or approve
 a v2 artifact without the required Desktop evidence.
+
+## Historical first Desktop attempt (preserved)
+
+The first real Windows 11 Desktop attempt is retained as a failed harness
+fixture-design observation. It did not reject or mutate the selected Runtime;
+the same frozen `ffmpeg.exe` passed the independent 1280x720 NV12 / 30 fps /
+30-frame `h264_mf` diagnostic on the same machine.
+
+```text
+WINDOWS_ATTEMPT_1:
+FAIL_HARNESS_FIXTURE_INVALID_MEDIA_TYPE
+
+RUNTIME_REJECTION:
+NO
+
+DIAGNOSTIC_1280X720_H264_MF:
+PASS
+
+WINDOWS_ATTEMPT_1_CLASSIFICATION:
+HARNESS_FIXTURE_DESIGN_DEFECT
+
+OLD_FIXTURE:
+32x24 base; 24x32 rotated output
+
+REPLACEMENT_FIXTURE:
+1920x1080 base; 1080x1920 for 90/270; 1920x1080 for 180
+```
 
 ```text
 FIRST_ACTUAL_BLOCKER:
