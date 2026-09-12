@@ -17,13 +17,13 @@ BASE:
 8123bc798a91b77fc9d231de0a826d34ba2cdd18
 
 PRE_WINDOWS_BRANCH_HEAD:
-14b48114d4f2b0ff63769cca69079ca7a5c9f1c7
+23794c2e42f883e0b457293997cc27b1dd408e63
 
 SELECTED_CANDIDATE_SOURCE_HEAD:
 9ac58acd952fbb6f2f901e7fd401e8bfaf696727
 
 HARNESS_VALIDATION_COMMIT:
-14b48114d4f2b0ff63769cca69079ca7a5c9f1c7
+23794c2e42f883e0b457293997cc27b1dd408e63
 ```
 
 ## Authority binding
@@ -319,6 +319,43 @@ OLD_FIXTURE:
 REPLACEMENT_FIXTURE:
 1920x1080 base; 1080x1920 for 90/270; 1920x1080 for 180
 ```
+
+## Historical second Desktop attempt (preserved)
+
+The second Windows 11 Desktop attempt used the corrected Desktop-sized
+1920x1080 base fixture. Base `h264_mf` encoding reached the approved runtime
+successfully, but the harness could not create authentic signed display-matrix
+fixtures because it used the legacy `-metadata:s:v:0 rotate=<angle>` form. This
+was a harness metadata-fixture construction defect, not a Runtime rejection.
+
+```text
+WINDOWS_ATTEMPT_2:
+FAIL_HARNESS_METADATA_FIXTURE_CONSTRUCTION
+
+RUNTIME_REJECTION:
+NO
+
+DESKTOP_SIZED_BASE_ENCODING:
+PASS
+
+WINDOWS_ATTEMPT_2_CLASSIFICATION:
+HARNESS_METADATA_FIXTURE_CONSTRUCTION_DEFECT
+
+FAILURE:
+legacy rotate metadata did not produce the expected signed display matrix
+
+FIXED_BY:
+-display_rotation:v:0 <angle> with stream-copy fixture creation (-c:v copy)
+
+FIXTURE_PIXELS:
+UNCHANGED_BY_METADATA_FIXTURE_CREATION
+```
+
+The harness now probes each fixture before applying rotation filters and binds
+90° / 180° / 270° to the signed display-angle families. The output path still
+forbids residual non-identity display metadata and requires the asymmetric
+pixel oracle, exact dimensions, frame count, SAR, and CFR checks. The selected
+Runtime v2 bytes and transport identity were not rebuilt or replaced.
 
 ```text
 FIRST_ACTUAL_BLOCKER:
