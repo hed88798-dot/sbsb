@@ -473,7 +473,7 @@ are unchanged.
 
 ```text
 PIXEL_ORACLE_BUILD_STATUS:
-PASS
+PASS — selected durable candidate remains the exact source-run 34723469497 transport
 
 PIXEL_ORACLE_TOOL_ID:
 code-f-rotation-pixel-oracle-windows-x86_64-34723469497
@@ -584,7 +584,7 @@ DURABLE_RETRIEVAL_SHA256:
 7759eb45ec48804d4311f7c15e343b3564709f9db83d3412090a287751974c92
 
 DURABLE_RETRIEVAL_VERIFICATION:
-PASS — retention workflow independently downloaded the release asset and verified the transport hash
+PASS — retention run 34724650531 independently downloaded the release asset and verified the transport hash
 
 MAC_LOCAL_COPY_ROLE:
 SECONDARY_RECOVERY_COPY
@@ -618,6 +618,12 @@ NO
 
 PRODUCT_RENDER:
 NOT_RUN
+
+FINAL_PR_CI_HEAD:
+0ddbc6344e639d7b2634d1e41a021c1867c3d806
+
+FINAL_PR_CI:
+PASS — CI run 34724652607; Windows native smoke run 34724652600
 ```
 
 The hosted build and retention workflows are both green. The static
