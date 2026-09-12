@@ -3,7 +3,11 @@ set -euo pipefail
 
 ROOT="${GITHUB_WORKSPACE:?GITHUB_WORKSPACE is required}"
 RUNNER_TEMP="${RUNNER_TEMP:?RUNNER_TEMP is required}"
-OUT="${PIXEL_ORACLE_OUT:-$ROOT/artifacts/ffmpeg-pixel-oracle/windows}"
+OUT_INPUT="${PIXEL_ORACLE_OUT:-$ROOT/artifacts/ffmpeg-pixel-oracle/windows}"
+case "$OUT_INPUT" in
+  /*|[A-Za-z]:/*) OUT="$OUT_INPUT" ;;
+  *) OUT="$ROOT/$OUT_INPUT" ;;
+esac
 PROFILE="$ROOT/tools/ffmpeg-render-pixel-oracle/CODE_F_ROTATION_PIXEL_ORACLE_BUILD_PROFILE_V1.json"
 SOURCE_TARBALL="$RUNNER_TEMP/ffmpeg-9.0.1.tar.xz"
 SOURCE_DIR="$RUNNER_TEMP/ffmpeg-9.0.1-pixel-oracle-build"
