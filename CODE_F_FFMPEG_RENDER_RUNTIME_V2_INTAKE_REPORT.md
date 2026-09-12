@@ -620,10 +620,10 @@ PRODUCT_RENDER:
 NOT_RUN
 
 FINAL_PR_CI_HEAD:
-c07b72bb5917746e76c199c77a8ff44015ffeebb
+b271f485164487ca2a8ad14a0a7500da1f9d8f9f
 
 FINAL_PR_CI:
-PASS — CI run 34724950773; Windows native smoke run 34724950779
+PASS — CI run 34725173865; Windows native smoke run 34725173867
 ```
 
 The hosted build and retention workflows are both green. The static
