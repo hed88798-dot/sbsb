@@ -17,13 +17,13 @@ BASE:
 8123bc798a91b77fc9d231de0a826d34ba2cdd18
 
 PRE_WINDOWS_BRANCH_HEAD:
-23794c2e42f883e0b457293997cc27b1dd408e63
+4cf1f152d84ef55e6b4f307eef0e100b066bc218
 
 SELECTED_CANDIDATE_SOURCE_HEAD:
 9ac58acd952fbb6f2f901e7fd401e8bfaf696727
 
 HARNESS_VALIDATION_COMMIT:
-23794c2e42f883e0b457293997cc27b1dd408e63
+4cf1f152d84ef55e6b4f307eef0e100b066bc218
 ```
 
 ## Authority binding
@@ -356,6 +356,52 @@ The harness now probes each fixture before applying rotation filters and binds
 forbids residual non-identity display metadata and requires the asymmetric
 pixel oracle, exact dimensions, frame count, SAR, and CFR checks. The selected
 Runtime v2 bytes and transport identity were not rebuilt or replaced.
+
+## Historical third Desktop attempt (preserved)
+
+The third Windows 11 Desktop attempt reached actual rotation execution with
+the authentic display-matrix fixtures and a Desktop-sized `h264_mf` encode. The
+explicit pixel rotation filters were reached, but the normalized outputs still
+carried a non-identity display matrix. This was an output metadata-normalization
+defect in the harness, not a Runtime rejection.
+
+```text
+WINDOWS_ATTEMPT_3:
+FAIL_HARNESS_OUTPUT_ROTATION_METADATA_NORMALIZATION
+
+AUTHENTIC_DISPLAY_MATRIX_FIXTURE:
+PASS
+
+DESKTOP_H264_MF:
+PASS
+
+ROTATION_EXECUTION_REACHED:
+YES
+
+RUNTIME_REJECTION:
+NO
+
+WINDOWS_ATTEMPT_3_CLASSIFICATION:
+HARNESS_OUTPUT_METADATA_NORMALIZATION_DEFECT
+
+FAILURE:
+rotation 90 left non-identity display metadata
+
+FIXED_BY:
+-display_rotation:v:0 0 on the output-transcode input side, before -i fixture
+
+LEGACY_ROTATE_ZERO_METADATA:
+NOT_USED
+
+ROTATION_APPLICATION_COUNT:
+EXACTLY_ONE
+```
+
+The source display matrix is now captured and verified before the identity
+override. The override only clears consumed display authority; the selected
+transpose / flip filter remains the sole pixel rotation. Output verification
+continues to require absent-or-identity display metadata, normalized pixels,
+exact dimensions, 30 fps, 30 frames, SAR 1:1, and decoded `yuv420p`.
 
 ```text
 FIRST_ACTUAL_BLOCKER:
