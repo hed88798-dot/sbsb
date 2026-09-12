@@ -265,8 +265,11 @@ try {
     manifest_verifier = 'PASS'
   }
 
-  $sourceWidth = 32
-  $sourceHeight = 24
+  # Use a normal Media Foundation-compatible fixture size. The previous
+  # 32x24 probe was rejected by h264_mf on the Desktop harness even though
+  # the approved runtime accepts the same 1280x720 capability diagnostic.
+  $sourceWidth = 1920
+  $sourceHeight = 1080
   $frameCount = 30
   $rawPath = Join-Path $rotationOutput 'asymmetric.rgb24'
   $baseVideo = Join-Path $rotationOutput 'base.mp4'
@@ -303,7 +306,7 @@ try {
     180 = @('yellow', 'blue', 'green', 'red')
     270 = @('green', 'yellow', 'red', 'blue')
   }
-  $expectedDimensions = @{ 90 = @(24, 32); 180 = @(32, 24); 270 = @(24, 32) }
+  $expectedDimensions = @{ 90 = @(1080, 1920); 180 = @(1920, 1080); 270 = @(1080, 1920) }
   $filters = @{ 90 = 'transpose=1'; 180 = 'hflip,vflip'; 270 = 'transpose=2' }
   $expectedMetadataAngles = @{ 90 = 90.0; 180 = 180.0; 270 = -90.0 }
   $fixtureDirections = @{}

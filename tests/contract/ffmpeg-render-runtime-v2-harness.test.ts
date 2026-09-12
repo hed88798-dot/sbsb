@@ -64,6 +64,11 @@ describe('Code F FFmpeg Render Runtime v2 pre-Windows freeze', () => {
       'Test-DisplayAngleLogicVectors',
       'expectedMetadataAngles',
       'fixtureDirections[90] -ne $fixtureDirections[270]',
+      '$sourceWidth = 1920',
+      '$sourceHeight = 1080',
+      '90 = @(1080, 1920)',
+      '180 = @(1920, 1080)',
+      '270 = @(1080, 1920)',
     ])
       expect(harness).toContain(marker);
   });
