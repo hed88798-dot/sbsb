@@ -1,0 +1,76 @@
+{
+  "schema_version": "1",
+  "profile_id": "code-f-rotation-pixel-oracle-build-profile-v1",
+  "profile_version": 1,
+  "tool_role": "TEST_ONLY",
+  "product_runtime_identity_effect": "NONE",
+  "package_inclusion": "FORBIDDEN",
+  "upstream_source": {
+    "project": "FFmpeg/FFmpeg",
+    "release": "9.0.1",
+    "tag": "n9.0.1",
+    "commit": "bf1b838f2ab88b4f8fd83443325c782ea0e0f7fa",
+    "archive": "ffmpeg-9.0.1.tar.xz",
+    "archive_sha256": "cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635",
+    "archive_locator": "https://ffmpeg.org/releases/ffmpeg-9.0.1.tar.xz"
+  },
+  "target": {
+    "platform": "windows",
+    "architecture": "x86_64",
+    "environment": "MSYS2_UCRT64"
+  },
+  "configure_arguments": [
+    "--prefix=install",
+    "--target-os=mingw32",
+    "--arch=x86_64",
+    "--enable-cross-compile",
+    "--cc=gcc",
+    "--disable-everything",
+    "--enable-ffmpeg",
+    "--disable-ffprobe",
+    "--disable-ffplay",
+    "--enable-demuxer=mov",
+    "--enable-decoder=h264",
+    "--enable-parser=h264",
+    "--enable-filter=format",
+    "--enable-encoder=rawvideo",
+    "--enable-muxer=rawvideo",
+    "--enable-protocol=file",
+    "--enable-swscale",
+    "--disable-network",
+    "--disable-autodetect",
+    "--disable-devices",
+    "--disable-indevs",
+    "--disable-outdevs",
+    "--disable-avdevice",
+    "--disable-gpl",
+    "--disable-nonfree",
+    "--disable-doc",
+    "--disable-debug",
+    "--enable-static",
+    "--disable-shared",
+    "--extra-ldflags=-static-libgcc -static-libstdc++",
+    "--extra-libs=-Wl,-Bstatic -lwinpthread -Wl,-Bdynamic"
+  ],
+  "capabilities": {
+    "required": [
+      "ffmpeg",
+      "mov_demuxer",
+      "h264_decoder",
+      "h264_parser",
+      "format_filter",
+      "rgb24_pixel_conversion",
+      "rawvideo_encoder",
+      "rawvideo_muxer",
+      "file_protocol"
+    ],
+    "forbidden": ["network_protocols", "h264_mf_encoder", "aac_encoder", "product_runtime_use"]
+  },
+  "verification": {
+    "input": "already-produced normalized MP4 only",
+    "output": "first-frame RGB24 rawvideo file",
+    "autorotation": "DISABLED",
+    "network": "DISABLED",
+    "product_runtime_dependency": "NONE"
+  }
+}

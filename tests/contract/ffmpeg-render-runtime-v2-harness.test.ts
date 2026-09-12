@@ -40,6 +40,15 @@ describe('Code F FFmpeg Render Runtime v2 pre-Windows freeze', () => {
       'ExpectedBuildProfileHash',
       'runtime_dependency_closure',
       'verify-manifest.mjs',
+      'PixelOracleRoot',
+      'ExpectedPixelOracleToolId',
+      'ExpectedPixelOracleManifestSha256',
+      'ExpectedPixelOracleFfmpegSha256',
+      'pixel-oracle-manifest.json',
+      "tool_role -eq 'TEST_ONLY'",
+      "package_inclusion -eq 'FORBIDDEN'",
+      "rawvideo_product_capability = 'NOT_REQUIRED'",
+      "rawvideo_test_oracle_capability = 'SEPARATE_VERIFIER_ONLY'",
     ])
       expect(harness).toContain(marker);
   });
@@ -71,10 +80,17 @@ describe('Code F FFmpeg Render Runtime v2 pre-Windows freeze', () => {
       "'-display_rotation:v:0'",
       "'-c:v', 'copy'",
       "'-display_rotation:v:0', '0', '-noautorotate', '-i', $fixture",
+      '$pixelOracleFfmpeg',
+      "'-noautorotate', '-i', $outputPath",
     ])
       expect(harness).toContain(marker);
     expect(harness).not.toContain("'-metadata:s:v:0'");
     expect(harness).not.toContain('-metadata:s:v:0 rotate=');
+    expect(harness).not.toContain('$decodeCode = Invoke-Tool $ffmpeg');
+    expect(harness).toContain('$decodeCode = Invoke-Tool $pixelOracleFfmpeg');
+    expect(harness.indexOf('$evidence.pixel_oracle')).toBeLessThan(
+      harness.indexOf('$decodeCode = Invoke-Tool $pixelOracleFfmpeg'),
+    );
     expect(harness.indexOf('Read-Probe $fixture "fixture-$angle"')).toBeLessThan(
       harness.indexOf("'-display_rotation:v:0', '0', '-noautorotate', '-i', $fixture"),
     );

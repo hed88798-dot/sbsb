@@ -25,6 +25,18 @@ param(
 
   [string]$ExpectedBuildProfileHash = '40ebffb4307b1c2ec141ffbdd3be2e2c52545090ea1f776267fa445952b3657c',
 
+  [Parameter(Mandatory = $true)]
+  [string]$PixelOracleRoot,
+
+  [Parameter(Mandatory = $true)]
+  [string]$ExpectedPixelOracleToolId,
+
+  [Parameter(Mandatory = $true)]
+  [string]$ExpectedPixelOracleManifestSha256,
+
+  [Parameter(Mandatory = $true)]
+  [string]$ExpectedPixelOracleFfmpegSha256,
+
   [string]$RepositoryRoot = (Get-Location).Path
 )
 
@@ -41,6 +53,8 @@ $evidence = [ordered]@{
   harness_scope = 'CODE_F_RUNTIME_LEVEL_ONLY'
   product_render = 'NOT_RUN'
   code_g_r1b_product_path = 'NOT_RUN'
+  rawvideo_product_capability = 'NOT_REQUIRED'
+  rawvideo_test_oracle_capability = 'SEPARATE_VERIFIER_ONLY'
 }
 
 function Fail([string]$Message) {
@@ -211,6 +225,26 @@ try {
   $ffprobe = Join-Path $bundle 'ffprobe.exe'
   $ffmpegHash = Hash-File $ffmpeg
   $ffprobeHash = Hash-File $ffprobe
+  Assert-Condition (Test-Path -LiteralPath $PixelOracleRoot -PathType Container) "pixel oracle root unavailable: $PixelOracleRoot"
+  $runtimeRootResolved = (Resolve-Path -LiteralPath $RuntimeRoot).Path
+  $pixelOracleRootResolved = (Resolve-Path -LiteralPath $PixelOracleRoot).Path
+  Assert-Condition ($runtimeRootResolved -ne $pixelOracleRootResolved) 'pixel oracle must be separate from the product Runtime root'
+  $pixelOracleManifestPath = Join-Path $PixelOracleRoot 'pixel-oracle-manifest.json'
+  $pixelOracleManifest = Get-Content -LiteralPath $pixelOracleManifestPath -Raw | ConvertFrom-Json
+  $pixelOracleManifestHash = Hash-File $pixelOracleManifestPath
+  Assert-Condition ($pixelOracleManifestHash -eq $ExpectedPixelOracleManifestSha256.ToLowerInvariant()) 'pixel oracle manifest hash mismatch'
+  Assert-Condition ($pixelOracleManifest.tool_id -eq $ExpectedPixelOracleToolId) 'pixel oracle tool identity mismatch'
+  Assert-Condition ($pixelOracleManifest.tool_role -eq 'TEST_ONLY') 'pixel oracle is not marked TEST_ONLY'
+  Assert-Condition ($pixelOracleManifest.product_runtime_identity_effect -eq 'NONE') 'pixel oracle changes product runtime identity'
+  Assert-Condition ($pixelOracleManifest.package_inclusion -eq 'FORBIDDEN') 'pixel oracle may not be packaged'
+  Assert-Condition ($pixelOracleManifest.source.commit -eq 'bf1b838f2ab88b4f8fd83443325c782ea0e0f7fa') 'pixel oracle source commit is not the pinned FFmpeg release'
+  Assert-Condition ($pixelOracleManifest.source.archive_sha256 -eq 'cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635') 'pixel oracle source archive hash is not pinned'
+  Assert-Condition ($pixelOracleManifest.invocation_contract.accepted_input -eq 'already-produced normalized MP4 only') 'pixel oracle input scope is too broad'
+  Assert-Condition ($pixelOracleManifest.invocation_contract.autorotation -eq 'DISABLED') 'pixel oracle autorotation policy drift'
+  $pixelOracleFfmpeg = Join-Path $PixelOracleRoot $pixelOracleManifest.entrypoint
+  $pixelOracleFfmpegHash = Hash-File $pixelOracleFfmpeg
+  Assert-Condition ($pixelOracleFfmpegHash -eq $ExpectedPixelOracleFfmpegSha256.ToLowerInvariant()) 'pixel oracle ffmpeg hash mismatch'
+  Assert-Condition ($pixelOracleManifest.ffmpeg_sha256 -eq $pixelOracleFfmpegHash) 'pixel oracle manifest entrypoint hash mismatch'
   Assert-Condition ($manifest.runtime_id -eq $ExpectedRuntimeId) "runtime id mismatch"
   Assert-Condition ($manifest.manifest_sha256 -eq $ExpectedManifestSha256) "manifest identity mismatch"
   Assert-Condition ($manifest.runtime_identity_sha256 -eq $ExpectedRuntimeIdentitySha256) "runtime identity mismatch"
@@ -263,6 +297,22 @@ try {
     source_commit = $manifest.provenance.source_commit
     source_tree_sha = $manifest.provenance.source_tree_sha
     manifest_verifier = 'PASS'
+  }
+  $evidence.product_runtime = [ordered]@{
+    runtime_id = $manifest.runtime_id
+    ffmpeg_sha256 = $ffmpegHash
+    ffprobe_sha256 = $ffprobeHash
+    package_role = 'PRODUCT_RUNTIME'
+  }
+  $evidence.pixel_oracle = [ordered]@{
+    tool_id = $pixelOracleManifest.tool_id
+    tool_role = $pixelOracleManifest.tool_role
+    manifest_sha256 = $pixelOracleManifestHash
+    ffmpeg_sha256 = $pixelOracleFfmpegHash
+    package_inclusion = $pixelOracleManifest.package_inclusion
+    product_runtime_identity_effect = $pixelOracleManifest.product_runtime_identity_effect
+    source_commit = $pixelOracleManifest.source.commit
+    source_archive_sha256 = $pixelOracleManifest.source.archive_sha256
   }
 
   # Use a normal Media Foundation-compatible fixture size. The previous
@@ -348,8 +398,8 @@ try {
     Assert-Condition ([math]::Abs($outputRotation) -le 0.5) "rotation $angle left non-identity display metadata"
 
     $decoded = Join-Path $rotationOutput "output-$angle.rgb24"
-    $decodeCode = Invoke-Tool $ffmpeg @(
-      '-hide_banner', '-loglevel', 'error', '-i', $outputPath, '-map', '0:v:0', '-frames:v', '1',
+    $decodeCode = Invoke-Tool $pixelOracleFfmpeg @(
+      '-hide_banner', '-loglevel', 'error', '-noautorotate', '-i', $outputPath, '-map', '0:v:0', '-frames:v', '1',
       '-f', 'rawvideo', '-pix_fmt', 'rgb24', $decoded
     ) (Join-Path $rotationOutput "decode-$angle.stdout.txt") (Join-Path $rotationOutput "decode-$angle.stderr.txt")
     Assert-Condition ($decodeCode -eq 0) "rotation $angle pixel decode failed"
