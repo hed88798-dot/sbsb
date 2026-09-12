@@ -30,7 +30,7 @@ for (const name of readdirSync(workflowDirectory).filter((entry) => /\.ya?ml$/u.
       failures.push(
         `${displayPath}: write permission requires a separately approved release design`,
       );
-    } else if (sha256(content) !== approvedHash) {
+    } else if (sha256(content.replaceAll('\r\n', '\n')) !== approvedHash) {
       failures.push(`${displayPath}: approved release workflow bytes changed; re-review required`);
     }
   }
