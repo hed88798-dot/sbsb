@@ -47,7 +47,6 @@ describe('Code F FFmpeg Render Runtime v2 pre-Windows freeze', () => {
   it('executes the three metadata rotations with pixel and matrix oracles', () => {
     for (const marker of [
       'asymmetric.rgb24',
-      'rotate=$angle',
       "'-noautorotate'",
       "90 = 'transpose=1'",
       "180 = 'hflip,vflip'",
@@ -69,7 +68,14 @@ describe('Code F FFmpeg Render Runtime v2 pre-Windows freeze', () => {
       '90 = @(1080, 1920)',
       '180 = @(1920, 1080)',
       '270 = @(1080, 1920)',
+      "'-display_rotation:v:0'",
+      "'-c:v', 'copy'",
     ])
       expect(harness).toContain(marker);
+    expect(harness).not.toContain("'-metadata:s:v:0'");
+    expect(harness).not.toContain('-metadata:s:v:0 rotate=');
+    expect(harness.indexOf('Test-AngleEquivalent $fixtureRotation')).toBeLessThan(
+      harness.indexOf("'-vf', \"$($filters[$angle])"),
+    );
   });
 });

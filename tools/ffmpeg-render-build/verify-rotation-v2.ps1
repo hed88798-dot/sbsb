@@ -314,8 +314,8 @@ try {
   foreach ($angle in @(90, 180, 270)) {
     $fixture = Join-Path $rotationOutput "fixture-$angle.mp4"
     $fixtureCode = Invoke-Tool $ffmpeg @(
-      '-hide_banner', '-loglevel', 'error', '-i', $baseVideo, '-map', '0:v:0', '-c', 'copy',
-      '-metadata:s:v:0', "rotate=$angle", '-movflags', '+faststart', $fixture
+      '-hide_banner', '-loglevel', 'error', '-display_rotation:v:0', "$angle", '-i', $baseVideo,
+      '-map', '0:v:0', '-c:v', 'copy', '-movflags', '+faststart', $fixture
     ) (Join-Path $rotationOutput "fixture-$angle.stdout.txt") (Join-Path $rotationOutput "fixture-$angle.stderr.txt")
     Assert-Condition ($fixtureCode -eq 0) "failed to create $angle degree display-matrix fixture"
     $fixtureProbe = Read-Probe $fixture "fixture-$angle"
@@ -333,7 +333,7 @@ try {
       '-hide_banner', '-loglevel', 'error', '-noautorotate', '-i', $fixture, '-map', '0:v:0',
       '-vf', "$($filters[$angle]),setsar=1,fps=30,format=nv12", '-fps_mode', 'cfr', '-r', '30',
       '-frames:v', "$frameCount", '-c:v', 'h264_mf', '-pix_fmt', 'nv12', '-map_metadata', '-1',
-      '-metadata:s:v:0', 'rotate=0', '-movflags', '+faststart', $outputPath
+      '-movflags', '+faststart', $outputPath
     ) (Join-Path $rotationOutput "output-$angle.stdout.txt") (Join-Path $rotationOutput "output-$angle.stderr.txt")
     Assert-Condition ($outputCode -eq 0) "rotation $angle degree runtime execution failed"
     $outputProbe = Read-Probe $outputPath "output-$angle" -CountFrames
