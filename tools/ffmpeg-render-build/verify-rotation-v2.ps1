@@ -29,6 +29,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$displayAngleTolerance = 0.5
 New-Item -ItemType Directory -Force -Path $Output | Out-Null
 $rotationOutput = Join-Path (Resolve-Path -LiteralPath $Output) 'rotation-v2'
 $evidencePath = Join-Path $rotationOutput 'rotation-v2-harness.json'
@@ -75,6 +76,29 @@ function Read-Probe([string]$InputPath, [string]$Label, [switch]$CountFrames) {
   $code = Invoke-Tool $ffprobe $arguments $stdout $stderr
   Assert-Condition ($code -eq 0) "ffprobe failed for $Label"
   return (Get-Content -LiteralPath $stdout -Raw | ConvertFrom-Json)
+}
+
+function Normalize-DisplayAngle([double]$Angle) {
+  Assert-Condition (-not [double]::IsNaN($Angle) -and -not [double]::IsInfinity($Angle)) "display angle must be finite: $Angle"
+  $normalized = $Angle % 360
+  if ($normalized -gt 180) { $normalized -= 360 }
+  if ($normalized -lt -180) { $normalized += 360 }
+  if ([math]::Abs($normalized) -le $displayAngleTolerance) { return 0.0 }
+  if ([math]::Abs([math]::Abs($normalized) - 180) -le $displayAngleTolerance) { return 180.0 }
+  return $normalized
+}
+
+function Test-AngleEquivalent([double]$Actual, [double]$Expected) {
+  return [math]::Abs((Normalize-DisplayAngle $Actual) - (Normalize-DisplayAngle $Expected)) -le $displayAngleTolerance
+}
+
+function Get-DisplayAngleFamily([double]$Angle) {
+  $normalized = Normalize-DisplayAngle $Angle
+  if ([math]::Abs($normalized) -le $displayAngleTolerance) { return 'IDENTITY' }
+  if ([math]::Abs($normalized - 90) -le $displayAngleTolerance) { return 'POSITIVE_90' }
+  if ([math]::Abs($normalized + 90) -le $displayAngleTolerance) { return 'NEGATIVE_90' }
+  if ([math]::Abs([math]::Abs($normalized) - 180) -le $displayAngleTolerance) { return 'HALF_TURN' }
+  return 'OTHER'
 }
 
 function Get-DisplayRotation([object]$Stream) {
@@ -265,6 +289,8 @@ try {
   }
   $expectedDimensions = @{ 90 = @(24, 32); 180 = @(32, 24); 270 = @(24, 32) }
   $filters = @{ 90 = 'transpose=1'; 180 = 'hflip,vflip'; 270 = 'transpose=2' }
+  $expectedMetadataAngles = @{ 90 = 90.0; 180 = 180.0; 270 = -90.0 }
+  $fixtureDirections = @{}
 
   foreach ($angle in @(90, 180, 270)) {
     $fixture = Join-Path $rotationOutput "fixture-$angle.mp4"
@@ -276,7 +302,12 @@ try {
     $fixtureProbe = Read-Probe $fixture "fixture-$angle"
     $fixtureStream = @($fixtureProbe.streams | Where-Object { $_.codec_type -eq 'video' })[0]
     $fixtureRotation = Get-DisplayRotation $fixtureStream
-    Assert-Condition ([math]::Abs($fixtureRotation) -eq $angle) "fixture $angle degree display matrix was not recorded"
+    $fixtureRotationNormalized = Normalize-DisplayAngle $fixtureRotation
+    Assert-Condition (Test-AngleEquivalent $fixtureRotation $expectedMetadataAngles[$angle]) "fixture $angle degree display matrix was not recorded as the expected signed angle"
+    $fixtureDirections[$angle] = Get-DisplayAngleFamily $fixtureRotation
+    if ($angle -eq 90 -or $angle -eq 270) {
+      Assert-Condition ($fixtureDirections[$angle] -ne 'OTHER' -and $fixtureDirections[$angle] -ne 'IDENTITY' -and $fixtureDirections[$angle] -ne 'HALF_TURN') "fixture $angle degree display matrix is not a quarter-turn"
+    }
 
     $outputPath = Join-Path $rotationOutput "output-$angle.mp4"
     $outputCode = Invoke-Tool $ffmpeg @(
@@ -320,6 +351,8 @@ try {
       degrees = $angle
       metadata_fixture = "fixture-$angle.mp4"
       source_display_rotation = $fixtureRotation
+      source_display_rotation_normalized = $fixtureRotationNormalized
+      source_display_rotation_family = $fixtureDirections[$angle]
       filter = $filters[$angle]
       declared_rotation_application_count = 1
       output_width = [int]$outputStream.width
@@ -334,6 +367,9 @@ try {
       nonidentity_display_matrix = $false
     })
   }
+
+  Assert-Condition ($fixtureDirections[90] -ne $fixtureDirections[270]) '90 and 270 degree metadata directions were conflated'
+  Assert-Condition ($fixtureDirections[90] -eq 'POSITIVE_90' -and $fixtureDirections[270] -eq 'NEGATIVE_90') '90 and 270 degree metadata directions are not opposite signed quarter-turns'
 
   $evidence.status = 'PASS'
   $evidence.rotation_degrees = @(90, 180, 270)

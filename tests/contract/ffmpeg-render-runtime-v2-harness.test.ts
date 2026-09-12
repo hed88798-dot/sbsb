@@ -18,6 +18,8 @@ describe('Code F FFmpeg Render Runtime v2 pre-Windows freeze', () => {
     expect(workflow).toContain('workflow_dispatch:');
     expect(workflow).toContain("'.github/workflows/code-f-ffmpeg-render-runtime-v2.yml'");
     expect(workflow).toContain("'tools/ffmpeg-render-build/**'");
+    expect(workflow).toContain("'!tools/ffmpeg-render-build/verify-rotation-v2.ps1'");
+    expect(workflow).toContain("'!tools/ffmpeg-render-build/rotation-angle.mjs'");
     expect(workflow).toContain("'tools/ffmpeg-render-build-profile/**'");
     expect(workflow).toContain("'pnpm-lock.yaml'");
     expect(workflow).not.toContain('  pull_request:');
@@ -56,6 +58,11 @@ describe('Code F FFmpeg Render Runtime v2 pre-Windows freeze', () => {
       'nb_read_frames',
       'sample_aspect_ratio',
       'visible_orientation',
+      'Normalize-DisplayAngle',
+      'Test-AngleEquivalent',
+      'Get-DisplayAngleFamily',
+      'expectedMetadataAngles',
+      'fixtureDirections[90] -ne $fixtureDirections[270]',
     ])
       expect(harness).toContain(marker);
   });

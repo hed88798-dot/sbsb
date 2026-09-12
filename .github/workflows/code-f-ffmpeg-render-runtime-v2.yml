@@ -9,6 +9,9 @@ on:
       - 'compliance/runtime-dependency-intake/ffmpeg-render-v2/**'
       - 'docs/render/ffmpeg-required-capability-profile.v2.json'
       - 'tools/ffmpeg-render-build/**'
+      # Harness-only validation changes must not mint a new Runtime candidate.
+      - '!tools/ffmpeg-render-build/verify-rotation-v2.ps1'
+      - '!tools/ffmpeg-render-build/rotation-angle.mjs'
       - 'tools/ffmpeg-render-build-profile/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
