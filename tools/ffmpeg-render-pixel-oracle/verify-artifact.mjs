@@ -53,6 +53,23 @@ function listing(binary, command) {
   }
 }
 
+function parserAvailable(binary, parser) {
+  try {
+    const output = execFileSync(
+      binary,
+      ['-hide_banner', '-loglevel', 'error', '-h', `parser=${parser}`],
+      {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+        windowsHide: true,
+      },
+    );
+    return new RegExp(`parser[=: ]+${parser}\\b`, 'iu').test(output);
+  } catch {
+    return false;
+  }
+}
+
 function bundleFiles(root) {
   const bundleRoot = resolve(root, 'bundle');
   const files = [];
@@ -118,7 +135,6 @@ assert(
 
 const demuxers = listing(binaryPath, '-demuxers');
 const decoders = listing(binaryPath, '-decoders');
-const parsers = listing(binaryPath, '-parsers');
 const encoders = listing(binaryPath, '-encoders');
 const muxers = listing(binaryPath, '-muxers');
 const filters = listing(binaryPath, '-filters');
@@ -129,7 +145,7 @@ const devices = listing(binaryPath, '-devices');
 const checks = {
   mov_demux: hasToken(demuxers, 'mov'),
   h264_decoder: hasToken(decoders, 'h264'),
-  h264_parser: hasToken(parsers, 'h264'),
+  h264_parser: parserAvailable(binaryPath, 'h264'),
   format_filter: hasToken(filters, 'format'),
   rgb24_pixel_format: hasToken(pixelFormats, 'rgb24'),
   rawvideo_encoder: hasToken(encoders, 'rawvideo'),
@@ -159,7 +175,7 @@ const evidence = {
     filters: '-hide_banner -loglevel error -filters',
     pixel_formats: '-hide_banner -loglevel error -pix_fmts',
     protocols: '-hide_banner -loglevel error -protocols',
-    parsers: '-hide_banner -loglevel error -parsers',
+    parser_h264: '-hide_banner -loglevel error -h parser=h264',
     devices: '-hide_banner -loglevel error -devices',
   },
 };
