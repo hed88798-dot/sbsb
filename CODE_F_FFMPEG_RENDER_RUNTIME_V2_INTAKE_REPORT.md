@@ -17,13 +17,13 @@ BASE:
 8123bc798a91b77fc9d231de0a826d34ba2cdd18
 
 PRE_WINDOWS_BRANCH_HEAD:
-1583cb2155852c7e868c0118ad9993828bc832f1
+fe017ab763e067fb37b9390a0197ce98402796ee
 
 SELECTED_CANDIDATE_SOURCE_HEAD:
 9ac58acd952fbb6f2f901e7fd401e8bfaf696727
 
 HARNESS_VALIDATION_COMMIT:
-1583cb2155852c7e868c0118ad9993828bc832f1
+fe017ab763e067fb37b9390a0197ce98402796ee
 ```
 
 ## Authority binding
@@ -451,11 +451,11 @@ HARNESS_PIXEL_ORACLE_UNDECLARED_CAPABILITY
 `CODE_F_ROTATION_PIXEL_ORACLE_V1` test-only verifier is now defined and built
 from the same pinned FFmpeg 9.0.1 source lineage with only MOV/H.264 decoding,
 RGB24 conversion, rawvideo output, and the local file protocol. Its manifest
-must identify its tool hash, source pin, `TEST_ONLY` role, and `FORBIDDEN`
-product packaging disposition. The harness records product Runtime identity
-separately and invokes the oracle only after an output MP4 exists; the oracle
-cannot create fixtures, rotate pixels, encode H.264, or act as a product
-fallback.
+binds its exact bundle member list and hashes, tool hash, source pin, `TEST_ONLY`
+role, and `FORBIDDEN` product packaging disposition. The harness records
+product Runtime identity separately, rejects a shared or nested oracle root,
+and invokes the oracle only after an output MP4 exists; the oracle cannot
+create fixtures, rotate pixels, encode H.264, or act as a product fallback.
 
 ```text
 FIRST_ACTUAL_BLOCKER:
