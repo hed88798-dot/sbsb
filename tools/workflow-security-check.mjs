@@ -14,6 +14,10 @@ const approvedReleaseWorkflowHashes = new Map([
     '.github/workflows/code-f-ffmpeg-render-v2-retention.yml',
     '18b44f21781898827d2a950bce39db02740f2b1a23de0ae056713f9637db565d',
   ],
+  [
+    '.github/workflows/code-f-ffmpeg-pixel-oracle-v1-retention.yml',
+    'd996e7cae138dce18491347ecaf03c412b47fe660c7499c00765543d9bc20bdb',
+  ],
 ]);
 const sha256 = (value) => createHash('sha256').update(value, 'utf8').digest('hex');
 
