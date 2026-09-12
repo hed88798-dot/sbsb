@@ -76,7 +76,6 @@ const root = argument('--root');
 const manifestPath = resolve(root, 'pixel-oracle-manifest.json');
 const manifestSidecarPath = `${manifestPath}.sha256`;
 const manifest = readJson(manifestPath);
-const profile = readJson(profilePath);
 const binaryPath = resolve(root, manifest.entrypoint);
 
 assert(manifest.tool_role === 'TEST_ONLY', 'pixel oracle must be TEST_ONLY');
