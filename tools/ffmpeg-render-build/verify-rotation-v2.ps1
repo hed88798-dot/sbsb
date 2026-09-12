@@ -101,6 +101,21 @@ function Get-DisplayAngleFamily([double]$Angle) {
   return 'OTHER'
 }
 
+function Test-DisplayAngleLogicVectors {
+  $vectors = @(
+    @{ input = 0.0; expected = 0.0; family = 'IDENTITY' }
+    @{ input = 90.4; expected = 90.0; family = 'POSITIVE_90' }
+    @{ input = 180.0; expected = 180.0; family = 'HALF_TURN' }
+    @{ input = -180.0; expected = 180.0; family = 'HALF_TURN' }
+    @{ input = 270.0; expected = -90.0; family = 'NEGATIVE_90' }
+  )
+  foreach ($vector in $vectors) {
+    Assert-Condition (Test-AngleEquivalent $vector.input $vector.expected) "angle vector equivalence failed: $($vector.input) -> $($vector.expected)"
+    Assert-Condition ((Get-DisplayAngleFamily $vector.input) -eq $vector.family) "angle vector family failed: $($vector.input) -> $($vector.family)"
+  }
+  Assert-Condition ((Get-DisplayAngleFamily 90) -ne (Get-DisplayAngleFamily 270)) 'angle vector directions were conflated'
+}
+
 function Get-DisplayRotation([object]$Stream) {
   foreach ($side in @($Stream.side_data_list)) {
     if ("$($side.side_data_type)" -match '(?i)display matrix') {
@@ -224,6 +239,7 @@ try {
 
   $node = Get-Command node -ErrorAction SilentlyContinue
   Assert-Condition ($null -ne $node) 'pinned Node.js verifier is required for manifest self-hash verification'
+  Test-DisplayAngleLogicVectors
   $manifestVerifier = Join-Path $RepositoryRoot 'tools/ffmpeg-render-build/verify-manifest.mjs'
   $manifestVerifierStdout = Join-Path $rotationOutput 'manifest-verifier.stdout.txt'
   $manifestVerifierStderr = Join-Path $rotationOutput 'manifest-verifier.stderr.txt'

@@ -61,6 +61,7 @@ describe('Code F FFmpeg Render Runtime v2 pre-Windows freeze', () => {
       'Normalize-DisplayAngle',
       'Test-AngleEquivalent',
       'Get-DisplayAngleFamily',
+      'Test-DisplayAngleLogicVectors',
       'expectedMetadataAngles',
       'fixtureDirections[90] -ne $fixtureDirections[270]',
     ])
