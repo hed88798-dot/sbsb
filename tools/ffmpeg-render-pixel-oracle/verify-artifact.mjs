@@ -51,12 +51,11 @@ function listing(binary, command) {
 }
 
 function parserAvailable(binary, parser) {
-  const result = spawnSync(binary, ['-hide_banner', '-h', `parser=${parser}`], {
-    encoding: 'utf8',
-    windowsHide: true,
-  });
-  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
-  return result.status === 0 && new RegExp(`parser[=: ]+${parser}\\b`, 'iu').test(output);
+  // FFmpeg exposes no parser-list CLI (unlike codecs/demuxers). Inspect the
+  // linked executable's retained registration string, then rely on the
+  // decoder/parser path during the downstream fixture smoke.
+  const executableText = readFileSync(binary, 'latin1');
+  return new RegExp(`${parser}_(?:parser|parse)`, 'iu').test(executableText);
 }
 
 function bundleFiles(root) {
@@ -164,7 +163,7 @@ const evidence = {
     filters: '-hide_banner -filters',
     pixel_formats: '-hide_banner -pix_fmts',
     protocols: '-hide_banner -protocols',
-    parser_h264: '-hide_banner -h parser=h264',
+    parser_h264: 'binary registration string scan for h264_parser/h264_parse',
     devices: '-hide_banner -devices',
   },
 };
