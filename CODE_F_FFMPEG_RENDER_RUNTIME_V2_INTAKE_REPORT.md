@@ -1,10 +1,10 @@
 # Code F — FFmpeg Render Runtime v2 Intake
 
 This is a forward, rotation-capable intake. Runtime v1 remains an historical
-approval and is not mutated or revoked. No Windows v2 candidate has been
-produced on this branch yet; therefore candidate hashes, runtime closure,
-license, vulnerability, SBOM, retention, and Desktop rotation evidence remain
-closed until the exact v2 bundle is built and inspected.
+approval and is not mutated or revoked. A Windows v2 candidate was built by
+the hosted static-intake workflow and independently inspected. Static,
+provenance, closure, license, vulnerability, SBOM, and retention gates pass;
+only the Windows 11 Desktop dynamic rotation evidence remains pending.
 
 ```text
 CODE_F_RUNTIME_V2_INTAKE:
@@ -17,7 +17,7 @@ BASE:
 ebe411df646504d43162af3c8a588f42e633bd39
 
 FINAL_COMMIT:
-PENDING_FOLLOW_UP_REPORT_COMMIT
+3455bb655e1f32748665ed5ed475bd2733512cba
 ```
 
 ## Authority binding
@@ -65,76 +65,76 @@ verifier and remain unchanged.
 
 ```text
 RUNTIME_V2_ID:
-code-f-ffmpeg-render-windows-x86_64-34694993762
+code-f-ffmpeg-render-windows-x86_64-34695738218
 
 FFMPEG_V2_SHA256:
-7af11afbae14889700ffaf70e72748c198a8448f68ced40f82a44fe806798477
+68cd3efc374a3db49d3b3d69f81e1dd87819fc611fba71b5eb70758741720c99
 
 FFPROBE_V2_SHA256:
-2f0bf1a542266b58b35c41b09e1feaa3a61f5a75fa22ea2364f19d2a9d0ca0e6
+876d06b87d7a7932d41ec239be67272b6585320cad2d3085a55a58391163b0c7
 
 MANIFEST_V2_SHA256:
-c3184e86cc229d7eecf8407e103cd93047a6f148824aede3ddd59591aed31efa
+1ad0b6fd56eb01ab650346c97c09ec15a8212b296ad57ef284ef32898421d151
 
 MANIFEST_V2_FILE_SHA256:
-55e588ba8f1ba0ac8daed1fbbf52af58c0dc454c1091874798d304310f962098
+94782c814e5691cddf81ca231403e336310163519aaf0686745364b8b1742cf7
 
 RUNTIME_IDENTITY_V2_SHA256:
-b13500811d7b02e651128477165959e57513060a723af1dd0a5dc91c23ad3de6
+11a92136b9145bb2286cb653fdbd6a815db434999814b2bad187d38fd2aa3528
 
 RUNTIME_V2_ZIP_SHA256:
-30c64106f38a354962d31931502947f769cf61b6aa99a601088a5e7c8071341b
+0403ca51bb04a428aa7a354ae8a3b5f39a315537997948c1811da3997b967812
 
 TRANSIENT_ARTIFACT_ID:
-10298224954
+10298836491
 
 TRANSIENT_ARTIFACT_SIZE_BYTES:
-9909206
+9909277
 
 TRANSIENT_ARTIFACT_DIGEST_SCOPE:
 GitHub Actions artifact ZIP bytes
 
 BUILD_SOURCE_COMMIT:
-514158af2f015a809b4b31577f17d85a5fb85b0c
+204f9732d35756531d92d369a83a555479d79e25
 
 BUILD_CONTEXT_SHA256:
-244e8a69f957555208fe9e8cc2dc9d8352f4ae33bd05d6e7c1802327268ca355
+2b9c5dc7e06a726738a91208351fe0ebcdbb83d8c099708530a0e7c6d99dc4a9
 
 BUILD_RECIPE_SHA256:
-d432e534c8b877d0999d6f451101090bd73d1af79ae557a5c5b22f423714ac65
+3217ed84767617629fec2fe5b88cc76b38eb0c31f44d6f70ea5c3235fc0344fe
 
 ENVIRONMENT_DESCRIPTOR_SHA256:
-0c3c7c13487592d0896ee88bb8892a09dc4ece290f548bd4234fd18ce130a06d
+377e13ec7913ec77b9783e07910df713300654de52ea37393af1712f71e5ed18
 
 TRANSFER_MANIFEST_SHA256:
-8d681973f9ca5d7b01c8d937c0b88986ce5a4dbfce21e9d6bd30e02e2d3e2089
+f6fa4c60d8fdd7cde80ffe961e022e705f4f9af9f5d448565a4b86264d7964ac
 
 TRANSPORT_TAR_SHA256:
-4488cb0c09796b1bf22851854499ee07f77f84f0e6cc1db18829e1decbe4fd6a
+8f5ec1d0b86a867e0fa2002aedfbc052fc3c3f89d9e74e73ec6861cc787bd160
 
 STATIC_CAPABILITY_EVIDENCE_SHA256:
 7e1b557410029c28affd4bdbd54bc49b90eb8850a7616ab31210d06d2dd173cb
 
 RUNTIME_CLOSURE_EVIDENCE_SHA256:
-5a6669b5ad25730ca729a106fb10b2f1e438f421f8dce0edb7f086da2abd0ee0
+5a889b0e45d632a2951bec6e205e54a9e24ebc56da255d10b6f5a48d2da29ab6
 
 LICENSE_EVIDENCE_SHA256:
-854cf507e7e7274ba27f06cd2e24261b16e2a2ec4999c3041cf794b83ee80da1
+e4c8a5750db45b42d17dd04bff433e23c57c1c04c4cd77ab7654140707f3ae71
 
 VULNERABILITY_EVIDENCE_SHA256:
-23066242f13a900cef8a1522f44b002fb8a22caeef68ce850c971dcee88e77c0
+5baec5b0e1f29d16d5b39e561b11e8b83570f975dfe485ea9237bbedf77aa30a
 
 SBOM_SHA256:
-53b72be30825ab73577f942b6445a6a3151c14abaf622f5d8ac15bfcb5a9b307
+9311eb209784ec006a403e952c6af6e5597a5ee2cd7acb662928b3b7fa6b08e8
 
 NOTICE_SHA256:
-a8681de44d640b422cb0b5655dfedf1f503a1e2a0058c6fe9afc35782ac7a91f
+b8aaa2763cca0aa31ec61aee2fc710ae74389bd6ba4b5480dd9213795801353f
 
 ENTRYPOINT_HASH_EVIDENCE_SHA256:
-c2735248d777fb3fd2ee55a749e366f60c6e7c3cab88968d1afba75bc85d35fe
+5fc8718d54e35ec8f629e2edee5387898aa2639be9cd7820b5e451acf9c208d8
 
 DURABLE_ARTIFACT_LOGICAL_LOCATOR:
-frozen-candidates/code-f-ffmpeg-render-windows-x86_64-34694993762/windows/
+frozen-candidates/code-f-ffmpeg-render-windows-x86_64-34695738218/windows/
 
 STATIC_TRANSPOSE:
 PASS
@@ -190,7 +190,7 @@ APPROVAL_RECEIPT_HASH:
 NOT_YET_PRODUCED — v2 Desktop rotation approval is intentionally not issued
 
 CI:
-PASS — CI run 34694993711
+PASS — CI run 34695738227; V2 static intake run 34695738218
 
 WINDOWS_11_RUNTIME_V2_HARNESS:
 NOT_READY — no authorized R1B product-path rotation harness run
@@ -204,11 +204,9 @@ NO
 
 ## Stop condition
 
-The next authorized step is a Windows-hosted v2 source build followed by
-exact-bundle transfer and candidate inspection. Dynamic 90°/180°/270° product
-rotation evidence must be captured on Windows 10/11 x64 Desktop by the Code G
-R1B product path. This branch does not enter R1B, modify RenderPolicy, mutate
-runtime v1, or approve a v2 artifact without those exact bytes and evidence.
+The next authorized step is Windows 10/11 x64 Desktop dynamic 90°/180°/270°
+product rotation evidence captured by the Code G R1B product path. The hosted
+candidate has already passed static intake and exact-bundle inspection. This branch does not enter R1B, modify RenderPolicy, mutate runtime v1, or approve a v2 artifact without those exact bytes and evidence.
 
 ```text
 FIRST_ACTUAL_BLOCKER:
