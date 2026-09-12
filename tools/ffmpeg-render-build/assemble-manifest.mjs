@@ -22,6 +22,7 @@ const context = JSON.parse(readFileSync(resolve(options.records, 'build-context.
 const runtimeDeps = JSON.parse(readFileSync(resolve(options['runtime-deps']), 'utf8'));
 const licensePath = resolve(options.license);
 const license = JSON.parse(readFileSync(licensePath, 'utf8'));
+const profile = JSON.parse(readFileSync(resolve(options.profile), 'utf8'));
 const platform = context.target_platform;
 const architecture = context.target_architecture;
 const executable = platform === 'windows' ? 'ffmpeg.exe' : 'ffmpeg';
@@ -132,7 +133,7 @@ const manifest = {
     external_linked_libraries: recipe.external_linked_libraries,
     linkage: recipe.linkage,
     feature_selection: [
-      'CODE_G_CAPABILITY_PROFILE_V1',
+      `CODE_G_CAPABILITY_PROFILE_V${profile.profile_version}`,
       'H264',
       'AAC',
       'MP4',

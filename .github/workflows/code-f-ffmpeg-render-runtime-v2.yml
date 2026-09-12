@@ -1,0 +1,104 @@
+name: Code F FFmpeg Render Runtime v2 Intake
+
+on:
+  push:
+    branches:
+      - code-f/ffmpeg-render-runtime-v2-intake
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: code-f-ffmpeg-render-runtime-v2-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FFMPEG_SOURCE_SHA256: cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635
+  FFMPEG_RELEASE_COMMIT: bf1b838f2ab88b4f8fd83443325c782ea0e0f7fa
+  FFMPEG_RENDER_BUILD_PROFILE_SHA256: 40ebffb4307b1c2ec141ffbdd3be2e2c52545090ea1f776267fa445952b3657c
+  CODE_G_CAPABILITY_PROFILE_COMMIT: ebe411df646504d43162af3c8a588f42e633bd39
+  CODE_G_CAPABILITY_PROFILE_HASH: 2c19710e609b1ae769e7f007cffca1e552ce1158963bec2aa8a8bcad59a01c1b
+
+jobs:
+  windows-static-intake:
+    name: Windows x86_64 FFmpeg Render Runtime v2 static intake
+    runs-on: windows-2022
+    timeout-minutes: 180
+    # windows-2022 is a Windows Server image. It is authoritative for source
+    # build, static inventory, provenance, manifest, closure, and compliance
+    # only. Dynamic rotation approval remains a Windows 11 Desktop gate owned
+    # by the Code G R1B product path.
+    env:
+      FFMPEG_CAPABILITY_MODE: STATIC_SERVER
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Preserve exact evidence bytes on Windows checkout
+        shell: pwsh
+        run: |
+          git config --local core.autocrlf false
+          git config --local core.eol lf
+          git reset --hard HEAD
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - name: Install pinned repository tooling
+        shell: pwsh
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Verify Code G Profile v2 and Render Build Profile v2
+        shell: pwsh
+        run: pnpm compliance:ffmpeg:profile:v2:verify
+      - name: Verify exact MSYS2 toolchain
+        shell: pwsh
+        run: |
+          $bash = 'C:\msys64\usr\bin\bash.exe'
+          $cygpath = 'C:\msys64\usr\bin\cygpath.exe'
+          if (!(Test-Path $bash) -or !(Test-Path $cygpath)) { throw 'MSYS2 UCRT64 toolchain is unavailable on the target runner' }
+          $workspace = (& $cygpath -u $env:GITHUB_WORKSPACE).Trim()
+          $runnerTemp = (& $cygpath -u $env:RUNNER_TEMP).Trim()
+          $nodePath = (Get-Command node).Source
+          $nodeBin = (& $cygpath -u (Split-Path -Parent $nodePath)).Trim()
+          if ([string]::IsNullOrWhiteSpace($workspace) -or [string]::IsNullOrWhiteSpace($nodeBin)) { throw 'Runner path binding failed' }
+          $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 NODE_BIN='$nodeBin' MAKE_COMMAND=mingw32-make PATH='/ucrt64/bin:/usr/bin:/bin:$nodeBin' && ./tools/ffmpeg-render-build/preflight-windows.sh"
+          & $bash --noprofile --norc -lc $command
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build and verify exact Windows Render runtime v2
+        shell: pwsh
+        run: |
+          $bash = 'C:\msys64\usr\bin\bash.exe'
+          $cygpath = 'C:\msys64\usr\bin\cygpath.exe'
+          $workspace = (& $cygpath -u $env:GITHUB_WORKSPACE).Trim()
+          $runnerTemp = (& $cygpath -u $env:RUNNER_TEMP).Trim()
+          $nodePath = (Get-Command node).Source
+          $nodeBin = (& $cygpath -u (Split-Path -Parent $nodePath)).Trim()
+          $gitPath = (Get-Command git).Source
+          $command = "cd '$workspace' && export GITHUB_WORKSPACE='$workspace' RUNNER_TEMP='$runnerTemp' MSYSTEM=UCRT64 NODE_BIN='$nodeBin' GIT_PATH='$gitPath' MAKE_COMMAND=mingw32-make FFMPEG_CAPABILITY_MODE='$env:FFMPEG_CAPABILITY_MODE' FFMPEG_RENDER_PROFILE_RELATIVE='compliance/runtime-dependency-intake/ffmpeg-render-v2/FFMPEG_RENDER_BUILD_PROFILE_V2.json' FFMPEG_RENDER_OUT_RELATIVE='artifacts/ffmpeg-render-v2/windows' FFMPEG_RENDER_PREFLIGHT_OUT_RELATIVE='artifacts/ffmpeg-render/windows' FFMPEG_RENDER_PROFILE_VERIFY_SCRIPT='$workspace/tools/ffmpeg-render-build-profile/verify-v2.mjs' FFMPEG_RENDER_CONFIG_RESOLVER='$workspace/tools/ffmpeg-render-build/resolve-config-v2.mjs' FFMPEG_RENDER_CAPABILITY_SCRIPT='$workspace/tools/ffmpeg-render-build/verify-capabilities-v2.sh' PATH='/ucrt64/bin:/usr/bin:/bin:$nodeBin' GITHUB_SHA='$env:GITHUB_SHA' GITHUB_RUN_ID='$env:GITHUB_RUN_ID' && ./tools/ffmpeg-render-build/build-windows.sh"
+          & $bash --noprofile --norc -lc $command
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Package immutable transient v2 transport
+        if: always()
+        shell: bash
+        run: |
+          if [[ -d artifacts/ffmpeg-render-v2/windows ]]; then
+            mkdir -p artifacts/ffmpeg-render-v2/windows-transport
+            tar --format=posix -cf artifacts/ffmpeg-render-v2/windows-transport/ffmpeg-render-windows-v2.tar -C artifacts/ffmpeg-render-v2/windows .
+            sha256sum artifacts/ffmpeg-render-v2/windows-transport/ffmpeg-render-windows-v2.tar > artifacts/ffmpeg-render-v2/windows-transport/ffmpeg-render-windows-v2.tar.sha256
+          fi
+      - name: Upload transient Windows v2 candidate transport
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ffmpeg-render-windows-v2-${{ github.sha }}
+          path: artifacts/ffmpeg-render-v2/windows-transport
+          if-no-files-found: error
+          retention-days: 1

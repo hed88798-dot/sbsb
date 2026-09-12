@@ -5,7 +5,8 @@ import { resolve } from 'node:path';
 const root = resolve(import.meta.dirname, '../..');
 const profilePath = resolve(
   root,
-  'compliance/runtime-dependency-intake/ffmpeg-render-v1/FFMPEG_RENDER_BUILD_PROFILE_V1.json',
+  process.env.FFMPEG_RENDER_PROFILE_PATH ??
+    'compliance/runtime-dependency-intake/ffmpeg-render-v1/FFMPEG_RENDER_BUILD_PROFILE_V1.json',
 );
 const profile = JSON.parse(readFileSync(profilePath, 'utf8'));
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
