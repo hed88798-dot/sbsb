@@ -49,7 +49,11 @@ jobs:
         run: |
           git config --local core.autocrlf false
           git config --local core.eol lf
-          git reset --hard HEAD
+          # actions/checkout has already populated the worktree before this
+          # step. Force checkout from the index after the byte policy is set;
+          # a reset alone can retain the pre-step CRLF-smudged bytes when Git's
+          # stat cache considers the file unchanged.
+          git checkout-index --all --force
       - name: Capture exact pushed source identity
         shell: pwsh
         run: |
