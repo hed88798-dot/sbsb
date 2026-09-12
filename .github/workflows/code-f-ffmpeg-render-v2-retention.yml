@@ -1,0 +1,73 @@
+name: Code F FFmpeg Render Runtime v2 durable retention
+
+on:
+  push:
+    branches:
+      - code-f/ffmpeg-render-runtime-v2-intake
+    paths:
+      - '.github/workflows/code-f-ffmpeg-render-v2-retention.yml'
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: code-f-ffmpeg-render-v2-retention
+  cancel-in-progress: false
+
+env:
+  SOURCE_RUN_ID: '34699695106'
+  SOURCE_ARTIFACT_NAME: ffmpeg-render-windows-v2-9ac58acd952fbb6f2f901e7fd401e8bfaf696727
+  RELEASE_TAG: code-f-ffmpeg-render-v2-prewindows-9ac58ac-34699695106
+  EXPECTED_TRANSPORT_SHA256: a1d0bff4ea3c53dc56e7de7ee7436dfb872bf3e9bc1317acffb0c0254a3bcc01
+
+jobs:
+  retain:
+    name: Retain exact Runtime v2 transport in a draft release
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download the exact source-run artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p retention
+          gh run download "$SOURCE_RUN_ID" \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "$SOURCE_ARTIFACT_NAME" \
+            --dir retention
+          test -f retention/ffmpeg-render-windows-v2.tar
+          test -f retention/ffmpeg-render-windows-v2.tar.sha256
+
+      - name: Verify exact transport bytes before publication
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' "$EXPECTED_TRANSPORT_SHA256" retention/ffmpeg-render-windows-v2.tar | sha256sum --check --strict
+
+      - name: Publish a private draft release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --draft \
+            --title "Code F FFmpeg Render Runtime v2 pre-Windows retention" \
+            --notes "Draft durable retention for exact pre-Windows Runtime v2 transport. Source run: $SOURCE_RUN_ID; source candidate: $SOURCE_ARTIFACT_NAME; transport SHA-256: $EXPECTED_TRANSPORT_SHA256. This draft is not a product release and does not approve Windows Desktop dynamic rotation." \
+            retention/ffmpeg-render-windows-v2.tar \
+            retention/ffmpeg-render-windows-v2.tar.sha256 \
+            retention/manifest.json \
+            retention/candidate-transfer-manifest.json
+
+      - name: Read back the durable asset and verify its digest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p readback
+          gh release download "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern 'ffmpeg-render-windows-v2.tar' \
+            --dir readback
+          printf '%s  %s\n' "$EXPECTED_TRANSPORT_SHA256" readback/ffmpeg-render-windows-v2.tar | sha256sum --check --strict
