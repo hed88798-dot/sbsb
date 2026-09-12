@@ -36,7 +36,7 @@ function readJson(path) {
 
 function hasToken(output, token) {
   const escaped = token.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-  return new RegExp(`(?:^|\\s)${escaped}(?=\\s|$)`, 'mu').test(output);
+  return new RegExp(`(?:^|\\s)${escaped}(?=\\s|,|$)`, 'mu').test(output);
 }
 
 function listing(binary, command) {
