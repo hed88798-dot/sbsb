@@ -60,6 +60,7 @@ describe('Code F rotation pixel oracle isolation', () => {
       '--disable-network',
       '--disable-gpl',
       '--disable-nonfree',
+      '--disable-stripping',
       '--enable-static',
       '--disable-shared',
     ])

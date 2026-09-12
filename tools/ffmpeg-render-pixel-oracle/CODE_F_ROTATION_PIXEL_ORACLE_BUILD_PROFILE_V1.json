@@ -47,6 +47,7 @@
     "--disable-nonfree",
     "--disable-doc",
     "--disable-debug",
+    "--disable-stripping",
     "--enable-static",
     "--disable-shared",
     "--extra-ldflags=-static-libgcc -static-libstdc++",
