@@ -448,14 +448,15 @@ HARNESS_PIXEL_ORACLE_UNDECLARED_CAPABILITY
 ```
 
 `rawvideo` remains `NOT_REQUIRED` for the product Runtime. A separate
-`CODE_F_ROTATION_PIXEL_ORACLE_V1` test-only verifier is now defined and built
-from the same pinned FFmpeg 9.0.1 source lineage with only MOV/H.264 decoding,
-RGB24 conversion, rawvideo output, and the local file protocol. Its manifest
-binds its exact bundle member list and hashes, tool hash, source pin, `TEST_ONLY`
-role, and `FORBIDDEN` product packaging disposition. The harness records
-product Runtime identity separately, rejects a shared or nested oracle root,
-and invokes the oracle only after an output MP4 exists; the oracle cannot
-create fixtures, rotate pixels, encode H.264, or act as a product fallback.
+`CODE_F_ROTATION_PIXEL_ORACLE_V1` is now defined by a controlled build recipe
+that produces a test-only verifier from the same pinned FFmpeg 9.0.1 source
+lineage. It enables only MOV/H.264 decoding, RGB24 conversion, rawvideo output,
+and the local file protocol. Its generated manifest binds the exact bundle
+member list and hashes, tool hash, source pin, `TEST_ONLY` role, and `FORBIDDEN`
+product packaging disposition. The harness records product Runtime identity
+separately, rejects a shared or nested oracle root, and invokes the verifier
+only after an output MP4 exists; the verifier cannot create fixtures, rotate
+pixels, encode H.264, or act as a product fallback.
 
 ```text
 FIRST_ACTUAL_BLOCKER:
