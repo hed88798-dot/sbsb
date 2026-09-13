@@ -1,0 +1,136 @@
+name: Code F FFmpeg Rotation Pixel Oracle v2 durable retention
+
+on:
+  push:
+    branches:
+      - code-f/ffmpeg-render-runtime-v2-intake
+    paths:
+      - '.github/workflows/code-f-ffmpeg-pixel-oracle-v2-retention.yml'
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: Successful v2 build workflow run ID
+        required: true
+        type: string
+      source_artifact_name:
+        description: Exact v2 transport artifact name from the source run
+        required: true
+        type: string
+      transport_sha256:
+        description: Exact SHA-256 of the v2 transport tar
+        required: true
+        type: string
+      release_tag:
+        description: New private draft release tag for durable retention
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: code-f-ffmpeg-pixel-oracle-v2-retention
+  cancel-in-progress: false
+
+jobs:
+  retain:
+    name: Retain exact TEST_ONLY pixel oracle v2 transport
+    if: github.ref == 'refs/heads/code-f/ffmpeg-render-runtime-v2-intake'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SOURCE_RUN_ID: ${{ inputs.source_run_id || '34752887351' }}
+      SOURCE_ARTIFACT_NAME: ${{ inputs.source_artifact_name || 'code-f-rotation-pixel-oracle-v2-windows-x86_64-96296dd13e0e2c2744c390ef13332b3df25ef9e6' }}
+      EXPECTED_TRANSPORT_SHA256: ${{ inputs.transport_sha256 || '18f85bef8235e0b0a65352dd7b70ea84e12ede2e749c53490e10e1d07a7c3df4' }}
+      RELEASE_TAG: ${{ inputs.release_tag || 'code-f-rotation-pixel-oracle-v2-96296dd1-34752887351' }}
+    steps:
+      - name: Download exact source-run transport
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p retention/source
+          gh run download "$SOURCE_RUN_ID" --repo "$GITHUB_REPOSITORY" --name "$SOURCE_ARTIFACT_NAME" --dir retention/source
+          test -f retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar
+          test -f retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar.sha256
+
+      - name: Verify exact transport before durable publication
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' "$EXPECTED_TRANSPORT_SHA256" retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar | sha256sum --check --strict
+          mkdir -p retention/extracted
+          tar -xf retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar -C retention/extracted
+          test -f retention/extracted/pixel-oracle-manifest.json
+          test -f retention/extracted/bundle/ffmpeg.exe
+          test "$(jq -r '.record_kind' retention/extracted/pixel-oracle-manifest.json)" = 'CODE_F_ROTATION_PIXEL_ORACLE_V2'
+
+      - name: Publish private draft release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          release_id="$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json databaseId --jq '.databaseId' 2>/dev/null || true)"
+          if [[ -z "$release_id" ]]; then
+            gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --draft \
+              --title "Code F Rotation Pixel Oracle v2 durable retention" \
+              --notes "TEST_ONLY pixel oracle v2 transport. Source run: $SOURCE_RUN_ID; transport SHA-256: $EXPECTED_TRANSPORT_SHA256. Not a product runtime and not Runtime v2 approval."
+            release_id="$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json databaseId --jq '.databaseId')"
+          else
+            echo "reusing existing draft release: $RELEASE_TAG"
+          fi
+
+          has_asset() {
+            gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' \
+              | grep -Fxq "$1"
+          }
+
+          upload_nonempty_if_missing() {
+            local asset_name="$1"
+            local asset_path="$2"
+            if has_asset "$asset_name"; then
+              echo "asset already present: $asset_name"
+            else
+              gh release upload "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" "$asset_path"
+            fi
+          }
+
+          upload_nonempty_if_missing \
+            'code-f-rotation-pixel-oracle-v2-windows-x86_64.tar' \
+            retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar
+          upload_nonempty_if_missing \
+            'code-f-rotation-pixel-oracle-v2-windows-x86_64.tar.sha256' \
+            retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar.sha256
+          upload_nonempty_if_missing \
+            'pixel-oracle-manifest.json' \
+            retention/extracted/pixel-oracle-manifest.json
+          upload_nonempty_if_missing \
+            'pixel-oracle-manifest.json.sha256' \
+            retention/extracted/pixel-oracle-manifest.json.sha256
+          upload_nonempty_if_missing \
+            'static-capability-inspection-v2.json' \
+            retention/extracted/evidence/static-capability-inspection-v2.json
+          upload_nonempty_if_missing \
+            'tool-identity.json' \
+            retention/extracted/tool-identity.json
+
+          if has_asset 'rgb24-smoke.stderr.txt'; then
+            echo 'asset already present: rgb24-smoke.stderr.txt'
+          else
+            test ! -s retention/extracted/evidence/rgb24-smoke.stderr.txt
+            tar -tf retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar \
+              | grep -Fxq './evidence/rgb24-smoke.stderr.txt'
+            echo 'zero-byte rgb24-smoke.stderr.txt retained inside exact transport (standalone Release assets require size >= 1)'
+          fi
+
+      - name: Independently retrieve durable transport and verify digest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p retention/readback
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern 'code-f-rotation-pixel-oracle-v2-windows-x86_64.tar' --dir retention/readback
+          printf '%s  %s\n' "$EXPECTED_TRANSPORT_SHA256" retention/readback/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar | sha256sum --check --strict
+          tar -tf retention/readback/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar \
+            | grep -Fxq './evidence/rgb24-smoke.stderr.txt'
+          gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json id,assets,tagName > retention/release-record.json

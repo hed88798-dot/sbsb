@@ -4,9 +4,14 @@ on:
   push:
     branches:
       - code-f/ffmpeg-render-runtime-intake
-  pull_request:
-    branches:
-      - main
+    paths:
+      - '.github/workflows/code-f-ffmpeg-render-runtime.yml'
+      - 'compliance/runtime-dependency-intake/ffmpeg-render-v1/**'
+      - 'docs/render/ffmpeg-required-capability-profile.v1.json'
+      - 'tools/ffmpeg-render-build/**'
+      - 'tools/ffmpeg-render-build-profile/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
   workflow_dispatch:
 
 permissions:
