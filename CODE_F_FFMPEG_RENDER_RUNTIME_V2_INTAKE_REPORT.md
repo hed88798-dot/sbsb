@@ -754,23 +754,25 @@ The authorized test-only fixture remains the exact private Draft Release asset
 mandatory RGB24 Pixel Oracle v2 smoke and is not product authority or package
 content.
 
-The v2 workflow now retrieves this draft asset through an explicit
-read-only repository secret `PIXEL_ORACLE_FIXTURE_TOKEN`. The default
-`GITHUB_TOKEN` was rejected by GitHub with HTTP 403 (`Resource not accessible
-by integration`) on Windows runner run `34752691763`; run `34752887351`
-correctly failed closed because the required secret is not configured. No
-candidate build, static inspection, RGB24 smoke, transport, or durable v2
-retention artifact has therefore been produced.
+The v2 workflow now retrieves this draft asset through an explicit repository
+secret `PIXEL_ORACLE_FIXTURE_TOKEN`. The default `GITHUB_TOKEN` was rejected
+by GitHub with HTTP 403 (`Resource not accessible by integration`) on Windows
+runner run `34752691763`. After the secret was configured, retry attempt 2 of
+run `34752887351` still failed closed with HTTP 403 (`Resource not accessible
+by personal access token`), proving that the configured token lacks permission
+to read the Draft Release asset. No candidate build, static inspection, RGB24
+smoke, transport, or durable v2 retention artifact has therefore been
+produced.
 
 ```text
 PIXEL_ORACLE_V2_STATUS:
-BUILD_BLOCKED_MISSING_FIXTURE_TOKEN
+BUILD_BLOCKED_FIXTURE_TOKEN_PERMISSION
 
 LATEST_V2_BUILD_HEAD:
 96296dd13e0e2c2744c390ef13332b3df25ef9e6
 
 LATEST_V2_BUILD_RUN:
-34752887351
+34752887351 (run_attempt=2)
 
 PIXEL_ORACLE_V2_CANDIDATE:
 NOT_PRODUCED
