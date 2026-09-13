@@ -760,12 +760,13 @@ attempt was rejected with HTTP 403 (`Resource not accessible by integration`)
 on run `34752691763`; the configured fine-grained token now permits the exact
 fixture download. Retry attempt 3 of run `34752887351` completed the fixed
 Windows build, static inspection, RGB24 smoke, and transient Actions upload.
-The transient artifact is not a durable retention authority; the separate
-private Draft Release retention workflow has not yet been run.
+The transient artifact is not a durable retention authority. Retention run
+`34755599975` completed the private Draft Release publication and independently
+verified the exact transport read-back.
 
 ```text
 PIXEL_ORACLE_V2_STATUS:
-BUILD_PASS_RETENTION_PENDING
+BUILD_PASS_DURABLE_RETENTION_COMPLETE
 
 LATEST_V2_BUILD_HEAD:
 96296dd13e0e2c2744c390ef13332b3df25ef9e6
@@ -816,5 +817,37 @@ PIXEL_ORACLE_V2_RGB24_SMOKE_FIXTURE_SHA256:
 47e9e88e7b01375230a32f5284c4ecaf251dc9ec99c523e1374db5fa54e9e58a
 
 PIXEL_ORACLE_V2_DURABLE_RETENTION:
-NOT_STARTED — Actions artifact remains transient transfer only
+PASS — retention run 34755599975; Actions artifact remains transient transfer only
+
+PIXEL_ORACLE_V2_DURABLE_RELEASE_ID:
+387882546
+
+PIXEL_ORACLE_V2_DURABLE_RELEASE_TAG:
+code-f-rotation-pixel-oracle-v2-96296dd1-34752887351
+
+PIXEL_ORACLE_V2_DURABLE_TRANSPORT_ASSET_ID:
+561121733
+
+PIXEL_ORACLE_V2_DURABLE_TRANSPORT_ASSET_NAME:
+code-f-rotation-pixel-oracle-v2-windows-x86_64.tar
+
+PIXEL_ORACLE_V2_DURABLE_TRANSPORT_ASSET_DIGEST:
+sha256:18f85bef8235e0b0a65352dd7b70ea84e12ede2e749c53490e10e1d07a7c3df4
+
+PIXEL_ORACLE_V2_DURABLE_RETRIEVAL_SHA256:
+18f85bef8235e0b0a65352dd7b70ea84e12ede2e749c53490e10e1d07a7c3df4
+
+PIXEL_ORACLE_V2_DURABLE_READBACK_VERIFICATION:
+PASS — independently downloaded by retention run 34755599975; tar member and SHA-256 verified
+
+PIXEL_ORACLE_V2_DURABLE_EVIDENCE_MEMBERS:
+transport tar, transport sidecar, pixel-oracle-manifest.json, manifest sidecar,
+static-capability-inspection-v2.json, rgb24-smoke.stderr.txt, tool-identity.json
+
+PIXEL_ORACLE_V2_EMPTY_STDERR_DISPOSITION:
+exact zero-byte member retained inside the exact transport tar; GitHub Release
+standalone assets reject size=0 and no placeholder bytes were substituted
+
+PIXEL_ORACLE_V2_MAC_COPY_ROLE:
+SECONDARY_RECOVERY_COPY
 ```
