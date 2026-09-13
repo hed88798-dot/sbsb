@@ -70,20 +70,62 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "release already exists: $RELEASE_TAG"
-            exit 1
+          release_id="$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json databaseId --jq '.databaseId' 2>/dev/null || true)"
+          if [[ -z "$release_id" ]]; then
+            gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --draft \
+              --title "Code F Rotation Pixel Oracle v2 durable retention" \
+              --notes "TEST_ONLY pixel oracle v2 transport. Source run: $SOURCE_RUN_ID; transport SHA-256: $EXPECTED_TRANSPORT_SHA256. Not a product runtime and not Runtime v2 approval."
+            release_id="$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json databaseId --jq '.databaseId')"
+          else
+            echo "reusing existing draft release: $RELEASE_TAG"
           fi
-          gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --draft \
-            --title "Code F Rotation Pixel Oracle v2 durable retention" \
-            --notes "TEST_ONLY pixel oracle v2 transport. Source run: $SOURCE_RUN_ID; transport SHA-256: $EXPECTED_TRANSPORT_SHA256. Not a product runtime and not Runtime v2 approval." \
-            retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar \
-            retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar.sha256 \
-            retention/extracted/pixel-oracle-manifest.json \
-            retention/extracted/pixel-oracle-manifest.json.sha256 \
-            retention/extracted/evidence/static-capability-inspection-v2.json \
-            retention/extracted/evidence/rgb24-smoke.stderr.txt \
+
+          has_asset() {
+            gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' \
+              | grep -Fxq "$1"
+          }
+
+          upload_nonempty_if_missing() {
+            local asset_name="$1"
+            local asset_path="$2"
+            if has_asset "$asset_name"; then
+              echo "asset already present: $asset_name"
+            else
+              gh release upload "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" "$asset_path"
+            fi
+          }
+
+          upload_nonempty_if_missing \
+            'code-f-rotation-pixel-oracle-v2-windows-x86_64.tar' \
+            retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar
+          upload_nonempty_if_missing \
+            'code-f-rotation-pixel-oracle-v2-windows-x86_64.tar.sha256' \
+            retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar.sha256
+          upload_nonempty_if_missing \
+            'pixel-oracle-manifest.json' \
+            retention/extracted/pixel-oracle-manifest.json
+          upload_nonempty_if_missing \
+            'pixel-oracle-manifest.json.sha256' \
+            retention/extracted/pixel-oracle-manifest.json.sha256
+          upload_nonempty_if_missing \
+            'static-capability-inspection-v2.json' \
+            retention/extracted/evidence/static-capability-inspection-v2.json
+          upload_nonempty_if_missing \
+            'tool-identity.json' \
             retention/extracted/tool-identity.json
+
+          if has_asset 'rgb24-smoke.stderr.txt'; then
+            echo 'asset already present: rgb24-smoke.stderr.txt'
+          else
+            test ! -s retention/extracted/evidence/rgb24-smoke.stderr.txt
+            encoded_name="$(jq -rn --arg name 'rgb24-smoke.stderr.txt' '$name|@uri')"
+            curl --fail-with-body --silent --show-error --request POST \
+              --header "Authorization: Bearer $GH_TOKEN" \
+              --header 'Accept: application/vnd.github+json' \
+              --header 'Content-Type: text/plain' \
+              --data-binary @retention/extracted/evidence/rgb24-smoke.stderr.txt \
+              "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$release_id/assets?name=$encoded_name"
+          fi
 
       - name: Independently retrieve durable transport and verify digest
         env:
