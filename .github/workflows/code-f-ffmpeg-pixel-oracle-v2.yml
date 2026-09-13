@@ -38,6 +38,7 @@ jobs:
       FIXTURE_SHA256: ${{ inputs.fixture_sha256 }}
       FIXTURE_WIDTH: ${{ inputs.fixture_width }}
       FIXTURE_HEIGHT: ${{ inputs.fixture_height }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906952 # v4.3.0
         with:
@@ -66,9 +67,16 @@ jobs:
       - name: Download and verify exact H.264 smoke fixture
         shell: pwsh
         run: |
-          if ($env:FIXTURE_URL -notmatch '^https://') { throw 'fixture URL must use HTTPS' }
+          $expectedFixtureUrl = 'https://api.github.com/repos/hed88798-dot/sbsb/releases/assets/561006627'
+          if ($env:FIXTURE_URL -ne $expectedFixtureUrl) { throw "fixture URL must bind authorized asset 561006627: $($env:FIXTURE_URL)" }
+          if ($env:FIXTURE_URL -notmatch '^https://api\.github\.com/repos/hed88798-dot/sbsb/releases/assets/[0-9]+$') { throw 'fixture URL must use the GitHub release-asset API endpoint' }
+          if ([string]::IsNullOrWhiteSpace($env:GH_TOKEN)) { throw 'GitHub token is required for private/draft release asset retrieval' }
           $fixture = Join-Path $env:RUNNER_TEMP 'pixel-oracle-v2-fixture.mp4'
-          Invoke-WebRequest -Uri $env:FIXTURE_URL -OutFile $fixture
+          $headers = @{
+            Authorization = "Bearer $env:GH_TOKEN"
+            Accept = 'application/octet-stream'
+          }
+          Invoke-WebRequest -Uri $env:FIXTURE_URL -Headers $headers -OutFile $fixture
           $actual = (Get-FileHash -LiteralPath $fixture -Algorithm SHA256).Hash.ToLowerInvariant()
           if ($actual -ne $env:FIXTURE_SHA256.ToLowerInvariant()) { throw "fixture hash mismatch: $actual != $($env:FIXTURE_SHA256)" }
           "PIXEL_ORACLE_SMOKE_FIXTURE=$fixture" >> $env:GITHUB_ENV

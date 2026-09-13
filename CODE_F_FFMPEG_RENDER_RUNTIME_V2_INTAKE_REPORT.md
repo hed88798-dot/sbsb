@@ -521,9 +521,11 @@ PIXEL_ORACLE_REQUIRED_CONVERSION_CAPABILITY_DEFECT
 Pixel Oracle v1 remains historically frozen but incompatible with the actual
 RGB24 oracle contract. A forward v2 replacement is specified with only the
 required `scale` filter delta; v1 files and its durable asset remain unchanged.
-V2 cannot be frozen until a precisely identified H.264 MP4 fixture is supplied,
-the exact RGB24 smoke succeeds on the built binary, and static/manifest/hash
-evidence is retained.
+V2 cannot be frozen until the exact RGB24 smoke succeeds on the built binary
+and static/manifest/hash evidence is retained. The authorized fixture is now
+available from the private draft release asset below; the workflow retrieves
+it through the authenticated GitHub release-asset API and verifies its digest
+before use.
 
 ```text
 PIXEL_ORACLE_V1_STATUS:
@@ -539,7 +541,34 @@ PIXEL_ORACLE_V2_STATIC_CAPABILITIES:
 scale=format/mov/h264/rawvideo/file required; network/devices/h264_mf/aac forbidden
 
 PIXEL_ORACLE_V2_REAL_RGB24_ORACLE_SMOKE:
-BLOCKED_UNTIL_EXACT_AUTHORIZED_H264_MP4_FIXTURE_IS_SUPPLIED
+READY_TO_RUN_AFTER_EXACT_V2_BUILD
+
+PIXEL_ORACLE_V2_SMOKE_FIXTURE_RELEASE_ID:
+387862417
+
+PIXEL_ORACLE_V2_SMOKE_FIXTURE_ASSET_ID:
+561006627
+
+PIXEL_ORACLE_V2_SMOKE_FIXTURE_API_URL:
+https://api.github.com/repos/hed88798-dot/sbsb/releases/assets/561006627
+
+PIXEL_ORACLE_V2_SMOKE_FIXTURE_SHA256:
+47e9e88e7b01375230a32f5284c4ecaf251dc9ec99c523e1374db5fa54e9e58a
+
+PIXEL_ORACLE_V2_SMOKE_FIXTURE_DIMENSIONS:
+1080x1920
+
+PIXEL_ORACLE_V2_SMOKE_FIXTURE_PROVENANCE:
+WINDOWS_11_ATTEMPT_6_RUNTIME_V2_NORMALIZED_OUTPUT_90_PRIVATE_DRAFT_RELEASE
+
+PIXEL_ORACLE_V2_SMOKE_FIXTURE_AUTHORIZED_USE:
+CODE_F_ROTATION_PIXEL_ORACLE_V2_MANDATORY_RGB24_SMOKE_ONLY
+
+PIXEL_ORACLE_V2_SMOKE_FIXTURE_PRODUCT_AUTHORITY:
+NONE
+
+PIXEL_ORACLE_V2_SMOKE_FIXTURE_PACKAGE_INCLUSION:
+FORBIDDEN
 
 PIXEL_ORACLE_V2_DURABLE_ARTIFACT:
 NOT_YET_PRODUCED
