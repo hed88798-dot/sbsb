@@ -744,3 +744,40 @@ transport envelope. The private draft release is the durable locator, and the
 Mac project-folder copy is a secondary recovery copy. Windows 11 dynamic
 rotation evidence remains pending and must consume the exact Runtime v2
 candidate separately; this oracle is not a replacement for that gate.
+
+## Pixel Oracle v2 build authorization and current CI status
+
+The authorized test-only fixture remains the exact private Draft Release asset
+`561006627` (`runtime-v2-attempt6-output-90.mp4`) with SHA-256
+`47e9e88e7b01375230a32f5284c4ecaf251dc9ec99c523e1374db5fa54e9e58a`,
+1080x1920 H.264/yuv420p, 30/1, 30 frames. It is permitted only for the
+mandatory RGB24 Pixel Oracle v2 smoke and is not product authority or package
+content.
+
+The v2 workflow now retrieves this draft asset through an explicit
+read-only repository secret `PIXEL_ORACLE_FIXTURE_TOKEN`. The default
+`GITHUB_TOKEN` was rejected by GitHub with HTTP 403 (`Resource not accessible
+by integration`) on Windows runner run `34752691763`; run `34752887351`
+correctly failed closed because the required secret is not configured. No
+candidate build, static inspection, RGB24 smoke, transport, or durable v2
+retention artifact has therefore been produced.
+
+```text
+PIXEL_ORACLE_V2_STATUS:
+BUILD_BLOCKED_MISSING_FIXTURE_TOKEN
+
+LATEST_V2_BUILD_HEAD:
+96296dd13e0e2c2744c390ef13332b3df25ef9e6
+
+LATEST_V2_BUILD_RUN:
+34752887351
+
+PIXEL_ORACLE_V2_CANDIDATE:
+NOT_PRODUCED
+
+PIXEL_ORACLE_V2_RGB24_SMOKE:
+NOT_RUN
+
+PIXEL_ORACLE_V2_DURABLE_RETENTION:
+NOT_STARTED
+```
