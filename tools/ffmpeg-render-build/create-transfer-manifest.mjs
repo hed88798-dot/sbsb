@@ -47,6 +47,7 @@ const transfer = {
   platform: options.platform,
   architecture: manifest.platform.architecture,
   source_commit: records.source_commit,
+  source_tree_sha: records.source_tree_sha,
   code_g_capability_profile_commit: profile.code_g_capability_profile.commit,
   code_g_capability_profile_hash: profile.code_g_capability_profile.profile_hash,
   build_profile_id: profile.profile_id,

@@ -3,8 +3,8 @@ set -euo pipefail
 
 ROOT="${GITHUB_WORKSPACE:?GITHUB_WORKSPACE is required}"
 RUNNER_TEMP="${RUNNER_TEMP:?RUNNER_TEMP is required}"
-PROFILE="$ROOT/compliance/runtime-dependency-intake/ffmpeg-render-v1/FFMPEG_RENDER_BUILD_PROFILE_V1.json"
-OUT="$ROOT/artifacts/ffmpeg-render/windows"
+PROFILE="$ROOT/${FFMPEG_RENDER_PROFILE_RELATIVE:-compliance/runtime-dependency-intake/ffmpeg-render-v1/FFMPEG_RENDER_BUILD_PROFILE_V1.json}"
+OUT="$ROOT/${FFMPEG_RENDER_OUT_RELATIVE:-artifacts/ffmpeg-render/windows}"
 SOURCE_TARBALL="$RUNNER_TEMP/ffmpeg-9.0.1.tar.xz"
 SOURCE_DIR="$RUNNER_TEMP/ffmpeg-9.0.1-render-build"
 EXPECTED_SOURCE_SHA='cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635'
@@ -22,14 +22,16 @@ command -v gcc >/dev/null
 command -v objdump >/dev/null
 test -f "$PROFILE"
 
+PREFLIGHT_SOURCE_OUT="$ROOT/${FFMPEG_RENDER_PREFLIGHT_OUT_RELATIVE:-artifacts/ffmpeg-render/windows}"
 PREFLIGHT_EVIDENCE="$RUNNER_TEMP/ffmpeg-render-preflight-evidence"
 rm -rf "$PREFLIGHT_EVIDENCE"
-if [ -d "$OUT/evidence" ]; then cp -a "$OUT/evidence" "$PREFLIGHT_EVIDENCE"; fi
+if [ -d "$PREFLIGHT_SOURCE_OUT/evidence" ]; then cp -a "$PREFLIGHT_SOURCE_OUT/evidence" "$PREFLIGHT_EVIDENCE"; fi
 rm -rf "$OUT" "$SOURCE_DIR"
 mkdir -p "$OUT/records" "$OUT/bundle" "$OUT/evidence" "$OUT/fixtures"
 if [ -d "$PREFLIGHT_EVIDENCE" ]; then cp -a "$PREFLIGHT_EVIDENCE"/. "$OUT/evidence/"; fi
-node "$ROOT/tools/ffmpeg-render-build-profile/verify.mjs" > "$OUT/evidence/profile-verification.json"
-test -f "$ROOT/artifacts/ffmpeg-render/windows/evidence/msys2-toolchain-preflight.json"
+PROFILE_VERIFY_SCRIPT="${FFMPEG_RENDER_PROFILE_VERIFY_SCRIPT:-$ROOT/tools/ffmpeg-render-build-profile/verify.mjs}"
+node "$PROFILE_VERIFY_SCRIPT" > "$OUT/evidence/profile-verification.json"
+test -f "$PREFLIGHT_SOURCE_OUT/evidence/msys2-toolchain-preflight.json"
 
 curl --fail --location --proto '=https' --tlsv1.2 --silent --show-error 'https://ffmpeg.org/releases/ffmpeg-9.0.1.tar.xz' -o "$SOURCE_TARBALL"
 ACTUAL_SOURCE_SHA="$(sha256sum "$SOURCE_TARBALL" | awk '{print $1}')"
@@ -41,15 +43,16 @@ tar -xJf "$SOURCE_TARBALL" --strip-components=1 -C "$SOURCE_DIR"
 test -f /ucrt64/include/mfapi.h
 test -f /ucrt64/include/mftransform.h
 
-mapfile -t CONFIGURE_ARGS < <(node "$ROOT/tools/ffmpeg-render-build/resolve-config.mjs" windows-x86_64)
-CONFIGURE_JSON="$(node "$ROOT/tools/ffmpeg-render-build/resolve-config.mjs" windows-x86_64 --json)"
+CONFIG_RESOLVER="${FFMPEG_RENDER_CONFIG_RESOLVER:-$ROOT/tools/ffmpeg-render-build/resolve-config.mjs}"
+mapfile -t CONFIGURE_ARGS < <(node "$CONFIG_RESOLVER" windows-x86_64)
+CONFIGURE_JSON="$(node "$CONFIG_RESOLVER" windows-x86_64 --json)"
 BUILD_JOBS="$(nproc)"
 BUILD_JSON="[\"$MAKE_COMMAND\",\"-j$BUILD_JOBS\",\"$MAKE_COMMAND install\"]"
 GCC_VERSION="$(gcc --version | head -1)"
 LD_VERSION="$(ld --version | head -1)"
 MAKE_VERSION="$("$MAKE_COMMAND" --version | head -1)"
 TOOLCHAIN_IDENTITY="$GCC_VERSION; $LD_VERSION; $MAKE_VERSION; MSYS2_UCRT64"
-node "$ROOT/tools/ffmpeg-render-build/create-records.mjs" --platform windows --architecture x86_64 --output "$OUT/records" --compiler "$GCC_VERSION" --toolchain "$TOOLCHAIN_IDENTITY" --configure-json "$CONFIGURE_JSON" --build-json "$BUILD_JSON"
+FFMPEG_RENDER_PROFILE_PATH="$PROFILE" node "$ROOT/tools/ffmpeg-render-build/create-records.mjs" --platform windows --architecture x86_64 --output "$OUT/records" --compiler "$GCC_VERSION" --toolchain "$TOOLCHAIN_IDENTITY" --configure-json "$CONFIGURE_JSON" --build-json "$BUILD_JSON"
 
 cd "$SOURCE_DIR"
 ./configure "${CONFIGURE_ARGS[@]}" 2>&1 | tee "$OUT/evidence/configure.log"
@@ -72,7 +75,8 @@ find "$SOURCE_DIR/install" -type f -iname '*.dll' -exec cp -a {} "$OUT/bundle/" 
 test -n "$(find "$OUT/bundle" -maxdepth 1 -type f -iname '*.dll' -print -quit)"
 
 node "$ROOT/tools/ffmpeg-render-build/create-fixtures.mjs" "$OUT/fixtures"
-FFMPEG_BIN="$OUT/bundle/ffmpeg.exe" FFPROBE_BIN="$OUT/bundle/ffprobe.exe" FIXTURES_DIR="$OUT/fixtures" CAPABILITY_OUT="$OUT/evidence" bash "$ROOT/tools/ffmpeg-render-build/verify-capabilities.sh"
+CAPABILITY_SCRIPT="${FFMPEG_RENDER_CAPABILITY_SCRIPT:-$ROOT/tools/ffmpeg-render-build/verify-capabilities.sh}"
+FFMPEG_BIN="$OUT/bundle/ffmpeg.exe" FFPROBE_BIN="$OUT/bundle/ffprobe.exe" FIXTURES_DIR="$OUT/fixtures" CAPABILITY_OUT="$OUT/evidence" bash "$CAPABILITY_SCRIPT"
 node "$ROOT/tools/ffmpeg-render-build/capture-runtime-deps.mjs" --bundle "$OUT/bundle" --platform windows --output "$OUT/evidence/runtime-deps.json"
 node "$ROOT/tools/ffmpeg-render-build/assemble-license-evidence.mjs" --source "$SOURCE_DIR" --records "$OUT/records" --profile "$PROFILE" --output "$OUT/evidence/license-evidence.json"
 node "$ROOT/tools/ffmpeg-render-build/assemble-manifest.mjs" --bundle "$OUT/bundle" --records "$OUT/records" --runtime-deps "$OUT/evidence/runtime-deps.json" --license "$OUT/evidence/license-evidence.json" --profile "$PROFILE" --output "$OUT/manifest.json"

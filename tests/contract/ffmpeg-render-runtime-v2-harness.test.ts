@@ -1,0 +1,130 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { describe, expect, it } from 'vitest';
+
+const workflowPath = resolve(
+  import.meta.dirname,
+  '../../.github/workflows/code-f-ffmpeg-render-runtime-v2.yml',
+);
+const harnessPath = resolve(
+  import.meta.dirname,
+  '../../tools/ffmpeg-render-build/verify-rotation-v2.ps1',
+);
+const rootNormalizationPath = resolve(
+  import.meta.dirname,
+  '../../tools/ffmpeg-render-harness/root-normalization.ps1',
+);
+const rootNormalizationTestPath = resolve(
+  import.meta.dirname,
+  '../../tools/ffmpeg-render-harness/test-root-normalization.ps1',
+);
+const workflow = readFileSync(workflowPath, 'utf8');
+const harness = readFileSync(harnessPath, 'utf8');
+const rootNormalization = readFileSync(rootNormalizationPath, 'utf8');
+const rootNormalizationTest = readFileSync(rootNormalizationTestPath, 'utf8');
+
+describe('Code F FFmpeg Render Runtime v2 pre-Windows freeze', () => {
+  it('runs candidate builds only for build-input changes or explicit dispatch', () => {
+    expect(workflow).toContain('workflow_dispatch:');
+    expect(workflow).toContain("'.github/workflows/code-f-ffmpeg-render-runtime-v2.yml'");
+    expect(workflow).toContain("'tools/ffmpeg-render-build/**'");
+    expect(workflow).toContain("'!tools/ffmpeg-render-build/verify-rotation-v2.ps1'");
+    expect(workflow).toContain("'!tools/ffmpeg-render-build/rotation-angle.mjs'");
+    expect(workflow).toContain("'tools/ffmpeg-render-build-profile/**'");
+    expect(workflow).toContain("'pnpm-lock.yaml'");
+    expect(workflow).not.toContain('  pull_request:');
+    expect(workflow).not.toContain('CODE_F_FFMPEG_RENDER_RUNTIME_V2_INTAKE_REPORT.md');
+  });
+
+  it('requires a Windows 11 Desktop and exact candidate identity', () => {
+    for (const marker of [
+      'Win32_OperatingSystem',
+      'ProductType',
+      'Windows 11',
+      'ExpectedRuntimeId',
+      'ExpectedManifestSha256',
+      'ExpectedRuntimeIdentitySha256',
+      'ExpectedFfmpegSha256',
+      'ExpectedFfprobeSha256',
+      'ExpectedCodeGProfileHash',
+      'ExpectedBuildProfileHash',
+      'runtime_dependency_closure',
+      'verify-manifest.mjs',
+      'PixelOracleRoot',
+      'ExpectedPixelOracleToolId',
+      'ExpectedPixelOracleManifestSha256',
+      'ExpectedPixelOracleFfmpegSha256',
+      'pixel-oracle-manifest.json',
+      "tool_role -eq 'TEST_ONLY'",
+      "package_inclusion -eq 'FORBIDDEN'",
+      "rawvideo_product_capability = 'NOT_REQUIRED'",
+      "rawvideo_test_oracle_capability = 'SEPARATE_VERIFIER_ONLY'",
+    ])
+      expect(harness).toContain(marker);
+  });
+
+  it('executes the three metadata rotations with pixel and matrix oracles', () => {
+    for (const marker of [
+      'asymmetric.rgb24',
+      "'-noautorotate'",
+      "90 = 'transpose=1'",
+      "180 = 'hflip,vflip'",
+      "270 = 'transpose=2'",
+      'side_data_list',
+      'output_nonidentity_display_matrix',
+      'rotation_applied_exactly_once',
+      'nb_read_frames',
+      'sample_aspect_ratio',
+      'visible_orientation',
+      'Normalize-DisplayAngle',
+      'Test-AngleEquivalent',
+      'Get-DisplayAngleFamily',
+      'Test-DisplayAngleLogicVectors',
+      'expectedMetadataAngles',
+      'fixtureDirections[90] -ne $fixtureDirections[270]',
+      '$sourceWidth = 1920',
+      '$sourceHeight = 1080',
+      '90 = @(1080, 1920)',
+      '180 = @(1920, 1080)',
+      '270 = @(1080, 1920)',
+      "'-display_rotation:v:0'",
+      "'-c:v', 'copy'",
+      "'-display_rotation:v:0', '0', '-noautorotate', '-i', $fixture",
+      '$pixelOracleFfmpeg',
+      "'-noautorotate', '-i', $outputPath",
+    ])
+      expect(harness).toContain(marker);
+    expect(harness).not.toContain("'-metadata:s:v:0'");
+    expect(harness).not.toContain('-metadata:s:v:0 rotate=');
+    expect(harness).not.toContain('$decodeCode = Invoke-Tool $ffmpeg');
+    expect(harness).toContain('$decodeCode = Invoke-Tool $pixelOracleFfmpeg');
+    expect(harness.indexOf('$evidence.pixel_oracle')).toBeLessThan(
+      harness.indexOf('$decodeCode = Invoke-Tool $pixelOracleFfmpeg'),
+    );
+    expect(harness.indexOf('Read-Probe $fixture "fixture-$angle"')).toBeLessThan(
+      harness.indexOf("'-display_rotation:v:0', '0', '-noautorotate', '-i', $fixture"),
+    );
+    expect(harness.indexOf('Test-AngleEquivalent $fixtureRotation')).toBeLessThan(
+      harness.indexOf("'-vf', \"$($filters[$angle])"),
+    );
+  });
+
+  it('uses single-character Windows separators and tests root isolation logic', () => {
+    expect(harness).toContain('ffmpeg-render-harness/root-normalization.ps1');
+    expect(harness).toContain('Test-RootIsolation');
+    expect(harness).not.toContain("TrimEnd('\\\\', '/')");
+    expect(rootNormalization).toContain('TrimEnd($separatorChars)');
+    expect(rootNormalization).toContain('.Replace([char]92, [IO.Path]::DirectorySeparatorChar)');
+    expect(rootNormalization).toContain('.Replace([char]47, [IO.Path]::DirectorySeparatorChar)');
+    expect(rootNormalization).toContain('[StringComparison]::OrdinalIgnoreCase');
+    for (const marker of [
+      "'C:\\runtime\\v2\\'",
+      "'C:\\pixel-oracle\\'",
+      "'C:\\runtime\\v2\\pixel-oracle\\'",
+      "'C:\\pixel-oracle\\runtime\\'",
+      'Assert-RootIsolationRejected',
+      'ROOT_NORMALIZATION_TEST: PASS',
+    ])
+      expect(rootNormalizationTest).toContain(marker);
+  });
+});
