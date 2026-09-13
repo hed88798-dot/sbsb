@@ -118,9 +118,9 @@ describe('Code F rotation pixel oracle v2 isolation', () => {
     expect(workflow).toContain(
       'https://api.github.com/repos/hed88798-dot/sbsb/releases/assets/561006627',
     );
-    expect(workflow).toContain('GH_TOKEN: ${{ github.token }}');
+    expect(workflow).toContain('FIXTURE_TOKEN: ${{ secrets.PIXEL_ORACLE_FIXTURE_TOKEN }}');
     expect(workflow).toContain("Accept = 'application/octet-stream'");
-    expect(workflow).toContain('Authorization = "Bearer $env:GH_TOKEN"');
+    expect(workflow).toContain('Authorization = "Bearer $env:FIXTURE_TOKEN"');
     expect(workflow).toContain(
       "inputs.fixture_url || 'https://api.github.com/repos/hed88798-dot/sbsb/releases/assets/561006627'",
     );

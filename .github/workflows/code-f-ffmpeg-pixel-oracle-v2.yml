@@ -48,7 +48,7 @@ jobs:
       FIXTURE_SHA256: ${{ inputs.fixture_sha256 || '47e9e88e7b01375230a32f5284c4ecaf251dc9ec99c523e1374db5fa54e9e58a' }}
       FIXTURE_WIDTH: ${{ inputs.fixture_width || '1080' }}
       FIXTURE_HEIGHT: ${{ inputs.fixture_height || '1920' }}
-      GH_TOKEN: ${{ github.token }}
+      FIXTURE_TOKEN: ${{ secrets.PIXEL_ORACLE_FIXTURE_TOKEN }}
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
@@ -80,10 +80,10 @@ jobs:
           $expectedFixtureUrl = 'https://api.github.com/repos/hed88798-dot/sbsb/releases/assets/561006627'
           if ($env:FIXTURE_URL -ne $expectedFixtureUrl) { throw "fixture URL must bind authorized asset 561006627: $($env:FIXTURE_URL)" }
           if ($env:FIXTURE_URL -notmatch '^https://api\.github\.com/repos/hed88798-dot/sbsb/releases/assets/[0-9]+$') { throw 'fixture URL must use the GitHub release-asset API endpoint' }
-          if ([string]::IsNullOrWhiteSpace($env:GH_TOKEN)) { throw 'GitHub token is required for private/draft release asset retrieval' }
+          if ([string]::IsNullOrWhiteSpace($env:FIXTURE_TOKEN)) { throw 'PIXEL_ORACLE_FIXTURE_TOKEN repository secret is required for private/draft release asset retrieval' }
           $fixture = Join-Path $env:RUNNER_TEMP 'pixel-oracle-v2-fixture.mp4'
           $headers = @{
-            Authorization = "Bearer $env:GH_TOKEN"
+            Authorization = "Bearer $env:FIXTURE_TOKEN"
             Accept = 'application/octet-stream'
           }
           Invoke-WebRequest -Uri $env:FIXTURE_URL -Headers $headers -OutFile $fixture
