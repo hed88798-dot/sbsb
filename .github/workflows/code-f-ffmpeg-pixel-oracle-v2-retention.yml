@@ -118,13 +118,9 @@ jobs:
             echo 'asset already present: rgb24-smoke.stderr.txt'
           else
             test ! -s retention/extracted/evidence/rgb24-smoke.stderr.txt
-            encoded_name="$(jq -rn --arg name 'rgb24-smoke.stderr.txt' '$name|@uri')"
-            curl --fail-with-body --silent --show-error --request POST \
-              --header "Authorization: Bearer $GH_TOKEN" \
-              --header 'Accept: application/vnd.github+json' \
-              --header 'Content-Type: text/plain' \
-              --data-binary @retention/extracted/evidence/rgb24-smoke.stderr.txt \
-              "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$release_id/assets?name=$encoded_name"
+            tar -tf retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar \
+              | grep -Fxq './evidence/rgb24-smoke.stderr.txt'
+            echo 'zero-byte rgb24-smoke.stderr.txt retained inside exact transport (standalone Release assets require size >= 1)'
           fi
 
       - name: Independently retrieve durable transport and verify digest
@@ -135,4 +131,6 @@ jobs:
           mkdir -p retention/readback
           gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern 'code-f-rotation-pixel-oracle-v2-windows-x86_64.tar' --dir retention/readback
           printf '%s  %s\n' "$EXPECTED_TRANSPORT_SHA256" retention/readback/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar | sha256sum --check --strict
+          tar -tf retention/readback/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar \
+            | grep -Fxq './evidence/rgb24-smoke.stderr.txt'
           gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json id,assets,tagName > retention/release-record.json
