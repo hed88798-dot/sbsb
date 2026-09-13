@@ -176,6 +176,7 @@ for (const member of manifest.members) {
 }
 
 const sidecar = readFileSync(manifestSidecarPath, 'utf8').trim().split(/\s+/u);
+assert(SHA256.test(sidecar[0]), 'manifest sidecar hash is not SHA-256');
 assert(sidecar[0] === sha256File(manifestPath), 'manifest sidecar hash mismatch');
 assert(
   sidecar.slice(1).join(' ') === 'pixel-oracle-manifest.json',
