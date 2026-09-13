@@ -1,6 +1,16 @@
 name: Code F FFmpeg Rotation Pixel Oracle v2
 
 on:
+  push:
+    branches:
+      - code-f/ffmpeg-render-runtime-v2-intake
+    paths:
+      - '.github/workflows/code-f-ffmpeg-pixel-oracle-v2.yml'
+      - 'tools/ffmpeg-render-pixel-oracle-v2/**'
+      - 'tools/ffmpeg-render-build/preflight-windows.sh'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.nvmrc'
   workflow_dispatch:
     inputs:
       fixture_url:
@@ -34,10 +44,10 @@ jobs:
     timeout-minutes: 180
     env:
       PIXEL_ORACLE_OUT: artifacts/ffmpeg-pixel-oracle-v2/windows
-      FIXTURE_URL: ${{ inputs.fixture_url }}
-      FIXTURE_SHA256: ${{ inputs.fixture_sha256 }}
-      FIXTURE_WIDTH: ${{ inputs.fixture_width }}
-      FIXTURE_HEIGHT: ${{ inputs.fixture_height }}
+      FIXTURE_URL: ${{ inputs.fixture_url || 'https://api.github.com/repos/hed88798-dot/sbsb/releases/assets/561006627' }}
+      FIXTURE_SHA256: ${{ inputs.fixture_sha256 || '47e9e88e7b01375230a32f5284c4ecaf251dc9ec99c523e1374db5fa54e9e58a' }}
+      FIXTURE_WIDTH: ${{ inputs.fixture_width || '1080' }}
+      FIXTURE_HEIGHT: ${{ inputs.fixture_height || '1920' }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906952 # v4.3.0

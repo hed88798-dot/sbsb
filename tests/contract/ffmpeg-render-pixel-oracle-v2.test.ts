@@ -107,6 +107,10 @@ describe('Code F rotation pixel oracle v2 isolation', () => {
   });
 
   it('uses explicit fixture provenance and private durable retention', () => {
+    expect(workflow).toContain('code-f/ffmpeg-render-runtime-v2-intake');
+    expect(workflow).toContain("'tools/ffmpeg-render-pixel-oracle-v2/**'");
+    expect(workflow).toContain("'tools/ffmpeg-render-build/preflight-windows.sh'");
+    expect(workflow).not.toContain('CODE_F_FFMPEG_RENDER_RUNTIME_V2_INTAKE_REPORT.md');
     expect(workflow).toContain('fixture_url:');
     expect(workflow).toContain('fixture_sha256:');
     expect(workflow).toContain(
@@ -115,6 +119,12 @@ describe('Code F rotation pixel oracle v2 isolation', () => {
     expect(workflow).toContain('GH_TOKEN: ${{ github.token }}');
     expect(workflow).toContain("Accept = 'application/octet-stream'");
     expect(workflow).toContain('Authorization = "Bearer $env:GH_TOKEN"');
+    expect(workflow).toContain(
+      "inputs.fixture_url || 'https://api.github.com/repos/hed88798-dot/sbsb/releases/assets/561006627'",
+    );
+    expect(workflow).toContain(
+      "inputs.fixture_sha256 || '47e9e88e7b01375230a32f5284c4ecaf251dc9ec99c523e1374db5fa54e9e58a'",
+    );
     expect(workflow).toContain('retention-days: 1');
     expect(workflow).toContain('contents: read');
     expect(retentionWorkflow).toContain('contents: write');
