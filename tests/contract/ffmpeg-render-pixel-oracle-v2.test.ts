@@ -130,6 +130,19 @@ describe('Code F rotation pixel oracle v2 isolation', () => {
     expect(workflow).toContain('retention-days: 1');
     expect(workflow).toContain('contents: read');
     expect(retentionWorkflow).toContain('contents: write');
+    expect(retentionWorkflow).toContain(
+      "'.github/workflows/code-f-ffmpeg-pixel-oracle-v2-retention.yml'",
+    );
+    expect(retentionWorkflow).toContain("inputs.source_run_id || '34752887351'");
+    expect(retentionWorkflow).toContain(
+      "inputs.source_artifact_name || 'code-f-rotation-pixel-oracle-v2-windows-x86_64-96296dd13e0e2c2744c390ef13332b3df25ef9e6'",
+    );
+    expect(retentionWorkflow).toContain(
+      "inputs.transport_sha256 || '18f85bef8235e0b0a65352dd7b70ea84e12ede2e749c53490e10e1d07a7c3df4'",
+    );
+    expect(retentionWorkflow).toContain(
+      "inputs.release_tag || 'code-f-rotation-pixel-oracle-v2-96296dd1-34752887351'",
+    );
     expect(retentionWorkflow).toContain('--draft');
     expect(retentionWorkflow).toContain(
       'Independently retrieve durable transport and verify digest',

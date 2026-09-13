@@ -1,6 +1,11 @@
 name: Code F FFmpeg Rotation Pixel Oracle v2 durable retention
 
 on:
+  push:
+    branches:
+      - code-f/ffmpeg-render-runtime-v2-intake
+    paths:
+      - '.github/workflows/code-f-ffmpeg-pixel-oracle-v2-retention.yml'
   workflow_dispatch:
     inputs:
       source_run_id:
@@ -35,10 +40,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
-      SOURCE_RUN_ID: ${{ inputs.source_run_id }}
-      SOURCE_ARTIFACT_NAME: ${{ inputs.source_artifact_name }}
-      EXPECTED_TRANSPORT_SHA256: ${{ inputs.transport_sha256 }}
-      RELEASE_TAG: ${{ inputs.release_tag }}
+      SOURCE_RUN_ID: ${{ inputs.source_run_id || '34752887351' }}
+      SOURCE_ARTIFACT_NAME: ${{ inputs.source_artifact_name || 'code-f-rotation-pixel-oracle-v2-windows-x86_64-96296dd13e0e2c2744c390ef13332b3df25ef9e6' }}
+      EXPECTED_TRANSPORT_SHA256: ${{ inputs.transport_sha256 || '18f85bef8235e0b0a65352dd7b70ea84e12ede2e749c53490e10e1d07a7c3df4' }}
+      RELEASE_TAG: ${{ inputs.release_tag || 'code-f-rotation-pixel-oracle-v2-96296dd1-34752887351' }}
     steps:
       - name: Download exact source-run transport
         env:
