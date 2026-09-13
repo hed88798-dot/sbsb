@@ -1,0 +1,273 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "R1A_NEW_AUTHORITY_INPUT_V1",
+  "title": "Controlled R1A new-authority operator input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "acceptance_id",
+    "acceptance_data_root",
+    "migrations_directory",
+    "code_c",
+    "timeline",
+    "narration",
+    "runtime",
+    "staging_root",
+    "output_root"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "acceptance_id": { "$ref": "#/$defs/identity" },
+    "acceptance_data_root": { "$ref": "#/$defs/path" },
+    "migrations_directory": { "$ref": "#/$defs/path" },
+    "staging_root": { "$ref": "#/$defs/path" },
+    "output_root": { "$ref": "#/$defs/path" },
+    "code_c": { "$ref": "#/$defs/codeC" },
+    "timeline": { "$ref": "#/$defs/timeline" },
+    "narration": { "$ref": "#/$defs/narration" },
+    "runtime": { "$ref": "#/$defs/runtime" }
+  },
+  "$defs": {
+    "identity": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,255}$"
+    },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "path": { "type": "string", "minLength": 1, "maxLength": 4096 },
+    "worker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["executable_path", "arguments", "working_directory", "timeout_ms"],
+      "properties": {
+        "executable_path": { "$ref": "#/$defs/path" },
+        "arguments": {
+          "type": "array",
+          "items": { "type": "string", "maxLength": 4096 },
+          "maxItems": 32
+        },
+        "working_directory": { "anyOf": [{ "$ref": "#/$defs/path" }, { "type": "null" }] },
+        "timeout_ms": { "type": "integer", "minimum": 1000, "maximum": 3600000 }
+      }
+    },
+    "media": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["asset_id", "revision", "source_path"],
+      "properties": {
+        "asset_id": { "$ref": "#/$defs/identity" },
+        "revision": { "type": "integer", "minimum": 1 },
+        "source_path": { "$ref": "#/$defs/path" }
+      }
+    },
+    "filters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "minimum_quality": { "type": "number", "minimum": 0, "maximum": 1 },
+        "minimum_duration_ms": { "type": "integer", "minimum": 1 },
+        "maximum_duration_ms": { "type": "integer", "minimum": 1 },
+        "species": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/identity" },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "scene": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/identity" },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "people_present": { "type": "boolean" },
+        "product_present": { "type": "boolean" }
+      }
+    },
+    "search": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "selection_request_id",
+        "batch_id",
+        "video_id",
+        "slot_id",
+        "material_family",
+        "candidate_set_id",
+        "query_text",
+        "top_k",
+        "filters"
+      ],
+      "properties": {
+        "selection_request_id": { "$ref": "#/$defs/identity" },
+        "batch_id": { "$ref": "#/$defs/identity" },
+        "video_id": { "$ref": "#/$defs/identity" },
+        "slot_id": { "$ref": "#/$defs/identity" },
+        "material_family": { "enum": ["ANIMAL", "PRODUCT"] },
+        "candidate_set_id": { "$ref": "#/$defs/identity" },
+        "query_text": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "top_k": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "filters": { "$ref": "#/$defs/filters" }
+      }
+    },
+    "codeC": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "worker",
+        "model_root",
+        "shot_detector_config_path",
+        "embedding_model_version",
+        "embedding_preprocess_version",
+        "embedding_dimension",
+        "media",
+        "searches"
+      ],
+      "properties": {
+        "worker": { "$ref": "#/$defs/worker" },
+        "model_root": { "$ref": "#/$defs/path" },
+        "shot_detector_config_path": { "$ref": "#/$defs/path" },
+        "embedding_model_version": { "$ref": "#/$defs/identity" },
+        "embedding_preprocess_version": { "$ref": "#/$defs/identity" },
+        "embedding_dimension": { "type": "integer", "minimum": 1, "maximum": 65536 },
+        "media": { "type": "array", "items": { "$ref": "#/$defs/media" }, "minItems": 1 },
+        "searches": { "type": "array", "items": { "$ref": "#/$defs/search" }, "minItems": 1 }
+      }
+    },
+    "shotSlot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slot_id",
+        "order_index",
+        "source_start",
+        "source_end",
+        "source_text",
+        "route",
+        "visual_continuity_group_id"
+      ],
+      "properties": {
+        "slot_id": { "$ref": "#/$defs/identity" },
+        "order_index": { "type": "integer", "minimum": 0 },
+        "source_start": { "type": "integer", "minimum": 0 },
+        "source_end": { "type": "integer", "minimum": 1 },
+        "source_text": { "type": "string", "minLength": 1 },
+        "route": { "enum": ["ANIMAL", "PRODUCT", "NO_MATCH"] },
+        "visual_continuity_group_id": { "$ref": "#/$defs/identity" }
+      }
+    },
+    "slotTiming": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slot_id", "start_ms", "end_ms"],
+      "properties": {
+        "slot_id": { "$ref": "#/$defs/identity" },
+        "start_ms": { "type": "integer", "minimum": 0 },
+        "end_ms": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "pause": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pause_id", "start_ms", "end_ms"],
+      "properties": {
+        "pause_id": { "$ref": "#/$defs/identity" },
+        "start_ms": { "type": "integer", "minimum": 0 },
+        "end_ms": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "durationPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "policy_id",
+        "policy_version",
+        "active_extension_mode",
+        "active_stitch_mode",
+        "passive_extension_target_min_ms",
+        "passive_extension_max_ms",
+        "pause_coverage_mode",
+        "source_consumption_strategy"
+      ],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "policy_id": { "$ref": "#/$defs/identity" },
+        "policy_version": { "$ref": "#/$defs/identity" },
+        "active_extension_mode": { "const": "SAME_VISUAL_CONTINUITY" },
+        "active_stitch_mode": { "const": "WHEN_CURRENT_MATERIAL_EXHAUSTED" },
+        "passive_extension_target_min_ms": { "type": "integer", "minimum": 0 },
+        "passive_extension_max_ms": { "type": "integer", "minimum": 0 },
+        "pause_coverage_mode": { "const": "PREVIOUS_REAL_MATERIAL_WHEN_BOTH_SIDES_REAL" },
+        "source_consumption_strategy": { "const": "FORWARD_FROM_SHOT_START" }
+      }
+    },
+    "timeline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "timeline_id",
+        "planning_request_id",
+        "shot_plan_id",
+        "shot_plan_version",
+        "source_document_id",
+        "source_document_version",
+        "source_document_hash",
+        "slots",
+        "timing_snapshot_id",
+        "timing_snapshot_version",
+        "slot_timings",
+        "pause_intervals",
+        "duration_policy"
+      ],
+      "properties": {
+        "timeline_id": { "$ref": "#/$defs/identity" },
+        "planning_request_id": { "$ref": "#/$defs/identity" },
+        "shot_plan_id": { "$ref": "#/$defs/identity" },
+        "shot_plan_version": { "type": "integer", "minimum": 1 },
+        "source_document_id": { "$ref": "#/$defs/identity" },
+        "source_document_version": { "type": "integer", "minimum": 1 },
+        "source_document_hash": { "$ref": "#/$defs/sha256" },
+        "slots": { "type": "array", "items": { "$ref": "#/$defs/shotSlot" }, "minItems": 1 },
+        "timing_snapshot_id": { "$ref": "#/$defs/identity" },
+        "timing_snapshot_version": { "type": "integer", "minimum": 1 },
+        "slot_timings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/slotTiming" },
+          "minItems": 1
+        },
+        "pause_intervals": { "type": "array", "items": { "$ref": "#/$defs/pause" } },
+        "duration_policy": { "$ref": "#/$defs/durationPolicy" }
+      }
+    },
+    "narration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "narration_audio_id",
+        "artifact_id",
+        "source_path",
+        "producer_ref",
+        "provenance_ref"
+      ],
+      "properties": {
+        "narration_audio_id": { "$ref": "#/$defs/identity" },
+        "artifact_id": { "$ref": "#/$defs/identity" },
+        "source_path": { "$ref": "#/$defs/path" },
+        "producer_ref": { "anyOf": [{ "$ref": "#/$defs/identity" }, { "type": "null" }] },
+        "provenance_ref": { "anyOf": [{ "$ref": "#/$defs/identity" }, { "type": "null" }] }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["root", "manifest_path", "approval_receipt_path"],
+      "properties": {
+        "root": { "$ref": "#/$defs/path" },
+        "manifest_path": { "$ref": "#/$defs/path" },
+        "approval_receipt_path": { "$ref": "#/$defs/path" }
+      }
+    }
+  }
+}
