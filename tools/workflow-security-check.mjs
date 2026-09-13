@@ -5,8 +5,8 @@ import { join, relative } from 'node:path';
 const repositoryRoot = process.cwd();
 const workflowDirectory = join(repositoryRoot, '.github', 'workflows');
 const failures = [];
-// The only workflow allowed to mint a durable release asset is the narrowly
-// scoped, branch-only Runtime-v2 retention workflow approved for this intake.
+// Only narrowly scoped, manually invoked/branch-only retention workflows with
+// an independently reviewed exact-byte binding may mint durable release assets.
 // Bind both its exact path and bytes so a future write-capable workflow (or a
 // modified retention workflow) fails closed until separately reviewed.
 const approvedReleaseWorkflowHashes = new Map([
@@ -17,6 +17,10 @@ const approvedReleaseWorkflowHashes = new Map([
   [
     '.github/workflows/code-f-ffmpeg-pixel-oracle-v1-retention.yml',
     'd996e7cae138dce18491347ecaf03c412b47fe660c7499c00765543d9bc20bdb',
+  ],
+  [
+    '.github/workflows/code-f-ffmpeg-pixel-oracle-v2-retention.yml',
+    '229ee47c81bb6a41c90ebbcb929335affccc6da2222816d97a5a7f11f7f90324',
   ],
 ]);
 const sha256 = (value) => createHash('sha256').update(value, 'utf8').digest('hex');

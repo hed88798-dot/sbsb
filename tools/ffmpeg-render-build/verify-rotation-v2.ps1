@@ -26,6 +26,8 @@ param(
   [string]$ExpectedBuildProfileHash = '40ebffb4307b1c2ec141ffbdd3be2e2c52545090ea1f776267fa445952b3657c',
 
   [Parameter(Mandatory = $true)]
+  # The caller must supply the exact forward Pixel Oracle v2 receipt. The
+  # historical v1 oracle is retained separately and is not a fallback.
   [string]$PixelOracleRoot,
 
   [Parameter(Mandatory = $true)]

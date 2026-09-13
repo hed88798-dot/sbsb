@@ -1,0 +1,90 @@
+name: Code F FFmpeg Rotation Pixel Oracle v2 durable retention
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: Successful v2 build workflow run ID
+        required: true
+        type: string
+      source_artifact_name:
+        description: Exact v2 transport artifact name from the source run
+        required: true
+        type: string
+      transport_sha256:
+        description: Exact SHA-256 of the v2 transport tar
+        required: true
+        type: string
+      release_tag:
+        description: New private draft release tag for durable retention
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: code-f-ffmpeg-pixel-oracle-v2-retention
+  cancel-in-progress: false
+
+jobs:
+  retain:
+    name: Retain exact TEST_ONLY pixel oracle v2 transport
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+      SOURCE_ARTIFACT_NAME: ${{ inputs.source_artifact_name }}
+      EXPECTED_TRANSPORT_SHA256: ${{ inputs.transport_sha256 }}
+      RELEASE_TAG: ${{ inputs.release_tag }}
+    steps:
+      - name: Download exact source-run transport
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p retention/source
+          gh run download "$SOURCE_RUN_ID" --repo "$GITHUB_REPOSITORY" --name "$SOURCE_ARTIFACT_NAME" --dir retention/source
+          test -f retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar
+          test -f retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar.sha256
+
+      - name: Verify exact transport before durable publication
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' "$EXPECTED_TRANSPORT_SHA256" retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar | sha256sum --check --strict
+          mkdir -p retention/extracted
+          tar -xf retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar -C retention/extracted
+          test -f retention/extracted/pixel-oracle-manifest.json
+          test -f retention/extracted/bundle/ffmpeg.exe
+          test "$(jq -r '.record_kind' retention/extracted/pixel-oracle-manifest.json)" = 'CODE_F_ROTATION_PIXEL_ORACLE_V2'
+
+      - name: Publish private draft release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "release already exists: $RELEASE_TAG"
+            exit 1
+          fi
+          gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --draft \
+            --title "Code F Rotation Pixel Oracle v2 durable retention" \
+            --notes "TEST_ONLY pixel oracle v2 transport. Source run: $SOURCE_RUN_ID; transport SHA-256: $EXPECTED_TRANSPORT_SHA256. Not a product runtime and not Runtime v2 approval." \
+            retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar \
+            retention/source/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar.sha256 \
+            retention/extracted/pixel-oracle-manifest.json \
+            retention/extracted/pixel-oracle-manifest.json.sha256 \
+            retention/extracted/evidence/static-capability-inspection-v2.json \
+            retention/extracted/evidence/rgb24-smoke.stderr.txt \
+            retention/extracted/tool-identity.json
+
+      - name: Independently retrieve durable transport and verify digest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p retention/readback
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern 'code-f-rotation-pixel-oracle-v2-windows-x86_64.tar' --dir retention/readback
+          printf '%s  %s\n' "$EXPECTED_TRANSPORT_SHA256" retention/readback/code-f-rotation-pixel-oracle-v2-windows-x86_64.tar | sha256sum --check --strict
+          gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json id,assets,tagName > retention/release-record.json

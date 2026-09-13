@@ -491,6 +491,60 @@ canonicalization and member-path normalization, while retaining rejection of
 equal or nested roots. Runtime v2 and Pixel Oracle v1 identities, hashes,
 durable assets, and all prior attempt records remain unchanged.
 
+## Historical sixth Desktop attempt (preserved)
+
+The sixth Windows 11 Desktop attempt reached the frozen Pixel Oracle v1
+conversion path. The product Runtime has the `scale` filter, but the v1
+test-only oracle does not; the required RGB24 conversion therefore stopped at
+`Unknown filter 'scale'`. This does not reject or mutate the product Runtime.
+
+```text
+WINDOWS_ATTEMPT_6:
+FAIL_PIXEL_ORACLE_REQUIRED_CONVERSION_CAPABILITY
+
+PRODUCT_RUNTIME_SCALE:
+PASS
+
+PIXEL_ORACLE_V1_SCALE:
+ABSENT
+
+PRODUCT_RUNTIME_REJECTION:
+NO
+
+DYNAMIC_ROTATION_COMPLETE:
+NO
+
+WINDOWS_ATTEMPT_6_CLASSIFICATION:
+PIXEL_ORACLE_REQUIRED_CONVERSION_CAPABILITY_DEFECT
+```
+
+Pixel Oracle v1 remains historically frozen but incompatible with the actual
+RGB24 oracle contract. A forward v2 replacement is specified with only the
+required `scale` filter delta; v1 files and its durable asset remain unchanged.
+V2 cannot be frozen until a precisely identified H.264 MP4 fixture is supplied,
+the exact RGB24 smoke succeeds on the built binary, and static/manifest/hash
+evidence is retained.
+
+```text
+PIXEL_ORACLE_V1_STATUS:
+HISTORICALLY_FROZEN_BUT_INCOMPATIBLE_WITH_RGB24_ORACLE_CONTRACT
+
+PIXEL_ORACLE_V2_STATUS:
+SPECIFIED; BUILD_AND_SMOKE_PENDING
+
+PIXEL_ORACLE_V2_PROFILE_SHA256:
+287d5842524499ca183d262cf4e4654998f001d487dbc866fc0dbf3ce2231753
+
+PIXEL_ORACLE_V2_STATIC_CAPABILITIES:
+scale=format/mov/h264/rawvideo/file required; network/devices/h264_mf/aac forbidden
+
+PIXEL_ORACLE_V2_REAL_RGB24_ORACLE_SMOKE:
+BLOCKED_UNTIL_EXACT_AUTHORIZED_H264_MP4_FIXTURE_IS_SUPPLIED
+
+PIXEL_ORACLE_V2_DURABLE_ARTIFACT:
+NOT_YET_PRODUCED
+```
+
 ## TEST_ONLY rotation pixel oracle v1 freeze
 
 The following is a separate test-only transport used to inspect decoded
