@@ -3,12 +3,13 @@
 This is a forward, rotation-capable intake. Runtime v1 remains an historical
 approval and is not mutated or revoked. A Windows v2 candidate was built by
 the hosted static-intake workflow and independently inspected. Static,
-provenance, closure, license, vulnerability, SBOM, and retention gates pass;
-only the Windows 11 Desktop dynamic rotation evidence remains pending.
+provenance, closure, license, vulnerability, SBOM, retention, and Windows 11
+Desktop dynamic rotation gates pass. The resulting approval is runtime-level
+only; Code G R1B product Render remains outside this receipt.
 
 ```text
 CODE_F_RUNTIME_V2_INTAKE:
-PENDING_WINDOWS_11_DESKTOP_ROTATION_EVIDENCE
+APPROVED_STANDALONE_RUNTIME_INTAKE_ONLY
 
 BRANCH:
 code-f/ffmpeg-render-runtime-v2-intake
@@ -269,13 +270,16 @@ DURABLE_ARTIFACT:
 PASS — private draft release asset, independently retrieved and hash verified
 
 APPROVAL_RECEIPT_HASH:
-NOT_YET_PRODUCED — v2 Desktop rotation approval is intentionally not issued
+4f394178882d19442db7a03d9092fb2e662b449700fe516e1d3e36c9d61a2b4c
+
+APPROVAL_RECEIPT_PATH:
+compliance/approval/ffmpeg-render-v2/FFMPEG_RENDER_RUNTIME_APPROVAL_V2.json
 
 CI:
 PASS — selected candidate validation: CI run 34701858275; Windows native smoke run 34701858274; V2 static intake run 34699695106; retention run 34700810486
 
 WINDOWS_11_RUNTIME_V2_HARNESS:
-READY — Runtime-level harness present; dynamic Desktop execution is pending
+PASS — Attempt 7 runtime-level Desktop rotation evidence
 
 CODE_G_R1B_PRODUCT_ROTATION_GATE:
 NOT_RUN
@@ -284,14 +288,16 @@ MAIN_MERGE:
 NO
 ```
 
-## Stop condition
+## Final approval boundary
 
-The next authorized step is Code F Runtime-level Windows 11 Desktop rotation
-harness execution against the selected exact candidate. This is not the Code G
-R1B product path and does not constitute product Render testing. The hosted
-candidate has already passed static intake and exact-bundle inspection. This
-branch does not enter R1B, modify RenderPolicy, mutate runtime v1, or approve
-a v2 artifact without the required Desktop evidence.
+The versioned Runtime v2 approval receipt is
+`compliance/approval/ffmpeg-render-v2/FFMPEG_RENDER_RUNTIME_APPROVAL_V2.json`
+with sidecar SHA-256
+`4f394178882d19442db7a03d9092fb2e662b449700fe516e1d3e36c9d61a2b4c`.
+It binds the exact Windows 11 Attempt 7 evidence and durable Runtime v2 and
+Pixel Oracle authorities. This is a standalone runtime-level approval only;
+Electron packaged integration, Code G product Render, and R1B remain NOT_RUN.
+Runtime v1 and Pixel Oracle v1 remain historical and unmodified.
 
 ## Historical first Desktop attempt (preserved)
 

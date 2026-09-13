@@ -1,0 +1,192 @@
+{
+  "schema_version": "2",
+  "record_kind": "FFMPEG_RENDER_RUNTIME_APPROVAL",
+  "approval_version": 2,
+  "approval_id": "code-f-ffmpeg-render-windows-x86_64-34699695106-approval-v2",
+  "approval_status": "APPROVED",
+  "approval_scope": "STANDALONE_RUNTIME_INTAKE_ONLY",
+  "platform": "windows-x86_64",
+  "authority": {
+    "code_g_profile_commit": "ebe411df646504d43162af3c8a588f42e633bd39",
+    "code_g_profile_hash": "2c19710e609b1ae769e7f007cffca1e552ce1158963bec2aa8a8bcad59a01c1b",
+    "code_f_build_profile_hash": "40ebffb4307b1c2ec141ffbdd3be2e2c52545090ea1f776267fa445952b3657c",
+    "code_f_build_profile_file_sha256": "48e6ef8716ac3f4b4a20ff4fbf7e9dc96456a512aa501859835aa3b195b0ba34",
+    "FFMPEG_RENDER_BUILD_PROFILE_V1": {
+      "artifact_status": "HISTORICAL_PROFILE_CREATION_STATE",
+      "final_approval_authority": false
+    }
+  },
+  "source": {
+    "project": "FFmpeg/FFmpeg",
+    "release": "9.0.1",
+    "tag": "n9.0.1",
+    "upstream_commit": "bf1b838f2ab88b4f8fd83443325c782ea0e0f7fa",
+    "source_archive": "ffmpeg-9.0.1.tar.xz",
+    "source_archive_sha256": "cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635",
+    "source_archive_locator": "https://ffmpeg.org/releases/ffmpeg-9.0.1.tar.xz"
+  },
+  "candidate": {
+    "runtime_id": "code-f-ffmpeg-render-windows-x86_64-34699695106",
+    "candidate_id": "code-f-ffmpeg-render-windows-9ac58acd952fbb6f2f901e7fd401e8bfaf696727-34699695106",
+    "source_head_commit": "9ac58acd952fbb6f2f901e7fd401e8bfaf696727",
+    "source_tree_sha": "6db4cd7304618af930e2e48f34b715de4c7eb24d",
+    "workflow_run_id": 34699695106,
+    "build_context_sha256": "c2cdf21af30bfb9770c16b53268944f2291cfc7eee96ead2fe7d425b46b61ca0",
+    "build_recipe_sha256": "7698ec5d167999717accb8625a82361faa93865857bf10513d0a22fc2ee8349d",
+    "environment_descriptor_sha256": "49f5c68bd735adf3cdaa8bf7bb8f42902591fd5cdba959b4205920735ea46f9c",
+    "transfer_manifest_sha256": "e4e79e993bc73dbd340c7dc8f8910204ba7a9ab66c02741bb6ba2fad209d6329",
+    "runtime_manifest_sha256": "5e57ef59bdf1c3d8cf17966b100358f4a16b96edb6c7dc7857e9d85bf3f03205",
+    "runtime_identity_sha256": "9df0552354769ab18846e5031caa77488f2c0b2fd1c882a7587af06cc0e71db9",
+    "entrypoint_hash_evidence_sha256": "5fc8718d54e35ec8f629e2edee5387898aa2639be9cd7820b5e451acf9c208d8",
+    "entrypoints": {
+      "ffmpeg.exe": "7fc910c87e37502f3ff1f7e56c0ee470d91597aece9cd873880ce3c477d0a933",
+      "ffprobe.exe": "641b8649c3d11702942a4b649d6ecee35231e04e09ce50a8d74b8c46b5295c4e"
+    },
+    "transport_tar_sha256": "a1d0bff4ea3c53dc56e7de7ee7436dfb872bf3e9bc1317acffb0c0254a3bcc01"
+  },
+  "hosted_server_workflow": {
+    "semantics": "BUILD_AND_STATIC_GOVERNANCE_ONLY",
+    "dynamic_h264_mf_product_gate": "NOT_RUN_ON_WINDOWS_SERVER",
+    "desktop_gate_authority": "WINDOWS_11_DESKTOP_EVIDENCE"
+  },
+  "windows_11_desktop_dynamic_evidence": {
+    "record_kind": "FFMPEG_RENDER_WINDOWS_11_DESKTOP_ROTATION_EVIDENCE",
+    "attempt": 7,
+    "status": "PASS_RUNTIME_LEVEL_ONLY",
+    "evidence_sha256": "db55c0f88d85734f5504ef8387bf9396a6b004ae4ec79979c03858951a41f748",
+    "environment": {
+      "provider": "Alibaba Cloud Wuying Desktop",
+      "os": "Microsoft Windows 11 Pro",
+      "version": "10.0.22631",
+      "build": "22631",
+      "architecture": "x64",
+      "cpu": "AMD EPYC 9T24 96-Core Processor",
+      "display_adapters": [
+        { "name": "AspDod controller", "driver": "10.32.40.381" },
+        { "name": "AspIdd controller", "driver": "20.36.39.137" }
+      ]
+    },
+    "runtime_binding": {
+      "runtime_id": "code-f-ffmpeg-render-windows-x86_64-34699695106",
+      "ffmpeg_sha256": "7fc910c87e37502f3ff1f7e56c0ee470d91597aece9cd873880ce3c477d0a933",
+      "ffprobe_sha256": "641b8649c3d11702942a4b649d6ecee35231e04e09ce50a8d74b8c46b5295c4e",
+      "manifest_sha256": "5e57ef59bdf1c3d8cf17966b100358f4a16b96edb6c7dc7857e9d85bf3f03205",
+      "runtime_identity_sha256": "9df0552354769ab18846e5031caa77488f2c0b2fd1c882a7587af06cc0e71db9"
+    },
+    "rotations": {
+      "90": {
+        "status": "PASS",
+        "output": "1080x1920",
+        "fps": "30/1",
+        "frames": 30,
+        "rotation_applied_exactly_once": true,
+        "output_nonidentity_display_matrix": false
+      },
+      "180": {
+        "status": "PASS",
+        "output": "1920x1080",
+        "fps": "30/1",
+        "frames": 30,
+        "rotation_applied_exactly_once": true,
+        "output_nonidentity_display_matrix": false
+      },
+      "270": {
+        "status": "PASS",
+        "output": "1080x1920",
+        "fps": "30/1",
+        "frames": 30,
+        "rotation_applied_exactly_once": true,
+        "output_nonidentity_display_matrix": false
+      }
+    },
+    "visible_orientation_pixel_oracle": "PASS",
+    "output_nonidentity_display_matrix": "ABSENT_OR_IDENTITY_ONLY",
+    "durable_evidence": {
+      "release_id": 387896398,
+      "release_tag": "code-f-runtime-v2-windows11-rotation-attempt7",
+      "json_asset_id": 561197534,
+      "json_asset_name": "runtime-v2-windows11-rotation-attempt7.json",
+      "json_asset_digest": "sha256:db55c0f88d85734f5504ef8387bf9396a6b004ae4ec79979c03858951a41f748",
+      "sidecar_asset_id": 561197535,
+      "sidecar_asset_name": "runtime-v2-windows11-rotation-attempt7.json.sha256",
+      "sidecar_asset_digest": "sha256:54e044988e2c7dda68f9cf96d6ac8ae54fff846382d020d69dd55042dd0c7481",
+      "readback_verification": "PASS"
+    }
+  },
+  "runtime_closure": {
+    "status": "PASS",
+    "evidence_sha256": "5a889b0e45d632a2951bec6e205e54a9e24ebc56da255d10b6f5a48d2da29ab6",
+    "loader_policy": "APP_LOCAL_SAME_DIRECTORY_V2 / COMPANION_BUNDLE_ONLY",
+    "unresolved_imports": 0
+  },
+  "license": {
+    "status": "PASS",
+    "disposition": "ALLOW_WITH_CONDITIONS",
+    "software_license_expression": "LGPL-2.1-or-later",
+    "evidence_sha256": "e4c8a5750db45b42d17dd04bff433e23c57c1c04c4cd77ab7654140707f3ae71",
+    "gpl": "DISABLED",
+    "nonfree": "DISABLED",
+    "libx264": "NOT_INCLUDED",
+    "libx265": "NOT_INCLUDED",
+    "codec_patent_boundary": "H264_AAC_PATENT_OR_CODEC_PROGRAM_REVIEW_SEPARATE"
+  },
+  "vulnerability": {
+    "status": "PASS",
+    "evidence_sha256": "5baec5b0e1f29d16d5b39e561b11e8b83570f975dfe485ea9237bbedf77aa30a",
+    "blocking_advisories": 0
+  },
+  "sbom_notice": {
+    "status": "PASS",
+    "sbom_sha256": "9311eb209784ec006a403e952c6af6e5597a5ee2cd7acb662928b3b7fa6b08e8",
+    "notice_sha256": "b8aaa2763cca0aa31ec61aee2fc710ae74389bd6ba4b5480dd9213795801353f"
+  },
+  "durable_artifact": {
+    "channel": "PRIVATE_GITHUB_DRAFT_RELEASE_ASSET",
+    "release_visibility": "PRIVATE_DRAFT_NOT_PUBLISHED",
+    "release_id": 387604810,
+    "release_tag": "code-f-ffmpeg-render-v2-prewindows-9ac58ac-34699695106",
+    "asset_id": 559437104,
+    "asset_name": "ffmpeg-render-windows-v2.tar",
+    "stable_locator": "https://github.com/hed88798-dot/sbsb/releases/387604810",
+    "asset_locator": "https://github.com/hed88798-dot/sbsb/releases/download/untagged-f4d49c86902c16a07c31/ffmpeg-render-windows-v2.tar",
+    "artifact_sha256": "a1d0bff4ea3c53dc56e7de7ee7436dfb872bf3e9bc1317acffb0c0254a3bcc01",
+    "asset_digest": "sha256:a1d0bff4ea3c53dc56e7de7ee7436dfb872bf3e9bc1317acffb0c0254a3bcc01",
+    "recovery_copy_locator": "frozen-candidates/code-f-ffmpeg-render-windows-9ac58acd952fbb6f2f901e7fd401e8bfaf696727-34699695106/windows/",
+    "mac_local_copy_role": "SECONDARY_RECOVERY_COPY",
+    "recovery_verification": "PASS",
+    "durable_retrieval_verification": "PASS",
+    "actions_artifact_final_retention_authority": false
+  },
+  "pixel_oracle_v2": {
+    "tool_id": "code-f-rotation-pixel-oracle-v2-windows-x86_64-34752887351",
+    "ffmpeg_sha256": "0a90858225416863c08209fc581fd809226e3d5c4d8e025b9eb412eafd44e4c7",
+    "manifest_sha256": "33afb8f6a9a3901abb68ad4f219e9e365acb4f6c042a31983d514685596e51e3",
+    "transport_sha256": "18f85bef8235e0b0a65352dd7b70ea84e12ede2e749c53490e10e1d07a7c3df4",
+    "source_run_id": 34752887351,
+    "source_artifact_id": 10317170216,
+    "durable_release_id": 387882546,
+    "durable_release_tag": "code-f-rotation-pixel-oracle-v2-96296dd1-34752887351",
+    "durable_transport_asset_id": 561121733,
+    "durable_transport_asset_digest": "sha256:18f85bef8235e0b0a65352dd7b70ea84e12ede2e749c53490e10e1d07a7c3df4",
+    "durable_readback": "PASS",
+    "product_role": "NONE",
+    "package_inclusion": "FORBIDDEN"
+  },
+  "product_boundary": {
+    "windows_desktop_gate": "PASS_RUNTIME_LEVEL_ONLY",
+    "electron_packaged_integration": "NOT_RUN",
+    "code_g_product_render": "NOT_RUN",
+    "code_g_r1b": "NOT_STARTED",
+    "runtime_v1_status": "HISTORICALLY_APPROVED",
+    "runtime_v1_mutated": false,
+    "pixel_oracle_v1_mutated": false
+  },
+  "recheck_triggers": [
+    "Code G profile commit or profile hash changes",
+    "FFmpeg source release, tag, or source archive hash changes",
+    "Render build profile or configure arguments change",
+    "Runtime member set, entrypoint bytes, or loader policy changes",
+    "Windows Desktop capability evidence or prerequisite changes",
+    "Relevant upstream vulnerability or license facts change"
+  ]
+}
