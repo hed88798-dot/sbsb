@@ -754,32 +754,67 @@ The authorized test-only fixture remains the exact private Draft Release asset
 mandatory RGB24 Pixel Oracle v2 smoke and is not product authority or package
 content.
 
-The v2 workflow now retrieves this draft asset through an explicit repository
-secret `PIXEL_ORACLE_FIXTURE_TOKEN`. The default `GITHUB_TOKEN` was rejected
-by GitHub with HTTP 403 (`Resource not accessible by integration`) on Windows
-runner run `34752691763`. After the secret was configured, retry attempt 2 of
-run `34752887351` still failed closed with HTTP 403 (`Resource not accessible
-by personal access token`), proving that the configured token lacks permission
-to read the Draft Release asset. No candidate build, static inspection, RGB24
-smoke, transport, or durable v2 retention artifact has therefore been
-produced.
+The v2 workflow retrieves this draft asset through the explicit repository
+secret `PIXEL_ORACLE_FIXTURE_TOKEN`. The original default `GITHUB_TOKEN`
+attempt was rejected with HTTP 403 (`Resource not accessible by integration`)
+on run `34752691763`; the configured fine-grained token now permits the exact
+fixture download. Retry attempt 3 of run `34752887351` completed the fixed
+Windows build, static inspection, RGB24 smoke, and transient Actions upload.
+The transient artifact is not a durable retention authority; the separate
+private Draft Release retention workflow has not yet been run.
 
 ```text
 PIXEL_ORACLE_V2_STATUS:
-BUILD_BLOCKED_FIXTURE_TOKEN_PERMISSION
+BUILD_PASS_RETENTION_PENDING
 
 LATEST_V2_BUILD_HEAD:
 96296dd13e0e2c2744c390ef13332b3df25ef9e6
 
 LATEST_V2_BUILD_RUN:
-34752887351 (run_attempt=2)
+34752887351 (run_attempt=3)
 
-PIXEL_ORACLE_V2_CANDIDATE:
-NOT_PRODUCED
+PIXEL_ORACLE_V2_TOOL_ID:
+code-f-rotation-pixel-oracle-v2-windows-x86_64-34752887351
+
+PIXEL_ORACLE_V2_SOURCE_HEAD_COMMIT:
+96296dd13e0e2c2744c390ef13332b3df25ef9e6
+
+PIXEL_ORACLE_V2_SOURCE_TREE_SHA256:
+da1de27797082a2b3a0e9fe1dcff9a8d81d96b93
+
+PIXEL_ORACLE_V2_BUILD_PROFILE_SHA256:
+287d5842524499ca183d262cf4e4654998f001d487dbc866fc0dbf3ce2231753
+
+PIXEL_ORACLE_V2_BUILD_RECIPE_SHA256:
+53861b31056680e617b48023e90cd7f30689f7ead5ad1193822b766fd465c229
+
+PIXEL_ORACLE_V2_FFMPEG_SHA256:
+0a90858225416863c08209fc581fd809226e3d5c4d8e025b9eb412eafd44e4c7
+
+PIXEL_ORACLE_V2_MANIFEST_SHA256:
+33afb8f6a9a3901abb68ad4f219e9e365acb4f6c042a31983d514685596e51e3
+
+PIXEL_ORACLE_V2_TRANSPORT_SHA256:
+18f85bef8235e0b0a65352dd7b70ea84e12ede2e749c53490e10e1d07a7c3df4
+
+PIXEL_ORACLE_V2_ACTIONS_ARTIFACT_ID:
+10317170216
+
+PIXEL_ORACLE_V2_ACTIONS_ARTIFACT_ENVELOPE_SHA256:
+5a2b525e80e9b7c9e612723808617357a51f227138f069f9c5e612a604b97a19
+
+PIXEL_ORACLE_V2_STATIC_INSPECTION:
+PASS
 
 PIXEL_ORACLE_V2_RGB24_SMOKE:
-NOT_RUN
+PASS — output_bytes=6220800; expected_bytes=6220800
+
+PIXEL_ORACLE_V2_CANDIDATE:
+PRODUCED_AND_HASH_VERIFIED
+
+PIXEL_ORACLE_V2_RGB24_SMOKE_FIXTURE_SHA256:
+47e9e88e7b01375230a32f5284c4ecaf251dc9ec99c523e1374db5fa54e9e58a
 
 PIXEL_ORACLE_V2_DURABLE_RETENTION:
-NOT_STARTED
+NOT_STARTED — Actions artifact remains transient transfer only
 ```
