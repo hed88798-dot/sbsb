@@ -276,7 +276,7 @@ APPROVAL_RECEIPT_PATH:
 compliance/approval/ffmpeg-render-v2/FFMPEG_RENDER_RUNTIME_APPROVAL_V2.json
 
 CI:
-PASS — selected candidate validation: CI run 34701858275; Windows native smoke run 34701858274; V2 static intake run 34699695106; retention run 34700810486
+PASS — final approval commit 9cc9617918b22902d248cf2af152321cccc66524: CI run 34758473742; Windows native smoke run 34758473566; V2 static intake run 34699695106; Pixel Oracle v2 retention run 34755599975
 
 WINDOWS_11_RUNTIME_V2_HARNESS:
 PASS — Attempt 7 runtime-level Desktop rotation evidence
