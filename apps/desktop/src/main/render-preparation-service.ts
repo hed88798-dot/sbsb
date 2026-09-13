@@ -13,7 +13,8 @@ import {
   assertNarrationMatchesTimelineV1,
   buildExecutionSnapshotV1,
   buildLogicalRenderPlanV1,
-  FFMPEG_REQUIRED_CAPABILITY_PROFILE_V1,
+  FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2,
+  assertApprovedRuntimeV2Identity,
   renderAcceptedTimelineRequestV1Schema,
   renderRuntimeIdentityV1Schema,
   resolvedRenderSourceV1Schema,
@@ -73,16 +74,19 @@ export class RenderPreparationService {
     this.#allowMockRuntime = options.allowMockRuntimeForTests ?? false;
     if (
       this.#runtimeIdentity.capability_profile_id !==
-        FFMPEG_REQUIRED_CAPABILITY_PROFILE_V1.profile_id ||
+        FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_id ||
       this.#runtimeIdentity.capability_profile_version !==
-        FFMPEG_REQUIRED_CAPABILITY_PROFILE_V1.profile_version ||
+        FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_version ||
       this.#runtimeIdentity.capability_profile_hash !==
-        FFMPEG_REQUIRED_CAPABILITY_PROFILE_V1.profile_hash
+        FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_hash
     ) {
       throw new Error('RENDER_RUNTIME_CAPABILITY_PROFILE_MISMATCH');
     }
     if (this.#runtimeIdentity.approval_status !== 'APPROVED' && !this.#allowMockRuntime) {
       throw new Error('RENDER_RUNTIME_NOT_APPROVED');
+    }
+    if (this.#runtimeIdentity.approval_status === 'APPROVED') {
+      assertApprovedRuntimeV2Identity(this.#runtimeIdentity);
     }
   }
 

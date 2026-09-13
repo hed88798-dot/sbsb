@@ -58,6 +58,87 @@ function frameCount(stream: ProbeStream): number {
   return value;
 }
 
+const rotationToleranceDegrees = 0.5;
+
+function normalizeRotationDegrees(value: unknown): number {
+  const parsed = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(parsed)) throw new Error('RENDER_OUTPUT_ROTATION_METADATA_INVALID');
+  let normalized = parsed % 360;
+  if (normalized > 180) normalized -= 360;
+  if (normalized < -180) normalized += 360;
+  if (Math.abs(normalized) <= rotationToleranceDegrees) return 0;
+  if (Math.abs(Math.abs(normalized) - 180) <= rotationToleranceDegrees) return 180;
+  return normalized;
+}
+
+function displayMatrixIdentity(value: unknown): boolean {
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new Error('RENDER_OUTPUT_ROTATION_METADATA_INVALID');
+  }
+  const values = value.split(/\r?\n/u).flatMap((line) => {
+    const payload = line.includes(':') ? line.slice(line.indexOf(':') + 1) : line;
+    return [...payload.matchAll(/-?\d+/gu)].map((match) => Number(match[0]));
+  });
+  if (values.length !== 9 || values.some((entry) => !Number.isSafeInteger(entry))) {
+    throw new Error('RENDER_OUTPUT_ROTATION_METADATA_INVALID');
+  }
+  const [a, b, u, c, d, v, x, y, w] = values;
+  return (
+    Math.abs(a! - 65_536) <= 4_096 &&
+    Math.abs(d! - 65_536) <= 4_096 &&
+    Math.abs(w! - 1_073_741_824) <= 16_777_216 &&
+    [b, u, c, v, x, y].every((entry) => Math.abs(entry!) <= 4_096)
+  );
+}
+
+function assertEffectiveRotationIdentity(stream: ProbeStream): void {
+  const observed: Array<number | 'NON_IDENTITY_UNKNOWN'> = [];
+  if (stream.tags !== undefined) {
+    const tags = record(stream.tags, 'RENDER_OUTPUT_ROTATION_METADATA_INVALID');
+    if (Object.hasOwn(tags, 'rotate')) {
+      observed.push(normalizeRotationDegrees(tags.rotate));
+    }
+  }
+  if (stream.side_data_list !== undefined) {
+    if (!Array.isArray(stream.side_data_list)) {
+      throw new Error('RENDER_OUTPUT_ROTATION_METADATA_INVALID');
+    }
+    for (const value of stream.side_data_list) {
+      const sideData = record(value, 'RENDER_OUTPUT_ROTATION_METADATA_INVALID');
+      const isDisplayMatrix =
+        typeof sideData.side_data_type === 'string' &&
+        /display\s+matrix/iu.test(sideData.side_data_type);
+      const hasRotation = Object.hasOwn(sideData, 'rotation');
+      const hasMatrix = Object.hasOwn(sideData, 'displaymatrix');
+      if (!isDisplayMatrix && !hasRotation && !hasMatrix) continue;
+      if (!hasRotation && !hasMatrix) {
+        throw new Error('RENDER_OUTPUT_ROTATION_METADATA_INVALID');
+      }
+      const angle = hasRotation ? normalizeRotationDegrees(sideData.rotation) : null;
+      const matrixIdentity = hasMatrix ? displayMatrixIdentity(sideData.displaymatrix) : null;
+      if (
+        angle !== null &&
+        matrixIdentity !== null &&
+        ((angle === 0 && !matrixIdentity) || (angle !== 0 && matrixIdentity))
+      ) {
+        throw new Error('RENDER_OUTPUT_ROTATION_METADATA_MISMATCH');
+      }
+      if (angle !== null) observed.push(angle);
+      else observed.push(matrixIdentity ? 0 : 'NON_IDENTITY_UNKNOWN');
+    }
+  }
+  const known = observed.filter((value): value is number => typeof value === 'number');
+  if (
+    known.length > 1 &&
+    known.some((value) => Math.abs(value - known[0]!) > rotationToleranceDegrees)
+  ) {
+    throw new Error('RENDER_OUTPUT_ROTATION_METADATA_MISMATCH');
+  }
+  if (observed.some((value) => value === 'NON_IDENTITY_UNKNOWN' || value !== 0)) {
+    throw new Error('RENDER_OUTPUT_ROTATION_METADATA_NONIDENTITY');
+  }
+}
+
 export function verifyFfprobeOutputV1(input: {
   probe_json: string | unknown;
   plan: LogicalRenderPlanV1;
@@ -92,6 +173,7 @@ export function verifyFfprobeOutputV1(input: {
   }
   const videoStream = video[0]!;
   const audioStream = audio[0]!;
+  assertEffectiveRotationIdentity(videoStream);
   if (text(videoStream.codec_name, 'RENDER_OUTPUT_VIDEO_CODEC_MISSING') !== 'h264') {
     throw new Error('RENDER_OUTPUT_VIDEO_CODEC_MISMATCH');
   }

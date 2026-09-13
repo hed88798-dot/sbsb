@@ -5,6 +5,7 @@ import {
   type RenderReceiptV1,
   type RenderOutputArtifactV1,
   type RenderVerificationFactsV1,
+  type RenderRuntimeIdentityV1,
 } from './contracts.js';
 import {
   computeRenderReceiptHashV1,
@@ -13,14 +14,90 @@ import {
   parseRenderPolicyV1,
 } from './hash.js';
 
-export const CODE_G_R1B_APPROVED_FFMPEG_SHA256 =
-  '4ca74875cd4a8f458b21db6834ece1351f72307bd9acdfd9ccae11b26029b4a8';
-export const CODE_G_R1B_APPROVED_FFPROBE_SHA256 =
-  'ffacd628c9936b1988f7a3e8be168d3839a5b57cf12bacfd1098fdea64268b35';
-export const CODE_G_R1B_APPROVED_RUNTIME_ZIP_SHA256 =
-  '5aba48f781f56165eb5cf623eb067fc745bfbc50b9c80cfb8b7430651b4d9dbd';
-export const CODE_G_R1B_APPROVAL_RECEIPT_SHA256 =
-  'bcfad4490263904b9f8c71b19b66f5c0d6a033d4ab6bdb8896372072501ea714';
+import { FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2 } from './capability-profile.js';
+
+export const CODE_G_R1B_APPROVED_RUNTIME_V2_ID = 'code-f-ffmpeg-render-windows-x86_64-34699695106';
+export const CODE_G_R1B_APPROVED_FFMPEG_V2_SHA256 =
+  '7fc910c87e37502f3ff1f7e56c0ee470d91597aece9cd873880ce3c477d0a933';
+export const CODE_G_R1B_APPROVED_FFPROBE_V2_SHA256 =
+  '641b8649c3d11702942a4b649d6ecee35231e04e09ce50a8d74b8c46b5295c4e';
+export const CODE_G_R1B_APPROVED_RUNTIME_V2_MANIFEST_SHA256 =
+  '5e57ef59bdf1c3d8cf17966b100358f4a16b96edb6c7dc7857e9d85bf3f03205';
+export const CODE_G_R1B_APPROVED_RUNTIME_V2_IDENTITY_SHA256 =
+  '9df0552354769ab18846e5031caa77488f2c0b2fd1c882a7587af06cc0e71db9';
+export const CODE_G_R1B_APPROVED_RUNTIME_V2_TRANSPORT_TAR_SHA256 =
+  'a1d0bff4ea3c53dc56e7de7ee7436dfb872bf3e9bc1317acffb0c0254a3bcc01';
+export const CODE_G_R1B_APPROVED_BUILD_PROFILE_V2_SHA256 =
+  '40ebffb4307b1c2ec141ffbdd3be2e2c52545090ea1f776267fa445952b3657c';
+export const CODE_G_R1B_APPROVAL_RECEIPT_V2_SHA256 =
+  '4f394178882d19442db7a03d9092fb2e662b449700fe516e1d3e36c9d61a2b4c';
+
+export interface ApprovedRuntimeV2ReceiptBindings {
+  runtime_id: typeof CODE_G_R1B_APPROVED_RUNTIME_V2_ID;
+  runtime_manifest_sha256: typeof CODE_G_R1B_APPROVED_RUNTIME_V2_MANIFEST_SHA256;
+  runtime_identity_sha256: typeof CODE_G_R1B_APPROVED_RUNTIME_V2_IDENTITY_SHA256;
+  transport_tar_sha256: typeof CODE_G_R1B_APPROVED_RUNTIME_V2_TRANSPORT_TAR_SHA256;
+}
+
+function objectRecord(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+export function verifyRuntimeV2ApprovalReceipt(input: {
+  receipt_sha256: string;
+  receipt: unknown;
+}): ApprovedRuntimeV2ReceiptBindings {
+  const value = objectRecord(input.receipt);
+  const authority = objectRecord(value?.authority);
+  const candidate = objectRecord(value?.candidate);
+  const entrypoints = objectRecord(candidate?.entrypoints);
+  const durableArtifact = objectRecord(value?.durable_artifact);
+  if (
+    input.receipt_sha256 !== CODE_G_R1B_APPROVAL_RECEIPT_V2_SHA256 ||
+    value?.schema_version !== '2' ||
+    value.record_kind !== 'FFMPEG_RENDER_RUNTIME_APPROVAL' ||
+    value.approval_version !== 2 ||
+    value.approval_status !== 'APPROVED' ||
+    value.approval_scope !== 'STANDALONE_RUNTIME_INTAKE_ONLY' ||
+    value.platform !== 'windows-x86_64' ||
+    authority?.code_g_profile_hash !== FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_hash ||
+    authority.code_f_build_profile_hash !== CODE_G_R1B_APPROVED_BUILD_PROFILE_V2_SHA256 ||
+    candidate?.runtime_id !== CODE_G_R1B_APPROVED_RUNTIME_V2_ID ||
+    candidate.runtime_manifest_sha256 !== CODE_G_R1B_APPROVED_RUNTIME_V2_MANIFEST_SHA256 ||
+    candidate.runtime_identity_sha256 !== CODE_G_R1B_APPROVED_RUNTIME_V2_IDENTITY_SHA256 ||
+    entrypoints?.['ffmpeg.exe'] !== CODE_G_R1B_APPROVED_FFMPEG_V2_SHA256 ||
+    entrypoints['ffprobe.exe'] !== CODE_G_R1B_APPROVED_FFPROBE_V2_SHA256 ||
+    candidate.transport_tar_sha256 !== CODE_G_R1B_APPROVED_RUNTIME_V2_TRANSPORT_TAR_SHA256 ||
+    durableArtifact?.artifact_sha256 !== CODE_G_R1B_APPROVED_RUNTIME_V2_TRANSPORT_TAR_SHA256
+  ) {
+    throw new Error('RENDER_RUNTIME_V2_APPROVAL_RECEIPT_INVALID');
+  }
+  return {
+    runtime_id: CODE_G_R1B_APPROVED_RUNTIME_V2_ID,
+    runtime_manifest_sha256: CODE_G_R1B_APPROVED_RUNTIME_V2_MANIFEST_SHA256,
+    runtime_identity_sha256: CODE_G_R1B_APPROVED_RUNTIME_V2_IDENTITY_SHA256,
+    transport_tar_sha256: CODE_G_R1B_APPROVED_RUNTIME_V2_TRANSPORT_TAR_SHA256,
+  };
+}
+
+export function assertApprovedRuntimeV2Identity(identity: RenderRuntimeIdentityV1): void {
+  if (
+    identity.approval_status !== 'APPROVED' ||
+    identity.runtime_id !== CODE_G_R1B_APPROVED_RUNTIME_V2_ID ||
+    identity.platform !== 'win32' ||
+    identity.architecture !== 'x64' ||
+    identity.capability_profile_id !== FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_id ||
+    identity.capability_profile_version !== FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_version ||
+    identity.capability_profile_hash !== FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_hash ||
+    identity.ffmpeg_entrypoint_sha256 !== CODE_G_R1B_APPROVED_FFMPEG_V2_SHA256 ||
+    identity.ffprobe_entrypoint_sha256 !== CODE_G_R1B_APPROVED_FFPROBE_V2_SHA256 ||
+    identity.companion_manifest_sha256 !== CODE_G_R1B_APPROVED_RUNTIME_V2_MANIFEST_SHA256
+  ) {
+    throw new Error('RENDER_EXECUTION_RUNTIME_V2_NOT_APPROVED');
+  }
+}
 
 export interface FfmpegInvocationV1 {
   executable: string;
@@ -107,15 +184,7 @@ function validateExecutionBindings(input: {
   ) {
     throw new Error('RENDER_EXECUTION_SCOPE_VIOLATION');
   }
-  if (
-    snapshot.runtime_identity.approval_status !== 'APPROVED' ||
-    snapshot.runtime_identity.platform !== 'win32' ||
-    snapshot.runtime_identity.architecture !== 'x64' ||
-    snapshot.runtime_identity.ffmpeg_entrypoint_sha256 !== CODE_G_R1B_APPROVED_FFMPEG_SHA256 ||
-    snapshot.runtime_identity.ffprobe_entrypoint_sha256 !== CODE_G_R1B_APPROVED_FFPROBE_SHA256
-  ) {
-    throw new Error('RENDER_EXECUTION_RUNTIME_NOT_APPROVED');
-  }
+  assertApprovedRuntimeV2Identity(snapshot.runtime_identity);
   let previousFrameEnd = 0;
   for (const [index, operation] of plan.video_operations.entries()) {
     if (
@@ -257,12 +326,7 @@ export function buildFfprobeInvocationV1(input: {
     'RENDER_FFPROBE_PATH_INVALID',
   );
   assertLocalFilePath(input.output_path, 'RENDER_OUTPUT_PATH_INVALID');
-  if (
-    snapshot.runtime_identity.approval_status !== 'APPROVED' ||
-    snapshot.runtime_identity.ffprobe_entrypoint_sha256 !== CODE_G_R1B_APPROVED_FFPROBE_SHA256
-  ) {
-    throw new Error('RENDER_EXECUTION_RUNTIME_NOT_APPROVED');
-  }
+  assertApprovedRuntimeV2Identity(snapshot.runtime_identity);
   return {
     executable: snapshot.runtime_identity.ffprobe_executable_path,
     arguments: [
@@ -270,7 +334,7 @@ export function buildFfprobeInvocationV1(input: {
       'error',
       '-count_frames',
       '-show_entries',
-      'stream=index,codec_type,codec_name,profile,level,width,height,pix_fmt,r_frame_rate,avg_frame_rate,sample_rate,channels,channel_layout,nb_frames,nb_read_frames,duration:format=format_name,duration,size',
+      'stream=index,codec_type,codec_name,profile,level,width,height,pix_fmt,r_frame_rate,avg_frame_rate,sample_rate,channels,channel_layout,nb_frames,nb_read_frames,duration:stream_tags=rotate:stream_side_data=side_data_type,displaymatrix,rotation:format=format_name,duration,size',
       '-of',
       'json',
       input.output_path,

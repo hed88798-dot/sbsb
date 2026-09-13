@@ -4,6 +4,7 @@ import { canonicalJson, hashFile, sha256 } from '@app/domain-media-index';
 import { RenderPolicyRepository, RenderPreparationRepository, openDatabase } from '@app/local-db';
 import {
   buildExecutionSnapshotV1,
+  assertApprovedRuntimeV2Identity,
   parseLogicalRenderPlanV1,
   parseRenderExecutionSnapshotV1,
   parseRenderPolicyV1,
@@ -510,10 +511,9 @@ export async function importHistoricalR1BSmokeBundle(input: {
   const runtimeIdentity = renderRuntimeIdentityV1Schema.parse(
     JSON.parse(await readFile(runtimeIdentityPath, 'utf8')) as unknown,
   );
-  if (
-    runtimeIdentity.capability_profile_version < 2 ||
-    runtimeIdentity.capability_profile_hash === manifest.original_runtime_profile_hash
-  ) {
+  try {
+    assertApprovedRuntimeV2Identity(runtimeIdentity);
+  } catch {
     throw new Error('R1B_SMOKE_ROTATION_RUNTIME_V2_REQUIRED');
   }
   const sourceArtifacts = authority.source_bindings.map((binding) => {

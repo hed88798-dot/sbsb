@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   BoundedLogBufferV1,
-  CODE_G_R1B_APPROVED_FFMPEG_SHA256,
-  CODE_G_R1B_APPROVED_FFPROBE_SHA256,
-  FFMPEG_REQUIRED_CAPABILITY_PROFILE_V1,
+  CODE_G_R1B_APPROVED_FFMPEG_V2_SHA256,
+  CODE_G_R1B_APPROVED_FFPROBE_V2_SHA256,
+  CODE_G_R1B_APPROVED_RUNTIME_V2_ID,
+  CODE_G_R1B_APPROVED_RUNTIME_V2_MANIFEST_SHA256,
+  FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2,
   FfmpegProgressParserV1,
   RENDER_POLICY_V1,
   buildExecutionSnapshotV1,
@@ -142,17 +144,17 @@ function snapshot(logicalPlan = plan()): RenderExecutionSnapshotV1 {
     },
     runtime_identity: {
       schema_version: '1.0',
-      runtime_id: 'code-f-approved-windows-runtime',
+      runtime_id: CODE_G_R1B_APPROVED_RUNTIME_V2_ID,
       platform: 'win32',
       architecture: 'x64',
       ffmpeg_executable_path: 'D:\\runtime\\ffmpeg.exe',
-      ffmpeg_entrypoint_sha256: CODE_G_R1B_APPROVED_FFMPEG_SHA256,
+      ffmpeg_entrypoint_sha256: CODE_G_R1B_APPROVED_FFMPEG_V2_SHA256,
       ffprobe_executable_path: 'D:\\runtime\\ffprobe.exe',
-      ffprobe_entrypoint_sha256: CODE_G_R1B_APPROVED_FFPROBE_SHA256,
-      companion_manifest_sha256: hashA,
-      capability_profile_id: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V1.profile_id,
-      capability_profile_version: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V1.profile_version,
-      capability_profile_hash: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V1.profile_hash,
+      ffprobe_entrypoint_sha256: CODE_G_R1B_APPROVED_FFPROBE_V2_SHA256,
+      companion_manifest_sha256: CODE_G_R1B_APPROVED_RUNTIME_V2_MANIFEST_SHA256,
+      capability_profile_id: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_id,
+      capability_profile_version: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_version,
+      capability_profile_hash: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_hash,
       runtime_member_hashes: [{ relative_path: 'manifest.json', sha256: hashA }],
       approval_status: 'APPROVED',
     },
@@ -309,6 +311,10 @@ describe('Code G R1B pure invocation planning', () => {
     expect(invocation.shell).toBe(false);
     expect(invocation.arguments).toContain('-count_frames');
     expect(invocation.arguments).toContain('json');
+    expect(invocation.arguments.join(' ')).toContain('stream_tags=rotate');
+    expect(invocation.arguments.join(' ')).toContain(
+      'stream_side_data=side_data_type,displaymatrix,rotation',
+    );
   });
 
   it('rejects network output and PATH-based executable lookup', () => {
@@ -385,6 +391,98 @@ describe('Code G R1B progress, log, and output verification', () => {
         subtitle_streams: 0,
       }),
     );
+  });
+
+  it.each([
+    ['absent rotation metadata', undefined],
+    ['legacy identity rotation', { tags: { rotate: '360' } }],
+    [
+      'identity display matrix',
+      {
+        side_data_list: [
+          {
+            side_data_type: 'Display Matrix',
+            displaymatrix:
+              '00000000:       65536           0           0\n00000001:           0       65536           0\n00000002:           0           0  1073741824',
+            rotation: 0,
+          },
+        ],
+      },
+    ],
+  ])('accepts %s as effective zero rotation', (_name, metadata) => {
+    const value = probe();
+    if (metadata !== undefined) {
+      Object.assign((value.streams as Array<Record<string, unknown>>)[0]!, metadata);
+    }
+    expect(() =>
+      verifyFfprobeOutputV1({
+        probe_json: value,
+        plan: plan(),
+        policy: policy(),
+        observed_size_bytes: 512,
+        progress_end_observed: true,
+      }),
+    ).not.toThrow();
+  });
+
+  it.each([
+    [
+      'legacy nonidentity rotation',
+      { tags: { rotate: '90' } },
+      'RENDER_OUTPUT_ROTATION_METADATA_NONIDENTITY',
+    ],
+    [
+      'side-data nonidentity rotation',
+      { side_data_list: [{ side_data_type: 'Display Matrix', rotation: -90 }] },
+      'RENDER_OUTPUT_ROTATION_METADATA_NONIDENTITY',
+    ],
+    [
+      'nonidentity display matrix without derived angle',
+      {
+        side_data_list: [
+          {
+            side_data_type: 'Display Matrix',
+            displaymatrix:
+              '00000000:           0      -65536           0\n00000001:       65536           0           0\n00000002:           0           0  1073741824',
+          },
+        ],
+      },
+      'RENDER_OUTPUT_ROTATION_METADATA_NONIDENTITY',
+    ],
+    [
+      'conflicting legacy and side-data rotation',
+      {
+        tags: { rotate: '0' },
+        side_data_list: [{ side_data_type: 'Display Matrix', rotation: 90 }],
+      },
+      'RENDER_OUTPUT_ROTATION_METADATA_MISMATCH',
+    ],
+    [
+      'conflicting identity matrix and nonzero derived rotation',
+      {
+        side_data_list: [
+          {
+            side_data_type: 'Display Matrix',
+            displaymatrix:
+              '00000000:       65536           0           0\n00000001:           0       65536           0\n00000002:           0           0  1073741824',
+            rotation: 90,
+          },
+        ],
+      },
+      'RENDER_OUTPUT_ROTATION_METADATA_MISMATCH',
+    ],
+  ])('rejects %s', (_name, metadata, expected) => {
+    const value = probe();
+    Object.assign((value.streams as Array<Record<string, unknown>>)[0]!, metadata);
+    expect(() =>
+      verifyFfprobeOutputV1({
+        probe_json: value,
+        plan: plan(),
+        policy: policy(),
+        observed_size_bytes: 512,
+        progress_end_observed: true,
+      }),
+    ).toThrowError(expected);
   });
 
   it('rejects an off-by-one frame count with no hidden tolerance', () => {

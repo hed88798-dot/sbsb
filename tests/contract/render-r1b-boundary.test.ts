@@ -81,7 +81,11 @@ describe('Code G R1B architecture and frozen-authority boundaries', () => {
     const files = source('apps/desktop/src/main/render-execution-file-service.ts');
     const checkpoint = source('docs/render/R1B_A_RUNTIME_ROTATION_COMPATIBILITY_CHECKPOINT.md');
     expect(execution).toContain("args.push('-protocol_whitelist', 'file,pipe', '-autorotate'");
-    expect(files).toContain("throw new Error('RENDER_ROTATION_RUNTIME_CAPABILITY_V2_REQUIRED')");
+    expect(execution).toContain('assertApprovedRuntimeV2Identity(snapshot.runtime_identity)');
+    expect(files).toContain('verifyRuntimeV2ApprovalReceipt');
+    expect(files).not.toContain(
+      "throw new Error('RENDER_ROTATION_RUNTIME_CAPABILITY_V2_REQUIRED')",
+    );
     expect(checkpoint).toContain('RUNTIME_V1_STATUS:');
     expect(checkpoint).toContain('HISTORICALLY_APPROVED');
     expect(checkpoint).toContain('INCOMPATIBLE_WITH_ROTATION_CAPABLE_R1B_CONTRACT');
