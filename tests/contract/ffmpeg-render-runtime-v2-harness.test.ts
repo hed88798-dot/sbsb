@@ -10,8 +10,18 @@ const harnessPath = resolve(
   import.meta.dirname,
   '../../tools/ffmpeg-render-build/verify-rotation-v2.ps1',
 );
+const rootNormalizationPath = resolve(
+  import.meta.dirname,
+  '../../tools/ffmpeg-render-harness/root-normalization.ps1',
+);
+const rootNormalizationTestPath = resolve(
+  import.meta.dirname,
+  '../../tools/ffmpeg-render-harness/test-root-normalization.ps1',
+);
 const workflow = readFileSync(workflowPath, 'utf8');
 const harness = readFileSync(harnessPath, 'utf8');
+const rootNormalization = readFileSync(rootNormalizationPath, 'utf8');
+const rootNormalizationTest = readFileSync(rootNormalizationTestPath, 'utf8');
 
 describe('Code F FFmpeg Render Runtime v2 pre-Windows freeze', () => {
   it('runs candidate builds only for build-input changes or explicit dispatch', () => {
@@ -97,5 +107,24 @@ describe('Code F FFmpeg Render Runtime v2 pre-Windows freeze', () => {
     expect(harness.indexOf('Test-AngleEquivalent $fixtureRotation')).toBeLessThan(
       harness.indexOf("'-vf', \"$($filters[$angle])"),
     );
+  });
+
+  it('uses single-character Windows separators and tests root isolation logic', () => {
+    expect(harness).toContain('ffmpeg-render-harness/root-normalization.ps1');
+    expect(harness).toContain('Test-RootIsolation');
+    expect(harness).not.toContain("TrimEnd('\\\\', '/')");
+    expect(rootNormalization).toContain('TrimEnd($separatorChars)');
+    expect(rootNormalization).toContain('.Replace([char]92, [IO.Path]::DirectorySeparatorChar)');
+    expect(rootNormalization).toContain('.Replace([char]47, [IO.Path]::DirectorySeparatorChar)');
+    expect(rootNormalization).toContain('[StringComparison]::OrdinalIgnoreCase');
+    for (const marker of [
+      "'C:\\runtime\\v2\\'",
+      "'C:\\pixel-oracle\\'",
+      "'C:\\runtime\\v2\\pixel-oracle\\'",
+      "'C:\\pixel-oracle\\runtime\\'",
+      'Assert-RootIsolationRejected',
+      'ROOT_NORMALIZATION_TEST: PASS',
+    ])
+      expect(rootNormalizationTest).toContain(marker);
   });
 });

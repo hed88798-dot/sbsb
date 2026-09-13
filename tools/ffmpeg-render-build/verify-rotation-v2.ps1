@@ -41,6 +41,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $RepositoryRoot 'tools/ffmpeg-render-harness/root-normalization.ps1')
 $displayAngleTolerance = 0.5
 New-Item -ItemType Directory -Force -Path $Output | Out-Null
 $rotationOutput = Join-Path (Resolve-Path -LiteralPath $Output) 'rotation-v2'
@@ -228,11 +229,9 @@ try {
   Assert-Condition (Test-Path -LiteralPath $PixelOracleRoot -PathType Container) "pixel oracle root unavailable: $PixelOracleRoot"
   $runtimeRootResolved = (Resolve-Path -LiteralPath $RuntimeRoot).Path
   $pixelOracleRootResolved = (Resolve-Path -LiteralPath $PixelOracleRoot).Path
-  Assert-Condition ($runtimeRootResolved -ne $pixelOracleRootResolved) 'pixel oracle must be separate from the product Runtime root'
-  $runtimeRootPrefix = $runtimeRootResolved.TrimEnd('\\', '/') + [IO.Path]::DirectorySeparatorChar
-  $pixelOracleRootPrefix = $pixelOracleRootResolved.TrimEnd('\\', '/') + [IO.Path]::DirectorySeparatorChar
-  Assert-Condition (-not $pixelOracleRootResolved.StartsWith($runtimeRootPrefix, [StringComparison]::OrdinalIgnoreCase)) 'pixel oracle may not be nested under the product Runtime root'
-  Assert-Condition (-not $runtimeRootResolved.StartsWith($pixelOracleRootPrefix, [StringComparison]::OrdinalIgnoreCase)) 'product Runtime may not be nested under the pixel oracle root'
+  $rootIsolation = Test-RootIsolation $runtimeRootResolved $pixelOracleRootResolved
+  $runtimeRootPrefix = $rootIsolation.runtime_root_prefix
+  $pixelOracleRootPrefix = $rootIsolation.pixel_oracle_root_prefix
   $pixelOracleManifestPath = Join-Path $PixelOracleRoot 'pixel-oracle-manifest.json'
   $pixelOracleManifest = Get-Content -LiteralPath $pixelOracleManifestPath -Raw | ConvertFrom-Json
   $pixelOracleManifestHash = Hash-File $pixelOracleManifestPath
@@ -252,7 +251,7 @@ try {
   $pixelOracleMembers = @($pixelOracleManifest.members | ForEach-Object { $_.path } | Sort-Object)
   if ($pixelOracleMembers.Count -gt 0) {
     $pixelOracleBundleRoot = Join-Path $pixelOracleRootResolved 'bundle'
-    $pixelOracleActualMembers = @(Get-ChildItem -LiteralPath $pixelOracleBundleRoot -File -Recurse | ForEach-Object { $_.FullName.Substring($pixelOracleRootResolved.Length + 1).Replace('\\', '/') } | Sort-Object)
+    $pixelOracleActualMembers = @(Get-ChildItem -LiteralPath $pixelOracleBundleRoot -File -Recurse | ForEach-Object { $_.FullName.Substring($pixelOracleRootResolved.Length + 1).Replace([char]92, [char]47) } | Sort-Object)
     Assert-Condition ((ConvertTo-Json $pixelOracleMembers -Compress) -eq (ConvertTo-Json $pixelOracleActualMembers -Compress)) 'pixel oracle member set mismatch'
     foreach ($member in @($pixelOracleManifest.members)) {
       Assert-Condition ((Hash-File (Join-Path $PixelOracleRoot $member.path)) -eq $member.sha256) "pixel oracle member hash mismatch: $($member.path)"

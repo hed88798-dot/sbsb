@@ -463,6 +463,34 @@ FIRST_ACTUAL_BLOCKER:
 WINDOWS_11_DESKTOP_ROTATION_EVIDENCE_PENDING; approval receipt intentionally not issued
 ```
 
+## Historical fifth Desktop attempt (preserved)
+
+The fifth Windows 11 Desktop attempt imported the frozen Pixel Oracle and
+entered RuntimeRoot / PixelOracleRoot isolation validation, but stopped before
+dynamic rotation execution. PowerShell interpreted the two-character string
+`'\\'` as two literal backslashes when passed to `TrimEnd`, which cannot be
+converted to a single `System.Char`. This is a harness compatibility defect,
+not a product Runtime, Pixel Oracle, or rotation failure.
+
+```text
+WINDOWS_ATTEMPT_5:
+FAIL_HARNESS_POWERSHELL_TRIMEND_COMPATIBILITY
+
+PRODUCT_RUNTIME_REJECTION:
+NO
+
+PIXEL_ORACLE_REJECTION:
+NO
+
+DYNAMIC_ROTATION_EXECUTION:
+NOT_REACHED
+```
+
+The correction uses explicit single-character separator values for root
+canonicalization and member-path normalization, while retaining rejection of
+equal or nested roots. Runtime v2 and Pixel Oracle v1 identities, hashes,
+durable assets, and all prior attempt records remain unchanged.
+
 ## TEST_ONLY rotation pixel oracle v1 freeze
 
 The following is a separate test-only transport used to inspect decoded
