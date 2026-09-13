@@ -111,12 +111,8 @@ describe('Code F rotation pixel oracle v2 isolation', () => {
     expect(workflow).toContain("'tools/ffmpeg-render-pixel-oracle-v2/**'");
     expect(workflow).toContain("'tools/ffmpeg-render-build/preflight-windows.sh'");
     expect(workflow).not.toContain('CODE_F_FFMPEG_RENDER_RUNTIME_V2_INTAKE_REPORT.md');
-    expect(workflow).toContain(
-      'actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955',
-    );
-    expect(workflow).not.toContain(
-      'actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906952',
-    );
+    expect(workflow).toContain('actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955');
+    expect(workflow).not.toContain('actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906952');
     expect(workflow).toContain('fixture_url:');
     expect(workflow).toContain('fixture_sha256:');
     expect(workflow).toContain(
