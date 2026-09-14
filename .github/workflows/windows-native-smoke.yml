@@ -30,6 +30,8 @@ jobs:
         with:
           python-version: '3.13.15'
       - run: pnpm install --frozen-lockfile
+      - name: Run RenderStagingService Windows fsync regression
+        run: pnpm exec vitest run tests/integration/render-staging-fsync.test.ts --maxWorkers=1
       - name: Test PowerShell root normalization harness logic
         shell: pwsh
         run: ./tools/ffmpeg-render-harness/test-root-normalization.ps1
