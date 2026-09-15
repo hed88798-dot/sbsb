@@ -51,8 +51,8 @@ PASS
 REAL_INSTALLED_APP_SMOKE:
 PASS
 
-INSTALLED_PROCESS_RESOURCES_PATH:
-C:\Users\runneradmin\AppData\Local\Programs\@appdesktop\resources
+INSTALLED_PROCESS_RESOURCES_LOCATOR:
+installed-app/process.resourcesPath
 
 RUNTIME_ID:
 code-f-ffmpeg-render-windows-x86_64-34699695106
@@ -91,7 +91,7 @@ main@4fd2275178488af1011243e1750209df28e7fd1c
 -> ffmpeg 9.0.1 and ffprobe 9.0.1 version smoke PASS
 ```
 
-The source-extracted, build-staged, unpacked-package, and installed runtime trees have the same canonical member-tree hash. The installed resolver remained inside `process.resourcesPath`, used no PATH or runtime fallback, and exposed no product Render operation.
+The source-extracted, build-staged, unpacked-package, and installed runtime trees have the same canonical member-tree hash. The raw transient workflow evidence records the machine-specific installed path; this repository baseline intentionally records only its stable logical locator. The installed resolver remained inside `process.resourcesPath`, used no PATH or runtime fallback, and exposed no product Render operation.
 
 ## Non-blocking credential governance follow-up
 
