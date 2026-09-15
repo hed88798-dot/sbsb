@@ -58,6 +58,57 @@ function frameCount(stream: ProbeStream): number {
   return value;
 }
 
+const h264LevelIdcBySemanticLevel: Readonly<Record<string, number>> = Object.freeze({
+  '1.0': 10,
+  '1.1': 11,
+  '1.2': 12,
+  '1.3': 13,
+  '2.0': 20,
+  '2.1': 21,
+  '2.2': 22,
+  '3.0': 30,
+  '3.1': 31,
+  '3.2': 32,
+  '4.0': 40,
+  '4.1': 41,
+  '4.2': 42,
+  '5.0': 50,
+  '5.1': 51,
+  '5.2': 52,
+  '6.0': 60,
+  '6.1': 61,
+  '6.2': 62,
+});
+
+const supportedH264LevelIdc = new Set(Object.values(h264LevelIdcBySemanticLevel));
+
+function observedH264LevelIdc(value: unknown): number {
+  if (value === undefined || value === null || value === '') {
+    throw new Error('RENDER_OUTPUT_LEVEL_MISSING');
+  }
+  const parsed =
+    typeof value === 'number'
+      ? value
+      : typeof value === 'string' && /^\d+$/u.test(value)
+        ? Number(value)
+        : Number.NaN;
+  if (!Number.isSafeInteger(parsed) || !supportedH264LevelIdc.has(parsed)) {
+    throw new Error('RENDER_OUTPUT_LEVEL_INVALID');
+  }
+  return parsed;
+}
+
+function assertH264LevelConformance(
+  observedLevel: unknown,
+  maximumSemanticLevel: RenderPolicyV1['video']['level'],
+): void {
+  const maximumLevelIdc = h264LevelIdcBySemanticLevel[maximumSemanticLevel];
+  if (maximumLevelIdc === undefined) throw new Error('RENDER_OUTPUT_LEVEL_POLICY_UNSUPPORTED');
+  if (observedH264LevelIdc(observedLevel) > maximumLevelIdc) {
+    throw new Error('RENDER_OUTPUT_LEVEL_MISMATCH');
+  }
+}
+
 const rotationToleranceDegrees = 0.5;
 
 function normalizeRotationDegrees(value: unknown): number {
@@ -200,10 +251,7 @@ export function verifyFfprobeOutputV1(input: {
   if (profile.toUpperCase() !== policy.video.profile) {
     throw new Error('RENDER_OUTPUT_PROFILE_MISMATCH');
   }
-  const level = integer(videoStream.level, 'RENDER_OUTPUT_LEVEL_MISSING');
-  if (String(level) !== policy.video.level.replace('.', '')) {
-    throw new Error('RENDER_OUTPUT_LEVEL_MISMATCH');
-  }
+  assertH264LevelConformance(videoStream.level, policy.video.level);
   if (text(audioStream.codec_name, 'RENDER_OUTPUT_AUDIO_CODEC_MISSING') !== 'aac') {
     throw new Error('RENDER_OUTPUT_AUDIO_CODEC_MISMATCH');
   }

@@ -441,6 +441,52 @@ describe('Code G R1B progress, log, and output verification', () => {
     );
   });
 
+  it.each([40, 41])('accepts H.264 level_idc %i under policy maximum 4.1', (level) => {
+    const value = probe();
+    (value.streams as Array<Record<string, unknown>>)[0]!.level = level;
+    expect(() =>
+      verifyFfprobeOutputV1({
+        probe_json: value,
+        plan: plan(),
+        policy: policy(),
+        observed_size_bytes: 512,
+        progress_end_observed: true,
+      }),
+    ).not.toThrow();
+  });
+
+  it.each([42, 50])('rejects H.264 level_idc %i above policy maximum 4.1', (level) => {
+    const value = probe();
+    (value.streams as Array<Record<string, unknown>>)[0]!.level = level;
+    expect(() =>
+      verifyFfprobeOutputV1({
+        probe_json: value,
+        plan: plan(),
+        policy: policy(),
+        observed_size_bytes: 512,
+        progress_end_observed: true,
+      }),
+    ).toThrowError('RENDER_OUTPUT_LEVEL_MISMATCH');
+  });
+
+  it.each([
+    ['missing', undefined, 'RENDER_OUTPUT_LEVEL_MISSING'],
+    ['malformed', '4.0', 'RENDER_OUTPUT_LEVEL_INVALID'],
+    ['unsupported', 43, 'RENDER_OUTPUT_LEVEL_INVALID'],
+  ])('rejects %s H.264 level evidence', (_name, level, expected) => {
+    const value = probe();
+    (value.streams as Array<Record<string, unknown>>)[0]!.level = level;
+    expect(() =>
+      verifyFfprobeOutputV1({
+        probe_json: value,
+        plan: plan(),
+        policy: policy(),
+        observed_size_bytes: 512,
+        progress_end_observed: true,
+      }),
+    ).toThrowError(expected);
+  });
+
   it.each([
     ['absent rotation metadata', undefined],
     ['legacy identity rotation', { tags: { rotate: '360' } }],
