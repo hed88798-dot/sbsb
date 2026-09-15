@@ -1,0 +1,133 @@
+name: Code F R1C-A Windows installed Runtime v2
+
+on:
+  push:
+    branches:
+      - code-f/r1c-a-desktop-runtime-v2-distribution
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: code-f-r1c-a-desktop-runtime-v2-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  installed-runtime-v2:
+    runs-on: windows-2022
+    timeout-minutes: 60
+    env:
+      RUNTIME_ASSET_TOKEN: ${{ secrets.PIXEL_ORACLE_FIXTURE_TOKEN }}
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.13.15'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm ci:prepare
+      - name: Acquire exact approved Runtime v2 transport
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ([string]::IsNullOrWhiteSpace($env:RUNTIME_ASSET_TOKEN)) {
+            throw 'RUNTIME_V2_PRIVATE_ASSET_TOKEN_REQUIRED'
+          }
+          $headers = @{
+            Authorization = "Bearer $env:RUNTIME_ASSET_TOKEN"
+            Accept = 'application/vnd.github+json'
+            'X-GitHub-Api-Version' = '2022-11-28'
+          }
+          $release = Invoke-RestMethod `
+            -Uri 'https://api.github.com/repos/hed88798-dot/sbsb/releases/387604810' `
+            -Headers $headers
+          if ($release.draft -ne $true -or $release.tag_name -ne 'code-f-ffmpeg-render-v2-prewindows-9ac58ac-34699695106') {
+            throw 'RUNTIME_V2_DURABLE_RELEASE_IDENTITY_MISMATCH'
+          }
+          $asset = $release.assets | Where-Object { $_.id -eq 559437104 }
+          if (-not $asset -or $asset.name -ne 'ffmpeg-render-windows-v2.tar') {
+            throw 'RUNTIME_V2_DURABLE_ASSET_IDENTITY_MISMATCH'
+          }
+          if ($asset.digest -and $asset.digest -ne 'sha256:a1d0bff4ea3c53dc56e7de7ee7436dfb872bf3e9bc1317acffb0c0254a3bcc01') {
+            throw 'RUNTIME_V2_DURABLE_ASSET_DIGEST_MISMATCH'
+          }
+          New-Item -ItemType Directory -Path artifacts/runtime-v2/source -Force | Out-Null
+          New-Item -ItemType Directory -Path artifacts/runtime-v2/extracted -Force | Out-Null
+          $headers.Accept = 'application/octet-stream'
+          $transport = 'artifacts/runtime-v2/source/ffmpeg-render-windows-v2.tar'
+          Invoke-WebRequest `
+            -Uri 'https://api.github.com/repos/hed88798-dot/sbsb/releases/assets/559437104' `
+            -Headers $headers `
+            -OutFile $transport
+          $hash = (Get-FileHash -LiteralPath $transport -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($hash -ne 'a1d0bff4ea3c53dc56e7de7ee7436dfb872bf3e9bc1317acffb0c0254a3bcc01') {
+            throw 'RUNTIME_V2_TRANSPORT_HASH_MISMATCH'
+          }
+          tar -xf $transport -C artifacts/runtime-v2/extracted
+      - name: Verify and stage approved Runtime v2
+        shell: pwsh
+        run: >-
+          pnpm desktop:runtime:v2:stage --
+          --transport artifacts/runtime-v2/source/ffmpeg-render-windows-v2.tar
+          --source-root artifacts/runtime-v2/extracted
+          --approval compliance/approval/ffmpeg-render-v2/FFMPEG_RENDER_RUNTIME_APPROVAL_V2.json
+          --destination apps/desktop/.runtime-stage/ffmpeg-render-v2
+          --evidence artifacts/desktop-runtime-v2/build-staging.json
+      - run: pnpm native:rebuild
+      - run: pnpm package:dir
+      - run: $env:REQUIRE_PACKAGED_SMOKE='1'; pnpm exec vitest run tests/integration/native-addon-packaging.test.ts --maxWorkers=1
+      - name: Smoke packaged Runtime v2 in unpacked Electron artifact
+        shell: pwsh
+        run: |
+          $application = Get-ChildItem apps/desktop/release/win-unpacked -Filter '*.exe' -File |
+            Select-Object -First 1
+          if (-not $application) { throw 'PACKAGING_ARTIFACT_EXECUTABLE_NOT_FOUND' }
+          ./tools/windows/desktop-runtime-v2-packaged-smoke.ps1 `
+            -Executable $application.FullName `
+            -EvidencePath artifacts/desktop-runtime-v2/packaging-artifact-smoke.json `
+            -Mode PACKAGING_ARTIFACT
+      - name: Build NSIS installer
+        run: pnpm package:win
+      - name: Install and smoke the real installed Desktop
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem apps/desktop/release -Filter '*.exe' -File |
+            Select-Object -First 1
+          if (-not $installer) { throw 'NSIS_INSTALLER_NOT_FOUND' }
+          ./tools/windows/desktop-runtime-v2-installed-smoke.ps1 `
+            -Installer $installer.FullName `
+            -InstallRoot "$env:RUNNER_TEMP/r1c-a-installed-desktop" `
+            -EvidencePath artifacts/desktop-runtime-v2/real-installed-app-smoke.json
+      - name: Verify three-stage Runtime v2 provenance
+        run: >-
+          pnpm desktop:runtime:v2:verify-three-stage --
+          --staging artifacts/desktop-runtime-v2/build-staging.json
+          --packaging artifacts/desktop-runtime-v2/packaging-artifact-smoke.json
+          --installed artifacts/desktop-runtime-v2/real-installed-app-smoke.json
+          --output artifacts/desktop-runtime-v2/three-stage-provenance.json
+      - name: Enforce Runtime v2 smoke evidence upload budget
+        shell: bash
+        run: >-
+          node tools/actions-artifact-budget.mjs
+          --name windows-desktop-runtime-v2-distribution-${{ github.sha }}
+          --path artifacts/desktop-runtime-v2
+          --inventory artifacts/desktop-runtime-v2/ARTIFACT_UPLOAD_INVENTORY.json
+          --retention-days 3
+          --purpose desktop-runtime-v2-distribution-evidence
+          --classification transient
+          --max-bytes 5242880
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-desktop-runtime-v2-distribution-${{ github.sha }}
+          path: artifacts/desktop-runtime-v2
+          if-no-files-found: error
+          retention-days: 3

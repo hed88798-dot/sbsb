@@ -44,7 +44,9 @@ describe('approved Runtime v2 desktop distribution boundary', () => {
   });
 
   it('binds Windows CI to the exact private durable asset and real installer smoke', async () => {
-    const workflow = await read('.github/workflows/windows-native-smoke.yml');
+    const workflow = await read(
+      '.github/workflows/code-f-r1c-a-desktop-runtime-v2-distribution.yml',
+    );
     expect(workflow).toContain('releases/387604810');
     expect(workflow).toContain('559437104');
     expect(workflow).toContain('a1d0bff4ea3c53dc56e7de7ee7436dfb872bf3e9bc1317acffb0c0254a3bcc01');
