@@ -77,6 +77,14 @@ describe('approved Runtime v2 authority resolution', () => {
     );
   });
 
+  it('rejects an unexpected runtime member', async () => {
+    const context = await fixture();
+    await writeFile(join(context.bundleRoot, 'unexpected.dll'), 'unexpected-member');
+    await expect(context.resolveRuntimeAuthority(context.input)).rejects.toThrowError(
+      'RENDER_RUNTIME_V2_AUTHORITY_INVALID',
+    );
+  });
+
   it('rejects a manifest bound to the wrong capability profile', async () => {
     const context = await fixture();
     await writeFile(

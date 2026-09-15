@@ -83,6 +83,8 @@
     "render:r1b:windows-desktop-smoke": "node tools/render-r1b/windows-desktop-product-smoke.mjs",
     "render:r1b:smoke-bundle:export": "node tools/render-r1b/export-historical-smoke-bundle.mjs",
     "render:r1b:smoke-bundle:import": "node tools/render-r1b/import-historical-smoke-bundle.mjs",
+    "desktop:runtime:v2:stage": "node tools/desktop-runtime-v2/stage-approved-runtime.mjs",
+    "desktop:runtime:v2:verify-three-stage": "node tools/desktop-runtime-v2/verify-three-stage-evidence.mjs",
     "r1a:authority:new": "pnpm ci:prepare && node tools/r1a-acceptance/new-authority.mjs",
     "code-d:regression": "pnpm ci:prepare && node tools/material-selection-regression.mjs",
     "golden:update": "node tools/golden/update-manifest.mjs",

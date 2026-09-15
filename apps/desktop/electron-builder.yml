@@ -18,6 +18,9 @@ extraResources:
   - from: ../../migrations/desktop-sqlite
     to: migrations/desktop-sqlite
 win:
+  extraResources:
+    - from: .runtime-stage/ffmpeg-render-v2
+      to: runtime/ffmpeg-render-v2
   target:
     - nsis
   artifactName: '${productName}-${version}-${arch}.${ext}'
