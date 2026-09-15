@@ -5,6 +5,22 @@ const EXPECTED_TRANSPORT = 'a1d0bff4ea3c53dc56e7de7ee7436dfb872bf3e9bc1317acffb0
 const EXPECTED_FFMPEG = '7fc910c87e37502f3ff1f7e56c0ee470d91597aece9cd873880ce3c477d0a933';
 const EXPECTED_FFPROBE = '641b8649c3d11702942a4b649d6ecee35231e04e09ce50a8d74b8c46b5295c4e';
 
+function canonicalize(value) {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, nested]) => [key, canonicalize(nested)]),
+    );
+  }
+  return value;
+}
+
+function canonicalJson(value) {
+  return JSON.stringify(canonicalize(value));
+}
+
 function parseArgs(argv) {
   const values = {};
   const normalized = argv[0] === '--' ? argv.slice(1) : argv;
@@ -35,10 +51,10 @@ if (
   packaging.status !== 'PASS' ||
   installed.status !== 'PASS' ||
   new Set(hashes).size !== 1 ||
-  JSON.stringify(staging.staged_tree.members) !==
-    JSON.stringify(packaging.observed.runtime_tree.members) ||
-  JSON.stringify(staging.staged_tree.members) !==
-    JSON.stringify(installed.observed.runtime_tree.members) ||
+  canonicalJson(staging.staged_tree.members) !==
+    canonicalJson(packaging.observed.runtime_tree.members) ||
+  canonicalJson(staging.staged_tree.members) !==
+    canonicalJson(installed.observed.runtime_tree.members) ||
   packaging.observed.ffmpeg_sha256 !== EXPECTED_FFMPEG ||
   installed.observed.ffmpeg_sha256 !== EXPECTED_FFMPEG ||
   packaging.observed.ffprobe_sha256 !== EXPECTED_FFPROBE ||
