@@ -132,6 +132,14 @@ function filterColor(color: string): string {
   return `0x${color.slice(1)}`;
 }
 
+export function ffmpegVideoProfileValueV1(input: {
+  encoder: string;
+  semantic_profile: RenderPolicyV1['video']['profile'];
+}): string {
+  const semanticProfile = input.semantic_profile.toLowerCase();
+  return input.encoder === 'h264_mf' && semanticProfile === 'high' ? '100' : semanticProfile;
+}
+
 function assertLocalFilePath(value: string, code: string): void {
   if (
     value.length === 0 ||
@@ -262,6 +270,8 @@ export function buildFfmpegInvocationV1(input: {
       'asetpts=PTS-STARTPTS[aout]',
   );
 
+  const videoEncoder = 'h264_mf';
+
   args.push(
     '-filter_complex',
     filters.join(';'),
@@ -270,9 +280,12 @@ export function buildFfmpegInvocationV1(input: {
     '-map',
     '[aout]',
     '-c:v',
-    'h264_mf',
+    videoEncoder,
     '-profile:v',
-    policy.video.profile.toLowerCase(),
+    ffmpegVideoProfileValueV1({
+      encoder: videoEncoder,
+      semantic_profile: policy.video.profile,
+    }),
     '-level:v',
     policy.video.level,
     '-b:v',

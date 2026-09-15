@@ -14,6 +14,7 @@ import {
   buildRenderReceiptV1,
   computeLogicalRenderHashV1,
   computeRenderPolicyHashV1,
+  ffmpegVideoProfileValueV1,
   parseRenderReceiptV1,
   verifyFfprobeOutputV1,
   type LogicalRenderPlanV1,
@@ -287,6 +288,53 @@ describe('Code G R1B pure invocation planning', () => {
     expect(invocation.arguments).toEqual(expect.arrayContaining(['-g', '60', '-bf', '0']));
     expect(invocation.arguments).toEqual(expect.arrayContaining(['-map_metadata', '-1']));
     expect(invocation.arguments).toEqual(expect.arrayContaining(['-movflags', '+faststart']));
+  });
+
+  it('maps semantic H.264 High to the MediaFoundation numeric profile without authority drift', () => {
+    const renderPolicy = policy();
+    const logicalPlan = plan(renderPolicy);
+    const policyBefore = structuredClone(renderPolicy);
+    const planBefore = structuredClone(logicalPlan);
+    const invocation = buildFfmpegInvocationV1({
+      plan: logicalPlan,
+      snapshot: snapshot(logicalPlan),
+      policy: renderPolicy,
+      partial_output_path: 'D:\\controlled output\\output.partial.mp4',
+    });
+    const valueAfter = (option: string): string => {
+      const index = invocation.arguments.indexOf(option);
+      expect(index).toBeGreaterThanOrEqual(0);
+      return invocation.arguments[index + 1]!;
+    };
+
+    expect(renderPolicy.video.profile.toLowerCase()).toBe('high');
+    expect(valueAfter('-c:v')).toBe('h264_mf');
+    expect(valueAfter('-profile:v')).toBe('100');
+    expect(valueAfter('-level:v')).toBe('4.1');
+    expect(valueAfter('-c:a')).toBe('aac');
+    expect(valueAfter('-b:a')).toBe('192000');
+    expect(valueAfter('-ar')).toBe('48000');
+    expect(valueAfter('-ac')).toBe('2');
+    expect(valueAfter('-filter_complex')).toBe(
+      [
+        '[0:v:0]setpts=PTS-STARTPTS,trim=start=0.117:end=0.450,setpts=PTS-STARTPTS,fps=fps=30/1:round=near,trim=start_frame=0:end_frame=10,setpts=PTS-STARTPTS,scale=w=1080:h=1920:force_original_aspect_ratio=decrease:flags=lanczos,pad=w=1080:h=1920:x=(ow-iw)/2:y=(oh-ih)/2:color=0x000000,setsar=ratio=1/1,format=pix_fmts=nv12[vseg0]',
+        '[1:v:0]setpts=PTS-STARTPTS,trim=start=1.001:end=1.668,setpts=PTS-STARTPTS,fps=fps=30/1:round=near,trim=start_frame=0:end_frame=20,setpts=PTS-STARTPTS,scale=w=1080:h=1920:force_original_aspect_ratio=decrease:flags=lanczos,pad=w=1080:h=1920:x=(ow-iw)/2:y=(oh-ih)/2:color=0x000000,setsar=ratio=1/1,format=pix_fmts=nv12[vseg1]',
+        '[vseg0][vseg1]concat=n=2:v=1:a=0[vout]',
+        '[2:a:0]aresample=48000,aformat=sample_rates=48000:channel_layouts=stereo,asetpts=PTS-STARTPTS[aout]',
+      ].join(';'),
+    );
+    expect(renderPolicy).toEqual(policyBefore);
+    expect(logicalPlan).toEqual(planBefore);
+    expect(logicalPlan.logical_render_hash).toBe(planBefore.logical_render_hash);
+  });
+
+  it('does not translate semantic High globally for unrelated encoders', () => {
+    expect(
+      ffmpegVideoProfileValueV1({
+        encoder: 'h264_videotoolbox',
+        semantic_profile: 'HIGH',
+      }),
+    ).toBe('high');
   });
 
   it('supports only the policy-declared center crop transform', () => {
