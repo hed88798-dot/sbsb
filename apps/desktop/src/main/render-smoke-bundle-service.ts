@@ -498,14 +498,16 @@ export async function importHistoricalR1BSmokeBundle(
   });
   const controlledRoot = await freshDirectory(input.controlled_root);
   const stagingRoot = join(controlledRoot, 'staging');
+  const snapshotStagingRoot = join(stagingRoot, `import-${manifest.bundle_hash}`);
   const outputRoot = join(controlledRoot, 'output');
   await Promise.all([mkdir(stagingRoot), mkdir(outputRoot)]);
+  await mkdir(snapshotStagingRoot);
   const importedPaths = new Map<string, string>();
   for (const file of manifest.files.filter((item) => item.role !== 'AUTHORITY')) {
     const relativePath = safeRelativePath(file.relative_path);
     const source = bundleFiles.get(relativePath);
     if (!source) throw new Error('R1B_SMOKE_BUNDLE_FILE_MISSING');
-    const destination = join(stagingRoot, ...relativePath.split('/'));
+    const destination = join(snapshotStagingRoot, ...relativePath.split('/'));
     await mkdir(resolve(destination, '..'), { recursive: true });
     await copyFile(source, destination, 0);
     const facts = await lstat(destination);
@@ -534,7 +536,7 @@ export async function importHistoricalR1BSmokeBundle(
     logical_render_hash: plan.logical_render_hash,
     platform: 'win32',
     architecture: 'x64',
-    staging_root: stagingRoot,
+    staging_root: snapshotStagingRoot,
     output_root: outputRoot,
     source_artifacts: sourceArtifacts,
     narration_artifact: {

@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -12,6 +12,22 @@ import { createRuntimeV2AuthorityFixture } from '../helpers/runtime-v2-authority
 
 const cleanup: string[] = [];
 
+function withStagingRoot(
+  snapshot: RenderExecutionSnapshotV1,
+  stagingRoot: string,
+): RenderExecutionSnapshotV1 {
+  return buildExecutionSnapshotV1({
+    logical_render_hash: snapshot.logical_render_hash,
+    platform: snapshot.platform,
+    architecture: snapshot.architecture,
+    staging_root: stagingRoot,
+    output_root: snapshot.output_root,
+    source_artifacts: snapshot.source_artifacts,
+    narration_artifact: snapshot.narration_artifact,
+    runtime_identity: snapshot.runtime_identity,
+  });
+}
+
 afterEach(async () => {
   await Promise.all(cleanup.splice(0).map((path) => rm(path, { recursive: true, force: true })));
 });
@@ -22,6 +38,8 @@ async function setup(): Promise<{
   sourcePath: string;
   ffmpegPath: string;
   outputRoot: string;
+  stagingRoot: string;
+  root: string;
 }> {
   const root = await mkdtemp(join(tmpdir(), 'r1b-files-'));
   cleanup.push(root);
@@ -78,6 +96,8 @@ async function setup(): Promise<{
     sourcePath,
     ffmpegPath: runtime.ffmpegPath,
     outputRoot,
+    stagingRoot,
+    root,
   };
 }
 
@@ -96,6 +116,26 @@ describe('Code G R1B filesystem fail-closed controls', () => {
     await expect(context.service.reverifyPreparedSnapshot(context.snapshot)).rejects.toThrowError(
       'RENDER_RUNTIME_V2_AUTHORITY_INVALID',
     );
+  });
+
+  it('requires the snapshot staging root to remain a strict child of the configured root', async () => {
+    const context = await setup();
+    const equalRootSnapshot = withStagingRoot(context.snapshot, context.stagingRoot);
+    await expect(context.service.reverifyPreparedSnapshot(equalRootSnapshot)).rejects.toThrowError(
+      'RENDER_STAGING_PATH_ESCAPE',
+    );
+  });
+
+  it('rejects a snapshot staging root whose symlink resolves outside the configured root', async () => {
+    const context = await setup();
+    const outsideRoot = join(context.root, 'outside-staging');
+    const linkedRoot = join(context.stagingRoot, 'linked-attempt');
+    await mkdir(outsideRoot);
+    await symlink(outsideRoot, linkedRoot, 'dir');
+    const symlinkEscapeSnapshot = withStagingRoot(context.snapshot, linkedRoot);
+    await expect(
+      context.service.reverifyPreparedSnapshot(symlinkEscapeSnapshot),
+    ).rejects.toThrowError('RENDER_STAGING_PATH_ESCAPE');
   });
 
   it('promotes verified bytes by same-volume atomic rename without modifying them', async () => {

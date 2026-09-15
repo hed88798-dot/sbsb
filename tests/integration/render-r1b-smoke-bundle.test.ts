@@ -9,9 +9,9 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { canonicalJson, hashFile } from '../../packages/domain-media-index/src/index.js';
+import { canonicalJson, hashFile, sha256 } from '../../packages/domain-media-index/src/index.js';
 import {
   RenderPolicyRepository,
   RenderPreparationRepository,
@@ -28,10 +28,16 @@ import {
   exportHistoricalR1BSmokeBundle,
   importHistoricalR1BSmokeBundle,
 } from '../../apps/desktop/src/main/render-smoke-bundle-service.js';
+import { RenderExecutionFileService } from '../../apps/desktop/src/main/render-execution-file-service.js';
 import { createRuntimeV2AuthorityFixture } from '../helpers/runtime-v2-authority-fixture.js';
 
 const cleanup: string[] = [];
 const migrationsDirectory = resolve(import.meta.dirname, '../../migrations/desktop-sqlite');
+
+function isStrictDescendant(root: string, candidate: string): boolean {
+  const child = relative(root, candidate);
+  return child !== '' && child !== '..' && !child.startsWith(`..${sep}`) && !isAbsolute(child);
+}
 
 afterEach(async () => {
   await Promise.all(cleanup.splice(0).map((path) => rm(path, { recursive: true, force: true })));
@@ -205,10 +211,11 @@ describe('Code G R1B portable historical smoke bundle', () => {
       );
       const runtime = await createRuntimeV2AuthorityFixture(context.root);
       expect(await readdir(runtime.runtimeRoot)).not.toContain('runtime-identity.json');
+      const controlledRoot = join(context.root, 'windows-import');
       const imported = await importHistoricalR1BSmokeBundle(
         {
           bundle_root: bundleRoot,
-          controlled_root: join(context.root, 'windows-import'),
+          controlled_root: controlledRoot,
           migrations_directory: migrationsDirectory,
           runtime_root: runtime.runtimeRoot,
           runtime_manifest_path: runtime.manifestPath,
@@ -218,6 +225,15 @@ describe('Code G R1B portable historical smoke bundle', () => {
       );
       expect(imported.bundle_hash).toBe(exported.manifest.bundle_hash);
       expect(imported.manifest_hash).toBe(exported.manifest.manifest_hash);
+      const config = JSON.parse(await readFile(imported.smoke_config_path, 'utf8')) as {
+        staging_root: string;
+        output_root: string;
+        runtime_root: string;
+        runtime_manifest_path: string;
+        approval_receipt_path: string;
+        smoke_bundle_manifest_hash: string;
+        smoke_bundle_hash: string;
+      };
       const importedDb = await openDatabase({
         dbPath: imported.db_path,
         migrationsDirectory,
@@ -227,23 +243,50 @@ describe('Code G R1B portable historical smoke bundle', () => {
         const importedJob = importedPreparations.require(context.job.job_id);
         const importedSnapshot = importedPreparations.getReadySnapshot(context.job.job_id)!;
         expect(importedJob.logical_render_hash).toBe(context.plan.logical_render_hash);
+        expect(importedSnapshot.logical_render_hash).toBe(context.plan.logical_render_hash);
         expect(importedSnapshot.execution_snapshot_hash).not.toBe(
           context.snapshot.execution_snapshot_hash,
         );
+        expect(config.staging_root).toBe(join(await realpath(controlledRoot), 'staging'));
+        expect(importedSnapshot.staging_root).toBe(
+          join(config.staging_root, `import-${exported.manifest.bundle_hash}`),
+        );
+        expect(importedSnapshot.staging_root).not.toBe(config.staging_root);
+        expect(isStrictDescendant(config.staging_root, importedSnapshot.staging_root)).toBe(true);
+        for (const artifact of [
+          ...importedSnapshot.source_artifacts,
+          importedSnapshot.narration_artifact,
+        ]) {
+          expect(isStrictDescendant(importedSnapshot.staging_root, artifact.staged_path)).toBe(
+            true,
+          );
+        }
         expect(importedSnapshot.source_artifacts[0]!.staged_path).not.toContain(
           context.snapshot.staging_root,
         );
         expect(importedSnapshot.source_artifacts[0]!.authority_sha256).toBe(
           context.snapshot.source_artifacts[0]!.authority_sha256,
         );
+        expect(importedSnapshot.narration_artifact.authority_sha256).toBe(
+          context.snapshot.narration_artifact.authority_sha256,
+        );
+        const runtimeResolution = await runtime.resolveRuntimeAuthority(runtime.input);
+        expect(canonicalJson(importedSnapshot.runtime_identity)).toBe(
+          canonicalJson(runtimeResolution.identity),
+        );
+        await expect(
+          new RenderExecutionFileService({
+            stagingRoot: config.staging_root,
+            outputRoot: config.output_root,
+            runtimeRoot: config.runtime_root,
+            runtimeManifestPath: config.runtime_manifest_path,
+            approvalReceiptPath: config.approval_receipt_path,
+            runtimeAuthorityResolver: runtime.resolveRuntimeAuthority,
+          }).reverifyPreparedSnapshot(importedSnapshot),
+        ).resolves.toBeUndefined();
       } finally {
         importedDb.db.close();
       }
-      const config = JSON.parse(await readFile(imported.smoke_config_path, 'utf8')) as {
-        smoke_bundle_manifest_hash: string;
-        smoke_bundle_hash: string;
-        runtime_manifest_path: string;
-      };
       expect(config.smoke_bundle_manifest_hash).toBe(exported.manifest.manifest_hash);
       expect(config.smoke_bundle_hash).toBe(exported.manifest.bundle_hash);
       expect(config.runtime_manifest_path).toBe(await realpath(runtime.manifestPath));
@@ -303,6 +346,47 @@ describe('Code G R1B portable historical smoke bundle', () => {
           approval_receipt_path: join(context.root, 'approval.json'),
         }),
       ).rejects.toThrowError('R1B_SMOKE_BUNDLE_SYMLINK_FORBIDDEN');
+    } finally {
+      context.db.close();
+    }
+  });
+
+  it('rejects a traversal entry before it can escape the controlled import root', async () => {
+    const context = await fixture();
+    try {
+      const bundleRoot = join(context.root, 'traversal-bundle');
+      await exportHistoricalR1BSmokeBundle({
+        preparations: context.preparations,
+        policies: context.policies,
+        job_id: context.job.job_id,
+        bundle_root: bundleRoot,
+      });
+      const manifestPath = join(bundleRoot, 'manifest.json');
+      const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as {
+        manifest_hash: string;
+        bundle_hash: string;
+        files: Array<{ relative_path: string; role: string }>;
+        [key: string]: unknown;
+      };
+      manifest.files.find((file) => file.role === 'SOURCE')!.relative_path = '../escape.mp4';
+      const preimage = structuredClone(manifest) as Record<string, unknown>;
+      delete preimage.manifest_hash;
+      delete preimage.bundle_hash;
+      manifest.manifest_hash = sha256(canonicalJson(preimage));
+      manifest.bundle_hash = sha256(
+        canonicalJson({ manifest_hash: manifest.manifest_hash, files: manifest.files }),
+      );
+      await writeFile(manifestPath, `${canonicalJson(manifest)}\n`);
+      await expect(
+        importHistoricalR1BSmokeBundle({
+          bundle_root: bundleRoot,
+          controlled_root: join(context.root, 'traversal-rejected-import'),
+          migrations_directory: migrationsDirectory,
+          runtime_root: context.root,
+          runtime_manifest_path: join(context.root, 'missing-runtime.json'),
+          approval_receipt_path: join(context.root, 'approval.json'),
+        }),
+      ).rejects.toThrowError(/R1B_SMOKE_BUNDLE_(?:FILE_SET_MISMATCH|PATH_INVALID)/u);
     } finally {
       context.db.close();
     }
