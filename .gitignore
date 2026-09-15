@@ -4,6 +4,7 @@ dist-electron/
 dist-renderer/
 out/
 /apps/desktop/release/
+/apps/desktop/.runtime-stage/
 coverage/
 artifacts/
 frozen-candidates/

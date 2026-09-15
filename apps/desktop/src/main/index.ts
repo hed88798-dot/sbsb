@@ -13,6 +13,7 @@ import {
 import { MockTextCapabilityClient } from '@app/provider-client';
 import { CopywritingService } from './copywriting-service.js';
 import { registerIpc } from './ipc.js';
+import { runPackagedRenderRuntimeSmoke } from './packaged-render-runtime-smoke.js';
 
 const currentDirectory = fileURLToPath(new URL('.', import.meta.url));
 let mainWindow: BrowserWindow | null = null;
@@ -92,23 +93,37 @@ async function createWindow(): Promise<void> {
   }
 }
 
-app.whenReady().then(async () => {
-  if (process.env.DESKTOP_NATIVE_SMOKE === '1') {
-    await runNativeSqliteSmoke();
-    app.quit();
-    return;
-  }
-  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    callback({
-      responseHeaders: {
-        ...details.responseHeaders,
-        'Content-Security-Policy': [
-          "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' http://127.0.0.1:5173",
-        ],
-      },
+app
+  .whenReady()
+  .then(async () => {
+    if (process.env.DESKTOP_RENDER_RUNTIME_SMOKE === '1') {
+      if (!app.isPackaged) throw new Error('PACKAGED_RENDER_RUNTIME_SMOKE_REQUIRES_PACKAGED_APP');
+      const evidence = await runPackagedRenderRuntimeSmoke(process.resourcesPath);
+      console.log(`PACKAGED_RENDER_RUNTIME_SMOKE_JSON:${JSON.stringify(evidence)}`);
+      console.log('PACKAGED_RENDER_RUNTIME_SMOKE:PASS');
+      app.quit();
+      return;
+    }
+    if (process.env.DESKTOP_NATIVE_SMOKE === '1') {
+      await runNativeSqliteSmoke();
+      app.quit();
+      return;
+    }
+    session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          'Content-Security-Policy': [
+            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' http://127.0.0.1:5173",
+          ],
+        },
+      });
     });
+    await createWindow();
+  })
+  .catch((error: unknown) => {
+    console.error(error);
+    app.exit(1);
   });
-  await createWindow();
-});
 
 app.on('window-all-closed', () => app.quit());
