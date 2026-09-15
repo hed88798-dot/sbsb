@@ -42,6 +42,8 @@ jobs:
       - run: pnpm compliance:python:target -- describe-current --output artifacts/compliance/CURRENT_TARGET.json
       - run: pnpm compliance:python:target -- verify-current --target artifacts/compliance/CURRENT_TARGET.json
       - run: pnpm ci:prepare
+      - name: Run RenderStagingService Windows fsync regression
+        run: pnpm exec vitest run tests/integration/render-staging-fsync.test.ts --maxWorkers=1
       - run: pnpm package:resolution
       - run: pnpm portability:check
       - run: pnpm workflow:security

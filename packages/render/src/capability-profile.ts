@@ -11,6 +11,12 @@ export const FFMPEG_REQUIRED_CAPABILITY_PROFILE_V1 = {
   profile_hash: 'e05686e544bd31de1782b4b13cb23e993e6c26ef90408b1d19b8e59dd5ac5910',
 } as const;
 
+export const FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2 = {
+  profile_id: 'code-g-r1-ffmpeg-required-capabilities',
+  profile_version: 2,
+  profile_hash: '2c19710e609b1ae769e7f007cffca1e552ce1158963bec2aa8a8bcad59a01c1b',
+} as const;
+
 export const ffmpegRequiredCapabilityProfileV1Schema = z
   .object({
     schema_version: z.literal('1.0'),

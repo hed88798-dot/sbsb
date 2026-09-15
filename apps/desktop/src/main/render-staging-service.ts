@@ -62,7 +62,10 @@ async function verifyRegularFile(path: string): Promise<string> {
 }
 
 async function flushFile(path: string): Promise<void> {
-  const handle = await open(path, 'r');
+  // Windows rejects fsync on a read-only handle (EPERM). Keep the file
+  // contents untouched while using a write-capable, non-truncating handle
+  // for the durability barrier.
+  const handle = await open(path, 'r+');
   try {
     await handle.sync();
   } finally {

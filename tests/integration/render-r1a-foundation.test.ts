@@ -7,7 +7,7 @@ import {
   RenderPreparationRepository,
 } from '../../packages/local-db/src/index.js';
 import {
-  FFMPEG_REQUIRED_CAPABILITY_PROFILE_V1,
+  FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2,
   RENDER_POLICY_V1,
   buildLogicalRenderPlanV1,
   computeNarrationAudioArtifactHashV1,
@@ -42,9 +42,9 @@ function mockRuntime(): RenderRuntimeIdentityV1 {
     ffprobe_executable_path: '/mock/runtime/ffprobe',
     ffprobe_entrypoint_sha256: '2'.repeat(64),
     companion_manifest_sha256: '3'.repeat(64),
-    capability_profile_id: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V1.profile_id,
-    capability_profile_version: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V1.profile_version,
-    capability_profile_hash: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V1.profile_hash,
+    capability_profile_id: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_id,
+    capability_profile_version: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_version,
+    capability_profile_hash: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_hash,
     runtime_member_hashes: [{ relative_path: 'ffmpeg', sha256: '1'.repeat(64) }],
     approval_status: 'MOCK_R1A_TEST_ONLY',
   };
