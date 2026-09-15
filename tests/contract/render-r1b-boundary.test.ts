@@ -79,10 +79,12 @@ describe('Code G R1B architecture and frozen-authority boundaries', () => {
   it('blocks Runtime v1 product execution without weakening autorotation', () => {
     const execution = source('packages/render/src/execution.ts');
     const files = source('apps/desktop/src/main/render-execution-file-service.ts');
+    const runtimeAuthority = source('apps/desktop/src/main/render-runtime-authority-service.ts');
     const checkpoint = source('docs/render/R1B_A_RUNTIME_ROTATION_COMPATIBILITY_CHECKPOINT.md');
     expect(execution).toContain("args.push('-protocol_whitelist', 'file,pipe', '-autorotate'");
     expect(execution).toContain('assertApprovedRuntimeV2Identity(snapshot.runtime_identity)');
-    expect(files).toContain('verifyRuntimeV2ApprovalReceipt');
+    expect(files).toContain('resolveApprovedRuntimeV2Authority');
+    expect(runtimeAuthority).toContain('verifyRuntimeV2ApprovalReceipt');
     expect(files).not.toContain(
       "throw new Error('RENDER_ROTATION_RUNTIME_CAPABILITY_V2_REQUIRED')",
     );
@@ -100,5 +102,16 @@ describe('Code G R1B architecture and frozen-authority boundaries', () => {
     expect(service).not.toMatch(
       /MaterialSelectionRepository|MediaIndexRepository|TimelinePlanRepository|RenderPreparationService|planAndCommit|retrieve|select\(/u,
     );
+  });
+
+  it('derives Runtime v2 identity and exposes no standalone identity-file CLI argument', () => {
+    const importer = source('tools/render-r1b/import-historical-smoke-bundle.mjs');
+    const service = source('apps/desktop/src/main/render-smoke-bundle-service.ts');
+    const operatorAuthority = source('tools/r1a-acceptance/runtime-authority.mjs');
+    expect(importer).toContain('runtimeManifestArgument');
+    expect(importer).not.toContain('runtimeIdentityArgument');
+    expect(service).toContain('resolveApprovedRuntimeV2Authority');
+    expect(service).not.toContain('runtime_identity_path');
+    expect(operatorAuthority).toContain('resolveApprovedRuntimeV2Authority');
   });
 });

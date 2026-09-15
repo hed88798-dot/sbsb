@@ -6,7 +6,7 @@ const [
   controlledRootArgument,
   migrationsArgument,
   runtimeRootArgument,
-  runtimeIdentityArgument,
+  runtimeManifestArgument,
   approvalReceiptArgument,
 ] = process.argv.slice(2);
 if (
@@ -14,7 +14,7 @@ if (
   !controlledRootArgument ||
   !migrationsArgument ||
   !runtimeRootArgument ||
-  !runtimeIdentityArgument ||
+  !runtimeManifestArgument ||
   !approvalReceiptArgument
 ) {
   throw new Error('R1B_SMOKE_IMPORT_ARGUMENTS_REQUIRED');
@@ -24,7 +24,7 @@ const result = await importHistoricalR1BSmokeBundle({
   controlled_root: resolve(controlledRootArgument),
   migrations_directory: resolve(migrationsArgument),
   runtime_root: resolve(runtimeRootArgument),
-  runtime_identity_path: resolve(runtimeIdentityArgument),
+  runtime_manifest_path: resolve(runtimeManifestArgument),
   approval_receipt_path: resolve(approvalReceiptArgument),
 });
 console.log(

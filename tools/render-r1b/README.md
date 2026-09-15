@@ -4,8 +4,8 @@ The smoke reuses an existing accepted R1A `READY_FOR_EXECUTION` job. It never re
 never creates a Timeline; never changes material selection; and never regenerates narration.
 
 Runtime v1 is historically approved but is not compatible with the rotation-capable R1B contract.
-Do not run product acceptance until the separately approved Runtime v2 and its runtime identity file
-exist. Hosted Windows Server remains build/static governance only.
+Do not run product acceptance until the separately approved Runtime v2 root, manifest, and final
+approval receipt exist. Hosted Windows Server remains build/static governance only.
 
 ## 1. Export accepted authority on the source machine
 
@@ -28,10 +28,12 @@ Never substitute a test or synthesized authority.
 Transfer the bundle directory without changing bytes. After `pnpm build`, use one import command:
 
 ```powershell
-pnpm render:r1b:smoke-bundle:import -- <bundle-directory> <new-controlled-root> <migrations-directory> <approved-runtime-v2-root> <runtime-v2-identity.json> <runtime-v2-approval-receipt.json>
+pnpm render:r1b:smoke-bundle:import -- <bundle-directory> <new-controlled-root> <migrations-directory> <approved-runtime-v2-root> <approved-runtime-v2-manifest.json> <runtime-v2-approval-receipt.json>
 ```
 
-The runtime identity is supplied by the approved Code F runtime; the user does not compose hashes.
+The importer derives `RenderRuntimeIdentityV1` from the approved runtime root, its exact manifest,
+the final Code F approval receipt, and a full hash re-verification of the declared bundle members.
+There is no standalone identity-file argument, and the operator cannot compose an identity object.
 Import rejects absolute/traversal bundle entries, case-normalized duplicates, symlinks/reparse-style
 escapes, undeclared files, and any size/hash mismatch. It materializes bytes below the new controlled
 root, preserves the logical render hash, creates only a new Windows machine execution snapshot, and

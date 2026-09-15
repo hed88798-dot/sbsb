@@ -20,6 +20,7 @@ const expectedKeys = [
   'staging_root',
   'output_root',
   'runtime_root',
+  'runtime_manifest_path',
   'approval_receipt_path',
   'expected_timeline_id',
   'expected_timeline_version',
@@ -70,6 +71,7 @@ function exactConfig(value) {
     'staging_root',
     'output_root',
     'runtime_root',
+    'runtime_manifest_path',
     'approval_receipt_path',
   ]) {
     if (typeof value[key] !== 'string' || !isAbsolute(value[key])) {
@@ -118,6 +120,7 @@ try {
       stagingRoot: config.staging_root,
       outputRoot: config.output_root,
       runtimeRoot: config.runtime_root,
+      runtimeManifestPath: config.runtime_manifest_path,
       approvalReceiptPath: config.approval_receipt_path,
     }),
     processes,

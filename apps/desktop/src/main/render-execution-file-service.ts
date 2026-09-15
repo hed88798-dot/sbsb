@@ -1,31 +1,13 @@
 import { constants } from 'node:fs';
-import {
-  access,
-  lstat,
-  mkdir,
-  readdir,
-  realpath,
-  rename,
-  rm,
-  stat,
-  readFile,
-} from 'node:fs/promises';
+import { access, lstat, mkdir, realpath, rename, rm, stat } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
-import { canonicalJson, hashFile, sha256 } from '@app/domain-media-index';
+import { canonicalJson, hashFile } from '@app/domain-media-index';
+import { parseRenderExecutionSnapshotV1, type RenderExecutionSnapshotV1 } from '@app/render';
 import {
-  CODE_G_R1B_APPROVED_BUILD_PROFILE_V2_SHA256,
-  CODE_G_R1B_APPROVED_FFMPEG_V2_SHA256,
-  CODE_G_R1B_APPROVED_FFPROBE_V2_SHA256,
-  CODE_G_R1B_APPROVED_RUNTIME_V2_IDENTITY_SHA256,
-  CODE_G_R1B_APPROVED_RUNTIME_V2_MANIFEST_SHA256,
-  CODE_G_R1B_APPROVAL_RECEIPT_V2_SHA256,
-  FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2,
-  assertApprovedRuntimeV2Identity,
-  parseRenderExecutionSnapshotV1,
-  verifyRuntimeV2ApprovalReceipt,
-  type ApprovedRuntimeV2ReceiptBindings,
-  type RenderExecutionSnapshotV1,
-} from '@app/render';
+  resolveApprovedRuntimeV2Authority,
+  type ApprovedRuntimeV2AuthorityInput,
+  type ApprovedRuntimeV2AuthorityResolution,
+} from './render-runtime-authority-service.js';
 
 export interface RenderAttemptPathsV1 {
   partial_output_path: string;
@@ -82,13 +64,6 @@ function safeIdentity(value: string): string {
   return value;
 }
 
-function objectRecord(value: unknown, code: string): Record<string, unknown> {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
-    throw new Error(code);
-  }
-  return value as Record<string, unknown>;
-}
-
 async function controlledDirectory(path: string): Promise<string> {
   const requested = resolve(path);
   await mkdir(requested, { recursive: true });
@@ -121,18 +96,29 @@ export class RenderExecutionFileService implements RenderExecutionFilePortV1 {
   readonly #configuredStagingRoot: string;
   readonly #configuredOutputRoot: string;
   readonly #configuredRuntimeRoot: string;
+  readonly #runtimeManifestPath: string;
   readonly #approvalReceiptPath: string;
+  readonly #runtimeAuthorityResolver: (
+    input: ApprovedRuntimeV2AuthorityInput,
+  ) => Promise<ApprovedRuntimeV2AuthorityResolution>;
 
   constructor(options: {
     stagingRoot: string;
     outputRoot: string;
     runtimeRoot: string;
+    runtimeManifestPath: string;
     approvalReceiptPath: string;
+    runtimeAuthorityResolver?: (
+      input: ApprovedRuntimeV2AuthorityInput,
+    ) => Promise<ApprovedRuntimeV2AuthorityResolution>;
   }) {
     this.#configuredStagingRoot = options.stagingRoot;
     this.#configuredOutputRoot = options.outputRoot;
     this.#configuredRuntimeRoot = options.runtimeRoot;
+    this.#runtimeManifestPath = options.runtimeManifestPath;
     this.#approvalReceiptPath = options.approvalReceiptPath;
+    this.#runtimeAuthorityResolver =
+      options.runtimeAuthorityResolver ?? resolveApprovedRuntimeV2Authority;
   }
 
   async reverifyPreparedSnapshot(snapshotValue: RenderExecutionSnapshotV1): Promise<void> {
@@ -156,8 +142,14 @@ export class RenderExecutionFileService implements RenderExecutionFilePortV1 {
         throw new Error('RENDER_STAGED_INPUT_HASH_MISMATCH');
       }
     }
-    const approval = await this.#verifyApprovalReceipt();
-    await this.#verifyRuntime(snapshot, approval);
+    const runtimeAuthority = await this.#runtimeAuthorityResolver({
+      runtime_root: this.#configuredRuntimeRoot,
+      runtime_manifest_path: this.#runtimeManifestPath,
+      approval_receipt_path: this.#approvalReceiptPath,
+    });
+    if (canonicalJson(runtimeAuthority.identity) !== canonicalJson(snapshot.runtime_identity)) {
+      throw new Error('RENDER_RUNTIME_SNAPSHOT_AUTHORITY_MISMATCH');
+    }
   }
 
   async createAttemptPaths(input: {
@@ -348,205 +340,5 @@ export class RenderExecutionFileService implements RenderExecutionFilePortV1 {
         observed_size_bytes: null,
       };
     }
-  }
-
-  async #verifyApprovalReceipt(): Promise<ApprovedRuntimeV2ReceiptBindings> {
-    const receiptPath = await exactRegularFile(
-      this.#approvalReceiptPath,
-      'RENDER_RUNTIME_APPROVAL_RECEIPT_INVALID',
-    );
-    const receiptSha256 = await hashFile(receiptPath);
-    try {
-      return verifyRuntimeV2ApprovalReceipt({
-        receipt_sha256: receiptSha256,
-        receipt: JSON.parse(await readFile(receiptPath, 'utf8')) as unknown,
-      });
-    } catch (error) {
-      if (receiptSha256 !== CODE_G_R1B_APPROVAL_RECEIPT_V2_SHA256) {
-        throw new Error('RENDER_RUNTIME_APPROVAL_RECEIPT_HASH_MISMATCH', { cause: error });
-      }
-      if (error instanceof SyntaxError) {
-        throw new Error('RENDER_RUNTIME_APPROVAL_RECEIPT_INVALID', { cause: error });
-      }
-      throw error;
-    }
-  }
-
-  async #verifyRuntimeManifest(
-    path: string,
-    approval: ApprovedRuntimeV2ReceiptBindings,
-  ): Promise<Map<string, string>> {
-    let manifest: Record<string, unknown>;
-    try {
-      manifest = objectRecord(
-        JSON.parse(await readFile(path, 'utf8')) as unknown,
-        'RENDER_RUNTIME_MANIFEST_INVALID',
-      );
-    } catch (error) {
-      if (error instanceof SyntaxError) {
-        throw new Error('RENDER_RUNTIME_MANIFEST_INVALID', { cause: error });
-      }
-      throw error;
-    }
-    const platform = objectRecord(manifest.platform, 'RENDER_RUNTIME_MANIFEST_INVALID');
-    const provenance = objectRecord(manifest.provenance, 'RENDER_RUNTIME_MANIFEST_INVALID');
-    const entrypoints = Array.isArray(manifest.entrypoints)
-      ? manifest.entrypoints.map((value) => objectRecord(value, 'RENDER_RUNTIME_MANIFEST_INVALID'))
-      : null;
-    const bundleMembers = Array.isArray(manifest.bundle_members)
-      ? manifest.bundle_members.map((value) =>
-          objectRecord(value, 'RENDER_RUNTIME_MANIFEST_INVALID'),
-        )
-      : null;
-    if (
-      manifest.schema_version !== '1' ||
-      manifest.subject_type !== 'FFMPEG_RENDER_RUNTIME_BUNDLE' ||
-      manifest.role !== 'PRODUCT_RUNTIME_DEPENDENCY' ||
-      manifest.runtime_id !== approval.runtime_id ||
-      manifest.manifest_sha256 !== approval.runtime_manifest_sha256 ||
-      manifest.runtime_identity_sha256 !== approval.runtime_identity_sha256 ||
-      platform.os !== 'windows' ||
-      platform.architecture !== 'x86_64' ||
-      provenance.code_g_capability_profile_hash !==
-        FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_hash ||
-      provenance.build_profile_sha256 !== CODE_G_R1B_APPROVED_BUILD_PROFILE_V2_SHA256 ||
-      entrypoints === null ||
-      entrypoints.length !== 2 ||
-      bundleMembers === null ||
-      bundleMembers.length < 2 ||
-      !entrypoints.some(
-        (entry) =>
-          entry.path === 'ffmpeg.exe' && entry.sha256 === CODE_G_R1B_APPROVED_FFMPEG_V2_SHA256,
-      ) ||
-      !entrypoints.some(
-        (entry) =>
-          entry.path === 'ffprobe.exe' && entry.sha256 === CODE_G_R1B_APPROVED_FFPROBE_V2_SHA256,
-      )
-    ) {
-      throw new Error('RENDER_RUNTIME_MANIFEST_APPROVAL_MISMATCH');
-    }
-    const manifestPayload = structuredClone(manifest);
-    delete manifestPayload.manifest_sha256;
-    if (sha256(canonicalJson(manifestPayload)) !== CODE_G_R1B_APPROVED_RUNTIME_V2_MANIFEST_SHA256) {
-      throw new Error('RENDER_RUNTIME_MANIFEST_HASH_MISMATCH');
-    }
-    const identityPayload = structuredClone(manifest);
-    delete identityPayload.manifest_sha256;
-    delete identityPayload.runtime_identity_sha256;
-    delete identityPayload.license_evidence;
-    if (sha256(canonicalJson(identityPayload)) !== CODE_G_R1B_APPROVED_RUNTIME_V2_IDENTITY_SHA256) {
-      throw new Error('RENDER_RUNTIME_IDENTITY_HASH_MISMATCH');
-    }
-    const approvedMembers = new Map<string, string>();
-    for (const member of bundleMembers) {
-      if (
-        typeof member.path !== 'string' ||
-        !/^[a-f0-9]{64}$/u.test(String(member.sha256)) ||
-        isAbsolute(member.path) ||
-        member.path.split(/[\\/]/u).some((part) => part === '..' || part.length === 0) ||
-        approvedMembers.has(member.path)
-      ) {
-        throw new Error('RENDER_RUNTIME_MANIFEST_MEMBER_SET_INVALID');
-      }
-      approvedMembers.set(member.path, String(member.sha256));
-    }
-    return approvedMembers;
-  }
-
-  async #verifyRuntime(
-    snapshot: RenderExecutionSnapshotV1,
-    approval: ApprovedRuntimeV2ReceiptBindings,
-  ): Promise<void> {
-    const identity = snapshot.runtime_identity;
-    try {
-      assertApprovedRuntimeV2Identity(identity);
-    } catch {
-      throw new Error('RENDER_RUNTIME_NOT_APPROVED');
-    }
-    if (
-      identity.runtime_id !== approval.runtime_id ||
-      identity.companion_manifest_sha256 !== approval.runtime_manifest_sha256
-    ) {
-      throw new Error('RENDER_RUNTIME_MANIFEST_APPROVAL_MISMATCH');
-    }
-    const runtimeRoot = await controlledDirectory(this.#configuredRuntimeRoot);
-    const ffmpeg = await exactRegularFile(identity.ffmpeg_executable_path, 'RENDER_FFMPEG_INVALID');
-    const ffprobe = await exactRegularFile(
-      identity.ffprobe_executable_path,
-      'RENDER_FFPROBE_INVALID',
-    );
-    if (!isInside(runtimeRoot, ffmpeg) || !isInside(runtimeRoot, ffprobe)) {
-      throw new Error('RENDER_RUNTIME_PATH_ESCAPE');
-    }
-    if (
-      (await hashFile(ffmpeg)) !== CODE_G_R1B_APPROVED_FFMPEG_V2_SHA256 ||
-      (await hashFile(ffprobe)) !== CODE_G_R1B_APPROVED_FFPROBE_V2_SHA256
-    ) {
-      throw new Error('RENDER_RUNTIME_ENTRYPOINT_HASH_MISMATCH');
-    }
-    const members = new Set<string>();
-    let manifestBound = false;
-    let approvedBundleMembers: Map<string, string> | null = null;
-    for (const member of identity.runtime_member_hashes) {
-      if (
-        isAbsolute(member.relative_path) ||
-        member.relative_path.split(/[\\/]/u).some((part) => part === '..' || part.length === 0) ||
-        members.has(member.relative_path)
-      ) {
-        throw new Error('RENDER_RUNTIME_MEMBER_SET_INVALID');
-      }
-      members.add(member.relative_path);
-      const path = await exactRegularFile(
-        join(runtimeRoot, member.relative_path),
-        'RENDER_RUNTIME_MEMBER_INVALID',
-      );
-      if (!isInside(runtimeRoot, path) || (await hashFile(path)) !== member.sha256) {
-        throw new Error('RENDER_RUNTIME_MEMBER_HASH_MISMATCH');
-      }
-      if (member.relative_path.replaceAll('\\', '/') === 'manifest.json') {
-        if (manifestBound) throw new Error('RENDER_RUNTIME_MANIFEST_MEMBER_DUPLICATE');
-        approvedBundleMembers = await this.#verifyRuntimeManifest(path, approval);
-        manifestBound = true;
-      }
-    }
-    if (!manifestBound || approvedBundleMembers === null) {
-      throw new Error('RENDER_RUNTIME_MANIFEST_MEMBER_MISSING');
-    }
-    const snapshotBundleMembers = new Map(
-      identity.runtime_member_hashes
-        .filter((member) => member.relative_path.replaceAll('\\', '/') !== 'manifest.json')
-        .map((member) => [member.relative_path.replaceAll('\\', '/'), member.sha256]),
-    );
-    if (
-      snapshotBundleMembers.size !== approvedBundleMembers.size ||
-      [...approvedBundleMembers].some(
-        ([path, expectedHash]) => snapshotBundleMembers.get(path) !== expectedHash,
-      )
-    ) {
-      throw new Error('RENDER_RUNTIME_MANIFEST_MEMBER_SET_MISMATCH');
-    }
-    const actualMembers = new Set(await this.#runtimeFiles(runtimeRoot));
-    if (
-      actualMembers.size !== members.size ||
-      [...members].some((member) => !actualMembers.has(member.replaceAll('\\', '/')))
-    ) {
-      throw new Error('RENDER_RUNTIME_MEMBER_SET_MISMATCH');
-    }
-  }
-
-  async #runtimeFiles(root: string, directory = root): Promise<string[]> {
-    const files: string[] = [];
-    for (const entry of await readdir(directory, { withFileTypes: true })) {
-      const path = join(directory, entry.name);
-      if (entry.isSymbolicLink()) throw new Error('RENDER_RUNTIME_MEMBER_SET_INVALID');
-      if (entry.isDirectory()) {
-        files.push(...(await this.#runtimeFiles(root, path)));
-      } else if (entry.isFile()) {
-        files.push(relative(root, path).split(sep).join('/'));
-      } else {
-        throw new Error('RENDER_RUNTIME_MEMBER_SET_INVALID');
-      }
-    }
-    return files.sort();
   }
 }

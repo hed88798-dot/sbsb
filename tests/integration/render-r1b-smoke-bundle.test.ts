@@ -1,4 +1,13 @@
-import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import {
+  mkdtemp,
+  mkdir,
+  readFile,
+  readdir,
+  realpath,
+  rm,
+  symlink,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -9,12 +18,7 @@ import {
   openDatabase,
 } from '../../packages/local-db/src/index.js';
 import {
-  CODE_G_R1B_APPROVED_FFMPEG_V2_SHA256,
-  CODE_G_R1B_APPROVED_FFPROBE_V2_SHA256,
-  CODE_G_R1B_APPROVED_RUNTIME_V2_ID,
-  CODE_G_R1B_APPROVED_RUNTIME_V2_MANIFEST_SHA256,
   FFMPEG_REQUIRED_CAPABILITY_PROFILE_V1,
-  FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2,
   RENDER_POLICY_V1,
   buildExecutionSnapshotV1,
   computeLogicalRenderHashV1,
@@ -24,6 +28,7 @@ import {
   exportHistoricalR1BSmokeBundle,
   importHistoricalR1BSmokeBundle,
 } from '../../apps/desktop/src/main/render-smoke-bundle-service.js';
+import { createRuntimeV2AuthorityFixture } from '../helpers/runtime-v2-authority-fixture.js';
 
 const cleanup: string[] = [];
 const migrationsDirectory = resolve(import.meta.dirname, '../../migrations/desktop-sqlite');
@@ -198,36 +203,19 @@ describe('Code G R1B portable historical smoke bundle', () => {
       expect(await readFile(join(bundleRoot, 'authority.json'), 'utf8')).not.toContain(
         context.root,
       );
-      const runtimeRoot = join(context.root, 'runtime');
-      await mkdir(runtimeRoot);
-      const runtimeIdentityPath = join(runtimeRoot, 'runtime-identity.json');
-      await writeFile(
-        runtimeIdentityPath,
-        `${canonicalJson({
-          schema_version: '1.0',
-          runtime_id: CODE_G_R1B_APPROVED_RUNTIME_V2_ID,
-          platform: 'win32',
-          architecture: 'x64',
-          ffmpeg_executable_path: 'D:\\runtime\\ffmpeg.exe',
-          ffmpeg_entrypoint_sha256: CODE_G_R1B_APPROVED_FFMPEG_V2_SHA256,
-          ffprobe_executable_path: 'D:\\runtime\\ffprobe.exe',
-          ffprobe_entrypoint_sha256: CODE_G_R1B_APPROVED_FFPROBE_V2_SHA256,
-          companion_manifest_sha256: CODE_G_R1B_APPROVED_RUNTIME_V2_MANIFEST_SHA256,
-          capability_profile_id: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_id,
-          capability_profile_version: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_version,
-          capability_profile_hash: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_hash,
-          runtime_member_hashes: [{ relative_path: 'manifest.json', sha256: '3'.repeat(64) }],
-          approval_status: 'APPROVED',
-        })}\n`,
+      const runtime = await createRuntimeV2AuthorityFixture(context.root);
+      expect(await readdir(runtime.runtimeRoot)).not.toContain('runtime-identity.json');
+      const imported = await importHistoricalR1BSmokeBundle(
+        {
+          bundle_root: bundleRoot,
+          controlled_root: join(context.root, 'windows-import'),
+          migrations_directory: migrationsDirectory,
+          runtime_root: runtime.runtimeRoot,
+          runtime_manifest_path: runtime.manifestPath,
+          approval_receipt_path: runtime.approvalReceiptPath,
+        },
+        { resolveRuntimeAuthority: runtime.resolveRuntimeAuthority },
       );
-      const imported = await importHistoricalR1BSmokeBundle({
-        bundle_root: bundleRoot,
-        controlled_root: join(context.root, 'windows-import'),
-        migrations_directory: migrationsDirectory,
-        runtime_root: runtimeRoot,
-        runtime_identity_path: runtimeIdentityPath,
-        approval_receipt_path: join(context.root, 'approval.json'),
-      });
       expect(imported.bundle_hash).toBe(exported.manifest.bundle_hash);
       expect(imported.manifest_hash).toBe(exported.manifest.manifest_hash);
       const importedDb = await openDatabase({
@@ -254,9 +242,11 @@ describe('Code G R1B portable historical smoke bundle', () => {
       const config = JSON.parse(await readFile(imported.smoke_config_path, 'utf8')) as {
         smoke_bundle_manifest_hash: string;
         smoke_bundle_hash: string;
+        runtime_manifest_path: string;
       };
       expect(config.smoke_bundle_manifest_hash).toBe(exported.manifest.manifest_hash);
       expect(config.smoke_bundle_hash).toBe(exported.manifest.bundle_hash);
+      expect(config.runtime_manifest_path).toBe(await realpath(runtime.manifestPath));
     } finally {
       context.db.close();
     }
@@ -280,7 +270,7 @@ describe('Code G R1B portable historical smoke bundle', () => {
           controlled_root: join(context.root, 'rejected-import'),
           migrations_directory: migrationsDirectory,
           runtime_root: context.root,
-          runtime_identity_path: join(context.root, 'missing-runtime.json'),
+          runtime_manifest_path: join(context.root, 'missing-runtime.json'),
           approval_receipt_path: join(context.root, 'approval.json'),
         }),
       ).rejects.toThrowError('R1B_SMOKE_BUNDLE_FILE_HASH_MISMATCH');
@@ -309,7 +299,7 @@ describe('Code G R1B portable historical smoke bundle', () => {
           controlled_root: join(context.root, 'symlink-rejected-import'),
           migrations_directory: migrationsDirectory,
           runtime_root: context.root,
-          runtime_identity_path: join(context.root, 'missing-runtime.json'),
+          runtime_manifest_path: join(context.root, 'missing-runtime.json'),
           approval_receipt_path: join(context.root, 'approval.json'),
         }),
       ).rejects.toThrowError('R1B_SMOKE_BUNDLE_SYMLINK_FORBIDDEN');

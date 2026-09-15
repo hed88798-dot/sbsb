@@ -1,18 +1,14 @@
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { hashFile } from '../../packages/domain-media-index/src/index.js';
 import {
-  CODE_G_R1B_APPROVED_FFMPEG_V2_SHA256,
-  CODE_G_R1B_APPROVED_FFPROBE_V2_SHA256,
-  CODE_G_R1B_APPROVED_RUNTIME_V2_ID,
-  CODE_G_R1B_APPROVED_RUNTIME_V2_MANIFEST_SHA256,
-  FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2,
   buildExecutionSnapshotV1,
   type RenderExecutionSnapshotV1,
 } from '../../packages/render/src/index.js';
 import { RenderExecutionFileService } from '../../apps/desktop/src/main/render-execution-file-service.js';
+import { createRuntimeV2AuthorityFixture } from '../helpers/runtime-v2-authority-fixture.js';
 
 const cleanup: string[] = [];
 
@@ -32,29 +28,18 @@ async function setup(): Promise<{
   const stagingRoot = join(root, 'staging');
   const attemptRoot = join(stagingRoot, 'attempt');
   const outputRoot = join(root, 'output');
-  const runtimeRoot = join(root, 'runtime');
   await Promise.all([
     mkdir(attemptRoot, { recursive: true }),
     mkdir(outputRoot, { recursive: true }),
-    mkdir(runtimeRoot, { recursive: true }),
   ]);
   const sourcePath = join(attemptRoot, 'source.mp4');
   const narrationPath = join(attemptRoot, 'narration.wav');
-  const ffmpegPath = join(runtimeRoot, 'ffmpeg.exe');
-  const ffprobePath = join(runtimeRoot, 'ffprobe.exe');
-  const manifestPath = join(runtimeRoot, 'manifest.json');
   await writeFile(sourcePath, 'source-v1');
   await writeFile(narrationPath, 'narration-v1');
-  await writeFile(ffmpegPath, 'mutated-ffmpeg');
-  await writeFile(ffprobePath, 'mutated-ffprobe');
-  await writeFile(manifestPath, '{}');
+  const runtime = await createRuntimeV2AuthorityFixture(root);
+  const runtimeResolution = await runtime.resolveRuntimeAuthority(runtime.input);
   const sourceHash = await hashFile(sourcePath);
   const narrationHash = await hashFile(narrationPath);
-  const approvedManifestHash = CODE_G_R1B_APPROVED_RUNTIME_V2_MANIFEST_SHA256;
-  const approvalReceiptPath = resolve(
-    import.meta.dirname,
-    '../../compliance/approval/ffmpeg-render-v2/FFMPEG_RENDER_RUNTIME_APPROVAL_V2.json',
-  );
   const snapshot = buildExecutionSnapshotV1({
     logical_render_hash: 'a'.repeat(64),
     platform: 'win32',
@@ -78,33 +63,20 @@ async function setup(): Promise<{
       staged_sha256: narrationHash,
       size_bytes: Buffer.byteLength('narration-v1'),
     },
-    runtime_identity: {
-      schema_version: '1.0',
-      runtime_id: CODE_G_R1B_APPROVED_RUNTIME_V2_ID,
-      platform: 'win32',
-      architecture: 'x64',
-      ffmpeg_executable_path: ffmpegPath,
-      ffmpeg_entrypoint_sha256: CODE_G_R1B_APPROVED_FFMPEG_V2_SHA256,
-      ffprobe_executable_path: ffprobePath,
-      ffprobe_entrypoint_sha256: CODE_G_R1B_APPROVED_FFPROBE_V2_SHA256,
-      companion_manifest_sha256: approvedManifestHash,
-      capability_profile_id: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_id,
-      capability_profile_version: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_version,
-      capability_profile_hash: FFMPEG_REQUIRED_CAPABILITY_PROFILE_V2.profile_hash,
-      runtime_member_hashes: [{ relative_path: 'manifest.json', sha256: approvedManifestHash }],
-      approval_status: 'APPROVED',
-    },
+    runtime_identity: runtimeResolution.identity,
   });
   return {
     service: new RenderExecutionFileService({
       stagingRoot,
       outputRoot,
-      runtimeRoot,
-      approvalReceiptPath,
+      runtimeRoot: runtime.runtimeRoot,
+      runtimeManifestPath: runtime.manifestPath,
+      approvalReceiptPath: runtime.approvalReceiptPath,
+      runtimeAuthorityResolver: runtime.resolveRuntimeAuthority,
     }),
     snapshot,
     sourcePath,
-    ffmpegPath,
+    ffmpegPath: runtime.ffmpegPath,
     outputRoot,
   };
 }
@@ -120,8 +92,9 @@ describe('Code G R1B filesystem fail-closed controls', () => {
 
   it('detects approved runtime entrypoint mutation before spawn', async () => {
     const context = await setup();
+    await writeFile(context.ffmpegPath, 'tampered-after-ready');
     await expect(context.service.reverifyPreparedSnapshot(context.snapshot)).rejects.toThrowError(
-      'RENDER_RUNTIME_ENTRYPOINT_HASH_MISMATCH',
+      'RENDER_RUNTIME_V2_AUTHORITY_INVALID',
     );
   });
 

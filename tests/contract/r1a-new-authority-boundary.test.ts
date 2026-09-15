@@ -9,6 +9,7 @@ const operatorFiles = [
   'tools/r1a-acceptance/narration.mjs',
   'tools/r1a-acceptance/runtime-authority.mjs',
   'tools/r1a-acceptance/new-authority.mjs',
+  'apps/desktop/src/main/render-runtime-authority-service.ts',
 ];
 
 describe('R1A-N0 operator architecture boundary', () => {

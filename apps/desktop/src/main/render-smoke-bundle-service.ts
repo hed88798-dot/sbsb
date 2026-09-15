@@ -4,16 +4,19 @@ import { canonicalJson, hashFile, sha256 } from '@app/domain-media-index';
 import { RenderPolicyRepository, RenderPreparationRepository, openDatabase } from '@app/local-db';
 import {
   buildExecutionSnapshotV1,
-  assertApprovedRuntimeV2Identity,
   parseLogicalRenderPlanV1,
   parseRenderExecutionSnapshotV1,
   parseRenderPolicyV1,
-  renderRuntimeIdentityV1Schema,
   type LogicalRenderPlanV1,
   type RenderAcceptedTimelineRequestV1,
   type RenderExecutionSnapshotV1,
   type RenderPolicyV1,
 } from '@app/render';
+import {
+  resolveApprovedRuntimeV2Authority,
+  type ApprovedRuntimeV2AuthorityInput,
+  type ApprovedRuntimeV2AuthorityResolution,
+} from './render-runtime-authority-service.js';
 
 interface PortableFileV1 {
   relative_path: string;
@@ -409,14 +412,21 @@ async function verifyBundleFiles(
   return paths;
 }
 
-export async function importHistoricalR1BSmokeBundle(input: {
-  bundle_root: string;
-  controlled_root: string;
-  migrations_directory: string;
-  runtime_root: string;
-  runtime_identity_path: string;
-  approval_receipt_path: string;
-}): Promise<{
+export async function importHistoricalR1BSmokeBundle(
+  input: {
+    bundle_root: string;
+    controlled_root: string;
+    migrations_directory: string;
+    runtime_root: string;
+    runtime_manifest_path: string;
+    approval_receipt_path: string;
+  },
+  dependencies: {
+    resolveRuntimeAuthority?: (
+      input: ApprovedRuntimeV2AuthorityInput,
+    ) => Promise<ApprovedRuntimeV2AuthorityResolution>;
+  } = {},
+): Promise<{
   manifest_hash: string;
   bundle_hash: string;
   job_id: string;
@@ -479,6 +489,13 @@ export async function importHistoricalR1BSmokeBundle(input: {
   ) {
     throw new Error('R1B_SMOKE_BUNDLE_LOGICAL_AUTHORITY_MISMATCH');
   }
+  const runtimeAuthority = await (
+    dependencies.resolveRuntimeAuthority ?? resolveApprovedRuntimeV2Authority
+  )({
+    runtime_root: input.runtime_root,
+    runtime_manifest_path: input.runtime_manifest_path,
+    approval_receipt_path: input.approval_receipt_path,
+  });
   const controlledRoot = await freshDirectory(input.controlled_root);
   const stagingRoot = join(controlledRoot, 'staging');
   const outputRoot = join(controlledRoot, 'output');
@@ -496,25 +513,6 @@ export async function importHistoricalR1BSmokeBundle(input: {
       throw new Error('R1B_SMOKE_IMPORT_HASH_MISMATCH');
     }
     importedPaths.set(relativePath, destination);
-  }
-  const runtimeRoot = await realpath(input.runtime_root);
-  const runtimeIdentityPath = await exactRegularFile(
-    input.runtime_identity_path,
-    'R1B_SMOKE_RUNTIME_IDENTITY_INVALID',
-  );
-  if (
-    !relative(runtimeRoot, runtimeIdentityPath) ||
-    relative(runtimeRoot, runtimeIdentityPath).startsWith(`..${sep}`)
-  ) {
-    throw new Error('R1B_SMOKE_RUNTIME_IDENTITY_PATH_ESCAPE');
-  }
-  const runtimeIdentity = renderRuntimeIdentityV1Schema.parse(
-    JSON.parse(await readFile(runtimeIdentityPath, 'utf8')) as unknown,
-  );
-  try {
-    assertApprovedRuntimeV2Identity(runtimeIdentity);
-  } catch {
-    throw new Error('R1B_SMOKE_ROTATION_RUNTIME_V2_REQUIRED');
   }
   const sourceArtifacts = authority.source_bindings.map((binding) => {
     const path = importedPaths.get(safeRelativePath(binding.relative_path));
@@ -546,7 +544,7 @@ export async function importHistoricalR1BSmokeBundle(input: {
       staged_sha256: authority.narration_binding.authority_sha256,
       size_bytes: authority.narration_binding.size_bytes,
     },
-    runtime_identity: runtimeIdentity,
+    runtime_identity: runtimeAuthority.identity,
   });
   const dbPath = join(controlledRoot, 'app.db');
   const { db } = await openDatabase({ dbPath, migrationsDirectory: input.migrations_directory });
@@ -599,8 +597,9 @@ export async function importHistoricalR1BSmokeBundle(input: {
       migrations_directory: input.migrations_directory,
       staging_root: stagingRoot,
       output_root: outputRoot,
-      runtime_root: input.runtime_root,
-      approval_receipt_path: input.approval_receipt_path,
+      runtime_root: runtimeAuthority.runtime_root,
+      runtime_manifest_path: runtimeAuthority.manifest_path,
+      approval_receipt_path: runtimeAuthority.approval_receipt_path,
       expected_timeline_id: plan.timeline_id,
       expected_timeline_version: plan.timeline_version,
       expected_timeline_commit_receipt_hash: plan.timeline_commit_receipt_hash,
