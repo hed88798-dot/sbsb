@@ -111,7 +111,7 @@ jobs:
           if (-not $installer) { throw 'NSIS_INSTALLER_NOT_FOUND' }
           ./tools/windows/desktop-runtime-v2-installed-smoke.ps1 `
             -Installer $installer.FullName `
-            -InstallRoot "$env:RUNNER_TEMP/r1c-a-installed-desktop" `
+            -InstallRoot "$env:LOCALAPPDATA/Programs/@appdesktop" `
             -EvidencePath artifacts/desktop-runtime-v2/real-installed-app-smoke.json
       - name: Verify three-stage Runtime v2 provenance
         run: >-

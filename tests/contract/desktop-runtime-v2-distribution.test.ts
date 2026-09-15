@@ -51,6 +51,11 @@ describe('approved Runtime v2 desktop distribution boundary', () => {
     expect(workflow).toContain('559437104');
     expect(workflow).toContain('a1d0bff4ea3c53dc56e7de7ee7436dfb872bf3e9bc1317acffb0c0254a3bcc01');
     expect(workflow).toContain('desktop-runtime-v2-installed-smoke.ps1');
+    expect(workflow).toContain('$env:LOCALAPPDATA/Programs/@appdesktop');
     expect(workflow).toContain('desktop:runtime:v2:verify-three-stage');
+
+    const installedSmoke = await read('tools/windows/desktop-runtime-v2-installed-smoke.ps1');
+    expect(installedSmoke).toContain("-ArgumentList '/S'");
+    expect(installedSmoke).not.toContain('/D=');
   });
 });

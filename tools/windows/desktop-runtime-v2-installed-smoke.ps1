@@ -10,7 +10,7 @@ if (Test-Path -LiteralPath $InstallRoot) {
   throw 'INSTALLED_SMOKE_ROOT_MUST_START_ABSENT'
 }
 
-$install = Start-Process -FilePath $installerPath -ArgumentList @('/S', "/D=$InstallRoot") `
+$install = Start-Process -FilePath $installerPath -ArgumentList '/S' `
   -Wait -PassThru -WindowStyle Hidden
 if ($install.ExitCode -ne 0) {
   throw "NSIS_INSTALL_FAILED:$($install.ExitCode)"
