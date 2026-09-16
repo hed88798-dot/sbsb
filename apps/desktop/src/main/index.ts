@@ -16,12 +16,29 @@ import { DesktopLifecycleOwnerV1 } from './desktop-lifecycle-owner.js';
 import { createDesktopRenderCompositionV1 } from './desktop-render-composition.js';
 import { registerIpc } from './ipc.js';
 import { runPackagedRenderRuntimeSmoke } from './packaged-render-runtime-smoke.js';
+import { createInstalledDesktopStartupSmokeRecorder } from './installed-desktop-startup-smoke.js';
 
 const currentDirectory = fileURLToPath(new URL('.', import.meta.url));
 let mainWindow: BrowserWindow | null = null;
 let lifecycleOwner: DesktopLifecycleOwnerV1 | null = null;
 let shutdownInitiated = false;
 let requestedExitCode = 0;
+const installedDesktopStartupSmoke =
+  process.env.DESKTOP_INSTALLED_STARTUP_SMOKE === '1' &&
+  process.env.DESKTOP_INSTALLED_STARTUP_SMOKE_EVIDENCE_PATH
+    ? createInstalledDesktopStartupSmokeRecorder({
+        evidencePath: process.env.DESKTOP_INSTALLED_STARTUP_SMOKE_EVIDENCE_PATH,
+        headSha: process.env.GITHUB_SHA ?? 'unknown',
+        processResourcesPath: process.resourcesPath,
+      })
+    : null;
+
+if (installedDesktopStartupSmoke) {
+  process.on('unhandledRejection', () => installedDesktopStartupSmoke.markUnhandledMainRejection());
+  process.on('uncaughtExceptionMonitor', () =>
+    installedDesktopStartupSmoke.markUncaughtMainException(),
+  );
+}
 
 if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
   app.setPath('userData', join(process.env.LOCALAPPDATA, 'Company', 'AiVideoDesktop'));
@@ -77,12 +94,14 @@ async function createWindow(): Promise<void> {
         ? { is_packaged: false, controlled_dev_runtime_root: controlledDevRuntimeRoot }
         : { is_packaged: false },
   });
+  installedDesktopStartupSmoke?.markRenderCompositionInitialized(renderComposition.available);
   lifecycleOwner = new DesktopLifecycleOwnerV1({
     render: renderComposition.orchestrator,
     copywriting,
     database: db,
   });
   await renderComposition.orchestrator.recoverStartup();
+  installedDesktopStartupSmoke?.markRecoveryCompleted();
 
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -98,6 +117,7 @@ async function createWindow(): Promise<void> {
       webSecurity: true,
     },
   });
+  installedDesktopStartupSmoke?.markBrowserWindowCreated();
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   mainWindow.webContents.on('will-navigate', (event) => event.preventDefault());
   registerIpc({
@@ -118,6 +138,9 @@ async function createWindow(): Promise<void> {
     await mainWindow.loadFile(join(currentDirectory, '../../dist-renderer/index.html'));
   } else {
     await mainWindow.loadURL('http://127.0.0.1:5173/');
+  }
+  if (installedDesktopStartupSmoke) {
+    setTimeout(() => app.quit(), 100);
   }
 }
 
@@ -151,6 +174,7 @@ app
   })
   .catch((error: unknown) => {
     console.error(error);
+    installedDesktopStartupSmoke?.markMainStartupFailure();
     requestedExitCode = 1;
     app.quit();
   });
@@ -161,13 +185,23 @@ app.on('before-quit', (event) => {
   if (shutdownInitiated) return;
   event.preventDefault();
   shutdownInitiated = true;
+  installedDesktopStartupSmoke?.markShutdownRequested();
   const owner = lifecycleOwner;
   if (!owner) {
-    app.exit(requestedExitCode);
+    void installedDesktopStartupSmoke?.write().finally(() => app.exit(requestedExitCode));
+    if (!installedDesktopStartupSmoke) app.exit(requestedExitCode);
     return;
   }
   void owner.shutdown().then(
-    () => app.exit(requestedExitCode),
-    () => app.exit(1),
+    async (result) => {
+      installedDesktopStartupSmoke?.markShutdownCompleted(result.database_closed);
+      await installedDesktopStartupSmoke?.write();
+      app.exit(requestedExitCode);
+    },
+    async () => {
+      installedDesktopStartupSmoke?.markShutdownCompleted(false);
+      await installedDesktopStartupSmoke?.write();
+      app.exit(1);
+    },
   );
 });

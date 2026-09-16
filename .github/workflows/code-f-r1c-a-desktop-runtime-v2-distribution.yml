@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - code-f/r1c-a-desktop-runtime-v2-distribution
+      - code-a/r1c-b-desktop-render-orchestration
   workflow_dispatch:
 
 permissions:
@@ -41,6 +42,13 @@ jobs:
           python-version: '3.13.15'
       - run: pnpm install --frozen-lockfile
       - run: pnpm ci:prepare
+      - name: Verify exact approval receipt bytes before staging
+        shell: pwsh
+        run: >-
+          node tools/desktop-runtime-v2/approval-byte-preflight.mjs
+          --path compliance/approval/ffmpeg-render-v2/FFMPEG_RENDER_RUNTIME_APPROVAL_V2.json
+          --expected-sha256 4f394178882d19442db7a03d9092fb2e662b449700fe516e1d3e36c9d61a2b4c
+          --evidence artifacts/desktop-runtime-v2/approval-byte-preflight.json
       - name: Acquire exact approved Runtime v2 transport
         shell: pwsh
         run: |
@@ -112,7 +120,9 @@ jobs:
           ./tools/windows/desktop-runtime-v2-installed-smoke.ps1 `
             -Installer $installer.FullName `
             -InstallRoot "$env:LOCALAPPDATA/Programs/@appdesktop" `
-            -EvidencePath artifacts/desktop-runtime-v2/real-installed-app-smoke.json
+            -EvidencePath artifacts/desktop-runtime-v2/real-installed-app-smoke.json `
+            -NormalEvidencePath artifacts/desktop-runtime-v2/r1c-b-installed-desktop-smoke.json `
+            -ExpectedHeadSha $env:GITHUB_SHA
       - name: Verify three-stage Runtime v2 provenance
         run: >-
           pnpm desktop:runtime:v2:verify-three-stage --
