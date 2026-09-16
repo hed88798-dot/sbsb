@@ -67,6 +67,12 @@ try {
   }
   $normalRecord | ConvertTo-Json -Depth 20 |
     Set-Content -LiteralPath $normalEvidence -Encoding utf8NoBOM
+  Write-Host "NORMAL_INSTALLED_DESKTOP_EXIT_CODE:$($normalProcess.ExitCode)"
+  Write-Host "NORMAL_INSTALLED_DESKTOP_RECORD_RESULT:$($normalRecord.result)"
+  Write-Host "NORMAL_INSTALLED_DESKTOP_IPC_AFTER_DATABASE_CLOSE_OBSERVED:$ipcAfterDatabaseCloseObserved"
+  if ($ipcAfterDatabaseCloseObserved) {
+    throw 'NORMAL_INSTALLED_DESKTOP_IPC_HANDLER_FAILURE'
+  }
   $requiredTrue = @(
     'render_composition_initialized',
     'render_execution_recovery_completed',

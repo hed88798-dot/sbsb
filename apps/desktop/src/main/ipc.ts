@@ -46,7 +46,6 @@ export function registerIpc(options: {
   const handle = (channel: string, handler: (input: unknown) => unknown | Promise<unknown>) => {
     channels.push(channel);
     options.ipcMain.handle(channel, async (event, input) => {
-      if (!accepting) throw new Error('DESKTOP_IPC_QUIESCED');
       assertTrustedSender(event, options.window);
       return handler(input);
     });

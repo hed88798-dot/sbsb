@@ -56,6 +56,7 @@ describe('approved Runtime v2 desktop distribution boundary', () => {
     expect(workflow).toContain('approval-byte-preflight.json');
     expect(workflow).toContain('r1c-b-installed-desktop-smoke.json');
     expect(workflow).toContain('code-a/r1c-b-desktop-render-orchestration');
+    expect(workflow.match(/if: \$\{\{ always\(\) \}\}/gu)).toHaveLength(2);
 
     const installedSmoke = await read('tools/windows/desktop-runtime-v2-installed-smoke.ps1');
     expect(installedSmoke).toContain("-ArgumentList '/S'");
@@ -64,6 +65,7 @@ describe('approved Runtime v2 desktop distribution boundary', () => {
     expect(installedSmoke).toContain('Error occurred in handler');
     expect(installedSmoke).toContain('The database connection is not open');
     expect(installedSmoke).toContain('ipc_after_database_close_observed');
+    expect(installedSmoke).toContain('NORMAL_INSTALLED_DESKTOP_IPC_HANDLER_FAILURE');
     expect(installedSmoke).not.toContain('/D=');
   });
 
