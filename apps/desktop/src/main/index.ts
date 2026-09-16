@@ -95,11 +95,6 @@ async function createWindow(): Promise<void> {
         : { is_packaged: false },
   });
   installedDesktopStartupSmoke?.markRenderCompositionInitialized(renderComposition.available);
-  lifecycleOwner = new DesktopLifecycleOwnerV1({
-    render: renderComposition.orchestrator,
-    copywriting,
-    database: db,
-  });
   await renderComposition.orchestrator.recoverStartup();
   installedDesktopStartupSmoke?.markRecoveryCompleted();
 
@@ -120,7 +115,7 @@ async function createWindow(): Promise<void> {
   installedDesktopStartupSmoke?.markBrowserWindowCreated();
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   mainWindow.webContents.on('will-navigate', (event) => event.preventDefault());
-  registerIpc({
+  const ipcBoundary = registerIpc({
     ipcMain,
     window: mainWindow,
     products,
@@ -128,6 +123,16 @@ async function createWindow(): Promise<void> {
     settings,
     copywriting,
     render: renderComposition.orchestrator,
+  });
+  lifecycleOwner = new DesktopLifecycleOwnerV1({
+    render: renderComposition.orchestrator,
+    copywriting,
+    database: db,
+    quiesceRenderer: () => {
+      ipcBoundary.quiesce();
+      const window = mainWindow;
+      if (window && !window.isDestroyed()) window.destroy();
+    },
   });
   mainWindow.once('ready-to-show', () => mainWindow?.show());
   mainWindow.on('closed', () => {
@@ -179,10 +184,15 @@ app
     app.quit();
   });
 
-app.on('window-all-closed', () => app.quit());
+app.on('window-all-closed', () => {
+  if (!shutdownInitiated) app.quit();
+});
 
 app.on('before-quit', (event) => {
-  if (shutdownInitiated) return;
+  if (shutdownInitiated) {
+    event.preventDefault();
+    return;
+  }
   event.preventDefault();
   shutdownInitiated = true;
   installedDesktopStartupSmoke?.markShutdownRequested();

@@ -18,6 +18,7 @@ export interface InstalledDesktopStartupSmokeEvidenceV1 {
   shutdown_requested: boolean;
   graceful_shutdown_completed: boolean;
   database_closed_after_settlement: boolean;
+  ipc_after_database_close_observed: boolean;
   result: 'PASS' | 'FAIL';
 }
 
@@ -47,7 +48,8 @@ function passable(state: InstalledDesktopStartupSmokeEvidenceV1): boolean {
     !state.runtime_fallback_observed &&
     state.shutdown_requested &&
     state.graceful_shutdown_completed &&
-    state.database_closed_after_settlement
+    state.database_closed_after_settlement &&
+    !state.ipc_after_database_close_observed
   );
 }
 
@@ -73,6 +75,7 @@ export function createInstalledDesktopStartupSmokeRecorder(options: {
     shutdown_requested: false,
     graceful_shutdown_completed: false,
     database_closed_after_settlement: false,
+    ipc_after_database_close_observed: false,
     result: 'FAIL',
   };
 

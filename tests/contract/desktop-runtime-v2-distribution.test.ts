@@ -61,6 +61,9 @@ describe('approved Runtime v2 desktop distribution boundary', () => {
     expect(installedSmoke).toContain("-ArgumentList '/S'");
     expect(installedSmoke).toContain('DESKTOP_INSTALLED_STARTUP_SMOKE');
     expect(installedSmoke).toContain('NORMAL_INSTALLED_DESKTOP_SMOKE_EVIDENCE_MISSING');
+    expect(installedSmoke).toContain('Error occurred in handler');
+    expect(installedSmoke).toContain('The database connection is not open');
+    expect(installedSmoke).toContain('ipc_after_database_close_observed');
     expect(installedSmoke).not.toContain('/D=');
   });
 

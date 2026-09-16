@@ -53,6 +53,20 @@ try {
     throw 'NORMAL_INSTALLED_DESKTOP_SMOKE_EVIDENCE_MISSING'
   }
   $normalRecord = Get-Content -LiteralPath $normalEvidence -Raw | ConvertFrom-Json
+  $normalStderrContent = if (Test-Path -LiteralPath $normalStderr) {
+    Get-Content -LiteralPath $normalStderr -Raw
+  } else {
+    ''
+  }
+  $ipcAfterDatabaseCloseObserved =
+    $normalStderrContent.Contains('Error occurred in handler') -or
+    $normalStderrContent.Contains('The database connection is not open')
+  $normalRecord.ipc_after_database_close_observed = $ipcAfterDatabaseCloseObserved
+  if ($ipcAfterDatabaseCloseObserved) {
+    $normalRecord.result = 'FAIL'
+  }
+  $normalRecord | ConvertTo-Json -Depth 20 |
+    Set-Content -LiteralPath $normalEvidence -Encoding utf8NoBOM
   $requiredTrue = @(
     'render_composition_initialized',
     'render_execution_recovery_completed',
@@ -72,6 +86,7 @@ try {
     $normalRecord.uncaught_main_exception_observed -ne $false -or
     $normalRecord.main_startup_failure_observed -ne $false -or
     $normalRecord.runtime_fallback_observed -ne $false -or
+    $normalRecord.ipc_after_database_close_observed -ne $false -or
     $missingMarker
   ) {
     throw 'NORMAL_INSTALLED_DESKTOP_SMOKE_FAILED'

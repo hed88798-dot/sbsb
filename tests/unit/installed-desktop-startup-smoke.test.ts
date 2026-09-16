@@ -42,6 +42,7 @@ describe('R1C-B normal installed Desktop smoke evidence', () => {
       shutdown_requested: true,
       graceful_shutdown_completed: true,
       database_closed_after_settlement: true,
+      ipc_after_database_close_observed: false,
       main_startup_failure_observed: false,
       result: 'PASS',
     });

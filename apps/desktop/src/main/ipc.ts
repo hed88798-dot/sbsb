@@ -28,6 +28,10 @@ function assertTrustedSender(event: IpcMainInvokeEvent, window: BrowserWindow): 
   if (!trusted) throw new Error('UNTRUSTED_IPC_ORIGIN');
 }
 
+export interface DesktopIpcBoundaryV1 {
+  quiesce(): void;
+}
+
 export function registerIpc(options: {
   ipcMain: IpcMain;
   window: BrowserWindow;
@@ -36,9 +40,13 @@ export function registerIpc(options: {
   settings: SettingsRepository;
   copywriting: CopywritingService;
   render: DesktopRenderOrchestratorV1;
-}): void {
+}): DesktopIpcBoundaryV1 {
+  let accepting = true;
+  const channels: string[] = [];
   const handle = (channel: string, handler: (input: unknown) => unknown | Promise<unknown>) => {
+    channels.push(channel);
     options.ipcMain.handle(channel, async (event, input) => {
+      if (!accepting) throw new Error('DESKTOP_IPC_QUIESCED');
       assertTrustedSender(event, options.window);
       return handler(input);
     });
@@ -127,4 +135,11 @@ export function registerIpc(options: {
       return renderJobDtoV1Schema.nullable().parse(options.render.get(request.job_id));
     }),
   );
+  return {
+    quiesce() {
+      if (!accepting) return;
+      accepting = false;
+      for (const channel of channels) options.ipcMain.removeHandler(channel);
+    },
+  };
 }

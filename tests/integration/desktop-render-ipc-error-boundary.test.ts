@@ -8,7 +8,7 @@ import type {
 } from '../../packages/local-db/src/index.js';
 import type { CopywritingService } from '../../apps/desktop/src/main/copywriting-service.js';
 import type { DesktopRenderOrchestratorV1 } from '../../apps/desktop/src/main/desktop-render-orchestrator.js';
-import { registerIpc } from '../../apps/desktop/src/main/ipc.js';
+import { registerIpc, type DesktopIpcBoundaryV1 } from '../../apps/desktop/src/main/ipc.js';
 import { RENDER_DESKTOP_OPERATION_FAILED } from '../../apps/desktop/src/main/render-public-error.js';
 
 vi.mock('electron', () => ({
@@ -63,17 +63,20 @@ describe('Desktop Render IPC public error boundary', () => {
     list: vi.fn(),
     require: vi.fn(),
   };
+  const products = { list: vi.fn() };
+  let ipcBoundary: DesktopIpcBoundaryV1;
 
   beforeEach(() => {
     handlers.clear();
     vi.clearAllMocks();
     const ipcMain = {
       handle: vi.fn((channel: string, handler: InvokeHandler) => handlers.set(channel, handler)),
+      removeHandler: vi.fn(),
     } as unknown as IpcMain;
-    registerIpc({
+    ipcBoundary = registerIpc({
       ipcMain,
       window,
-      products: {} as ProductRepository,
+      products: products as unknown as ProductRepository,
       jobs: jobs as unknown as JobRepository,
       settings: {} as SettingsRepository,
       copywriting: {} as CopywritingService,
@@ -150,5 +153,24 @@ describe('Desktop Render IPC public error boundary', () => {
     });
     expect(JSON.stringify(result[0])).not.toContain(diagnostic);
     expect(result[1]).toEqual(copywritingJob);
+  });
+
+  it('rejects products:list and jobs:list before repository access after quiescence', async () => {
+    products.list.mockReturnValueOnce([]);
+    jobs.list.mockReturnValueOnce([]);
+    await expect(invoke(IPC_CHANNELS.productsList, undefined)).resolves.toEqual([]);
+    await expect(invoke(IPC_CHANNELS.jobsList, undefined)).resolves.toEqual([]);
+    expect(products.list).toHaveBeenCalledTimes(1);
+    expect(jobs.list).toHaveBeenCalledTimes(1);
+
+    ipcBoundary.quiesce();
+    await expect(invoke(IPC_CHANNELS.productsList, undefined)).rejects.toThrowError(
+      'DESKTOP_IPC_QUIESCED',
+    );
+    await expect(invoke(IPC_CHANNELS.jobsList, undefined)).rejects.toThrowError(
+      'DESKTOP_IPC_QUIESCED',
+    );
+    expect(products.list).toHaveBeenCalledTimes(1);
+    expect(jobs.list).toHaveBeenCalledTimes(1);
   });
 });

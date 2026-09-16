@@ -9,6 +9,7 @@ describe('Desktop lifecycle ownership', () => {
       settleRender = resolve;
     });
     const owner = new DesktopLifecycleOwnerV1({
+      quiesceRenderer: () => events.push('renderer-quiesced'),
       render: {
         shutdown: async () => {
           events.push('render-cancel-requested');
@@ -34,11 +35,12 @@ describe('Desktop lifecycle ownership', () => {
 
     const shutdown = owner.shutdown();
     await Promise.resolve();
-    expect(events).toEqual(['copywriting-settled', 'render-cancel-requested']);
+    expect(events).toEqual(['renderer-quiesced', 'copywriting-settled', 'render-cancel-requested']);
     expect(events).not.toContain('database-closed');
     settleRender();
     await expect(shutdown).resolves.toMatchObject({ settled: true, database_closed: true });
     expect(events).toEqual([
+      'renderer-quiesced',
       'copywriting-settled',
       'render-cancel-requested',
       'render-settled',
@@ -49,6 +51,7 @@ describe('Desktop lifecycle ownership', () => {
   it('does not close SQLite after the bounded Render timeout escape path', async () => {
     let closeCount = 0;
     const owner = new DesktopLifecycleOwnerV1({
+      quiesceRenderer: () => undefined,
       render: {
         shutdown: async () => ({
           settled: false,
@@ -67,5 +70,69 @@ describe('Desktop lifecycle ownership', () => {
       database_closed: false,
     });
     expect(closeCount).toBe(0);
+  });
+
+  it('quiesces products:list and jobs:list before settlement and SQLite close', async () => {
+    const events: string[] = [];
+    let rendererActive = true;
+    let databaseOpen = true;
+    let postCloseIpc = 0;
+    let databaseNotOpenErrors = 0;
+    let productRepositoryCalls = 0;
+    let jobRepositoryCalls = 0;
+
+    const invokeRepository = (kind: 'products:list' | 'jobs:list') => {
+      if (!rendererActive) return;
+      if (!databaseOpen) {
+        postCloseIpc += 1;
+        databaseNotOpenErrors += 1;
+        throw new Error('The database connection is not open');
+      }
+      if (kind === 'products:list') productRepositoryCalls += 1;
+      else jobRepositoryCalls += 1;
+    };
+    const owner = new DesktopLifecycleOwnerV1({
+      quiesceRenderer: () => {
+        events.push('renderer-quiesced');
+        rendererActive = false;
+      },
+      render: {
+        shutdown: async () => {
+          events.push('render-shutdown');
+          invokeRepository('products:list');
+          invokeRepository('jobs:list');
+          return { settled: true, timed_out: false, cancellation_requested_job_ids: [] };
+        },
+      },
+      copywriting: {
+        shutdown: async () => {
+          events.push('copywriting-shutdown');
+        },
+      },
+      database: {
+        close: () => {
+          events.push('database-closed');
+          databaseOpen = false;
+        },
+      },
+    });
+
+    await expect(owner.shutdown()).resolves.toMatchObject({
+      settled: true,
+      database_closed: true,
+    });
+    invokeRepository('products:list');
+    invokeRepository('jobs:list');
+
+    expect(events).toEqual([
+      'renderer-quiesced',
+      'copywriting-shutdown',
+      'render-shutdown',
+      'database-closed',
+    ]);
+    expect(productRepositoryCalls).toBe(0);
+    expect(jobRepositoryCalls).toBe(0);
+    expect(postCloseIpc).toBe(0);
+    expect(databaseNotOpenErrors).toBe(0);
   });
 });

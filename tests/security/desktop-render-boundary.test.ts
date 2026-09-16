@@ -6,6 +6,7 @@ import { IPC_CHANNELS } from '../../packages/contracts/src/index.js';
 const root = resolve(import.meta.dirname, '../..');
 const ipcSource = readFileSync(join(root, 'apps/desktop/src/main/ipc.ts'), 'utf8');
 const preloadSource = readFileSync(join(root, 'apps/desktop/src/preload/index.ts'), 'utf8');
+const mainSource = readFileSync(join(root, 'apps/desktop/src/main/index.ts'), 'utf8');
 const lifecycleSource = readFileSync(
   join(root, 'apps/desktop/src/main/desktop-lifecycle-owner.ts'),
   'utf8',
@@ -44,5 +45,15 @@ describe('Desktop Render execution boundary', () => {
     expect(desktopBoundary).not.toMatch(/(?:taskkill|process\.kill|child\.kill|spawn\s*\()/u);
     expect(desktopBoundary).not.toMatch(/(?:Mutex|LockManager|executionLock)/u);
     expect(orchestratorSource).toContain('cancelPreparedRender');
+  });
+
+  it('quiesces IPC and destroys the Renderer before Desktop lifecycle settlement', () => {
+    expect(ipcSource).toContain("if (!accepting) throw new Error('DESKTOP_IPC_QUIESCED')");
+    expect(ipcSource).toContain('options.ipcMain.removeHandler(channel)');
+    expect(mainSource).toContain('ipcBoundary.quiesce()');
+    expect(mainSource).toContain('window.destroy()');
+    expect(mainSource.indexOf('ipcBoundary.quiesce()')).toBeLessThan(
+      mainSource.indexOf('window.destroy()'),
+    );
   });
 });
