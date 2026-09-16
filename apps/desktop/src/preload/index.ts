@@ -10,6 +10,10 @@ import {
   productDeleteRequestV1Schema,
   productDtoV1Schema,
   productUpdateRequestV1Schema,
+  renderCancelResultV1Schema,
+  renderJobDtoV1Schema,
+  renderJobRequestV1Schema,
+  renderPrepareRequestV1Schema,
   type DesktopApiV1,
 } from '@app/contracts';
 
@@ -78,6 +82,32 @@ const api: DesktopApiV1 = {
     set: async (key, value) => {
       await invoke(IPC_CHANNELS.settingsSet, { schema_version: '1.0', key, value }, z.null());
     },
+  },
+  render: {
+    prepare: (request) =>
+      invoke(
+        IPC_CHANNELS.renderPrepare,
+        renderPrepareRequestV1Schema.parse(request),
+        renderJobDtoV1Schema,
+      ),
+    execute: (jobId) =>
+      invoke(
+        IPC_CHANNELS.renderExecute,
+        renderJobRequestV1Schema.parse({ schema_version: '1.0', job_id: jobId }),
+        renderJobDtoV1Schema,
+      ),
+    cancel: (jobId) =>
+      invoke(
+        IPC_CHANNELS.renderCancel,
+        renderJobRequestV1Schema.parse({ schema_version: '1.0', job_id: jobId }),
+        renderCancelResultV1Schema,
+      ),
+    get: (jobId) =>
+      invoke(
+        IPC_CHANNELS.renderGet,
+        renderJobRequestV1Schema.parse({ schema_version: '1.0', job_id: jobId }),
+        renderJobDtoV1Schema.nullable(),
+      ),
   },
 };
 

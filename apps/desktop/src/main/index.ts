@@ -12,11 +12,16 @@ import {
 } from '@app/local-db';
 import { MockTextCapabilityClient } from '@app/provider-client';
 import { CopywritingService } from './copywriting-service.js';
+import { DesktopLifecycleOwnerV1 } from './desktop-lifecycle-owner.js';
+import { createDesktopRenderCompositionV1 } from './desktop-render-composition.js';
 import { registerIpc } from './ipc.js';
 import { runPackagedRenderRuntimeSmoke } from './packaged-render-runtime-smoke.js';
 
 const currentDirectory = fileURLToPath(new URL('.', import.meta.url));
 let mainWindow: BrowserWindow | null = null;
+let lifecycleOwner: DesktopLifecycleOwnerV1 | null = null;
+let shutdownInitiated = false;
+let requestedExitCode = 0;
 
 if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
   app.setPath('userData', join(process.env.LOCALAPPDATA, 'Company', 'AiVideoDesktop'));
@@ -55,13 +60,29 @@ async function createWindow(): Promise<void> {
   const jobs = new JobRepository(db);
   const copywritingRepository = new CopywritingRepository(db);
   const settings = new SettingsRepository(db);
-  jobs.recoverInterrupted();
   const copywriting = new CopywritingService({
     products,
     jobs,
     copywriting: copywritingRepository,
     client: new MockTextCapabilityClient(),
   });
+  const controlledDevRuntimeRoot = process.env.DESKTOP_RENDER_DEV_RUNTIME_ROOT;
+  const renderComposition = await createDesktopRenderCompositionV1({
+    database: db,
+    jobs,
+    userDataPath: app.getPath('userData'),
+    runtimeLocation: app.isPackaged
+      ? { is_packaged: true, resources_path: process.resourcesPath }
+      : controlledDevRuntimeRoot
+        ? { is_packaged: false, controlled_dev_runtime_root: controlledDevRuntimeRoot }
+        : { is_packaged: false },
+  });
+  lifecycleOwner = new DesktopLifecycleOwnerV1({
+    render: renderComposition.orchestrator,
+    copywriting,
+    database: db,
+  });
+  await renderComposition.orchestrator.recoverStartup();
 
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -79,10 +100,17 @@ async function createWindow(): Promise<void> {
   });
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   mainWindow.webContents.on('will-navigate', (event) => event.preventDefault());
-  registerIpc({ ipcMain, window: mainWindow, products, jobs, settings, copywriting });
+  registerIpc({
+    ipcMain,
+    window: mainWindow,
+    products,
+    jobs,
+    settings,
+    copywriting,
+    render: renderComposition.orchestrator,
+  });
   mainWindow.once('ready-to-show', () => mainWindow?.show());
   mainWindow.on('closed', () => {
-    void copywriting.shutdown().finally(() => db.close());
     mainWindow = null;
   });
 
@@ -123,7 +151,23 @@ app
   })
   .catch((error: unknown) => {
     console.error(error);
-    app.exit(1);
+    requestedExitCode = 1;
+    app.quit();
   });
 
 app.on('window-all-closed', () => app.quit());
+
+app.on('before-quit', (event) => {
+  if (shutdownInitiated) return;
+  event.preventDefault();
+  shutdownInitiated = true;
+  const owner = lifecycleOwner;
+  if (!owner) {
+    app.exit(requestedExitCode);
+    return;
+  }
+  void owner.shutdown().then(
+    () => app.exit(requestedExitCode),
+    () => app.exit(1),
+  );
+});

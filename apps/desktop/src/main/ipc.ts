@@ -9,9 +9,14 @@ import {
   productCreateRequestV1Schema,
   productDeleteRequestV1Schema,
   productUpdateRequestV1Schema,
+  renderCancelResultV1Schema,
+  renderJobDtoV1Schema,
+  renderJobRequestV1Schema,
+  renderPrepareRequestV1Schema,
 } from '@app/contracts';
 import type { JobRepository, ProductRepository, SettingsRepository } from '@app/local-db';
 import type { CopywritingService } from './copywriting-service.js';
+import type { DesktopRenderOrchestratorV1 } from './desktop-render-orchestrator.js';
 
 function assertTrustedSender(event: IpcMainInvokeEvent, window: BrowserWindow): void {
   if (event.sender.id !== window.webContents.id || event.senderFrame !== event.sender.mainFrame) {
@@ -29,6 +34,7 @@ export function registerIpc(options: {
   jobs: JobRepository;
   settings: SettingsRepository;
   copywriting: CopywritingService;
+  render: DesktopRenderOrchestratorV1;
 }): void {
   const handle = (channel: string, handler: (input: unknown) => unknown | Promise<unknown>) => {
     options.ipcMain.handle(channel, async (event, input) => {
@@ -77,6 +83,9 @@ export function registerIpc(options: {
   handle(IPC_CHANNELS.jobsList, () => options.jobs.list());
   handle(IPC_CHANNELS.jobsCancel, (input) => {
     const request = idRequestV1Schema.parse(input);
+    const job = options.jobs.require(request.id);
+    if (job.job_type === 'RENDER') throw new Error('RENDER_CANCEL_REQUIRES_RENDER_API');
+    if (job.job_type !== 'COPYWRITING') throw new Error('JOB_CANCEL_UNSUPPORTED');
     return options.copywriting.cancel(request.id);
   });
   const settingRequest = z.object({
@@ -91,5 +100,22 @@ export function registerIpc(options: {
     const request = settingRequest.extend({ value: z.string().url().max(2000) }).parse(input);
     options.settings.set(request.key, request.value);
     return null;
+  });
+  handle(IPC_CHANNELS.renderPrepare, async (input) =>
+    renderJobDtoV1Schema.parse(
+      await options.render.prepare(renderPrepareRequestV1Schema.parse(input)),
+    ),
+  );
+  handle(IPC_CHANNELS.renderExecute, async (input) => {
+    const request = renderJobRequestV1Schema.parse(input);
+    return renderJobDtoV1Schema.parse(await options.render.execute(request.job_id));
+  });
+  handle(IPC_CHANNELS.renderCancel, async (input) => {
+    const request = renderJobRequestV1Schema.parse(input);
+    return renderCancelResultV1Schema.parse(await options.render.cancel(request.job_id));
+  });
+  handle(IPC_CHANNELS.renderGet, (input) => {
+    const request = renderJobRequestV1Schema.parse(input);
+    return renderJobDtoV1Schema.nullable().parse(options.render.get(request.job_id));
   });
 }
