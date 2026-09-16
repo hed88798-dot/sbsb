@@ -17,6 +17,7 @@ import {
 import type { JobRepository, ProductRepository, SettingsRepository } from '@app/local-db';
 import type { CopywritingService } from './copywriting-service.js';
 import type { DesktopRenderOrchestratorV1 } from './desktop-render-orchestrator.js';
+import { runRendererSafeRenderOperation, toRendererSafeJobDto } from './render-public-error.js';
 
 function assertTrustedSender(event: IpcMainInvokeEvent, window: BrowserWindow): void {
   if (event.sender.id !== window.webContents.id || event.senderFrame !== event.sender.mainFrame) {
@@ -80,7 +81,7 @@ export function registerIpc(options: {
     const request = idRequestV1Schema.parse(input);
     return options.copywriting.getResult(request.id);
   });
-  handle(IPC_CHANNELS.jobsList, () => options.jobs.list());
+  handle(IPC_CHANNELS.jobsList, () => options.jobs.list().map(toRendererSafeJobDto));
   handle(IPC_CHANNELS.jobsCancel, (input) => {
     const request = idRequestV1Schema.parse(input);
     const job = options.jobs.require(request.id);
@@ -101,21 +102,29 @@ export function registerIpc(options: {
     options.settings.set(request.key, request.value);
     return null;
   });
-  handle(IPC_CHANNELS.renderPrepare, async (input) =>
-    renderJobDtoV1Schema.parse(
-      await options.render.prepare(renderPrepareRequestV1Schema.parse(input)),
+  handle(IPC_CHANNELS.renderPrepare, (input) =>
+    runRendererSafeRenderOperation(async () =>
+      renderJobDtoV1Schema.parse(
+        await options.render.prepare(renderPrepareRequestV1Schema.parse(input)),
+      ),
     ),
   );
-  handle(IPC_CHANNELS.renderExecute, async (input) => {
-    const request = renderJobRequestV1Schema.parse(input);
-    return renderJobDtoV1Schema.parse(await options.render.execute(request.job_id));
-  });
-  handle(IPC_CHANNELS.renderCancel, async (input) => {
-    const request = renderJobRequestV1Schema.parse(input);
-    return renderCancelResultV1Schema.parse(await options.render.cancel(request.job_id));
-  });
-  handle(IPC_CHANNELS.renderGet, (input) => {
-    const request = renderJobRequestV1Schema.parse(input);
-    return renderJobDtoV1Schema.nullable().parse(options.render.get(request.job_id));
-  });
+  handle(IPC_CHANNELS.renderExecute, (input) =>
+    runRendererSafeRenderOperation(async () => {
+      const request = renderJobRequestV1Schema.parse(input);
+      return renderJobDtoV1Schema.parse(await options.render.execute(request.job_id));
+    }),
+  );
+  handle(IPC_CHANNELS.renderCancel, (input) =>
+    runRendererSafeRenderOperation(async () => {
+      const request = renderJobRequestV1Schema.parse(input);
+      return renderCancelResultV1Schema.parse(await options.render.cancel(request.job_id));
+    }),
+  );
+  handle(IPC_CHANNELS.renderGet, (input) =>
+    runRendererSafeRenderOperation(() => {
+      const request = renderJobRequestV1Schema.parse(input);
+      return renderJobDtoV1Schema.nullable().parse(options.render.get(request.job_id));
+    }),
+  );
 }

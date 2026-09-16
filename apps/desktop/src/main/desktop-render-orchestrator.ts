@@ -17,6 +17,7 @@ import type {
   RenderExecutionServiceV1,
 } from './render-execution-service.js';
 import type { RenderPreparationService } from './render-preparation-service.js';
+import { mapPersistedRenderError } from './render-public-error.js';
 
 export const RENDER_SUBSYSTEM_UNAVAILABLE = 'RENDER_SUBSYSTEM_UNAVAILABLE';
 export const RENDER_DESKTOP_SHUTDOWN_TIMEOUT_MS =
@@ -183,6 +184,10 @@ export class DesktopRenderOrchestratorV1 {
     if (generic.job_type !== 'RENDER') throw new Error('RENDER_JOB_TYPE_MISMATCH');
     const active = this.#executions.findActive(jobId);
     const success = generic.state === 'SUCCEEDED' ? this.#executions.findSucceeded(jobId) : null;
+    const safeError =
+      generic.error_code !== null || generic.error_message !== null
+        ? mapPersistedRenderError(generic.error_code, generic.error_message)
+        : mapPersistedRenderError(preparation.error_code, preparation.error_message);
     const output = success?.receipt.output_artifact ?? null;
     const verification = success?.receipt.verification_facts ?? null;
     const result =
@@ -210,8 +215,8 @@ export class DesktopRenderOrchestratorV1 {
       logical_render_hash: preparation.logical_render_hash,
       execution_snapshot_hash: preparation.current_execution_snapshot_hash,
       cancellation_requested: active?.cancellation_requested_at !== null && active !== null,
-      error_code: generic.error_code ?? preparation.error_code,
-      error_message: generic.error_message ?? preparation.error_message,
+      error_code: safeError.error_code,
+      error_message: safeError.error_message,
       created_at: generic.created_at,
       started_at: generic.started_at,
       finished_at: generic.finished_at,

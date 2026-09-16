@@ -24,6 +24,8 @@ describe('Desktop Render execution boundary', () => {
       IPC_CHANNELS.renderGet,
     ]).toEqual(['render:prepare', 'render:execute', 'render:cancel', 'render:get']);
     expect(ipcSource).toContain('assertTrustedSender(event, options.window)');
+    expect(ipcSource).toContain('runRendererSafeRenderOperation');
+    expect(ipcSource).toContain('options.jobs.list().map(toRendererSafeJobDto)');
     expect(ipcSource).toContain('RENDER_CANCEL_REQUIRES_RENDER_API');
     expect(ipcSource).toContain("job.job_type !== 'COPYWRITING'");
   });

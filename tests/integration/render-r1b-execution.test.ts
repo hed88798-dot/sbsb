@@ -413,6 +413,46 @@ describe('Code G R1B READY_FOR_EXECUTION service integration', () => {
     );
   }
 
+  it('maps persisted hostile Render diagnostics before constructing render:get DTO', async () => {
+    const context = await setup();
+    const internalCode = 'RENDER_INTERNAL_SECRET_PATH_FAILURE';
+    const internalMessage =
+      "ENOENT: no such file or directory, lstat 'C:\\Users\\test\\secret-source\\pig-farm.mp4'";
+    try {
+      context.fixture.database
+        .prepare(
+          `UPDATE jobs SET state = 'FAILED', finished_at = ?, error_code = ?, error_message = ?
+           WHERE job_id = ?`,
+        )
+        .run('2026-09-12T00:00:01.000Z', internalCode, internalMessage, context.job.job_id);
+      context.fixture.database
+        .prepare(
+          `UPDATE render_jobs SET state = 'FAILED', error_code = ?, error_message = ?
+           WHERE job_id = ?`,
+        )
+        .run(internalCode, internalMessage, context.job.job_id);
+
+      const dto = desktopOrchestrator(context).get(context.job.job_id);
+      expect(dto).toMatchObject({
+        error_code: 'RENDER_DESKTOP_OPERATION_FAILED',
+        error_message: '渲染操作失败，请稍后重试',
+      });
+      expect(JSON.stringify(dto)).not.toContain('secret-source');
+      expect(
+        context.fixture.database
+          .prepare('SELECT error_code, error_message FROM jobs WHERE job_id = ?')
+          .get(context.job.job_id),
+      ).toEqual({ error_code: internalCode, error_message: internalMessage });
+      expect(
+        context.fixture.database
+          .prepare('SELECT error_code, error_message FROM render_jobs WHERE job_id = ?')
+          .get(context.job.job_id),
+      ).toEqual({ error_code: internalCode, error_message: internalMessage });
+    } finally {
+      context.fixture.close();
+    }
+  });
+
   it('executes, verifies, atomically promotes, persists VERIFIED_OUTPUT and commits receipt', async () => {
     const context = await setup();
     try {
