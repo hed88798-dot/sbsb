@@ -205,6 +205,103 @@ export const idRequestV1Schema = z.object({
   id: z.string().min(1),
 });
 
+const renderIdentityV1Schema = z.string().trim().min(1).max(256);
+const renderSha256V1Schema = z.string().regex(/^[a-f0-9]{64}$/u);
+
+export const renderPrepareRequestV1Schema = z
+  .object({
+    schema_version: schemaVersionV1,
+    timeline_id: renderIdentityV1Schema,
+    timeline_version: z.number().int().positive(),
+    expected_timeline_commit_receipt_hash: renderSha256V1Schema,
+    render_policy_id: renderIdentityV1Schema,
+    render_policy_version: z.number().int().positive(),
+    render_policy_hash: renderSha256V1Schema,
+  })
+  .strict();
+export type RenderPrepareRequestV1 = z.infer<typeof renderPrepareRequestV1Schema>;
+
+export const renderJobRequestV1Schema = z
+  .object({
+    schema_version: schemaVersionV1,
+    job_id: renderIdentityV1Schema,
+  })
+  .strict();
+export type RenderJobRequestV1 = z.infer<typeof renderJobRequestV1Schema>;
+
+export const renderPreparationStateV1Schema = z.enum([
+  'PREPARING',
+  'ENTRY_VALIDATED',
+  'SOURCES_RESOLVED',
+  'STAGING',
+  'READY_FOR_EXECUTION',
+  'FAILED',
+  'CANCELLED',
+  'INTERRUPTED',
+]);
+
+export const renderExecutionStateV1Schema = z.enum([
+  'STARTING',
+  'RUNNING',
+  'VERIFYING',
+  'SUCCEEDED',
+  'FAILED',
+  'CANCELLED',
+  'INTERRUPTED',
+]);
+
+export const renderSafeResultV1Schema = z
+  .object({
+    execution_attempt_id: renderIdentityV1Schema,
+    recovered_existing_success: z.boolean().nullable(),
+    output_sha256: renderSha256V1Schema,
+    output_size_bytes: z.number().int().positive(),
+    receipt_hash: renderSha256V1Schema,
+    terminal_state: z.literal('SUCCEEDED'),
+    finalize_protocol: z.literal('ATOMIC_SAME_VOLUME_RENAME'),
+    actual_video_frames: z.number().int().positive().nullable(),
+  })
+  .strict();
+export type RenderSafeResultV1 = z.infer<typeof renderSafeResultV1Schema>;
+
+export const renderJobDtoV1Schema = z
+  .object({
+    schema_version: schemaVersionV1,
+    job_id: renderIdentityV1Schema,
+    job_state: jobStateV1Schema,
+    progress: z.number().min(0).max(1),
+    preparation_state: renderPreparationStateV1Schema,
+    active_execution_state: renderExecutionStateV1Schema.nullable(),
+    timeline_id: renderIdentityV1Schema,
+    timeline_version: z.number().int().positive(),
+    logical_render_hash: renderSha256V1Schema.nullable(),
+    execution_snapshot_hash: renderSha256V1Schema.nullable(),
+    cancellation_requested: z.boolean(),
+    error_code: z.string().nullable(),
+    error_message: z.string().nullable(),
+    created_at: z.string().datetime(),
+    started_at: z.string().datetime().nullable(),
+    finished_at: z.string().datetime().nullable(),
+    result: renderSafeResultV1Schema.nullable(),
+  })
+  .strict();
+export type RenderJobDTOv1 = z.infer<typeof renderJobDtoV1Schema>;
+
+export const renderCancelResultV1Schema = z
+  .object({
+    schema_version: schemaVersionV1,
+    job_id: renderIdentityV1Schema,
+    accepted: z.boolean(),
+    reason: z.enum(['CANCELLATION_REQUESTED', 'NO_ACTIVE_EXECUTION']),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (value.accepted !== (value.reason === 'CANCELLATION_REQUESTED')) {
+      context.addIssue({ code: 'custom', message: 'Render cancellation result is inconsistent' });
+    }
+  });
+export type RenderCancelResultV1 = z.infer<typeof renderCancelResultV1Schema>;
+
 export const productAssetAddRequestV1Schema = z.object({
   schema_version: schemaVersionV1,
   product_id: z.string().min(1),
@@ -227,6 +324,10 @@ export const IPC_CHANNELS = {
   jobsCancel: 'jobs:cancel',
   settingsGet: 'settings:get',
   settingsSet: 'settings:set',
+  renderPrepare: 'render:prepare',
+  renderExecute: 'render:execute',
+  renderCancel: 'render:cancel',
+  renderGet: 'render:get',
 } as const;
 
 export const IPC_CHANNEL_ALLOWLIST = Object.freeze(Object.values(IPC_CHANNELS));
@@ -252,6 +353,12 @@ export interface DesktopApiV1 {
   settings: {
     get(key: string): Promise<string | null>;
     set(key: string, value: string): Promise<void>;
+  };
+  render: {
+    prepare(request: RenderPrepareRequestV1): Promise<RenderJobDTOv1>;
+    execute(jobId: string): Promise<RenderJobDTOv1>;
+    cancel(jobId: string): Promise<RenderCancelResultV1>;
+    get(jobId: string): Promise<RenderJobDTOv1 | null>;
   };
 }
 
