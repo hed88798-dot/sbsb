@@ -13,7 +13,9 @@ import {
   renderCancelResultV1Schema,
   renderJobDtoV1Schema,
   renderJobRequestV1Schema,
+  renderPrepareFromTimelineRequestV1Schema,
   renderPrepareRequestV1Schema,
+  renderTimelineSourceDtoV1Schema,
   type DesktopApiV1,
 } from '@app/contracts';
 
@@ -88,6 +90,18 @@ const api: DesktopApiV1 = {
       invoke(
         IPC_CHANNELS.renderPrepare,
         renderPrepareRequestV1Schema.parse(request),
+        renderJobDtoV1Schema,
+      ),
+    listTimelineSources: () =>
+      invoke(
+        IPC_CHANNELS.renderListTimelineSources,
+        undefined,
+        z.array(renderTimelineSourceDtoV1Schema),
+      ),
+    prepareFromTimeline: (request) =>
+      invoke(
+        IPC_CHANNELS.renderPrepareFromTimeline,
+        renderPrepareFromTimelineRequestV1Schema.parse(request),
         renderJobDtoV1Schema,
       ),
     execute: (jobId) =>

@@ -549,6 +549,24 @@ export class TimelinePlanRepository {
     return rows.map(loadCommittedRow);
   }
 
+  listLatestCommitted(): CommittedTimelinePlanVersionV1[] {
+    const rows = this.#db
+      .prepare(
+        `SELECT timeline.*
+         FROM timeline_plan_versions AS timeline
+         INNER JOIN (
+           SELECT timeline_id, MAX(version) AS version
+           FROM timeline_plan_versions
+           GROUP BY timeline_id
+         ) AS latest
+           ON latest.timeline_id = timeline.timeline_id
+          AND latest.version = timeline.version
+         ORDER BY timeline.committed_at DESC, timeline.timeline_id ASC`,
+      )
+      .all() as TimelinePlanRow[];
+    return rows.map(loadCommittedRow);
+  }
+
   #getRow(timelineId: string, version: number): TimelinePlanRow | undefined {
     return this.#db
       .prepare('SELECT * FROM timeline_plan_versions WHERE timeline_id = ? AND version = ?')

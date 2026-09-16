@@ -123,6 +123,7 @@ async function createWindow(): Promise<void> {
     settings,
     copywriting,
     render: renderComposition.orchestrator,
+    renderTimelineHandoff: renderComposition.timelineHandoff,
   });
   lifecycleOwner = new DesktopLifecycleOwnerV1({
     render: renderComposition.orchestrator,

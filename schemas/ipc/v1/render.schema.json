@@ -27,6 +27,36 @@
         "render_policy_hash": { "$ref": "#/$defs/sha256" }
       }
     },
+    "prepareFromTimelineRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "timeline_id", "timeline_version"],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "timeline_id": { "$ref": "#/$defs/identity" },
+        "timeline_version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "timelineSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "timeline_id",
+        "timeline_version",
+        "committed_at",
+        "total_duration_ms",
+        "segment_count"
+      ],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "timeline_id": { "$ref": "#/$defs/identity" },
+        "timeline_version": { "type": "integer", "minimum": 1 },
+        "committed_at": { "type": "string", "format": "date-time" },
+        "total_duration_ms": { "type": "integer", "minimum": 1 },
+        "segment_count": { "type": "integer", "minimum": 0 }
+      }
+    },
     "jobRequest": {
       "type": "object",
       "additionalProperties": false,
@@ -144,6 +174,8 @@
   },
   "oneOf": [
     { "$ref": "#/$defs/prepareRequest" },
+    { "$ref": "#/$defs/prepareFromTimelineRequest" },
+    { "$ref": "#/$defs/timelineSource" },
     { "$ref": "#/$defs/jobRequest" },
     { "$ref": "#/$defs/job" },
     { "$ref": "#/$defs/cancelResult" }

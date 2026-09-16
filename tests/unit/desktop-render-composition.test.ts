@@ -41,6 +41,7 @@ describe('Desktop Render Main composition', () => {
       expect(composition.staging_root).toBe(join(fixture.directory, 'render', 'staging'));
       expect(composition.output_root).toBe(join(fixture.directory, 'render', 'output'));
       expect(composition.orchestrator.get('missing')).toBeNull();
+      expect(composition.timelineHandoff.listTimelineSources()).toEqual([]);
     } finally {
       fixture.db.close();
     }
@@ -62,6 +63,7 @@ describe('Desktop Render Main composition', () => {
       });
       expect(composition.available).toBe(false);
       expect(calls).toHaveLength(1);
+      expect(composition.timelineHandoff.listTimelineSources()).toEqual([]);
       await expect(
         composition.orchestrator.prepare({
           schema_version: '1.0',
