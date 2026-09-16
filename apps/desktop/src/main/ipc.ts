@@ -12,11 +12,14 @@ import {
   renderCancelResultV1Schema,
   renderJobDtoV1Schema,
   renderJobRequestV1Schema,
+  renderPrepareFromTimelineRequestV1Schema,
   renderPrepareRequestV1Schema,
+  renderTimelineSourceDtoV1Schema,
 } from '@app/contracts';
 import type { JobRepository, ProductRepository, SettingsRepository } from '@app/local-db';
 import type { CopywritingService } from './copywriting-service.js';
 import type { DesktopRenderOrchestratorV1 } from './desktop-render-orchestrator.js';
+import type { DesktopRenderTimelineHandoffV1 } from './desktop-render-timeline-handoff.js';
 import { runRendererSafeRenderOperation, toRendererSafeJobDto } from './render-public-error.js';
 
 function assertTrustedSender(event: IpcMainInvokeEvent, window: BrowserWindow): void {
@@ -40,6 +43,7 @@ export function registerIpc(options: {
   settings: SettingsRepository;
   copywriting: CopywritingService;
   render: DesktopRenderOrchestratorV1;
+  renderTimelineHandoff: DesktopRenderTimelineHandoffV1;
 }): DesktopIpcBoundaryV1 {
   let accepting = true;
   const handle = (channel: string, handler: (input: unknown) => unknown | Promise<unknown>) => {
@@ -112,6 +116,22 @@ export function registerIpc(options: {
     runRendererSafeRenderOperation(async () =>
       renderJobDtoV1Schema.parse(
         await options.render.prepare(renderPrepareRequestV1Schema.parse(input)),
+      ),
+    ),
+  );
+  handle(IPC_CHANNELS.renderListTimelineSources, () =>
+    runRendererSafeRenderOperation(() =>
+      z
+        .array(renderTimelineSourceDtoV1Schema)
+        .parse(options.renderTimelineHandoff.listTimelineSources()),
+    ),
+  );
+  handle(IPC_CHANNELS.renderPrepareFromTimeline, (input) =>
+    runRendererSafeRenderOperation(async () =>
+      renderJobDtoV1Schema.parse(
+        await options.renderTimelineHandoff.prepareFromTimeline(
+          renderPrepareFromTimelineRequestV1Schema.parse(input),
+        ),
       ),
     ),
   );

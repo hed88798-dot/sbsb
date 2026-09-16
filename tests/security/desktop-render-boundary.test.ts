@@ -15,15 +15,28 @@ const orchestratorSource = readFileSync(
   join(root, 'apps/desktop/src/main/desktop-render-orchestrator.ts'),
   'utf8',
 );
+const timelineHandoffSource = readFileSync(
+  join(root, 'apps/desktop/src/main/desktop-render-timeline-handoff.ts'),
+  'utf8',
+);
 
 describe('Desktop Render execution boundary', () => {
   it('uses the exact narrow Render IPC allowlist and preserves trusted sender checks', () => {
     expect([
       IPC_CHANNELS.renderPrepare,
+      IPC_CHANNELS.renderListTimelineSources,
+      IPC_CHANNELS.renderPrepareFromTimeline,
       IPC_CHANNELS.renderExecute,
       IPC_CHANNELS.renderCancel,
       IPC_CHANNELS.renderGet,
-    ]).toEqual(['render:prepare', 'render:execute', 'render:cancel', 'render:get']);
+    ]).toEqual([
+      'render:prepare',
+      'render:list-timeline-sources',
+      'render:prepare-from-timeline',
+      'render:execute',
+      'render:cancel',
+      'render:get',
+    ]);
     expect(ipcSource).toContain('assertTrustedSender(event, options.window)');
     expect(ipcSource).toContain('runRendererSafeRenderOperation');
     expect(ipcSource).toContain('options.jobs.list().map(toRendererSafeJobDto)');
@@ -33,6 +46,8 @@ describe('Desktop Render execution boundary', () => {
 
   it('validates Render preload inputs and outputs without path or process authority', () => {
     expect(preloadSource).toContain('renderPrepareRequestV1Schema.parse(request)');
+    expect(preloadSource).toContain('renderPrepareFromTimelineRequestV1Schema.parse(request)');
+    expect(preloadSource).toContain('renderTimelineSourceDtoV1Schema');
     expect(preloadSource).toContain('renderJobRequestV1Schema.parse');
     expect(preloadSource).toContain('renderJobDtoV1Schema');
     expect(preloadSource).toContain('renderCancelResultV1Schema');
@@ -45,6 +60,14 @@ describe('Desktop Render execution boundary', () => {
     expect(desktopBoundary).not.toMatch(/(?:taskkill|process\.kill|child\.kill|spawn\s*\()/u);
     expect(desktopBoundary).not.toMatch(/(?:Mutex|LockManager|executionLock)/u);
     expect(orchestratorSource).toContain('cancelPreparedRender');
+  });
+
+  it('keeps Timeline product handoff as selector derivation over the existing orchestrator', () => {
+    expect(timelineHandoffSource).toContain('this.#timelines.getVersion');
+    expect(timelineHandoffSource).toContain('this.#render.prepare');
+    expect(timelineHandoffSource).not.toMatch(
+      /(?:RenderPreparationService|TimelineOrchestrationService|RenderStagingService|NodeRenderProcessAdapterV1|child_process|ffmpeg)/u,
+    );
   });
 
   it('quiesces IPC and destroys the Renderer before Desktop lifecycle settlement', () => {

@@ -12,7 +12,9 @@ import {
   productCreateRequestV1Schema,
   productDtoV1Schema,
   renderJobDtoV1Schema,
+  renderPrepareFromTimelineRequestV1Schema,
   renderPrepareRequestV1Schema,
+  renderTimelineSourceDtoV1Schema,
   sidecarEventV1Schema,
   sidecarRequestV1Schema,
 } from '../../packages/contracts/src/index.js';
@@ -164,6 +166,41 @@ describe('IPC v1 contract', () => {
     expect(
       renderJobDtoV1Schema.safeParse({ ...status, output_path: 'C:\\secret.mp4' }).success,
     ).toBe(false);
+  });
+
+  it('keeps the product Timeline selector and safe source DTO aligned across Zod and JSON Schema', () => {
+    const selector = {
+      schema_version: '1.0',
+      timeline_id: 'timeline_1',
+      timeline_version: 2,
+    };
+    const source = {
+      ...selector,
+      committed_at: '2026-09-17T00:00:00.000Z',
+      total_duration_ms: 30_000,
+      segment_count: 4,
+    };
+    expect(renderPrepareFromTimelineRequestV1Schema.safeParse(selector).success).toBe(true);
+    expect(renderTimelineSourceDtoV1Schema.safeParse(source).success).toBe(true);
+    expect(renderValidator(selector), JSON.stringify(renderValidator.errors)).toBe(true);
+    expect(renderValidator(source), JSON.stringify(renderValidator.errors)).toBe(true);
+
+    for (const forbidden of [
+      'expected_timeline_commit_receipt_hash',
+      'render_policy_id',
+      'render_policy_version',
+      'render_policy_hash',
+      'planning_facts_hash',
+      'duration_plan_hash',
+      'source_path',
+      'runtime_root',
+    ]) {
+      const invalid = { ...selector, [forbidden]: forbidden.endsWith('version') ? 1 : 'secret' };
+      expect(renderPrepareFromTimelineRequestV1Schema.safeParse(invalid).success, forbidden).toBe(
+        false,
+      );
+      expect(renderValidator(invalid), forbidden).toBe(false);
+    }
   });
 });
 

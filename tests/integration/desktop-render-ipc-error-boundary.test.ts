@@ -8,6 +8,7 @@ import type {
 } from '../../packages/local-db/src/index.js';
 import type { CopywritingService } from '../../apps/desktop/src/main/copywriting-service.js';
 import type { DesktopRenderOrchestratorV1 } from '../../apps/desktop/src/main/desktop-render-orchestrator.js';
+import type { DesktopRenderTimelineHandoffV1 } from '../../apps/desktop/src/main/desktop-render-timeline-handoff.js';
 import { registerIpc, type DesktopIpcBoundaryV1 } from '../../apps/desktop/src/main/ipc.js';
 import { RENDER_DESKTOP_OPERATION_FAILED } from '../../apps/desktop/src/main/render-public-error.js';
 
@@ -28,6 +29,25 @@ const prepareRequest = {
 } as const;
 const jobRequest = { schema_version: '1.0', job_id: 'render_job_1' } as const;
 const fallbackMessage = '渲染操作失败，请稍后重试';
+const renderJobDto = {
+  schema_version: '1.0',
+  job_id: 'render_job_1',
+  job_state: 'QUEUED',
+  progress: 0,
+  preparation_state: 'READY_FOR_EXECUTION',
+  active_execution_state: null,
+  timeline_id: 'timeline_1',
+  timeline_version: 1,
+  logical_render_hash: '1'.repeat(64),
+  execution_snapshot_hash: '2'.repeat(64),
+  cancellation_requested: false,
+  error_code: null,
+  error_message: null,
+  created_at: '2026-09-17T00:00:00.000Z',
+  started_at: null,
+  finished_at: null,
+  result: null,
+} as const;
 
 function job(jobType: string, errorCode: string, errorMessage: string): JobDTOv1 {
   return {
@@ -59,6 +79,10 @@ describe('Desktop Render IPC public error boundary', () => {
     cancel: vi.fn(),
     get: vi.fn(),
   };
+  const renderTimelineHandoff = {
+    listTimelineSources: vi.fn(),
+    prepareFromTimeline: vi.fn(),
+  };
   const jobs = {
     list: vi.fn(),
     require: vi.fn(),
@@ -80,6 +104,7 @@ describe('Desktop Render IPC public error boundary', () => {
       settings: {} as SettingsRepository,
       copywriting: {} as CopywritingService,
       render: render as unknown as DesktopRenderOrchestratorV1,
+      renderTimelineHandoff: renderTimelineHandoff as unknown as DesktopRenderTimelineHandoffV1,
     });
   });
 
@@ -136,6 +161,67 @@ describe('Desktop Render IPC public error boundary', () => {
       code: 'RENDER_SUBSYSTEM_UNAVAILABLE',
       publicMessage: '渲染功能当前不可用',
     });
+  });
+
+  it('sanitizes Timeline discovery and product prepare internal failures', async () => {
+    const receiptDiagnostic = `TIMELINE_INTEGRITY_FAILURE:${'a'.repeat(64)}`;
+    const sqliteDiagnostic =
+      'SQLITE_CORRUPT: C:\\Users\\test\\AppData\\Local\\Company\\AiVideoDesktop\\app.db';
+    renderTimelineHandoff.listTimelineSources.mockImplementationOnce(() => {
+      throw new Error(receiptDiagnostic);
+    });
+    renderTimelineHandoff.prepareFromTimeline.mockRejectedValueOnce(new Error(sqliteDiagnostic));
+
+    for (const [channel, input, raw] of [
+      [IPC_CHANNELS.renderListTimelineSources, undefined, receiptDiagnostic],
+      [
+        IPC_CHANNELS.renderPrepareFromTimeline,
+        { schema_version: '1.0', timeline_id: 'timeline_1', timeline_version: 1 },
+        sqliteDiagnostic,
+      ],
+    ] as const) {
+      const thrown = await invoke(channel, input).catch((error: unknown) => error);
+      expect(thrown).toMatchObject({
+        code: RENDER_DESKTOP_OPERATION_FAILED,
+        publicMessage: fallbackMessage,
+        stack: undefined,
+      });
+      expect(JSON.stringify(thrown)).not.toContain(raw);
+      expect('cause' in (thrown as object)).toBe(false);
+    }
+  });
+
+  it('exposes only validated source DTOs and a selector-only product prepare request', async () => {
+    const source = {
+      schema_version: '1.0',
+      timeline_id: 'timeline_1',
+      timeline_version: 1,
+      committed_at: '2026-09-17T00:00:00.000Z',
+      total_duration_ms: 30_000,
+      segment_count: 3,
+    } as const;
+    renderTimelineHandoff.listTimelineSources.mockReturnValueOnce([source]);
+    renderTimelineHandoff.prepareFromTimeline.mockResolvedValueOnce(renderJobDto);
+
+    await expect(invoke(IPC_CHANNELS.renderListTimelineSources, undefined)).resolves.toEqual([
+      source,
+    ]);
+    const selector = { schema_version: '1.0', timeline_id: 'timeline_1', timeline_version: 1 };
+    await expect(invoke(IPC_CHANNELS.renderPrepareFromTimeline, selector)).resolves.toEqual(
+      renderJobDto,
+    );
+    expect(renderTimelineHandoff.prepareFromTimeline).toHaveBeenCalledWith(selector);
+
+    const callsBeforeInvalid = renderTimelineHandoff.prepareFromTimeline.mock.calls.length;
+    const invalid = { ...selector, render_policy_hash: 'a'.repeat(64) };
+    const rejected = await invoke(IPC_CHANNELS.renderPrepareFromTimeline, invalid).catch(
+      (error: unknown) => error,
+    );
+    expect(rejected).toMatchObject({
+      code: RENDER_DESKTOP_OPERATION_FAILED,
+      publicMessage: fallbackMessage,
+    });
+    expect(renderTimelineHandoff.prepareFromTimeline).toHaveBeenCalledTimes(callsBeforeInvalid);
   });
 
   it('sanitizes only RENDER entries returned by jobs:list', async () => {

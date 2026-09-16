@@ -221,6 +221,29 @@ export const renderPrepareRequestV1Schema = z
   .strict();
 export type RenderPrepareRequestV1 = z.infer<typeof renderPrepareRequestV1Schema>;
 
+export const renderPrepareFromTimelineRequestV1Schema = z
+  .object({
+    schema_version: schemaVersionV1,
+    timeline_id: renderIdentityV1Schema,
+    timeline_version: z.number().int().positive(),
+  })
+  .strict();
+export type RenderPrepareFromTimelineRequestV1 = z.infer<
+  typeof renderPrepareFromTimelineRequestV1Schema
+>;
+
+export const renderTimelineSourceDtoV1Schema = z
+  .object({
+    schema_version: schemaVersionV1,
+    timeline_id: renderIdentityV1Schema,
+    timeline_version: z.number().int().positive(),
+    committed_at: z.string().datetime(),
+    total_duration_ms: z.number().int().positive(),
+    segment_count: z.number().int().nonnegative(),
+  })
+  .strict();
+export type RenderTimelineSourceDTOv1 = z.infer<typeof renderTimelineSourceDtoV1Schema>;
+
 export const renderJobRequestV1Schema = z
   .object({
     schema_version: schemaVersionV1,
@@ -325,6 +348,8 @@ export const IPC_CHANNELS = {
   settingsGet: 'settings:get',
   settingsSet: 'settings:set',
   renderPrepare: 'render:prepare',
+  renderListTimelineSources: 'render:list-timeline-sources',
+  renderPrepareFromTimeline: 'render:prepare-from-timeline',
   renderExecute: 'render:execute',
   renderCancel: 'render:cancel',
   renderGet: 'render:get',
@@ -356,6 +381,8 @@ export interface DesktopApiV1 {
   };
   render: {
     prepare(request: RenderPrepareRequestV1): Promise<RenderJobDTOv1>;
+    listTimelineSources(): Promise<RenderTimelineSourceDTOv1[]>;
+    prepareFromTimeline(request: RenderPrepareFromTimelineRequestV1): Promise<RenderJobDTOv1>;
     execute(jobId: string): Promise<RenderJobDTOv1>;
     cancel(jobId: string): Promise<RenderCancelResultV1>;
     get(jobId: string): Promise<RenderJobDTOv1 | null>;
