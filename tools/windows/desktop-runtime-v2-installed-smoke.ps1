@@ -54,7 +54,7 @@ try {
   }
   $normalRecord = Get-Content -LiteralPath $normalEvidence -Raw | ConvertFrom-Json
   $normalStderrContent = if (Test-Path -LiteralPath $normalStderr) {
-    [string](Get-Content -LiteralPath $normalStderr -Raw)
+    [IO.File]::ReadAllText($normalStderr)
   } else {
     ''
   }

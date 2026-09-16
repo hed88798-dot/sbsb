@@ -66,7 +66,7 @@ describe('approved Runtime v2 desktop distribution boundary', () => {
     expect(installedSmoke).toContain('The database connection is not open');
     expect(installedSmoke).toContain('ipc_after_database_close_observed');
     expect(installedSmoke).toContain('NORMAL_INSTALLED_DESKTOP_IPC_HANDLER_FAILURE');
-    expect(installedSmoke).toContain('[string](Get-Content -LiteralPath $normalStderr -Raw)');
+    expect(installedSmoke).toContain('[IO.File]::ReadAllText($normalStderr)');
     expect(installedSmoke).not.toContain('/D=');
   });
 
