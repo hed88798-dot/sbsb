@@ -42,10 +42,9 @@ export function registerIpc(options: {
   render: DesktopRenderOrchestratorV1;
 }): DesktopIpcBoundaryV1 {
   let accepting = true;
-  const channels: string[] = [];
   const handle = (channel: string, handler: (input: unknown) => unknown | Promise<unknown>) => {
-    channels.push(channel);
     options.ipcMain.handle(channel, async (event, input) => {
+      if (!accepting) return undefined;
       assertTrustedSender(event, options.window);
       return handler(input);
     });
@@ -138,7 +137,6 @@ export function registerIpc(options: {
     quiesce() {
       if (!accepting) return;
       accepting = false;
-      for (const channel of channels) options.ipcMain.removeHandler(channel);
     },
   };
 }

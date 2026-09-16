@@ -48,12 +48,13 @@ describe('Desktop Render execution boundary', () => {
   });
 
   it('quiesces IPC and destroys the Renderer before Desktop lifecycle settlement', () => {
-    expect(ipcSource).toContain('options.ipcMain.removeHandler(channel)');
+    expect(ipcSource).toContain('if (!accepting) return undefined');
     expect(mainSource).toContain('ipcBoundary.quiesce()');
     expect(mainSource).toContain('window.destroy()');
-    expect(mainSource.indexOf('window.destroy()')).toBeLessThan(
-      mainSource.indexOf('ipcBoundary.quiesce()'),
+    expect(mainSource.indexOf('ipcBoundary.quiesce()')).toBeLessThan(
+      mainSource.indexOf('window.destroy()'),
     );
     expect(ipcSource).not.toContain('DESKTOP_IPC_QUIESCED');
+    expect(ipcSource).not.toContain('removeHandler');
   });
 });

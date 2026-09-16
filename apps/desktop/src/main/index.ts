@@ -129,9 +129,9 @@ async function createWindow(): Promise<void> {
     copywriting,
     database: db,
     quiesceRenderer: () => {
+      ipcBoundary.quiesce();
       const window = mainWindow;
       if (window && !window.isDestroyed()) window.destroy();
-      ipcBoundary.quiesce();
     },
   });
   mainWindow.once('ready-to-show', () => mainWindow?.show());

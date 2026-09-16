@@ -71,7 +71,6 @@ describe('Desktop Render IPC public error boundary', () => {
     vi.clearAllMocks();
     const ipcMain = {
       handle: vi.fn((channel: string, handler: InvokeHandler) => handlers.set(channel, handler)),
-      removeHandler: vi.fn((channel: string) => handlers.delete(channel)),
     } as unknown as IpcMain;
     ipcBoundary = registerIpc({
       ipcMain,
@@ -164,12 +163,8 @@ describe('Desktop Render IPC public error boundary', () => {
     expect(jobs.list).toHaveBeenCalledTimes(1);
 
     ipcBoundary.quiesce();
-    await expect(invoke(IPC_CHANNELS.productsList, undefined)).rejects.toThrowError(
-      `missing handler: ${IPC_CHANNELS.productsList}`,
-    );
-    await expect(invoke(IPC_CHANNELS.jobsList, undefined)).rejects.toThrowError(
-      `missing handler: ${IPC_CHANNELS.jobsList}`,
-    );
+    await expect(invoke(IPC_CHANNELS.productsList, undefined)).resolves.toBeUndefined();
+    await expect(invoke(IPC_CHANNELS.jobsList, undefined)).resolves.toBeUndefined();
     expect(products.list).toHaveBeenCalledTimes(1);
     expect(jobs.list).toHaveBeenCalledTimes(1);
   });
