@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export * from './material-selection.js';
+export * from './source-document.js';
 export * from './timeline-planning.js';
 
 export const SCHEMA_VERSION_V1 = '1.0' as const;

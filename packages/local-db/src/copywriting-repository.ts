@@ -25,6 +25,14 @@ interface ResultRow {
   created_at: string;
 }
 
+export interface PersistedScriptVersionV1 {
+  script_id: string;
+  version: number;
+  text: string;
+  result_status: 'SUCCEEDED' | 'REVIEW_REQUIRED';
+  created_at: string;
+}
+
 export class CopywritingRepository {
   readonly #db: Database;
 
@@ -182,6 +190,26 @@ export class CopywritingRepository {
       request_snapshot_hash: row.request_snapshot_hash,
       created_at: row.created_at,
     });
+  }
+
+  getScriptVersion(scriptId: string, version: number): PersistedScriptVersionV1 | null {
+    if (
+      scriptId.length === 0 ||
+      scriptId.length > 256 ||
+      scriptId.trim() !== scriptId ||
+      !Number.isSafeInteger(version) ||
+      version < 1
+    ) {
+      throw new Error('SCRIPT_VERSION_SELECTOR_INVALID');
+    }
+    const row = this.#db
+      .prepare(
+        `SELECT script_id, version, text, result_status, created_at
+         FROM script_versions
+         WHERE script_id = ? AND version = ?`,
+      )
+      .get(scriptId, version) as PersistedScriptVersionV1 | undefined;
+    return row ?? null;
   }
 
   requireResult(jobId: string): CopywritingResultV1 {
