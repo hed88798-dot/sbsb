@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/ipc/v1/render.schema.json",
+  "title": "DesktopRenderContractsV1",
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "identity": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "prepareRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "timeline_id",
+        "timeline_version",
+        "expected_timeline_commit_receipt_hash",
+        "render_policy_id",
+        "render_policy_version",
+        "render_policy_hash"
+      ],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "timeline_id": { "$ref": "#/$defs/identity" },
+        "timeline_version": { "type": "integer", "minimum": 1 },
+        "expected_timeline_commit_receipt_hash": { "$ref": "#/$defs/sha256" },
+        "render_policy_id": { "$ref": "#/$defs/identity" },
+        "render_policy_version": { "type": "integer", "minimum": 1 },
+        "render_policy_hash": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "jobRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "job_id"],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "job_id": { "$ref": "#/$defs/identity" }
+      }
+    },
+    "safeResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "execution_attempt_id",
+        "recovered_existing_success",
+        "output_sha256",
+        "output_size_bytes",
+        "receipt_hash",
+        "terminal_state",
+        "finalize_protocol",
+        "actual_video_frames"
+      ],
+      "properties": {
+        "execution_attempt_id": { "$ref": "#/$defs/identity" },
+        "recovered_existing_success": { "type": ["boolean", "null"] },
+        "output_sha256": { "$ref": "#/$defs/sha256" },
+        "output_size_bytes": { "type": "integer", "minimum": 1 },
+        "receipt_hash": { "$ref": "#/$defs/sha256" },
+        "terminal_state": { "const": "SUCCEEDED" },
+        "finalize_protocol": { "const": "ATOMIC_SAME_VOLUME_RENAME" },
+        "actual_video_frames": { "type": ["integer", "null"], "minimum": 1 }
+      }
+    },
+    "job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "job_id",
+        "job_state",
+        "progress",
+        "preparation_state",
+        "active_execution_state",
+        "timeline_id",
+        "timeline_version",
+        "logical_render_hash",
+        "execution_snapshot_hash",
+        "cancellation_requested",
+        "error_code",
+        "error_message",
+        "created_at",
+        "started_at",
+        "finished_at",
+        "result"
+      ],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "job_id": { "$ref": "#/$defs/identity" },
+        "job_state": {
+          "enum": ["QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "CANCELLED", "INTERRUPTED"]
+        },
+        "progress": { "type": "number", "minimum": 0, "maximum": 1 },
+        "preparation_state": {
+          "enum": [
+            "PREPARING",
+            "ENTRY_VALIDATED",
+            "SOURCES_RESOLVED",
+            "STAGING",
+            "READY_FOR_EXECUTION",
+            "FAILED",
+            "CANCELLED",
+            "INTERRUPTED"
+          ]
+        },
+        "active_execution_state": {
+          "enum": [
+            "STARTING",
+            "RUNNING",
+            "VERIFYING",
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELLED",
+            "INTERRUPTED",
+            null
+          ]
+        },
+        "timeline_id": { "$ref": "#/$defs/identity" },
+        "timeline_version": { "type": "integer", "minimum": 1 },
+        "logical_render_hash": {
+          "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
+        },
+        "execution_snapshot_hash": {
+          "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
+        },
+        "cancellation_requested": { "type": "boolean" },
+        "error_code": { "type": ["string", "null"] },
+        "error_message": { "type": ["string", "null"] },
+        "created_at": { "type": "string", "format": "date-time" },
+        "started_at": { "type": ["string", "null"], "format": "date-time" },
+        "finished_at": { "type": ["string", "null"], "format": "date-time" },
+        "result": { "anyOf": [{ "$ref": "#/$defs/safeResult" }, { "type": "null" }] }
+      }
+    },
+    "cancelResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "job_id", "accepted", "reason"],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "job_id": { "$ref": "#/$defs/identity" },
+        "accepted": { "type": "boolean" },
+        "reason": { "enum": ["CANCELLATION_REQUESTED", "NO_ACTIVE_EXECUTION"] }
+      }
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/$defs/prepareRequest" },
+    { "$ref": "#/$defs/jobRequest" },
+    { "$ref": "#/$defs/job" },
+    { "$ref": "#/$defs/cancelResult" }
+  ]
+}

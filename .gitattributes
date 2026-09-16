@@ -23,6 +23,7 @@ docs/render/FFMPEG_REQUIRED_CAPABILITY_PROFILE_V1.md text eol=lf
 docs/render/ffmpeg-required-capability-profile.v1.json text eol=lf
 
 # Exact immutable evidence and approved subjects are hash-bound to their committed bytes.
+compliance/approval/ffmpeg-render-v2/FFMPEG_RENDER_RUNTIME_APPROVAL_V2.json -text
 compliance/license-reconciliations/post-f-license-2026-09-02/evidence/linux/candidates/code-c-linux-runtime.v3.json -text
 compliance/license-reconciliations/post-f-license-2026-09-02/evidence/linux/candidates/code-c-linux-worker-build.v3.json -text
 compliance/license-reconciliations/post-f-license-2026-09-02/evidence/windows/candidates/code-c-windows-runtime.v3.json -text

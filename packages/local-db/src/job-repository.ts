@@ -98,6 +98,16 @@ export class JobRepository {
       .run(new Date().toISOString()).changes;
   }
 
+  recoverInterruptedNonRenderJobs(): number {
+    return this.#db
+      .prepare(
+        `UPDATE jobs SET state = 'INTERRUPTED', finished_at = ?,
+         error_code = 'APP_INTERRUPTED', error_message = '应用上次运行时中断'
+         WHERE state = 'RUNNING' AND job_type <> 'RENDER'`,
+      )
+      .run(new Date().toISOString()).changes;
+  }
+
   #map(row: JobRow): JobDTOv1 {
     return jobDtoV1Schema.parse({ schema_version: '1.0', ...row });
   }

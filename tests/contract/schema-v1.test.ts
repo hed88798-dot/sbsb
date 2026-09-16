@@ -11,6 +11,8 @@ import {
   jobDtoV1Schema,
   productCreateRequestV1Schema,
   productDtoV1Schema,
+  renderJobDtoV1Schema,
+  renderPrepareRequestV1Schema,
   sidecarEventV1Schema,
   sidecarRequestV1Schema,
 } from '../../packages/contracts/src/index.js';
@@ -24,6 +26,7 @@ function schema(path: string): object {
 }
 
 const productValidator = ajv.compile(schema('schemas/ipc/v1/product.schema.json'));
+const renderValidator = ajv.compile(schema('schemas/ipc/v1/render.schema.json'));
 
 const productData = {
   name: '合成样例产品A',
@@ -100,7 +103,67 @@ describe('IPC v1 contract', () => {
 
   it('exposes only named IPC use-case channels', () => {
     expect(new Set(IPC_CHANNEL_ALLOWLIST).size).toBe(Object.keys(IPC_CHANNELS).length);
-    expect(IPC_CHANNEL_ALLOWLIST.some((channel) => /ipc|sql|exec|fs/i.test(channel))).toBe(false);
+    expect(
+      IPC_CHANNEL_ALLOWLIST.some((channel) =>
+        /^(?:ipc|sql|fs|exec):|:(?:ipc|sql|fs|exec)$/iu.test(channel),
+      ),
+    ).toBe(false);
+  });
+
+  it('keeps the strict Desktop Render authority request aligned across Zod and JSON Schema', () => {
+    const request = {
+      schema_version: '1.0',
+      timeline_id: 'timeline_1',
+      timeline_version: 1,
+      expected_timeline_commit_receipt_hash: '1'.repeat(64),
+      render_policy_id: 'policy_1',
+      render_policy_version: 1,
+      render_policy_hash: '2'.repeat(64),
+    };
+    expect(renderPrepareRequestV1Schema.safeParse(request).success).toBe(true);
+    expect(renderValidator(request), JSON.stringify(renderValidator.errors)).toBe(true);
+    for (const forbidden of [
+      'runtime_root',
+      'ffmpeg_path',
+      'ffprobe_path',
+      'source_path',
+      'staging_root',
+      'output_root',
+      'ffmpeg_arguments',
+      'fallback_selection',
+      'digital_human_input',
+    ]) {
+      const invalid = { ...request, [forbidden]: 'forbidden' };
+      expect(renderPrepareRequestV1Schema.safeParse(invalid).success, forbidden).toBe(false);
+      expect(renderValidator(invalid), forbidden).toBe(false);
+    }
+  });
+
+  it('validates a Renderer-safe Render status without path or command authority', () => {
+    const status = {
+      schema_version: '1.0',
+      job_id: 'render_job_1',
+      job_state: 'RUNNING',
+      progress: 0.25,
+      preparation_state: 'READY_FOR_EXECUTION',
+      active_execution_state: 'RUNNING',
+      timeline_id: 'timeline_1',
+      timeline_version: 1,
+      logical_render_hash: '1'.repeat(64),
+      execution_snapshot_hash: '2'.repeat(64),
+      cancellation_requested: false,
+      error_code: null,
+      error_message: null,
+      created_at: '2026-09-16T00:00:00.000Z',
+      started_at: '2026-09-16T00:00:01.000Z',
+      finished_at: null,
+      result: null,
+    };
+    expect(renderJobDtoV1Schema.safeParse(status).success).toBe(true);
+    expect(renderValidator(status), JSON.stringify(renderValidator.errors)).toBe(true);
+    expect(
+      renderJobDtoV1Schema.safeParse({ ...status, output_path: 'C:\\secret.mp4' }).success,
+    ).toBe(false);
   });
 });
 

@@ -53,9 +53,31 @@ describe('approved Runtime v2 desktop distribution boundary', () => {
     expect(workflow).toContain('desktop-runtime-v2-installed-smoke.ps1');
     expect(workflow).toContain('$env:LOCALAPPDATA/Programs/@appdesktop');
     expect(workflow).toContain('desktop:runtime:v2:verify-three-stage');
+    expect(workflow).toContain('approval-byte-preflight.json');
+    expect(workflow).toContain('r1c-b-installed-desktop-smoke.json');
+    expect(workflow).toContain('code-a/r1c-b-desktop-render-orchestration');
+    expect(workflow.match(/if: \$\{\{ always\(\) \}\}/gu)).toHaveLength(2);
 
     const installedSmoke = await read('tools/windows/desktop-runtime-v2-installed-smoke.ps1');
     expect(installedSmoke).toContain("-ArgumentList '/S'");
+    expect(installedSmoke).toContain('DESKTOP_INSTALLED_STARTUP_SMOKE');
+    expect(installedSmoke).toContain('NORMAL_INSTALLED_DESKTOP_SMOKE_EVIDENCE_MISSING');
+    expect(installedSmoke).toContain('Error occurred in handler');
+    expect(installedSmoke).toContain('The database connection is not open');
+    expect(installedSmoke).toContain('ipc_after_database_close_observed');
+    expect(installedSmoke).toContain('NORMAL_INSTALLED_DESKTOP_IPC_HANDLER_FAILURE');
+    expect(installedSmoke).toContain('[IO.File]::ReadAllText($normalStderr)');
     expect(installedSmoke).not.toContain('/D=');
+  });
+
+  it('pins the approval receipt as exact bytes and runs a preflight before staging', async () => {
+    const attributes = await read('.gitattributes');
+    expect(attributes).toContain(
+      'compliance/approval/ffmpeg-render-v2/FFMPEG_RENDER_RUNTIME_APPROVAL_V2.json -text',
+    );
+    const preflight = await read('tools/desktop-runtime-v2/approval-byte-preflight.mjs');
+    expect(preflight).toContain("['show', `HEAD:${path}`]");
+    expect(preflight).toContain('git_blob_matches_worktree');
+    expect(preflight).toContain('RENDER_RUNTIME_APPROVAL_BYTE_PREFLIGHT_FAILED');
   });
 });

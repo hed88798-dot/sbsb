@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { canonicalJson } from '../../packages/domain-media-index/src/index.js';
 import {
+  JobRepository,
   RenderExecutionRepository,
   RenderPolicyRepository,
   RenderPreparationRepository,
@@ -18,6 +19,7 @@ import {
   type RenderExecutionSnapshotV1,
 } from '../../packages/render/src/index.js';
 import { RenderExecutionServiceV1 } from '../../apps/desktop/src/main/render-execution-service.js';
+import { DesktopRenderOrchestratorV1 } from '../../apps/desktop/src/main/desktop-render-orchestrator.js';
 import type {
   RenderAttemptPathsV1,
   RenderExecutionFilePortV1,
@@ -237,6 +239,11 @@ class FakeFiles implements RenderExecutionFilePortV1 {
 
 class FakeProcesses implements RenderProcessAdapterV1 {
   requests: RenderProcessRequestV1[] = [];
+  cancelCalls = 0;
+  releaseOnCancel = true;
+  ffmpegStarted: (() => void) | null = null;
+  ffmpegBarrier: Promise<void> | null = null;
+  releaseFfmpeg: (() => void) | null = null;
   ffmpegResult: RenderProcessResultV1 = {
     exit_code: 0,
     signal: null,
@@ -251,6 +258,8 @@ class FakeProcesses implements RenderProcessAdapterV1 {
   async run(request: RenderProcessRequestV1): Promise<RenderProcessResultV1> {
     this.requests.push(request);
     if (request.kind === 'FFMPEG') {
+      this.ffmpegStarted?.();
+      if (this.ffmpegBarrier) await this.ffmpegBarrier;
       request.on_progress?.({ frame: 30, out_time_ms: 1_000_000, progress: 'end' });
       return this.ffmpegResult;
     }
@@ -266,8 +275,38 @@ class FakeProcesses implements RenderProcessAdapterV1 {
   }
 
   async cancel(): Promise<boolean> {
+    this.cancelCalls += 1;
+    if (this.releaseOnCancel) {
+      this.ffmpegResult = {
+        exit_code: null,
+        signal: null,
+        stdout: '',
+        stderr: '',
+        logs_truncated: false,
+        progress_end_observed: false,
+        termination_reason: 'CANCELLED',
+      };
+      this.releaseFfmpeg?.();
+    }
     return true;
   }
+}
+
+function desktopOrchestrator(context: Awaited<ReturnType<typeof setup>>) {
+  return new DesktopRenderOrchestratorV1({
+    jobs: new JobRepository(context.fixture.database),
+    preparations: context.preparations,
+    executions: context.executions,
+    services: {
+      preparation: {
+        prepare: async () => {
+          throw new Error('PREPARE_NOT_USED');
+        },
+        recoverInterrupted: async () => [],
+      },
+      execution: context.service,
+    },
+  });
 }
 
 async function setup() {
@@ -373,6 +412,46 @@ describe('Code G R1B READY_FOR_EXECUTION service integration', () => {
       }),
     );
   }
+
+  it('maps persisted hostile Render diagnostics before constructing render:get DTO', async () => {
+    const context = await setup();
+    const internalCode = 'RENDER_INTERNAL_SECRET_PATH_FAILURE';
+    const internalMessage =
+      "ENOENT: no such file or directory, lstat 'C:\\Users\\test\\secret-source\\pig-farm.mp4'";
+    try {
+      context.fixture.database
+        .prepare(
+          `UPDATE jobs SET state = 'FAILED', finished_at = ?, error_code = ?, error_message = ?
+           WHERE job_id = ?`,
+        )
+        .run('2026-09-12T00:00:01.000Z', internalCode, internalMessage, context.job.job_id);
+      context.fixture.database
+        .prepare(
+          `UPDATE render_jobs SET state = 'FAILED', error_code = ?, error_message = ?
+           WHERE job_id = ?`,
+        )
+        .run(internalCode, internalMessage, context.job.job_id);
+
+      const dto = desktopOrchestrator(context).get(context.job.job_id);
+      expect(dto).toMatchObject({
+        error_code: 'RENDER_DESKTOP_OPERATION_FAILED',
+        error_message: '渲染操作失败，请稍后重试',
+      });
+      expect(JSON.stringify(dto)).not.toContain('secret-source');
+      expect(
+        context.fixture.database
+          .prepare('SELECT error_code, error_message FROM jobs WHERE job_id = ?')
+          .get(context.job.job_id),
+      ).toEqual({ error_code: internalCode, error_message: internalMessage });
+      expect(
+        context.fixture.database
+          .prepare('SELECT error_code, error_message FROM render_jobs WHERE job_id = ?')
+          .get(context.job.job_id),
+      ).toEqual({ error_code: internalCode, error_message: internalMessage });
+    } finally {
+      context.fixture.close();
+    }
+  });
 
   it('executes, verifies, atomically promotes, persists VERIFIED_OUTPUT and commits receipt', async () => {
     const context = await setup();
@@ -575,6 +654,329 @@ describe('Code G R1B READY_FOR_EXECUTION service integration', () => {
       await expect(context.service.executePreparedRender(context.job.job_id)).rejects.toThrowError(
         'RENDER_EXECUTION_ALREADY_ACTIVE',
       );
+    } finally {
+      context.fixture.close();
+    }
+  });
+
+  it('keeps concurrent Desktop execute calls under the accepted R1B reservation authority', async () => {
+    const context = await setup();
+    const orchestrator = desktopOrchestrator(context);
+    try {
+      const outcomes = await Promise.allSettled([
+        orchestrator.execute(context.job.job_id),
+        orchestrator.execute(context.job.job_id),
+      ]);
+      const rejected = outcomes.filter(
+        (outcome): outcome is PromiseRejectedResult => outcome.status === 'rejected',
+      );
+      expect(outcomes.some((outcome) => outcome.status === 'fulfilled')).toBe(true);
+      expect(
+        rejected.every(
+          (outcome) =>
+            outcome.reason instanceof Error &&
+            outcome.reason.message === 'RENDER_EXECUTION_ALREADY_ACTIVE',
+        ),
+      ).toBe(true);
+      expect(
+        context.processes.requests.filter((request) => request.kind === 'FFMPEG'),
+      ).toHaveLength(1);
+      expect(
+        context.fixture.database
+          .prepare('SELECT count(*) FROM render_execution_attempts')
+          .pluck()
+          .get(),
+      ).toBe(1);
+      expect(
+        context.fixture.database
+          .prepare(
+            "SELECT count(*) FROM render_execution_attempts WHERE state IN ('STARTING', 'RUNNING', 'VERIFYING')",
+          )
+          .pluck()
+          .get(),
+      ).toBe(0);
+      expect(
+        context.fixture.database
+          .prepare("SELECT count(*) FROM render_artifacts WHERE artifact_role = 'OUTPUT'")
+          .pluck()
+          .get(),
+      ).toBe(1);
+      expect(
+        context.fixture.database.prepare('SELECT count(*) FROM render_receipts').pluck().get(),
+      ).toBe(1);
+    } finally {
+      context.fixture.close();
+    }
+  });
+
+  it('recovers Render execution before preparation and explicitly filtered generic jobs', async () => {
+    const context = await setup();
+    const order: string[] = [];
+    const jobs = new JobRepository(context.fixture.database);
+    const copywriting = jobs.create('COPYWRITING', '9'.repeat(64));
+    jobs.start(copywriting.job_id);
+    const attempt = context.executions.reserve({
+      job_id: context.job.job_id,
+      execution_snapshot_hash: context.snapshot.execution_snapshot_hash,
+      partial_output_path: 'D:\\output\\job\\attempts\\restart\\output.partial.mp4',
+      final_output_path: 'D:\\output\\job\\artifacts\\output.mp4',
+    });
+    if ('receipt' in attempt) throw new Error('unexpected success');
+    context.executions.markRunning(attempt.execution_attempt_id);
+    const orchestrator = new DesktopRenderOrchestratorV1({
+      jobs,
+      preparations: context.preparations,
+      executions: context.executions,
+      services: {
+        execution: {
+          executePreparedRender: (jobId) => context.service.executePreparedRender(jobId),
+          cancelPreparedRender: (jobId) => context.service.cancelPreparedRender(jobId),
+          recoverInterruptedExecutions: async () => {
+            order.push('RENDER_EXECUTION');
+            return context.service.recoverInterruptedExecutions();
+          },
+        },
+        preparation: {
+          prepare: async () => {
+            throw new Error('PREPARE_NOT_USED');
+          },
+          recoverInterrupted: async () => {
+            order.push('RENDER_PREPARATION');
+            expect(jobs.require(context.job.job_id).state).toBe('INTERRUPTED');
+            expect(jobs.require(copywriting.job_id).state).toBe('RUNNING');
+            return [];
+          },
+        },
+      },
+    });
+    try {
+      const recovered = await orchestrator.recoverStartup();
+      order.push('GENERIC_JOB');
+      expect(order).toEqual(['RENDER_EXECUTION', 'RENDER_PREPARATION', 'GENERIC_JOB']);
+      expect(recovered).toEqual({
+        execution_recovered: 1,
+        preparation_recovered: 0,
+        generic_recovered: 1,
+      });
+      expect(jobs.require(context.job.job_id).state).toBe('INTERRUPTED');
+      expect(jobs.require(copywriting.job_id).state).toBe('INTERRUPTED');
+      expect(
+        context.fixture.database.prepare('SELECT count(*) FROM render_receipts').pluck().get(),
+      ).toBe(1);
+    } finally {
+      context.fixture.close();
+    }
+  });
+
+  it('settles active execution shutdown through accepted cancellation without a second kill path', async () => {
+    const context = await setup();
+    const orchestrator = desktopOrchestrator(context);
+    let release!: () => void;
+    let started!: () => void;
+    context.processes.ffmpegBarrier = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    context.processes.releaseFfmpeg = release;
+    const ffmpegStarted = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    context.processes.ffmpegStarted = started;
+    try {
+      const execution = orchestrator.execute(context.job.job_id);
+      const executionError = execution.then(
+        () => null,
+        (error: unknown) => error,
+      );
+      await ffmpegStarted;
+      const shutdown = await orchestrator.shutdown(100);
+      await expect(executionError).resolves.toMatchObject({ message: 'FFMPEG_CANCELLED' });
+      expect(shutdown.settled).toBe(true);
+      expect(shutdown.timed_out).toBe(false);
+      expect(context.processes.cancelCalls).toBe(1);
+      expect(
+        context.fixture.database
+          .prepare('SELECT state FROM render_execution_attempts')
+          .pluck()
+          .get(),
+      ).toBe('CANCELLED');
+      expect(
+        context.fixture.database.prepare('SELECT count(*) FROM render_receipts').pluck().get(),
+      ).toBe(1);
+    } finally {
+      release?.();
+      context.fixture.close();
+    }
+  });
+
+  it('uses accepted STARTING cancellation so shutdown before spawn launches no FFmpeg', async () => {
+    const context = await setup();
+    const orchestrator = desktopOrchestrator(context);
+    let release!: () => void;
+    let started!: () => void;
+    context.files.reverifyBarrier = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const reverifyStarted = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    context.files.reverifyStarted = started;
+    try {
+      const execution = orchestrator.execute(context.job.job_id);
+      const executionError = execution.then(
+        () => null,
+        (error: unknown) => error,
+      );
+      await reverifyStarted;
+      const shutdownPromise = orchestrator.shutdown(100);
+      release();
+      const shutdown = await shutdownPromise;
+      await expect(executionError).resolves.toMatchObject({
+        message: 'RENDER_EXECUTION_CANCELLED_BEFORE_SPAWN',
+      });
+      expect(shutdown.settled).toBe(true);
+      expect(context.processes.requests).toHaveLength(0);
+      expect(
+        context.fixture.database
+          .prepare('SELECT state FROM render_execution_attempts')
+          .pluck()
+          .get(),
+      ).toBe('CANCELLED');
+    } finally {
+      release?.();
+      context.fixture.close();
+    }
+  });
+
+  it('bounds slow cancellation without synthetic receipt or output promotion', async () => {
+    const context = await setup();
+    const orchestrator = desktopOrchestrator(context);
+    let release!: () => void;
+    let started!: () => void;
+    context.processes.ffmpegBarrier = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    context.processes.releaseOnCancel = false;
+    const ffmpegStarted = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    context.processes.ffmpegStarted = started;
+    const execution = orchestrator.execute(context.job.job_id);
+    const executionSettlement = execution.then(
+      () => undefined,
+      () => undefined,
+    );
+    try {
+      await ffmpegStarted;
+      const shutdown = await orchestrator.shutdown(5);
+      expect(shutdown).toEqual({
+        settled: false,
+        timed_out: true,
+        cancellation_requested_job_ids: [context.job.job_id],
+      });
+      expect(context.processes.cancelCalls).toBe(1);
+      expect(context.executions.findActive(context.job.job_id)?.cancellation_requested_at).not.toBe(
+        null,
+      );
+      expect(
+        context.fixture.database.prepare('SELECT count(*) FROM render_receipts').pluck().get(),
+      ).toBe(0);
+      expect(
+        context.fixture.database
+          .prepare("SELECT count(*) FROM render_artifacts WHERE artifact_role = 'OUTPUT'")
+          .pluck()
+          .get(),
+      ).toBe(0);
+    } finally {
+      context.processes.ffmpegResult = {
+        exit_code: null,
+        signal: null,
+        stdout: '',
+        stderr: '',
+        logs_truncated: false,
+        progress_end_observed: false,
+        termination_reason: 'CANCELLED',
+      };
+      release?.();
+      await executionSettlement;
+      context.fixture.close();
+    }
+  });
+
+  it('leaves a final Desktop timeout recoverable by Render recovery on next startup', async () => {
+    const context = await setup();
+    const jobs = new JobRepository(context.fixture.database);
+    const neverSettles = new Promise<never>(() => undefined);
+    const timedOutOrchestrator = new DesktopRenderOrchestratorV1({
+      jobs,
+      preparations: context.preparations,
+      executions: context.executions,
+      services: {
+        preparation: {
+          prepare: async () => {
+            throw new Error('PREPARE_NOT_USED');
+          },
+          recoverInterrupted: async () => [],
+        },
+        execution: {
+          executePreparedRender: async (jobId) => {
+            context.executions.reserve({
+              job_id: jobId,
+              execution_snapshot_hash: context.snapshot.execution_snapshot_hash,
+              partial_output_path: 'D:\\output\\job\\attempts\\timeout\\output.partial.mp4',
+              final_output_path: 'D:\\output\\job\\artifacts\\output.mp4',
+            });
+            return neverSettles;
+          },
+          cancelPreparedRender: async (jobId) => {
+            return context.executions.requestCancellation(jobId) !== null;
+          },
+          recoverInterruptedExecutions: async () => [],
+        },
+      },
+    });
+    try {
+      void timedOutOrchestrator.execute(context.job.job_id);
+      const shutdown = await timedOutOrchestrator.shutdown(5);
+      expect(shutdown.settled).toBe(false);
+      expect(context.executions.findActive(context.job.job_id)?.cancellation_requested_at).not.toBe(
+        null,
+      );
+      expect(
+        context.fixture.database.prepare('SELECT count(*) FROM render_receipts').pluck().get(),
+      ).toBe(0);
+      expect(
+        context.fixture.database
+          .prepare("SELECT count(*) FROM render_artifacts WHERE artifact_role = 'OUTPUT'")
+          .pluck()
+          .get(),
+      ).toBe(0);
+
+      const nextStartup = new DesktopRenderOrchestratorV1({
+        jobs,
+        preparations: context.preparations,
+        executions: context.executions,
+        services: {
+          preparation: {
+            prepare: async () => {
+              throw new Error('PREPARE_NOT_USED');
+            },
+            recoverInterrupted: async () => [],
+          },
+          execution: context.service,
+        },
+      });
+      const recovered = await nextStartup.recoverStartup();
+      expect(recovered.execution_recovered).toBe(1);
+      expect(jobs.require(context.job.job_id).state).toBe('CANCELLED');
+      expect(
+        context.fixture.database.prepare('SELECT count(*) FROM render_receipts').pluck().get(),
+      ).toBe(1);
+      expect(
+        context.fixture.database
+          .prepare("SELECT count(*) FROM render_artifacts WHERE artifact_role = 'OUTPUT'")
+          .pluck()
+          .get(),
+      ).toBe(0);
     } finally {
       context.fixture.close();
     }

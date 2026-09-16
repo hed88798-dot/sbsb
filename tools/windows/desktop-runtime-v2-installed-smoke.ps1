@@ -1,7 +1,9 @@
 param(
   [Parameter(Mandatory = $true)][string]$Installer,
   [Parameter(Mandatory = $true)][string]$InstallRoot,
-  [Parameter(Mandatory = $true)][string]$EvidencePath
+  [Parameter(Mandatory = $true)][string]$EvidencePath,
+  [Parameter(Mandatory = $true)][string]$NormalEvidencePath,
+  [Parameter(Mandatory = $true)][string]$ExpectedHeadSha
 )
 
 $ErrorActionPreference = 'Stop'
@@ -27,6 +29,75 @@ try {
     -Executable $application.FullName `
     -EvidencePath $EvidencePath `
     -Mode REAL_INSTALLED_APP
+
+  $normalEvidence = [IO.Path]::GetFullPath($NormalEvidencePath)
+  $normalEvidenceDirectory = Split-Path -Parent $normalEvidence
+  New-Item -ItemType Directory -Path $normalEvidenceDirectory -Force | Out-Null
+  $previousStartupSmoke = $env:DESKTOP_INSTALLED_STARTUP_SMOKE
+  $previousStartupEvidence = $env:DESKTOP_INSTALLED_STARTUP_SMOKE_EVIDENCE_PATH
+  $previousHeadSha = $env:GITHUB_SHA
+  $normalStdout = Join-Path $normalEvidenceDirectory 'NORMAL_INSTALLED_DESKTOP.stdout.txt'
+  $normalStderr = Join-Path $normalEvidenceDirectory 'NORMAL_INSTALLED_DESKTOP.stderr.txt'
+  try {
+    $env:DESKTOP_INSTALLED_STARTUP_SMOKE = '1'
+    $env:DESKTOP_INSTALLED_STARTUP_SMOKE_EVIDENCE_PATH = $normalEvidence
+    $env:GITHUB_SHA = $ExpectedHeadSha
+    $normalProcess = Start-Process -FilePath $application.FullName -Wait -PassThru -WindowStyle Hidden `
+      -RedirectStandardOutput $normalStdout -RedirectStandardError $normalStderr
+  } finally {
+    $env:DESKTOP_INSTALLED_STARTUP_SMOKE = $previousStartupSmoke
+    $env:DESKTOP_INSTALLED_STARTUP_SMOKE_EVIDENCE_PATH = $previousStartupEvidence
+    $env:GITHUB_SHA = $previousHeadSha
+  }
+  if (-not (Test-Path -LiteralPath $normalEvidence)) {
+    throw 'NORMAL_INSTALLED_DESKTOP_SMOKE_EVIDENCE_MISSING'
+  }
+  $normalRecord = Get-Content -LiteralPath $normalEvidence -Raw | ConvertFrom-Json
+  $normalStderrContent = if (Test-Path -LiteralPath $normalStderr) {
+    [IO.File]::ReadAllText($normalStderr)
+  } else {
+    ''
+  }
+  $ipcAfterDatabaseCloseObserved =
+    $normalStderrContent.Contains('Error occurred in handler') -or
+    $normalStderrContent.Contains('The database connection is not open')
+  $normalRecord.ipc_after_database_close_observed = $ipcAfterDatabaseCloseObserved
+  if ($ipcAfterDatabaseCloseObserved) {
+    $normalRecord.result = 'FAIL'
+  }
+  $normalRecord | ConvertTo-Json -Depth 20 |
+    Set-Content -LiteralPath $normalEvidence -Encoding utf8NoBOM
+  Write-Host "NORMAL_INSTALLED_DESKTOP_EXIT_CODE:$($normalProcess.ExitCode)"
+  Write-Host "NORMAL_INSTALLED_DESKTOP_RECORD_RESULT:$($normalRecord.result)"
+  Write-Host "NORMAL_INSTALLED_DESKTOP_IPC_AFTER_DATABASE_CLOSE_OBSERVED:$ipcAfterDatabaseCloseObserved"
+  if ($ipcAfterDatabaseCloseObserved) {
+    throw 'NORMAL_INSTALLED_DESKTOP_IPC_HANDLER_FAILURE'
+  }
+  $requiredTrue = @(
+    'render_composition_initialized',
+    'render_execution_recovery_completed',
+    'render_preparation_recovery_completed',
+    'generic_non_render_recovery_completed',
+    'browser_window_created',
+    'shutdown_requested',
+    'graceful_shutdown_completed',
+    'database_closed_after_settlement'
+  )
+  $missingMarker = $requiredTrue | Where-Object { $normalRecord.$_ -ne $true } | Select-Object -First 1
+  if (
+    $normalProcess.ExitCode -ne 0 -or
+    $normalRecord.result -ne 'PASS' -or
+    $normalRecord.head_sha -ne $ExpectedHeadSha -or
+    $normalRecord.unhandled_main_rejection_observed -ne $false -or
+    $normalRecord.uncaught_main_exception_observed -ne $false -or
+    $normalRecord.main_startup_failure_observed -ne $false -or
+    $normalRecord.runtime_fallback_observed -ne $false -or
+    $normalRecord.ipc_after_database_close_observed -ne $false -or
+    $missingMarker
+  ) {
+    throw 'NORMAL_INSTALLED_DESKTOP_SMOKE_FAILED'
+  }
+  Write-Host 'NORMAL_INSTALLED_DESKTOP_SMOKE:PASS'
 } finally {
   $uninstaller = Get-ChildItem -LiteralPath $InstallRoot -Filter 'Uninstall*.exe' -File `
     -ErrorAction SilentlyContinue | Select-Object -First 1
