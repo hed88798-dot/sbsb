@@ -22,6 +22,13 @@ export {
   SourceDocumentRepository,
   type SourceDocumentCommitV1,
 } from './source-document-repository.js';
+export {
+  ShotPlanAuthorityRepository,
+  type ConfirmedShotPlanRecordV1,
+  type ShotPlanCandidateRecordV1,
+  type ShotPlanConfirmationAllocationV1,
+  type ShotPlanConfirmationIntentV1,
+} from './shot-plan-authority-repository.js';
 export { SettingsRepository } from './settings-repository.js';
 export {
   MaterialSelectionRepository,

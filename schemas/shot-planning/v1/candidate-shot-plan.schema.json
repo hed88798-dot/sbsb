@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/shot-planning/v1/candidate-shot-plan.schema.json",
+  "title": "CandidateShotPlanV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "candidate_id",
+    "candidate_revision",
+    "candidate_status",
+    "source_document_id",
+    "source_document_version",
+    "source_document_hash",
+    "source_offset_unit",
+    "segmentation_state",
+    "review_warnings",
+    "slots",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "candidate_id": { "$ref": "#/$defs/identity" },
+    "candidate_revision": { "type": "integer", "minimum": 1 },
+    "candidate_status": { "enum": ["ACTIVE", "REJECTED"] },
+    "source_document_id": { "$ref": "#/$defs/identity" },
+    "source_document_version": { "type": "integer", "minimum": 1 },
+    "source_document_hash": { "$ref": "#/$defs/hash" },
+    "source_offset_unit": { "const": "UNICODE_CODE_POINT" },
+    "segmentation_state": { "$ref": "#/$defs/resolution" },
+    "review_warnings": { "type": "array", "items": { "$ref": "#/$defs/warning" } },
+    "slots": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/slot" } },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "identity": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "resolution": { "enum": ["RESOLVED", "NEEDS_REVIEW"] },
+    "warning": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "severity", "message"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "severity": { "enum": ["INFORMATIONAL", "BLOCKING"] },
+        "message": { "type": "string", "minLength": 1, "maxLength": 500 }
+      }
+    },
+    "slot": {
+      "type": "object",
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": { "route_state": { "const": "RESOLVED" } },
+            "required": ["route_state"]
+          },
+          "then": {
+            "properties": { "route": { "enum": ["ANIMAL", "PRODUCT", "NO_MATCH"] } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "continuity_state": { "const": "RESOLVED" } },
+            "required": ["continuity_state"]
+          },
+          "then": {
+            "properties": {
+              "visual_continuity_group_id": { "$ref": "#/$defs/identity" }
+            }
+          }
+        }
+      ],
+      "required": [
+        "slot_id",
+        "order_index",
+        "source_start",
+        "source_end",
+        "source_text",
+        "route",
+        "route_state",
+        "visual_continuity_group_id",
+        "continuity_state",
+        "rationale",
+        "review_warnings"
+      ],
+      "properties": {
+        "slot_id": { "$ref": "#/$defs/identity" },
+        "order_index": { "type": "integer", "minimum": 0 },
+        "source_start": { "type": "integer", "minimum": 0 },
+        "source_end": { "type": "integer", "minimum": 1 },
+        "source_text": { "type": "string", "minLength": 1 },
+        "route": { "anyOf": [{ "enum": ["ANIMAL", "PRODUCT", "NO_MATCH"] }, { "type": "null" }] },
+        "route_state": { "$ref": "#/$defs/resolution" },
+        "visual_continuity_group_id": {
+          "anyOf": [{ "$ref": "#/$defs/identity" }, { "type": "null" }]
+        },
+        "continuity_state": { "$ref": "#/$defs/resolution" },
+        "rationale": { "type": "string", "maxLength": 500 },
+        "review_warnings": { "type": "array", "items": { "$ref": "#/$defs/warning" } }
+      }
+    }
+  }
+}

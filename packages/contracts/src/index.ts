@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export * from './material-selection.js';
+export * from './shot-planning.js';
 export * from './source-document.js';
 export * from './timeline-planning.js';
 
