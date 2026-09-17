@@ -16,6 +16,66 @@ export const shotPlanCandidateWarningV1Schema = z
   .strict();
 export type ShotPlanCandidateWarningV1 = z.infer<typeof shotPlanCandidateWarningV1Schema>;
 
+export const shotPlanSemanticContinuityActionV1Schema = z.enum([
+  'START_NEW',
+  'CONTINUE_PREVIOUS',
+  'SWITCH_VISUAL',
+]);
+export type ShotPlanSemanticContinuityActionV1 = z.infer<
+  typeof shotPlanSemanticContinuityActionV1Schema
+>;
+
+export const shotPlanSemanticProposalUnitV1Schema = z
+  .object({
+    exact_fragment: z.string().min(1),
+    left_context: z.string().min(1).optional(),
+    right_context: z.string().min(1).optional(),
+    route: shotPlanRouteV1Schema.nullable(),
+    route_state: shotPlanCandidateResolutionV1Schema,
+    continuity_action: shotPlanSemanticContinuityActionV1Schema.nullable(),
+    continuity_state: shotPlanCandidateResolutionV1Schema,
+    rationale: z.string().max(500),
+    review_warnings: z.array(shotPlanCandidateWarningV1Schema),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (value.route_state === 'RESOLVED' && value.route === null) {
+      context.addIssue({
+        code: 'custom',
+        message: 'resolved semantic route requires an intentional route',
+        path: ['route'],
+      });
+    }
+    if (value.continuity_state === 'RESOLVED' && value.continuity_action === null) {
+      context.addIssue({
+        code: 'custom',
+        message: 'resolved semantic continuity requires an action',
+        path: ['continuity_action'],
+      });
+    }
+  });
+export type ShotPlanSemanticProposalUnitV1 = z.infer<typeof shotPlanSemanticProposalUnitV1Schema>;
+
+export const shotPlanSemanticProposalV1Schema = z
+  .object({
+    schema_version: z.literal('1.0'),
+    segmentation_state: shotPlanCandidateResolutionV1Schema,
+    review_warnings: z.array(shotPlanCandidateWarningV1Schema),
+    units: z.array(shotPlanSemanticProposalUnitV1Schema).min(1).max(500),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const first = value.units[0];
+    if (first?.continuity_state === 'RESOLVED' && first.continuity_action !== 'START_NEW') {
+      context.addIssue({
+        code: 'custom',
+        message: 'the first resolved unit must start a continuity group',
+        path: ['units', 0, 'continuity_action'],
+      });
+    }
+  });
+export type ShotPlanSemanticProposalV1 = z.infer<typeof shotPlanSemanticProposalV1Schema>;
+
 export const shotPlanCandidateSlotV1Schema = z
   .object({
     slot_id: identity,

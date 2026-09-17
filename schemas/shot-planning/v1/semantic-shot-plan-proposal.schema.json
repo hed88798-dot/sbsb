@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.app/schemas/shot-planning/v1/semantic-shot-plan-proposal.schema.json",
+  "title": "ShotPlanSemanticProposalV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "segmentation_state", "review_warnings", "units"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "segmentation_state": { "enum": ["RESOLVED", "NEEDS_REVIEW"] },
+    "review_warnings": { "$ref": "#/$defs/warnings" },
+    "units": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 500,
+      "items": { "$ref": "#/$defs/unit" }
+    }
+  },
+  "$defs": {
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "severity", "message"],
+        "properties": {
+          "code": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "severity": { "enum": ["INFORMATIONAL", "BLOCKING"] },
+          "message": { "type": "string", "minLength": 1, "maxLength": 500 }
+        }
+      }
+    },
+    "unit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exact_fragment",
+        "route",
+        "route_state",
+        "continuity_action",
+        "continuity_state",
+        "rationale",
+        "review_warnings"
+      ],
+      "properties": {
+        "exact_fragment": { "type": "string", "minLength": 1 },
+        "left_context": { "type": "string", "minLength": 1 },
+        "right_context": { "type": "string", "minLength": 1 },
+        "route": { "enum": ["ANIMAL", "PRODUCT", "NO_MATCH", null] },
+        "route_state": { "enum": ["RESOLVED", "NEEDS_REVIEW"] },
+        "continuity_action": {
+          "enum": ["START_NEW", "CONTINUE_PREVIOUS", "SWITCH_VISUAL", null]
+        },
+        "continuity_state": { "enum": ["RESOLVED", "NEEDS_REVIEW"] },
+        "rationale": { "type": "string", "maxLength": 500 },
+        "review_warnings": { "$ref": "#/$defs/warnings" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "route_state": { "const": "RESOLVED" } } },
+          "then": { "properties": { "route": { "enum": ["ANIMAL", "PRODUCT", "NO_MATCH"] } } }
+        },
+        {
+          "if": { "properties": { "continuity_state": { "const": "RESOLVED" } } },
+          "then": {
+            "properties": {
+              "continuity_action": {
+                "enum": ["START_NEW", "CONTINUE_PREVIOUS", "SWITCH_VISUAL"]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
