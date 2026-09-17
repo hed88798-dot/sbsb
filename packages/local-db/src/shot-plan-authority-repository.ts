@@ -2,10 +2,12 @@ import type { Database } from 'better-sqlite3';
 import {
   candidateShotPlanV1Schema,
   type CandidateShotPlanV1,
+  type CanonicalSourceDocumentV1,
   type ConfirmedShotPlanV1,
 } from '@app/contracts';
 import { canonicalJson } from '@app/domain-media-index';
 import { parseConfirmedShotPlanV1 } from '@app/timeline';
+import { SourceDocumentRepository } from './source-document-repository.js';
 
 interface CandidateRow {
   candidate_id: string;
@@ -126,9 +128,11 @@ function parseConfirmedRow(row: ConfirmedRow): ConfirmedShotPlanRecordV1 {
 
 export class ShotPlanAuthorityRepository {
   readonly #db: Database;
+  readonly #sourceDocuments: SourceDocumentRepository;
 
   constructor(db: Database) {
     this.#db = db;
+    this.#sourceDocuments = new SourceDocumentRepository(db);
   }
 
   createCandidate(
@@ -454,14 +458,16 @@ export class ShotPlanAuthorityRepository {
   }
 
   #validateCandidateValueSource(candidate: CandidateShotPlanV1): void {
-    const sourceHash = this.#db
-      .prepare(
-        `SELECT source_document_hash FROM source_document_versions
-         WHERE source_document_id = ? AND version = ?`,
-      )
-      .pluck()
-      .get(candidate.source_document_id, candidate.source_document_version) as string | undefined;
-    if (sourceHash !== candidate.source_document_hash) {
+    let source: CanonicalSourceDocumentV1 | null;
+    try {
+      source = this.#sourceDocuments.getVersion(
+        candidate.source_document_id,
+        candidate.source_document_version,
+      );
+    } catch {
+      return fail('SHOT_PLAN_CANDIDATE_STORED_INTEGRITY_MISMATCH');
+    }
+    if (!source || source.source_document_hash !== candidate.source_document_hash) {
       return fail('SHOT_PLAN_CANDIDATE_STORED_INTEGRITY_MISMATCH');
     }
   }
@@ -469,19 +475,22 @@ export class ShotPlanAuthorityRepository {
   #trustedConfirmed(row: ConfirmedRow): ConfirmedShotPlanRecordV1 {
     const record = parseConfirmedRow(row);
     const lineage = this.#lineageRow(row.shot_plan_id);
-    const sourceHash = this.#db
-      .prepare(
-        `SELECT source_document_hash FROM source_document_versions
-         WHERE source_document_id = ? AND version = ?`,
-      )
-      .pluck()
-      .get(row.source_document_id, row.source_document_version) as string | undefined;
+    let source: CanonicalSourceDocumentV1 | null;
+    try {
+      source = this.#sourceDocuments.getVersion(
+        row.source_document_id,
+        row.source_document_version,
+      );
+    } catch {
+      return fail('CONFIRMED_SHOT_PLAN_STORED_INTEGRITY_MISMATCH');
+    }
     if (
       !lineage ||
       lineage.source_document_id !== row.source_document_id ||
       lineage.source_document_version !== row.source_document_version ||
       lineage.source_document_hash !== row.source_document_hash ||
-      sourceHash !== row.source_document_hash
+      !source ||
+      source.source_document_hash !== row.source_document_hash
     ) {
       return fail('CONFIRMED_SHOT_PLAN_STORED_INTEGRITY_MISMATCH');
     }

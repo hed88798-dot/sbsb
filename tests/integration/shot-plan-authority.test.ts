@@ -113,6 +113,21 @@ function intent(candidate: CandidateShotPlanV1) {
   };
 }
 
+function bypassSourceDocumentProtection(): void {
+  database.exec('DROP TRIGGER source_document_versions_reject_update');
+}
+
+function corruptSourceDocumentText(source: CanonicalSourceDocumentV1): void {
+  bypassSourceDocumentProtection();
+  database
+    .prepare(
+      `UPDATE source_document_versions
+       SET text = ?
+       WHERE source_document_id = ? AND version = ?`,
+    )
+    .run(`${source.text}（已篡改）`, source.source_document_id, source.source_document_version);
+}
+
 beforeEach(async () => {
   idCounter = 1;
   const directory = mkdtempSync(join(tmpdir(), 'shot-plan-authority-'));
@@ -509,6 +524,70 @@ describe('Shot Plan authority foundation', () => {
     expect(() => service.getCandidate(candidate.candidate_id)).toThrow(
       'SHOT_PLAN_CANDIDATE_STORED_INTEGRITY_MISMATCH',
     );
+  });
+
+  it('trusted Candidate reads transitively reject corrupted Source text with unchanged hash', () => {
+    const source = insertSource('猪群');
+    const candidate = createCandidate(source).candidate;
+    corruptSourceDocumentText(source);
+    expect(() => repository.getCandidate(candidate.candidate_id)).toThrow(
+      'SHOT_PLAN_CANDIDATE_STORED_INTEGRITY_MISMATCH',
+    );
+    expect(() => repository.requireCandidate(candidate.candidate_id)).toThrow(
+      'SHOT_PLAN_CANDIDATE_STORED_INTEGRITY_MISMATCH',
+    );
+  });
+
+  it('trusted Confirmed reads transitively reject corrupted Source text with unchanged hash', () => {
+    const source = insertSource('猪群');
+    const confirmed = service.confirmCandidate(intent(createCandidate(source).candidate));
+    corruptSourceDocumentText(source);
+    expect(() =>
+      repository.getConfirmedVersion(confirmed.plan.shot_plan_id, confirmed.plan.shot_plan_version),
+    ).toThrow('CONFIRMED_SHOT_PLAN_STORED_INTEGRITY_MISMATCH');
+  });
+
+  it('latest Confirmed read transitively rejects corrupted Source text with unchanged hash', () => {
+    const source = insertSource('猪群');
+    service.confirmCandidate(intent(createCandidate(source).candidate));
+    corruptSourceDocumentText(source);
+    expect(() =>
+      repository.getLatestConfirmedBySource(
+        source.source_document_id,
+        source.source_document_version,
+      ),
+    ).toThrow('CONFIRMED_SHOT_PLAN_STORED_INTEGRITY_MISMATCH');
+  });
+
+  it('confirmation lookup transitively rejects corrupted Source text with unchanged hash', () => {
+    const source = insertSource('猪群');
+    const candidate = createCandidate(source).candidate;
+    service.confirmCandidate(intent(candidate));
+    corruptSourceDocumentText(source);
+    expect(() => repository.findConfirmation(intent(candidate))).toThrow(
+      'CONFIRMED_SHOT_PLAN_STORED_INTEGRITY_MISMATCH',
+    );
+  });
+
+  it('trusted Shot Plan reads inherit C2 Source metadata integrity rejection', () => {
+    const source = insertSource('猪群');
+    const confirmed = service.confirmCandidate(intent(createCandidate(source).candidate));
+    bypassSourceDocumentProtection();
+    database.pragma('ignore_check_constraints = ON');
+    try {
+      database
+        .prepare(
+          `UPDATE source_document_versions
+           SET source_offset_unit = 'UTF16_CODE_UNIT'
+           WHERE source_document_id = ? AND version = ?`,
+        )
+        .run(source.source_document_id, source.source_document_version);
+    } finally {
+      database.pragma('ignore_check_constraints = OFF');
+    }
+    expect(() =>
+      repository.getConfirmedVersion(confirmed.plan.shot_plan_id, confirmed.plan.shot_plan_version),
+    ).toThrow('CONFIRMED_SHOT_PLAN_STORED_INTEGRITY_MISMATCH');
   });
 
   it('rolls back lineage and version allocation when confirmation fails atomically', () => {
