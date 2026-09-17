@@ -17,7 +17,11 @@ export {
   type RenderPreparationStateV1,
   type VerifiedStagedArtifactRecordV1,
 } from './render-preparation-repository.js';
-export { CopywritingRepository } from './copywriting-repository.js';
+export { CopywritingRepository, type PersistedScriptVersionV1 } from './copywriting-repository.js';
+export {
+  SourceDocumentRepository,
+  type SourceDocumentCommitV1,
+} from './source-document-repository.js';
 export { SettingsRepository } from './settings-repository.js';
 export {
   MaterialSelectionRepository,

@@ -154,7 +154,7 @@ export async function runControlledAuthorityOperator(config, overrides = {}) {
       dbPath: join(acceptanceRoot, 'acceptance.sqlite'),
       migrationsDirectory: config.migrations_directory,
     });
-    if (opened.migration.currentVersion !== 7) throw new Error('R1A_MIGRATION_SET_INVALID');
+    if (opened.migration.currentVersion !== 8) throw new Error('R1A_MIGRATION_SET_INVALID');
     const db = opened.db;
     const mediaIndex = new MediaIndexRepository(db);
     const materialSelections = new MaterialSelectionRepository(db);

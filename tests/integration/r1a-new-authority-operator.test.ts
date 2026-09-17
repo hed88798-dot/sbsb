@@ -411,7 +411,7 @@ describe('R1A-N0 controlled new-authority operator', () => {
     db.close();
   });
 
-  it('creates migrations 001-007 and a test-only READY authority without executing R1B', async () => {
+  it('creates migrations 001-008 and a test-only READY authority without executing R1B', async () => {
     const context = await setup();
     const result = await runControlledAuthorityOperator(context.config, {
       runtime: mockRuntime(),
@@ -446,7 +446,7 @@ describe('R1A-N0 controlled new-authority operator', () => {
     });
     expect(
       db.prepare('SELECT version FROM schema_migrations ORDER BY version').pluck().all(),
-    ).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    ).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     expect(db.prepare('SELECT count(*) FROM render_execution_attempts').pluck().get()).toBe(0);
     expect(db.prepare('SELECT count(*) FROM render_receipts').pluck().get()).toBe(0);
     expect(db.prepare('SELECT count(*) FROM render_execution_snapshots').pluck().get()).toBe(1);

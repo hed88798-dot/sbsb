@@ -208,6 +208,9 @@ importers:
       '@app/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@app/domain-copywriting':
+        specifier: workspace:*
+        version: link:../domain-copywriting
       '@app/domain-media-index':
         specifier: workspace:*
         version: link:../domain-media-index

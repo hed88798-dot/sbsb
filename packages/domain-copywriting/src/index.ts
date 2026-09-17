@@ -9,6 +9,7 @@ import { productSalesPromptV1 } from './prompts/product-sales.v1.js';
 import type { PromptTemplateV1 } from './prompts/types.js';
 
 export { checkProductFacts } from './fact-lock.js';
+export { computeSourceDocumentHashV1, SOURCE_DOCUMENT_HASH_SCHEME_V1 } from './source-document.js';
 export type { PromptTemplateV1 } from './prompts/types.js';
 
 export function selectPromptTemplate(request: CopywritingGenerateRequestV1): PromptTemplateV1 {
