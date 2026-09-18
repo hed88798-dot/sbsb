@@ -35,33 +35,93 @@ function proposalFrom(
   };
 }
 
-describe('veterinary e-commerce semantic proposer evaluation harness', () => {
+function fixtureById(id: string): ShotPlanSemanticGoldenFixtureV1 {
+  const fixture = shotPlanSemanticGoldenFixturesV1.find((item) => item.id === id);
+  expect(fixture, id).toBeDefined();
+  return fixture!;
+}
+
+function routeForExactText(fixture: ShotPlanSemanticGoldenFixtureV1, text: string) {
+  return fixture.acceptable_alternatives[0]!.units.find((unit) => unit.exact_fragment === text)
+    ?.route;
+}
+
+describe('GOLDEN_HARNESS_SELF_CHECK for veterinary e-commerce semantics', () => {
   it('contains exactly 30 fixed synthetic golden fixtures with required evaluation metadata', () => {
     expect(shotPlanSemanticGoldenFixturesV1).toHaveLength(30);
     expect(new Set(shotPlanSemanticGoldenFixturesV1.map((fixture) => fixture.id)).size).toBe(30);
     for (const fixture of shotPlanSemanticGoldenFixturesV1) {
       expect(fixture.source_text.length).toBeGreaterThan(0);
+      expect(fixture.route_review.length).toBeGreaterThan(0);
       expect(fixture.required_facts.length).toBeGreaterThan(0);
       expect(fixture.acceptable_alternatives.length).toBeGreaterThan(0);
       expect(fixture.must_have_invariants).toContain('EXACT_SOURCE_COVERAGE');
     }
   });
 
-  it('reports all five semantic dimensions and forbidden outcomes separately', () => {
+  it('self-checks every approved alternative across all five semantic dimensions', () => {
     for (const fixture of shotPlanSemanticGoldenFixturesV1) {
-      const evaluation = evaluateShotPlanSemanticProposalV1(
-        fixture,
-        proposalFrom(fixture, fixture.acceptable_alternatives[0]!),
-      );
-      expect(evaluation, fixture.id).toEqual({
-        structural_validity: true,
-        segmentation: true,
-        route: true,
-        continuity: true,
-        needs_review: true,
-        forbidden_outcome_violations: [],
-      });
+      for (const [alternativeIndex, alternative] of fixture.acceptable_alternatives.entries()) {
+        const evaluation = evaluateShotPlanSemanticProposalV1(
+          fixture,
+          proposalFrom(fixture, alternative),
+        );
+        expect(evaluation, `${fixture.id} alternative ${alternativeIndex}`).toEqual({
+          structural_validity: true,
+          segmentation: true,
+          route: true,
+          continuity: true,
+          needs_review: true,
+          forbidden_outcome_violations: [],
+        });
+      }
     }
+  });
+
+  it.each([
+    ['vet-commerce-23', '本品按批准用法使用。'],
+    ['vet-commerce-27', '本品仅按批准对象使用。'],
+    ['vet-commerce-28', '本品禁止超范围宣传。'],
+    ['vet-commerce-29', '本品适用对象以批准信息为准。'],
+    ['vet-commerce-30', '本品禁忌信息必须保留。'],
+    ['vet-commerce-21', '使用前请阅读禁忌事项。'],
+    ['vet-commerce-16', '本品适用于日常营养补充。'],
+  ])('routes abstract compliance narration %s to NO_MATCH', (fixtureId, narration) => {
+    expect(routeForExactText(fixtureById(fixtureId), narration)).toBe('NO_MATCH');
+  });
+
+  it.each([
+    ['vet-commerce-17', '请核对包装上的批准范围。'],
+    ['vet-commerce-18', '产品用量以标签说明为准。'],
+    ['vet-commerce-22', '展示产品成分表。'],
+    ['vet-commerce-24', '展示包装批号区域。'],
+  ])('keeps explicit package or label inspection %s as PRODUCT', (fixtureId, narration) => {
+    expect(routeForExactText(fixtureById(fixtureId), narration)).toBe('PRODUCT');
+  });
+
+  it('keeps product-name animal outcome as ANIMAL and contraindication as NO_MATCH', () => {
+    expect(
+      fixtureById('vet-commerce-product-name-animal-outcome').acceptable_alternatives[0]!.units[0]
+        ?.route,
+    ).toBe('ANIMAL');
+    expect(
+      fixtureById('vet-commerce-contraindication-no-match').acceptable_alternatives[0]!.units[0]
+        ?.route,
+    ).toBe('NO_MATCH');
+  });
+
+  it('keeps “适用于猪” contextual across PRODUCT, ANIMAL, and abstract NO_MATCH cases', () => {
+    expect(
+      fixtureById('vet-commerce-context-applicable-product').acceptable_alternatives[0]!.units[0]
+        ?.route,
+    ).toBe('PRODUCT');
+    expect(
+      fixtureById('vet-commerce-context-applicable-animal').acceptable_alternatives[0]!.units[0]
+        ?.route,
+    ).toBe('ANIMAL');
+    expect(fixtureById('vet-commerce-29').acceptable_alternatives[0]!.units[1]?.route).toBe(
+      'NO_MATCH',
+    );
   });
 
   it('accepts explicitly recorded alternate segmentations and continuity choices', () => {
@@ -96,12 +156,35 @@ describe('veterinary e-commerce semantic proposer evaluation harness', () => {
     const fixture = shotPlanSemanticGoldenFixturesV1.find(
       (item) => item.id === 'vet-commerce-anti-keyword-route',
     )!;
-    const bad = proposalFrom(fixture, fixture.acceptable_alternatives[0]!);
-    bad.units[0]!.route = 'ANIMAL';
-    const evaluation = evaluateShotPlanSemanticProposalV1(fixture, bad);
-    expect(evaluation.structural_validity).toBe(true);
-    expect(evaluation.route).toBe(false);
-    expect(evaluation.forbidden_outcome_violations).toHaveLength(1);
+    for (const badRoute of ['ANIMAL', 'PRODUCT'] as const) {
+      const bad = proposalFrom(fixture, fixture.acceptable_alternatives[0]!);
+      bad.units[0]!.route = badRoute;
+      const evaluation = evaluateShotPlanSemanticProposalV1(fixture, bad);
+      expect(evaluation.structural_validity).toBe(true);
+      expect(evaluation.route).toBe(false);
+      expect(evaluation.forbidden_outcome_violations).toHaveLength(1);
+    }
+  });
+
+  it('does not label deterministic fixture self-checks as real-model results', () => {
+    const selfCheck = {
+      harness: 'GOLDEN_HARNESS_SELF_CHECK',
+      fixture_count: shotPlanSemanticGoldenFixturesV1.length,
+      real_model_golden_fixtures_run: 0,
+      real_model_segmentation_result: 'NOT_RUN_ENVIRONMENT',
+      real_model_route_result: 'NOT_RUN_ENVIRONMENT',
+      real_model_continuity_result: 'NOT_RUN_ENVIRONMENT',
+      real_model_needs_review_result: 'NOT_RUN_ENVIRONMENT',
+    } as const;
+    expect(selfCheck).toEqual({
+      harness: 'GOLDEN_HARNESS_SELF_CHECK',
+      fixture_count: 30,
+      real_model_golden_fixtures_run: 0,
+      real_model_segmentation_result: 'NOT_RUN_ENVIRONMENT',
+      real_model_route_result: 'NOT_RUN_ENVIRONMENT',
+      real_model_continuity_result: 'NOT_RUN_ENVIRONMENT',
+      real_model_needs_review_result: 'NOT_RUN_ENVIRONMENT',
+    });
   });
 
   it('does not turn malformed or lossy output into a semantic score', () => {

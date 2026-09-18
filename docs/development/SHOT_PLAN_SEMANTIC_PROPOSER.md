@@ -12,6 +12,8 @@ Exact binding does not normalize punctuation, whitespace, or Unicode and does no
 
 `ShotPlanProposerServiceV1.propose` accepts an explicit operation identity. The service derives a request snapshot hash from the source authority, versioned prompt, model alias, and complete prompt. An operation ID is single-flight and retains its successful result for the service lifetime. Replaying the same operation and snapshot returns the same Candidate; reusing the operation ID for another snapshot fails. Candidate persistence happens once, after the final response has passed strict parsing and exact reconciliation.
 
+`PROCESS_RESTART_DURABLE_IDEMPOTENCY: NO`. The current operation map is in-memory and service-lifetime only; it does not survive a Desktop/Main restart. This is acceptable while C3C has no normal-user IPC/UI entry. Before C3D exposes proposal retries to normal users, durable idempotency and recovery semantics must receive an explicit review.
+
 No proposer Job type is added in C3C. The existing generic Job contract has no durable Candidate-result binding and extending its lifecycle/IPC surface would exceed this internal, UI-free phase. A future product orchestration phase may introduce that binding only through an approved contract change. Migration 010 is not required.
 
 ## Provider and audit boundary
@@ -22,6 +24,10 @@ Audit facts are limited to operation/candidate IDs, hashes, prompt version, prov
 
 ## Semantic evaluation
 
+The prompt uses primary visual intent. `PRODUCT` is limited to product-centred physical or inspection views such as the product/package, label/specification, explicit ingredient-table inspection, dosage form/net content, opening/holding, or product-centred preparation. Ingredient, use, treatment, or product-name wording alone does not select `PRODUCT`; an animal outcome after product use may remain `ANIMAL`.
+
+`NO_MATCH` means the narration itself cannot be faithfully represented by the current `ANIMAL` or `PRODUCT` visual families. It is independent of local inventory, retrieval results, Code C/Code D, and whether any matching asset currently exists. Material unavailability is not `NO_MATCH`.
+
 The fixed synthetic veterinary e-commerce set contains 30 fixtures. Each fixture supports required semantic facts, one or more approved alternatives, must-have invariants, and forbidden outcomes. The evaluator reports independently:
 
 - structural validity: strict schema plus exact ordered source coverage;
@@ -31,4 +37,12 @@ The fixed synthetic veterinary e-commerce set contains 30 fixtures. Each fixture
 - `NEEDS_REVIEW`: actual and expected ambiguity behavior agree;
 - forbidden outcomes: explicit high-value product mistakes such as keyword-only routing.
 
-These metrics establish a reproducible product-review harness; they do not define a numeric production threshold. Mock results prove architecture only. The actual intended model must still be run and reviewed by the product owner before C3C can be closed.
+These deterministic fixture-derived proposals establish `GOLDEN_HARNESS_SELF_CHECK`; they are not real-model evaluation results and do not define a numeric production threshold. The current status is:
+
+- `REAL_MODEL_GOLDEN_FIXTURES_RUN: 0 / 30`
+- `REAL_MODEL_SEGMENTATION_RESULT: NOT_RUN_ENVIRONMENT`
+- `REAL_MODEL_ROUTE_RESULT: NOT_RUN_ENVIRONMENT`
+- `REAL_MODEL_CONTINUITY_RESULT: NOT_RUN_ENVIRONMENT`
+- `REAL_MODEL_NEEDS_REVIEW_RESULT: NOT_RUN_ENVIRONMENT`
+
+Mock results prove architecture only. The actual intended model must still run the approved set and receive product-owner review before C3C semantic acceptance can close.
