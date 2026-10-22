@@ -647,7 +647,14 @@ export function buildGatewayApp(options: GatewayAppOptions): FastifyInstance {
       model_alias: parsed.data.model_alias,
       quality_tier: 'standard',
       inputs: [],
-      parameters: { prompt: parsed.data.prompt, max_tokens: 2048, temperature: 0.7 },
+      parameters: {
+        prompt: parsed.data.prompt,
+        max_tokens: 2048,
+        temperature: 0.7,
+        ...(parsed.data.structured_output
+          ? { structured_output: parsed.data.structured_output }
+          : {}),
+      },
       request_snapshot_hash: parsed.data.request_snapshot_hash,
       max_cost: { amount: 1, currency: 'CNY' },
     });
