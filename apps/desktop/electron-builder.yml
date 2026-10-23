@@ -1,6 +1,6 @@
 appId: com.company.aivideodesktop
 productName: 兽药电商AI文案
-electronVersion: 43.4.1
+electronVersion: 43.8.3
 asar: true
 asarUnpack:
   - '**/*.node'
