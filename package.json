@@ -111,7 +111,7 @@
     "ajv-formats": "3.0.1",
     "better-sqlite3": "13.0.3",
     "concurrently": "10.0.6",
-    "electron": "43.4.1",
+    "electron": "43.8.3",
     "electron-builder": "26.15.3",
     "esbuild": "0.25.12",
     "eslint": "9.39.2",
