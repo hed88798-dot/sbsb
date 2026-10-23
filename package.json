@@ -124,8 +124,8 @@
     "spdx-license-ids": "3.0.23",
     "typescript": "5.9.3",
     "typescript-eslint": "8.50.1",
-    "vite": "7.3.5",
-    "vitest": "4.1.11",
-    "wait-on": "9.0.3"
+    "vite": "7.3.7",
+    "vitest": "4.1.12",
+    "wait-on": "9.5.1"
   }
 }
