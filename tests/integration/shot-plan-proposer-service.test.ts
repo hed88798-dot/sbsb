@@ -1,9 +1,16 @@
-import { mkdtempSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import type { Database } from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ShotPlanAuthorityService } from '../../apps/desktop/src/main/shot-plan-authority-service.js';
+import {
+  buildShotPlanProposerPromptV1,
+  SHOT_PLAN_PROPOSER_MODEL_ALIAS,
+  SHOT_PLAN_PROPOSER_PROMPT_TEMPLATE_ID,
+  SHOT_PLAN_PROPOSER_PROMPT_TEMPLATE_VERSION,
+} from '../../apps/desktop/src/main/shot-plan-proposer-prompt.v1.js';
 import { ShotPlanProposerServiceV1 } from '../../apps/desktop/src/main/shot-plan-proposer-service.js';
 import { SourceDocumentAuthorityService } from '../../apps/desktop/src/main/source-document-authority-service.js';
 import type {
@@ -23,6 +30,20 @@ import {
 } from '../../packages/provider-client/src/index.js';
 
 const migrationsDirectory = resolve(import.meta.dirname, '../../migrations/desktop-sqlite');
+const canonicalSemanticSchema = JSON.parse(
+  readFileSync(
+    resolve(
+      import.meta.dirname,
+      '../../schemas/shot-planning/v1/semantic-shot-plan-proposal.schema.json',
+    ),
+    'utf8',
+  ),
+) as Record<string, unknown>;
+const strictSemanticOutput = {
+  mode: 'JSON_SCHEMA_STRICT',
+  schema_name: 'ShotPlanSemanticProposalV1',
+  schema: canonicalSemanticSchema,
+};
 const now = '2026-09-17T01:02:03.000Z';
 
 class SequenceClient implements TextCapabilityClient {
@@ -164,6 +185,7 @@ describe('AI semantic Candidate Shot Plan proposer', () => {
     const result = await proposer(client).propose(operation(source));
 
     expect(client.requests).toHaveLength(1);
+    expect(client.requests[0]!.structured_output).toEqual(strictSemanticOutput);
     expect(client.requests[0]!.prompt.split(text)).toHaveLength(2);
     expect(client.requests[0]!.prompt).toContain('同时完成语义分段、素材路由和视觉连续性提案');
     expect(result.candidate).toMatchObject({
@@ -197,6 +219,50 @@ describe('AI semantic Candidate Shot Plan proposer', () => {
     };
     expect(count.count).toBe(1);
     expect(first.trace.provider_attempts).toBe(2);
+    expect(client.requests.map((request) => request.structured_output)).toEqual([
+      strictSemanticOutput,
+      strictSemanticOutput,
+    ]);
+  });
+
+  it('binds the exact canonical strict schema into the operation snapshot identity', async () => {
+    const source = insertSource('猪群咳喘。展示本品。');
+    const client = new SequenceClient([rawProposal()]);
+    const result = await proposer(client).propose(operation(source));
+    const prompt = buildShotPlanProposerPromptV1(source);
+    const expectedHash = createHash('sha256')
+      .update(
+        JSON.stringify({
+          schema_version: '1.0',
+          source_document_id: source.source_document_id,
+          source_document_version: source.source_document_version,
+          source_document_hash: source.source_document_hash,
+          prompt_template_id: SHOT_PLAN_PROPOSER_PROMPT_TEMPLATE_ID,
+          prompt_template_version: SHOT_PLAN_PROPOSER_PROMPT_TEMPLATE_VERSION,
+          model_alias: SHOT_PLAN_PROPOSER_MODEL_ALIAS,
+          prompt,
+          structured_output: strictSemanticOutput,
+        }),
+        'utf8',
+      )
+      .digest('hex');
+
+    expect(client.requests[0]!.structured_output).toEqual(strictSemanticOutput);
+    expect(client.requests[0]!.request_snapshot_hash).toBe(expectedHash);
+    expect(result.trace.request_snapshot_hash).toBe(expectedHash);
+  });
+
+  it('does not downgrade strict output after a Provider rejects the schema', async () => {
+    const source = insertSource('猪群咳喘。展示本品。');
+    const client = new SequenceClient([
+      new GatewayClientError('INVALID_PARAMS', 'strict schema unsupported', false),
+    ]);
+
+    await expect(proposer(client).propose(operation(source))).rejects.toThrow(
+      'SHOT_PLAN_PROPOSAL_PROVIDER_INVALID_PARAMS',
+    );
+    expect(client.requests).toHaveLength(1);
+    expect(client.requests[0]!.structured_output).toEqual(strictSemanticOutput);
   });
 
   it('rejects an operation identity reused for a different authority snapshot', async () => {

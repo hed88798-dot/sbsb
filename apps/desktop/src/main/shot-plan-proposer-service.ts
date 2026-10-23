@@ -5,10 +5,12 @@ import {
   type ShotPlanSemanticProposalV1,
   type TextGatewayRequestV1,
   type TextGatewayResultV1,
+  type TextStructuredOutputV1,
 } from '@app/contracts';
 import type { SourceDocumentRepository } from '@app/local-db';
 import { isGatewayClientError, type TextCapabilityClient } from '@app/provider-client';
 import { logEvent } from './logger.js';
+import { semanticShotPlanProposalJsonSchema } from './semantic-shot-plan-proposal-schema.generated.js';
 import type { ShotPlanAuthorityService } from './shot-plan-authority-service.js';
 import {
   reconcileSemanticShotPlanProposal,
@@ -20,6 +22,12 @@ import {
   SHOT_PLAN_PROPOSER_PROMPT_TEMPLATE_ID,
   SHOT_PLAN_PROPOSER_PROMPT_TEMPLATE_VERSION,
 } from './shot-plan-proposer-prompt.v1.js';
+
+const SHOT_PLAN_SEMANTIC_STRUCTURED_OUTPUT_V1: TextStructuredOutputV1 = {
+  mode: 'JSON_SCHEMA_STRICT',
+  schema_name: 'ShotPlanSemanticProposalV1',
+  schema: semanticShotPlanProposalJsonSchema,
+};
 
 export interface ShotPlanProposalOperationV1 {
   operation_id: string;
@@ -166,6 +174,7 @@ export class ShotPlanProposerServiceV1 {
         prompt_template_version: SHOT_PLAN_PROPOSER_PROMPT_TEMPLATE_VERSION,
         model_alias: SHOT_PLAN_PROPOSER_MODEL_ALIAS,
         prompt,
+        structured_output: SHOT_PLAN_SEMANTIC_STRUCTURED_OUTPUT_V1,
       }),
     );
     const existing = this.#operations.get(input.operation_id);
@@ -208,6 +217,7 @@ export class ShotPlanProposerServiceV1 {
         capability: 'text.generate.v1',
         model_alias: SHOT_PLAN_PROPOSER_MODEL_ALIAS,
         prompt: context.prompt,
+        structured_output: SHOT_PLAN_SEMANTIC_STRUCTURED_OUTPUT_V1,
         request_snapshot_hash: context.requestSnapshotHash,
       };
       lastProviderRequestId = request.request_id;
