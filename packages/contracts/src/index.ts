@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { textStructuredOutputV1Schema } from './text-structured-output.js';
+
+export * from './text-structured-output.js';
 
 export * from './material-selection.js';
 export * from './shot-planning.js';
@@ -623,6 +626,7 @@ export const textGatewayRequestV1Schema = z.object({
   capability: z.literal('text.generate.v1'),
   model_alias: z.string().min(1),
   prompt: z.string().min(1),
+  structured_output: textStructuredOutputV1Schema.optional(),
   request_snapshot_hash: z.string().regex(/^[a-f0-9]{64}$/),
 });
 export type TextGatewayRequestV1 = z.infer<typeof textGatewayRequestV1Schema>;
@@ -698,6 +702,7 @@ export const textProviderRequestV1Schema = z
         prompt: z.string().min(1).max(40_000),
         max_tokens: z.number().int().min(1).max(8_192).default(2_048),
         temperature: z.number().min(0).max(2).default(0.7),
+        structured_output: textStructuredOutputV1Schema.optional(),
       })
       .strict(),
   })

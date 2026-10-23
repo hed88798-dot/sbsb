@@ -377,6 +377,18 @@ export class OpenAiCompatibleTextAdapter implements ProviderAdapter {
           messages: [{ role: 'user', content: request.parameters.prompt }],
           max_tokens: request.parameters.max_tokens,
           temperature: request.parameters.temperature,
+          ...(request.parameters.structured_output
+            ? {
+                response_format: {
+                  type: 'json_schema',
+                  json_schema: {
+                    name: request.parameters.structured_output.schema_name,
+                    strict: true,
+                    schema: request.parameters.structured_output.schema,
+                  },
+                },
+              }
+            : {}),
         }),
         signal: AbortSignal.timeout(30_000),
       });

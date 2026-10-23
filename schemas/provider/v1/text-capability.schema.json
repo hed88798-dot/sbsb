@@ -2,6 +2,37 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://local.app/schemas/provider/v1/text-capability.schema.json",
   "title": "TextCapabilityV1",
+  "$defs": {
+    "structuredOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "schema_name", "schema"],
+      "properties": {
+        "mode": { "const": "JSON_SCHEMA_STRICT" },
+        "schema_name": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,64}$" },
+        "schema": {
+          "type": "object",
+          "maxProperties": 8192,
+          "additionalProperties": { "$ref": "#/$defs/jsonValue" },
+          "description": "Runtime additionally enforces compact JSON UTF-8 size <=65536 bytes, depth <=32 (root 0), and <=8192 value nodes; only plain JSON data is accepted."
+        }
+      }
+    },
+    "jsonValue": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "boolean" },
+        { "type": "number" },
+        { "type": "string", "maxLength": 65536 },
+        { "type": "array", "maxItems": 8192, "items": { "$ref": "#/$defs/jsonValue" } },
+        {
+          "type": "object",
+          "maxProperties": 8192,
+          "additionalProperties": { "$ref": "#/$defs/jsonValue" }
+        }
+      ]
+    }
+  },
   "oneOf": [
     {
       "type": "object",
@@ -20,6 +51,7 @@
         "capability": { "const": "text.generate.v1" },
         "model_alias": { "type": "string", "minLength": 1 },
         "prompt": { "type": "string", "minLength": 1 },
+        "structured_output": { "$ref": "#/$defs/structuredOutput" },
         "request_snapshot_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
       }
     },

@@ -2,6 +2,50 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.example.invalid/provider/v1/request.schema.json",
   "title": "ProviderRequestV1",
+  "$defs": {
+    "structuredOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "schema_name", "schema"],
+      "properties": {
+        "mode": { "const": "JSON_SCHEMA_STRICT" },
+        "schema_name": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,64}$" },
+        "schema": {
+          "type": "object",
+          "maxProperties": 8192,
+          "additionalProperties": { "$ref": "#/$defs/jsonValue" },
+          "description": "Runtime additionally enforces compact JSON UTF-8 size <=65536 bytes, depth <=32 (root 0), and <=8192 value nodes; only plain JSON data is accepted."
+        }
+      }
+    },
+    "jsonValue": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "boolean" },
+        { "type": "number" },
+        { "type": "string", "maxLength": 65536 },
+        { "type": "array", "maxItems": 8192, "items": { "$ref": "#/$defs/jsonValue" } },
+        {
+          "type": "object",
+          "maxProperties": 8192,
+          "additionalProperties": { "$ref": "#/$defs/jsonValue" }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "capability": { "const": "text.generate.v1" } } },
+      "then": {
+        "properties": {
+          "parameters": {
+            "type": "object",
+            "properties": { "structured_output": { "$ref": "#/$defs/structuredOutput" } }
+          }
+        }
+      }
+    }
+  ],
   "type": "object",
   "required": [
     "schema_version",
