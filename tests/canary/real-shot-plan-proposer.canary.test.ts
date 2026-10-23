@@ -3,7 +3,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { OpenAiCompatibleTextAdapter } from '@app/provider-adapters';
+import { AlibabaQwen37C3cTextAdapter } from '@app/provider-adapters';
 import { ShotPlanAuthorityService } from '../../apps/desktop/src/main/shot-plan-authority-service.js';
 import { ShotPlanProposerServiceV1 } from '../../apps/desktop/src/main/shot-plan-proposer-service.js';
 import { SourceDocumentAuthorityService } from '../../apps/desktop/src/main/source-document-authority-service.js';
@@ -54,12 +54,10 @@ describe.skipIf(!enabled)('real semantic Shot Plan proposer canary', () => {
     const activationCode = randomBytes(16).toString('hex');
     seedLicense(gatewayDatabase.db, {
       activationCodeHash: hashCredential(activationCode, pepper),
-      monthlyBudget: 1,
+      monthlyBudget: 2,
       currency: 'CNY',
     });
-    const adapter = new OpenAiCompatibleTextAdapter({
-      alias: required('REAL_TEXT_PROVIDER_ALIAS'),
-      providerModel: required('REAL_TEXT_PROVIDER_MODEL'),
+    const adapter = new AlibabaQwen37C3cTextAdapter({
       endpoint: required('REAL_TEXT_PROVIDER_ENDPOINT'),
       apiKey: required('REAL_TEXT_PROVIDER_KEY'),
       webhookSecret: required('REAL_TEXT_PROVIDER_WEBHOOK_SECRET'),

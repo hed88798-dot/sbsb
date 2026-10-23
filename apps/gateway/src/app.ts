@@ -656,7 +656,7 @@ export function buildGatewayApp(options: GatewayAppOptions): FastifyInstance {
           : {}),
       },
       request_snapshot_hash: parsed.data.request_snapshot_hash,
-      max_cost: { amount: 1, currency: 'CNY' },
+      max_cost: { amount: 2, currency: 'CNY' },
     });
     const result = await createJob(auth, generic);
     if (result.job.state !== 'SUCCEEDED') {

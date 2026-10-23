@@ -46,7 +46,7 @@ describe('authenticated text Gateway structured output', () => {
           ...(strict ? { structured_output: structuredOutput } : {}),
         },
         request_snapshot_hash: textRequest.request_snapshot_hash,
-        max_cost: { amount: 1, currency: 'CNY' },
+        max_cost: { amount: 2, currency: 'CNY' },
       });
       const row = fixture.database.db.prepare('SELECT request_hash FROM provider_jobs').get() as {
         request_hash: string;
