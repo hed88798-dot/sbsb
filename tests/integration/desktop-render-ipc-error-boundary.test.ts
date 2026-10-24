@@ -87,7 +87,12 @@ describe('Desktop Render IPC public error boundary', () => {
     list: vi.fn(),
     require: vi.fn(),
   };
-  const products = { list: vi.fn() };
+  const products = {
+    list: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    addAssets: vi.fn(),
+  };
   let ipcBoundary: DesktopIpcBoundaryV1;
 
   beforeEach(() => {
@@ -253,5 +258,67 @@ describe('Desktop Render IPC public error boundary', () => {
     await expect(invoke(IPC_CHANNELS.jobsList, undefined)).resolves.toBeUndefined();
     expect(products.list).toHaveBeenCalledTimes(1);
     expect(jobs.list).toHaveBeenCalledTimes(1);
+  });
+
+  it('enforces product collection limits in Main before repository access', async () => {
+    const values = (length: number) => Array.from({ length }, (_, index) => `value-${index}`);
+    products.create.mockReturnValue({ product_id: 'product-1' });
+    products.update.mockReturnValue({ product_id: 'product-1' });
+    products.addAssets.mockReturnValue({ product_id: 'product-1' });
+
+    await expect(
+      invoke(IPC_CHANNELS.productsCreate, {
+        schema_version: '1.0',
+        data: { name: '测试产品', aliases: values(1024) },
+      }),
+    ).resolves.toEqual({ product_id: 'product-1' });
+    expect(products.create).toHaveBeenCalledOnce();
+
+    for (const field of [
+      'aliases',
+      'contraindications',
+      'selling_points',
+      'forbidden_claims',
+    ] as const) {
+      products.create.mockClear();
+      await expect(
+        invoke(IPC_CHANNELS.productsCreate, {
+          schema_version: '1.0',
+          data: { name: '测试产品', [field]: values(1025) },
+        }),
+      ).rejects.toThrow('INVALID_IPC_REQUEST');
+      expect(products.create).not.toHaveBeenCalled();
+
+      products.update.mockClear();
+      await expect(
+        invoke(IPC_CHANNELS.productsUpdate, {
+          schema_version: '1.0',
+          product_id: 'product-1',
+          data: { name: '测试产品', [field]: values(1025) },
+        }),
+      ).rejects.toThrow('INVALID_IPC_REQUEST');
+      expect(products.update).not.toHaveBeenCalled();
+    }
+
+    await expect(
+      invoke(IPC_CHANNELS.productsAddAssets, {
+        schema_version: '1.0',
+        product_id: 'product-1',
+        paths: values(1024),
+        role: 'OTHER',
+      }),
+    ).resolves.toEqual({ product_id: 'product-1' });
+    expect(products.addAssets).toHaveBeenCalledOnce();
+
+    products.addAssets.mockClear();
+    await expect(
+      invoke(IPC_CHANNELS.productsAddAssets, {
+        schema_version: '1.0',
+        product_id: 'product-1',
+        paths: values(1025),
+        role: 'OTHER',
+      }),
+    ).rejects.toThrow('INVALID_IPC_REQUEST');
+    expect(products.addAssets).not.toHaveBeenCalled();
   });
 });

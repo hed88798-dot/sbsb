@@ -5,10 +5,7 @@ import {
   IPC_CHANNELS,
   copywritingGenerateRequestV1Schema,
   idRequestV1Schema,
-  productAssetAddRequestV1Schema,
-  productCreateRequestV1Schema,
   productDeleteRequestV1Schema,
-  productUpdateRequestV1Schema,
   renderCancelResultV1Schema,
   renderJobDtoV1Schema,
   renderJobRequestV1Schema,
@@ -20,6 +17,11 @@ import type { JobRepository, ProductRepository, SettingsRepository } from '@app/
 import type { CopywritingService } from './copywriting-service.js';
 import type { DesktopRenderOrchestratorV1 } from './desktop-render-orchestrator.js';
 import type { DesktopRenderTimelineHandoffV1 } from './desktop-render-timeline-handoff.js';
+import {
+  parseProductAssetAddIpcRequestV1,
+  parseProductCreateIpcRequestV1,
+  parseProductUpdateIpcRequestV1,
+} from './ipc-resource-safety.js';
 import { runRendererSafeRenderOperation, toRendererSafeJobDto } from './render-public-error.js';
 
 function assertTrustedSender(event: IpcMainInvokeEvent, window: BrowserWindow): void {
@@ -60,11 +62,11 @@ export function registerIpc(options: {
     return options.products.get(request.id);
   });
   handle(IPC_CHANNELS.productsCreate, (input) => {
-    const request = productCreateRequestV1Schema.parse(input);
+    const request = parseProductCreateIpcRequestV1(input);
     return options.products.create(request.data);
   });
   handle(IPC_CHANNELS.productsUpdate, (input) => {
-    const request = productUpdateRequestV1Schema.parse(input);
+    const request = parseProductUpdateIpcRequestV1(input);
     return options.products.update(request.product_id, request.data);
   });
   handle(IPC_CHANNELS.productsDelete, (input) => {
@@ -81,7 +83,7 @@ export function registerIpc(options: {
     return result.canceled ? [] : result.filePaths;
   });
   handle(IPC_CHANNELS.productsAddAssets, (input) => {
-    const request = productAssetAddRequestV1Schema.parse(input);
+    const request = parseProductAssetAddIpcRequestV1(input);
     return options.products.addAssets(request.product_id, request.paths, request.role);
   });
   handle(IPC_CHANNELS.copywritingGenerate, (input) =>
