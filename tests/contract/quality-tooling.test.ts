@@ -202,7 +202,7 @@ describe('Code F quality tooling', () => {
         'pkg:pypi/pyinstaller@6.22.2',
         'pkg:pypi/altgraph@0.17.5',
         'pkg:pypi/pyinstaller-hooks-contrib@2026.7',
-        'pkg:pypi/setuptools@84.0.0',
+        'pkg:pypi/setuptools@84.1.0',
       ]),
     );
     expect(

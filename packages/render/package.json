@@ -16,6 +16,6 @@
     "@app/contracts": "workspace:*",
     "@app/domain-media-index": "workspace:*",
     "@app/timeline": "workspace:*",
-    "zod": "4.1.13"
+    "zod": "4.6.7"
   }
 }

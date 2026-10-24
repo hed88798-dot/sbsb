@@ -112,7 +112,7 @@ export const renderPolicyV1Schema = z
   .strict();
 export type RenderPolicyV1 = z.infer<typeof renderPolicyV1Schema>;
 
-export const narrationAudioArtifactV1Schema = z
+const narrationAudioArtifactBaseV1Schema = z
   .object({
     schema_version: schemaVersion,
     narration_audio_id: identity,
@@ -131,8 +131,10 @@ export const narrationAudioArtifactV1Schema = z
     provenance_ref: identity.nullable(),
     artifact_hash: sha256,
   })
-  .strict()
-  .superRefine((value, context) => {
+  .strict();
+
+export const narrationAudioArtifactV1Schema = narrationAudioArtifactBaseV1Schema.superRefine(
+  (value, context) => {
     if (value.duration_measurement === 'SAMPLE_COUNT_DERIVED' && value.sample_count === null) {
       context.addIssue({
         code: 'custom',
@@ -147,10 +149,11 @@ export const narrationAudioArtifactV1Schema = z
         path: ['sample_count'],
       });
     }
-  });
+  },
+);
 export type NarrationAudioArtifactV1 = z.infer<typeof narrationAudioArtifactV1Schema>;
 
-export const narrationAudioExecutionRefV1Schema = narrationAudioArtifactV1Schema
+export const narrationAudioExecutionRefV1Schema = narrationAudioArtifactBaseV1Schema
   .omit({ artifact_hash: true })
   .extend({
     resolved_source_path: localPath,
