@@ -133,23 +133,33 @@ const narrationAudioArtifactBaseV1Schema = z
   })
   .strict();
 
+type NarrationAudioDurationConsistencyV1 = Pick<
+  z.infer<typeof narrationAudioArtifactBaseV1Schema>,
+  'duration_measurement' | 'sample_count'
+>;
+
+function refineNarrationAudioDurationConsistencyV1(
+  value: NarrationAudioDurationConsistencyV1,
+  context: z.core.$RefinementCtx<NarrationAudioDurationConsistencyV1>,
+): void {
+  if (value.duration_measurement === 'SAMPLE_COUNT_DERIVED' && value.sample_count === null) {
+    context.addIssue({
+      code: 'custom',
+      message: 'sample_count is required for SAMPLE_COUNT_DERIVED duration',
+      path: ['sample_count'],
+    });
+  }
+  if (value.duration_measurement === 'CONTAINER_REPORTED' && value.sample_count !== null) {
+    context.addIssue({
+      code: 'custom',
+      message: 'sample_count must be null for CONTAINER_REPORTED duration',
+      path: ['sample_count'],
+    });
+  }
+}
+
 export const narrationAudioArtifactV1Schema = narrationAudioArtifactBaseV1Schema.superRefine(
-  (value, context) => {
-    if (value.duration_measurement === 'SAMPLE_COUNT_DERIVED' && value.sample_count === null) {
-      context.addIssue({
-        code: 'custom',
-        message: 'sample_count is required for SAMPLE_COUNT_DERIVED duration',
-        path: ['sample_count'],
-      });
-    }
-    if (value.duration_measurement === 'CONTAINER_REPORTED' && value.sample_count !== null) {
-      context.addIssue({
-        code: 'custom',
-        message: 'sample_count must be null for CONTAINER_REPORTED duration',
-        path: ['sample_count'],
-      });
-    }
-  },
+  refineNarrationAudioDurationConsistencyV1,
 );
 export type NarrationAudioArtifactV1 = z.infer<typeof narrationAudioArtifactV1Schema>;
 
@@ -160,7 +170,8 @@ export const narrationAudioExecutionRefV1Schema = narrationAudioArtifactBaseV1Sc
     verified_file_sha256: sha256,
     resolved_at: z.string().datetime(),
   })
-  .strict();
+  .strict()
+  .superRefine(refineNarrationAudioDurationConsistencyV1);
 export type NarrationAudioExecutionRefV1 = z.infer<typeof narrationAudioExecutionRefV1Schema>;
 
 export const resolvedRenderSourceV1Schema = z
