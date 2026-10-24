@@ -112,7 +112,7 @@ export const renderPolicyV1Schema = z
   .strict();
 export type RenderPolicyV1 = z.infer<typeof renderPolicyV1Schema>;
 
-export const narrationAudioArtifactV1Schema = z
+const narrationAudioArtifactBaseV1Schema = z
   .object({
     schema_version: schemaVersion,
     narration_audio_id: identity,
@@ -131,33 +131,47 @@ export const narrationAudioArtifactV1Schema = z
     provenance_ref: identity.nullable(),
     artifact_hash: sha256,
   })
-  .strict()
-  .superRefine((value, context) => {
-    if (value.duration_measurement === 'SAMPLE_COUNT_DERIVED' && value.sample_count === null) {
-      context.addIssue({
-        code: 'custom',
-        message: 'sample_count is required for SAMPLE_COUNT_DERIVED duration',
-        path: ['sample_count'],
-      });
-    }
-    if (value.duration_measurement === 'CONTAINER_REPORTED' && value.sample_count !== null) {
-      context.addIssue({
-        code: 'custom',
-        message: 'sample_count must be null for CONTAINER_REPORTED duration',
-        path: ['sample_count'],
-      });
-    }
-  });
+  .strict();
+
+type NarrationAudioDurationConsistencyV1 = Pick<
+  z.infer<typeof narrationAudioArtifactBaseV1Schema>,
+  'duration_measurement' | 'sample_count'
+>;
+
+function refineNarrationAudioDurationConsistencyV1(
+  value: NarrationAudioDurationConsistencyV1,
+  context: z.core.$RefinementCtx<NarrationAudioDurationConsistencyV1>,
+): void {
+  if (value.duration_measurement === 'SAMPLE_COUNT_DERIVED' && value.sample_count === null) {
+    context.addIssue({
+      code: 'custom',
+      message: 'sample_count is required for SAMPLE_COUNT_DERIVED duration',
+      path: ['sample_count'],
+    });
+  }
+  if (value.duration_measurement === 'CONTAINER_REPORTED' && value.sample_count !== null) {
+    context.addIssue({
+      code: 'custom',
+      message: 'sample_count must be null for CONTAINER_REPORTED duration',
+      path: ['sample_count'],
+    });
+  }
+}
+
+export const narrationAudioArtifactV1Schema = narrationAudioArtifactBaseV1Schema.superRefine(
+  refineNarrationAudioDurationConsistencyV1,
+);
 export type NarrationAudioArtifactV1 = z.infer<typeof narrationAudioArtifactV1Schema>;
 
-export const narrationAudioExecutionRefV1Schema = narrationAudioArtifactV1Schema
+export const narrationAudioExecutionRefV1Schema = narrationAudioArtifactBaseV1Schema
   .omit({ artifact_hash: true })
   .extend({
     resolved_source_path: localPath,
     verified_file_sha256: sha256,
     resolved_at: z.string().datetime(),
   })
-  .strict();
+  .strict()
+  .superRefine(refineNarrationAudioDurationConsistencyV1);
 export type NarrationAudioExecutionRefV1 = z.infer<typeof narrationAudioExecutionRefV1Schema>;
 
 export const resolvedRenderSourceV1Schema = z

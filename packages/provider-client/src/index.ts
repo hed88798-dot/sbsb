@@ -39,6 +39,81 @@ export function isGatewayClientError(error: unknown): error is GatewayClientErro
   );
 }
 
+export const PROVIDER_JOB_RESPONSE_MAX_BYTES_V1 = 4_194_304;
+export const PROVIDER_JOB_ARTIFACT_MAX_ITEMS_V1 = 1024;
+
+class ProviderJobResponseSafetyError extends Error {
+  constructor() {
+    super('PROVIDER_JOB_RESPONSE_RESOURCE_LIMIT_EXCEEDED');
+    this.name = 'ProviderJobResponseSafetyError';
+  }
+}
+
+function responseContentLength(response: Response): number | null {
+  const value = response.headers.get('content-length');
+  if (!value || !/^\d+$/u.test(value)) return null;
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : null;
+}
+
+export async function readBoundedProviderJobResponseJsonV1(response: Response): Promise<unknown> {
+  const declaredLength = responseContentLength(response);
+  if (declaredLength !== null && declaredLength > PROVIDER_JOB_RESPONSE_MAX_BYTES_V1) {
+    await response.body?.cancel().catch(() => undefined);
+    throw new ProviderJobResponseSafetyError();
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) return JSON.parse('') as unknown;
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    totalBytes += value.byteLength;
+    if (totalBytes > PROVIDER_JOB_RESPONSE_MAX_BYTES_V1) {
+      await reader.cancel().catch(() => undefined);
+      throw new ProviderJobResponseSafetyError();
+    }
+    chunks.push(value);
+  }
+
+  const bytes = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  const json = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  return JSON.parse(json) as unknown;
+}
+
+function record(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
+}
+
+export function assertProviderJobArtifactBoundV1(body: unknown): void {
+  const artifacts = record(body)?.artifacts;
+  if (Array.isArray(artifacts) && artifacts.length > PROVIDER_JOB_ARTIFACT_MAX_ITEMS_V1) {
+    throw new ProviderJobResponseSafetyError();
+  }
+}
+
+type ProviderJobSafeParseResult = ReturnType<typeof providerJobV1Schema.safeParse>;
+
+export function safeParseBoundedProviderJobV1(
+  body: unknown,
+  safeParse: (value: unknown) => ProviderJobSafeParseResult = (value) =>
+    providerJobV1Schema.safeParse(value),
+): ProviderJobSafeParseResult {
+  assertProviderJobArtifactBoundV1(body);
+  return safeParse(body);
+}
+
+function invalidProviderJobResponse(): GatewayClientError {
+  return new GatewayClientError('INVALID_GATEWAY_RESPONSE', '素材服务返回了无效响应', false);
+}
+
 export interface HttpTextCapabilityClientOptions {
   backendUrl: string;
   accessToken?: string;
@@ -194,16 +269,36 @@ export class HttpProviderGatewayClient {
       throw new GatewayClientError('RATE_LIMITED', '请求过于频繁，请稍后重试', true);
     }
     if (!response.ok) {
-      const error = (await response.json().catch(() => null)) as { code?: unknown } | null;
+      let error: { code?: unknown } | null = null;
+      try {
+        error = (await readBoundedProviderJobResponseJsonV1(response)) as {
+          code?: unknown;
+        } | null;
+      } catch (cause) {
+        if (cause instanceof ProviderJobResponseSafetyError) {
+          throw invalidProviderJobResponse();
+        }
+      }
       throw new GatewayClientError(
         typeof error?.code === 'string' ? error.code : 'GATEWAY_REQUEST_REJECTED',
         '素材请求未被接受',
         response.status >= 500,
       );
     }
-    const parsed = providerJobV1Schema.safeParse(await response.json());
+    let responseBody: unknown;
+    try {
+      responseBody = await readBoundedProviderJobResponseJsonV1(response);
+    } catch {
+      throw invalidProviderJobResponse();
+    }
+    let parsed: ProviderJobSafeParseResult;
+    try {
+      parsed = safeParseBoundedProviderJobV1(responseBody);
+    } catch {
+      throw invalidProviderJobResponse();
+    }
     if (!parsed.success) {
-      throw new GatewayClientError('INVALID_GATEWAY_RESPONSE', '素材服务返回了无效响应', false);
+      throw invalidProviderJobResponse();
     }
     return parsed.data;
   }
