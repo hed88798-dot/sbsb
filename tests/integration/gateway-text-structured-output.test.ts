@@ -46,7 +46,7 @@ describe('authenticated text Gateway structured output', () => {
           ...(strict ? { structured_output: structuredOutput } : {}),
         },
         request_snapshot_hash: textRequest.request_snapshot_hash,
-        max_cost: { amount: 2, currency: 'CNY' },
+        max_cost: { amount: 1, currency: 'CNY' },
       });
       const row = fixture.database.db.prepare('SELECT request_hash FROM provider_jobs').get() as {
         request_hash: string;
@@ -65,6 +65,22 @@ describe('authenticated text Gateway structured output', () => {
       }
     },
   );
+
+  it('reserves the larger internal ceiling only for the frozen C3C alias', async () => {
+    fixture = await createGatewayFixture({ textModelAlias: 'text.semantic-shot-planning' });
+    const submit = vi.spyOn(fixture.adapter, 'submit');
+    const response = await signedInject(fixture, {
+      method: 'POST',
+      url: '/v1/text/generate',
+      body: { ...textRequest, model_alias: 'text.semantic-shot-planning' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(submit.mock.calls[0]![0]).toMatchObject({
+      model_alias: 'text.semantic-shot-planning',
+      max_cost: { amount: 2, currency: 'CNY' },
+    });
+  });
 
   it('includes schema absence, content and name in idempotency identity', async () => {
     fixture = await createGatewayFixture();

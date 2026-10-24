@@ -1,9 +1,14 @@
 import { createServer, type Server } from 'node:http';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { semanticShotPlanProposalJsonSchema } from '../../apps/desktop/src/main/semantic-shot-plan-proposal-schema.generated.js';
-import { textProviderRequestV1Schema } from '../../packages/contracts/src/index.js';
 import {
+  textProviderRequestV1Schema,
+  type TextJsonObject,
+} from '../../packages/contracts/src/index.js';
+import {
+  ALIBABA_QWEN37_C3C_MAX_LOW_TIER_INPUT_TOKENS,
   ALIBABA_QWEN37_C3C_MAX_OUTPUT_TOKENS,
+  ALIBABA_QWEN37_C3C_MAX_WIRE_INPUT_BYTES,
   ALIBABA_QWEN37_C3C_MIN_INPUT_UNIT_COST_CNY,
   ALIBABA_QWEN37_C3C_MIN_OUTPUT_UNIT_COST_CNY,
   ALIBABA_QWEN37_C3C_PROVIDER_ALIAS,
@@ -53,7 +58,13 @@ function adapter() {
   });
 }
 
-function providerRequest(input?: { maxTokens?: number; structured?: boolean }) {
+function providerRequest(input?: {
+  maxTokens?: number;
+  structured?: boolean;
+  schemaName?: string;
+  prompt?: string;
+  schema?: TextJsonObject;
+}) {
   return textProviderRequestV1Schema.parse({
     schema_version: '1.0',
     request_id: 'req_alibaba_wire_1',
@@ -62,7 +73,7 @@ function providerRequest(input?: { maxTokens?: number; structured?: boolean }) {
     quality_tier: 'standard',
     inputs: [],
     parameters: {
-      prompt: '使用康健100后，猪群采食状态逐步恢复。',
+      prompt: input?.prompt ?? '使用康健100后，猪群采食状态逐步恢复。',
       max_tokens: input?.maxTokens ?? 2_048,
       temperature: 0.7,
       ...(input?.structured === false
@@ -70,8 +81,8 @@ function providerRequest(input?: { maxTokens?: number; structured?: boolean }) {
         : {
             structured_output: {
               mode: 'JSON_SCHEMA_STRICT',
-              schema_name: 'ShotPlanSemanticProposalV1',
-              schema: semanticShotPlanProposalJsonSchema,
+              schema_name: input?.schemaName ?? 'ShotPlanSemanticProposalV1',
+              schema: input?.schema ?? semanticShotPlanProposalJsonSchema,
             },
           }),
     },
@@ -190,18 +201,79 @@ describe('Alibaba Model Studio frozen Qwen3.7 C3C adapter', () => {
   it('reserves the documented output maximum plus a conservative input upper bound', () => {
     const lowHint = adapter().estimate(providerRequest({ maxTokens: 1 }));
     const highHint = adapter().estimate(providerRequest({ maxTokens: 8_192 }));
-    const maximumInputUnits = Buffer.byteLength('使用康健100后，猪群采食状态逐步恢复。', 'utf8');
     const expectedMaximum =
-      maximumInputUnits * inputUnitCost + ALIBABA_QWEN37_C3C_MAX_OUTPUT_TOKENS * outputUnitCost;
+      ALIBABA_QWEN37_C3C_MAX_LOW_TIER_INPUT_TOKENS * inputUnitCost +
+      ALIBABA_QWEN37_C3C_MAX_OUTPUT_TOKENS * outputUnitCost;
     expect(lowHint).toEqual({
       amount: expectedMaximum,
       maximumAmount: expectedMaximum,
       currency: 'CNY',
-      billedUnits: maximumInputUnits + ALIBABA_QWEN37_C3C_MAX_OUTPUT_TOKENS,
+      billedUnits:
+        ALIBABA_QWEN37_C3C_MAX_LOW_TIER_INPUT_TOKENS + ALIBABA_QWEN37_C3C_MAX_OUTPUT_TOKENS,
     });
     expect(highHint).toEqual(lowHint);
-    expect(expectedMaximum).toBeGreaterThan(1);
-    expect(expectedMaximum).toBeLessThan(2);
+    expect(expectedMaximum).toBe(1.560576);
+  });
+
+  it('rejects a different schema name before HTTP', async () => {
+    const transport = vi.fn();
+    vi.stubGlobal('fetch', transport);
+
+    await expect(
+      adapter().submit(providerRequest({ schemaName: 'SomeOtherSchema' })),
+    ).rejects.toMatchObject({ errorClass: 'INVALID_PARAMS', retryable: false });
+    expect(transport).not.toHaveBeenCalled();
+  });
+
+  it('rejects an oversized complete Provider wire before HTTP', async () => {
+    const transport = vi.fn();
+    vi.stubGlobal('fetch', transport);
+    const oversizedSchema: TextJsonObject = {
+      ...semanticShotPlanProposalJsonSchema,
+      description: 'x'.repeat(20_000),
+    };
+    const request = providerRequest({
+      prompt: '界'.repeat(40_000),
+      schema: oversizedSchema,
+    });
+    expect(
+      Buffer.byteLength(
+        JSON.stringify({
+          messages: [{ role: 'user', content: request.parameters.prompt }],
+          schema: request.parameters.structured_output?.schema,
+        }),
+        'utf8',
+      ),
+    ).toBeGreaterThan(ALIBABA_QWEN37_C3C_MAX_WIRE_INPUT_BYTES);
+
+    await expect(adapter().submit(request)).rejects.toMatchObject({
+      errorClass: 'INVALID_PARAMS',
+      retryable: false,
+    });
+    expect(transport).not.toHaveBeenCalled();
+  });
+
+  it('fails closed when Provider usage escapes the reviewed low pricing tier', async () => {
+    const { url } = await captureHttp(200, {
+      id: 'provider-job-usage-invariant',
+      choices: [{ message: { content: '{"schema_version":"1.0"}' } }],
+      usage: {
+        prompt_tokens: ALIBABA_QWEN37_C3C_MAX_LOW_TIER_INPUT_TOKENS + 1,
+        completion_tokens: 1,
+        total_tokens: ALIBABA_QWEN37_C3C_MAX_LOW_TIER_INPUT_TOKENS + 2,
+      },
+    });
+    const originalFetch = globalThis.fetch;
+    const transport = vi.fn((_input: Parameters<typeof fetch>[0], init?: RequestInit) =>
+      originalFetch(url, init),
+    );
+    vi.stubGlobal('fetch', transport);
+
+    await expect(adapter().submit(providerRequest())).rejects.toMatchObject({
+      errorClass: 'INTERNAL',
+      retryable: false,
+    });
+    expect(transport).toHaveBeenCalledTimes(1);
   });
 
   it.each([

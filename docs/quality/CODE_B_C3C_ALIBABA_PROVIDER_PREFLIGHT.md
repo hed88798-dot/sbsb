@@ -23,11 +23,12 @@ and the 30-case evaluation remain disabled.
 | Output limit on wire   | none; `max_tokens` and `max_completion_tokens` omitted                                             |
 | Provider fingerprint   | not provided without a real response                                                               |
 
-The dedicated adapter rejects a non-Beijing endpoint, absent strict structured-output authority,
-pricing below the reviewed Beijing rates, and any deployment identity that does not match the
-frozen alias/model/capability/currency. The frozen C3C service remains the authority for the exact
-schema name and schema document. The adapter exposes no arbitrary Provider parameter map. The
-generic `OpenAiCompatibleTextAdapter` remains unchanged.
+The dedicated adapter rejects a non-Beijing endpoint, absent or differently named strict
+structured-output authority, a serialized Provider request larger than 128 KiB, pricing below the
+reviewed Beijing rates, and any deployment identity that does not match the frozen
+alias/model/capability/currency. The frozen C3C service remains the authority for the exact schema
+document; the adapter pins only its expected name. The adapter exposes no arbitrary Provider
+parameter map. The generic `OpenAiCompatibleTextAdapter` remains unchanged.
 
 The deployment loader additionally requires this adapter to be the primary for
 `text.semantic-shot-planning` at the standard tier, forbids a fallback on that route, and forbids
@@ -47,21 +48,23 @@ using the frozen adapter as another route's fallback.
 | Thinking default and switch          | Qwen3.7 Plus is hybrid-thinking and defaults to thinking enabled; direct HTTP uses top-level `enable_thinking`, so the frozen route explicitly sends `false`. | [Deep thinking](https://help.aliyun.com/zh/model-studio/deep-thinking)                                               | Current page checked at the timestamp above.                                                                       |
 | Beijing pricing                      | For input length up to 256K: input `2 CNY / 1M tokens`, output `8 CNY / 1M tokens`; the 256K–1M tier is input `6`, output `24 CNY / 1M tokens`.               | [Model pricing](https://help.aliyun.com/zh/model-studio/model-pricing)                                               | Current price page checked at the timestamp above.                                                                 |
 
-The generic text contract caps prompt strings at 40,000 UTF-16 code units. The actual prompt's
-UTF-8 byte length is therefore a conservative tokenizer-unit upper bound and remains below the
-256K input pricing tier. The adapter reserves:
+The adapter deterministically serializes the complete outbound Provider body before HTTP and
+rejects it when its UTF-8 size exceeds `131072` bytes. This bound covers the prompt, messages,
+canonical schema, response-format authority, and fixed Provider fields, structurally keeping the
+route below the 256K input pricing tier. It reserves the complete low-tier ceiling:
 
 ```text
-maximumAmount = utf8_byte_length(prompt) * input_unit_cost
+maximumAmount = 256000 * input_unit_cost
               + 131072 * output_unit_cost
 ```
 
 The calculation intentionally ignores the generic `request.parameters.max_tokens` hint because it
-is absent from the Alibaba strict-output wire. At current first-tier Beijing prices, the maximum
-output component alone is `1.048576 CNY`; the internal request ceiling and isolated future canary
-budget are therefore `2 CNY`. This is an internal safety-envelope adjustment, not a shared contract
-change. The adapter also rejects configured input/output unit prices below the reviewed Beijing
-rates; a higher conservative price remains valid.
+is absent from the Alibaba strict-output wire. At current first-tier Beijing prices, the resulting
+maximum is `1.560576 CNY`; only the `text.semantic-shot-planning` Gateway route receives the `2 CNY`
+internal ceiling, while unrelated text routes remain at `1 CNY`. This is an internal safety-envelope
+adjustment, not a shared contract change. The adapter also rejects configured input/output unit
+prices below the reviewed Beijing rates, and fails closed if Provider usage unexpectedly reports
+more than 256,000 prompt tokens; a higher conservative configured price remains valid.
 
 ## Provider policy evidence for later owner approval
 

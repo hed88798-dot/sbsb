@@ -52,6 +52,7 @@ export async function createGatewayFixture(
     monthlyBudget?: number;
     accessTtlSeconds?: number;
     now?: () => Date;
+    textModelAlias?: string;
   } = {},
 ): Promise<GatewayFixture> {
   const directory = mkdtempSync(join(tmpdir(), 'gateway-fixture-'));
@@ -70,7 +71,8 @@ export async function createGatewayFixture(
     : undefined;
   const routes: ProviderRouteConfig[] = capabilities.map((capability) => ({
     capability,
-    modelAlias: 'mock-v1',
+    modelAlias:
+      capability === 'text.generate.v1' ? (options.textModelAlias ?? 'mock-v1') : 'mock-v1',
     qualityTier: 'standard',
     primary: adapter.alias,
     ...(fallback ? { fallback: fallback.alias } : {}),
