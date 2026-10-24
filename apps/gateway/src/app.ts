@@ -23,6 +23,7 @@ import {
   verifyDeviceRequest,
 } from './security.js';
 import { GatewayStore, GatewayStoreError, type RoutedProvider } from './store.js';
+import { resolveTextGatewayMaxCost } from './text-cost-policy.js';
 
 export interface GatewayAppOptions {
   db: Database.Database;
@@ -656,7 +657,10 @@ export function buildGatewayApp(options: GatewayAppOptions): FastifyInstance {
           : {}),
       },
       request_snapshot_hash: parsed.data.request_snapshot_hash,
-      max_cost: { amount: 1, currency: 'CNY' },
+      max_cost: {
+        amount: resolveTextGatewayMaxCost(parsed.data.model_alias),
+        currency: 'CNY',
+      },
     });
     const result = await createJob(auth, generic);
     if (result.job.state !== 'SUCCEEDED') {
