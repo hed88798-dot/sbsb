@@ -5,6 +5,7 @@ import { join, resolve } from 'node:path';
 import type { Database } from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ShotPlanAuthorityService } from '../../apps/desktop/src/main/shot-plan-authority-service.js';
+import { shotPlanSemanticProposalV1Schema } from '../../packages/contracts/src/index.js';
 import {
   buildShotPlanProposerPromptV1,
   SHOT_PLAN_PROPOSER_MODEL_ALIAS,
@@ -178,6 +179,102 @@ afterEach(() => {
 });
 
 describe('AI semantic Candidate Shot Plan proposer', () => {
+  it('creates the observed null-context Candidate on one Provider attempt with safe evidence', async () => {
+    const raw = readFileSync(
+      resolve(import.meta.dirname, '../fixtures/shot-planning/optional-context-null-observed.json'),
+      'utf8',
+    );
+    const text = '使用康健100后，猪群采食状态逐步恢复。';
+    const source = insertSource(text);
+    const client = new SequenceClient([raw]);
+    const audit: Array<{ event: string; fields: Record<string, unknown> }> = [];
+    expect(shotPlanSemanticProposalV1Schema.safeParse(JSON.parse(raw)).success).toBe(false);
+    const result = await proposer(client, audit).propose(operation(source));
+    expect(client.requests).toHaveLength(1);
+    expect(client.requests[0]!.structured_output).toEqual(strictSemanticOutput);
+    expect(result.trace.provider_attempts).toBe(1);
+    expect(result.candidate).toMatchObject({ candidate_revision: 1, candidate_status: 'ACTIVE' });
+    expect(result.candidate.slots).toHaveLength(1);
+    expect(result.candidate.slots[0]).toMatchObject({
+      source_text: text,
+      route: 'ANIMAL',
+      continuity_state: 'RESOLVED',
+      visual_continuity_group_id: expect.any(String),
+    });
+    expect(shotPlanRepository.getCandidate(result.candidate.candidate_id)?.candidate).toEqual(
+      result.candidate,
+    );
+    const normalization = audit.filter(
+      ({ event }) => event === 'shot_plan.proposal.structural_normalization',
+    );
+    expect(normalization).toEqual([
+      {
+        event: 'shot_plan.proposal.structural_normalization',
+        fields: {
+          operation_id: 'proposal_operation_1',
+          provider_request_id: client.requests[0]!.request_id,
+          structural_normalization: 'OPTIONAL_CONTEXT_NULL_TO_ABSENT_V1',
+          normalized_optional_context_fields: 2,
+          raw_provider_canonical_schema_validation: 'FAIL',
+          post_normalization_canonical_schema_validation: 'PASS',
+        },
+      },
+    ]);
+    expect(JSON.stringify(audit)).not.toContain(text);
+    expect(JSON.parse(raw).units[0]).toMatchObject({ left_context: null, right_context: null });
+  });
+
+  it('keeps null-context repeated fragments ambiguous and creates no Candidate', async () => {
+    const source = insertSource('重复句。重复句。');
+    const raw = JSON.stringify({
+      schema_version: '1.0',
+      segmentation_state: 'RESOLVED',
+      review_warnings: [],
+      units: [
+        {
+          exact_fragment: '重复句。',
+          left_context: null,
+          right_context: null,
+          route: 'ANIMAL',
+          route_state: 'RESOLVED',
+          continuity_action: 'START_NEW',
+          continuity_state: 'RESOLVED',
+          rationale: '',
+          review_warnings: [],
+        },
+      ],
+    });
+    const client = new SequenceClient([raw, raw]);
+    await expect(proposer(client).propose(operation(source))).rejects.toThrow(
+      'SHOT_PLAN_PROPOSAL_SOURCE_BINDING_AMBIGUOUS',
+    );
+    expect(client.requests).toHaveLength(2);
+    expect(database.prepare('SELECT COUNT(*) AS count FROM shot_plan_candidates').get()).toEqual({
+      count: 0,
+    });
+  });
+
+  it('retains bounded retry and failure for unrelated invalid output after normalization', async () => {
+    const source = insertSource('猪群咳喘。展示本品。');
+    const invalid = JSON.parse(rawProposal());
+    invalid.units[0].left_context = null;
+    invalid.units[0].route = 'INVALID_ROUTE';
+    const client = new SequenceClient([JSON.stringify(invalid), JSON.stringify(invalid)]);
+    const audit: Array<{ event: string; fields: Record<string, unknown> }> = [];
+    await expect(proposer(client, audit).propose(operation(source))).rejects.toThrow(
+      'SHOT_PLAN_PROPOSAL_INVALID_STRUCTURED_OUTPUT',
+    );
+    expect(client.requests).toHaveLength(2);
+    expect(
+      audit
+        .filter(({ event }) => event === 'shot_plan.proposal.structural_normalization')
+        .map(({ fields }) => fields.post_normalization_canonical_schema_validation),
+    ).toEqual(['FAIL', 'FAIL']);
+    expect(database.prepare('SELECT COUNT(*) AS count FROM shot_plan_candidates').get()).toEqual({
+      count: 0,
+    });
+  });
+
   it('provides the whole exact source once and persists one non-confirmed C3B Candidate', async () => {
     const text = '猪群咳喘。展示本品。';
     const source = insertSource(text);
