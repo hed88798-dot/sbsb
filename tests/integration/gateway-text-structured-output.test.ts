@@ -163,7 +163,8 @@ describe('authenticated text Gateway structured output', () => {
       url: '/v1/text/generate',
       body: { ...textRequest, structured_output: structuredOutput },
     });
-    expect(response.statusCode).toBe(503);
+    expect(response.statusCode).toBe(502);
+    expect(response.json()).toMatchObject({ code: 'INVALID_PARAMS', retryable: false });
     expect(primary).toHaveBeenCalledTimes(1);
     expect(fixture.fallback?.submitCount).toBe(0);
     expect(

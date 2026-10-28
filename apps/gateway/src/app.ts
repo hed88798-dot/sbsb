@@ -86,6 +86,27 @@ function publicError(error: unknown): HttpError {
   return new HttpError(500, 'INTERNAL_ERROR', 'Gateway request failed');
 }
 
+function failedTextProviderError(errorClass: string | null): HttpError {
+  switch (errorClass) {
+    case 'AUTH_FAILED':
+      return new HttpError(502, 'AUTH_FAILED', 'Text provider authentication failed');
+    case 'INVALID_PARAMS':
+      return new HttpError(502, 'INVALID_PARAMS', 'Text provider rejected request parameters');
+    case 'RATE_LIMITED':
+      return new HttpError(502, 'RATE_LIMITED', 'Text provider rate limited', true);
+    case 'UPSTREAM_5XX':
+      return new HttpError(502, 'UPSTREAM_5XX', 'Text provider unavailable', true);
+    case 'UNAVAILABLE':
+      return new HttpError(502, 'UNAVAILABLE', 'Text provider unavailable', true);
+    case 'MODERATION_REJECTED':
+      return new HttpError(502, 'MODERATION_REJECTED', 'Text provider rejected content');
+    case 'UNSUPPORTED_MODEL':
+      return new HttpError(502, 'UNSUPPORTED_MODEL', 'Text provider model unsupported');
+    default:
+      return new HttpError(502, 'TEXT_PROVIDER_FAILED', 'Text provider request failed');
+  }
+}
+
 function parseObject(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new HttpError(400, 'INVALID_REQUEST', 'Invalid request');
@@ -663,6 +684,9 @@ export function buildGatewayApp(options: GatewayAppOptions): FastifyInstance {
       },
     });
     const result = await createJob(auth, generic);
+    if (result.job.state === 'FAILED') {
+      throw failedTextProviderError(store.getJobRow(result.job.job_id)!.error_class);
+    }
     if (result.job.state !== 'SUCCEEDED') {
       throw new HttpError(503, 'TEXT_PROVIDER_PENDING', 'Text provider result is not ready', true);
     }
