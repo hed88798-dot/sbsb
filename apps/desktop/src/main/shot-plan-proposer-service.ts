@@ -13,6 +13,10 @@ import { logEvent } from './logger.js';
 import { semanticShotPlanProposalJsonSchema } from './semantic-shot-plan-proposal-schema.generated.js';
 import type { ShotPlanAuthorityService } from './shot-plan-authority-service.js';
 import {
+  normalizeOptionalContextNullV1,
+  OPTIONAL_CONTEXT_NULL_TO_ABSENT_V1,
+} from './shot-plan-proposal-normalization.js';
+import {
   reconcileSemanticShotPlanProposal,
   ShotPlanProposalStructuralError,
 } from './shot-plan-proposal-reconciler.js';
@@ -95,14 +99,21 @@ function validateOperation(input: ShotPlanProposalOperationV1): void {
   }
 }
 
-function parseProposal(text: string): ShotPlanSemanticProposalV1 {
+function parseProposal(
+  text: string,
+  onNormalization: (count: number, valid: boolean) => void,
+): ShotPlanSemanticProposalV1 {
   let value: unknown;
   try {
     value = JSON.parse(text) as unknown;
   } catch {
     return fail('SHOT_PLAN_PROPOSAL_INVALID_STRUCTURED_OUTPUT');
   }
-  const parsed = shotPlanSemanticProposalV1Schema.safeParse(value);
+  const normalized = normalizeOptionalContextNullV1(value);
+  const parsed = shotPlanSemanticProposalV1Schema.safeParse(normalized.value);
+  if (normalized.normalizedOptionalContextFields > 0) {
+    onNormalization(normalized.normalizedOptionalContextFields, parsed.success);
+  }
   if (!parsed.success) return fail('SHOT_PLAN_PROPOSAL_INVALID_STRUCTURED_OUTPUT');
   return parsed.data;
 }
@@ -227,7 +238,16 @@ export class ShotPlanProposerServiceV1 {
           options.signal ? { signal: options.signal } : {},
         );
         this.#validateProviderIdentity(request, providerResult);
-        const proposal = parseProposal(providerResult.text);
+        const proposal = parseProposal(providerResult.text, (count, valid) => {
+          this.#safeAudit('shot_plan.proposal.structural_normalization', {
+            operation_id: context.input.operation_id,
+            provider_request_id: providerResult.request_id,
+            structural_normalization: OPTIONAL_CONTEXT_NULL_TO_ABSENT_V1,
+            normalized_optional_context_fields: count,
+            raw_provider_canonical_schema_validation: 'FAIL',
+            post_normalization_canonical_schema_validation: valid ? 'PASS' : 'FAIL',
+          });
+        });
         const reconciled = reconcileSemanticShotPlanProposal(context.source, proposal, {
           continuityGroupId: () => this.#id('continuity_group'),
         });

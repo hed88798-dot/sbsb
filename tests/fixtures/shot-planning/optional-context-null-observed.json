@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "segmentation_state": "RESOLVED",
+  "review_warnings": [],
+  "units": [
+    {
+      "exact_fragment": "使用康健100后，猪群采食状态逐步恢复。",
+      "left_context": null,
+      "right_context": null,
+      "route": "ANIMAL",
+      "route_state": "RESOLVED",
+      "continuity_action": "START_NEW",
+      "continuity_state": "RESOLVED",
+      "rationale": "呈现使用产品后的动物状态变化。",
+      "review_warnings": []
+    }
+  ]
+}
