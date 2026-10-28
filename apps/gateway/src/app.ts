@@ -92,6 +92,8 @@ function failedTextProviderError(errorClass: string | null): HttpError {
   switch (errorClass) {
     case 'AUTH_FAILED':
       return new HttpError(502, 'AUTH_FAILED', 'Text provider authentication failed');
+    case 'QUOTA_EXHAUSTED':
+      return new HttpError(502, 'QUOTA_EXHAUSTED', 'Text provider quota exhausted');
     case 'INVALID_PARAMS':
       return new HttpError(502, 'INVALID_PARAMS', 'Text provider rejected request parameters');
     case 'RATE_LIMITED':

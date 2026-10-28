@@ -7,6 +7,7 @@ export type ProviderErrorClass =
   | 'INVALID_PARAMS'
   | 'UNSUPPORTED_MODEL'
   | 'AUTH_FAILED'
+  | 'QUOTA_EXHAUSTED'
   | 'INTERNAL';
 
 export interface ProviderErrorDiagnostic {
@@ -27,6 +28,7 @@ export function isProviderErrorClass(value: unknown): value is ProviderErrorClas
       'INVALID_PARAMS',
       'UNSUPPORTED_MODEL',
       'AUTH_FAILED',
+      'QUOTA_EXHAUSTED',
       'INTERNAL',
     ].includes(value)
   );

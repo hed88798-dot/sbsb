@@ -10,6 +10,7 @@ afterEach(() => vi.unstubAllGlobals());
 describe('TextCapabilityClient AppErrorV1 parsing', () => {
   it.each([
     [502, 'AUTH_FAILED', false],
+    [502, 'QUOTA_EXHAUSTED', false],
     [502, 'INVALID_PARAMS', false],
     [502, 'RATE_LIMITED', true],
     [502, 'UPSTREAM_5XX', true],

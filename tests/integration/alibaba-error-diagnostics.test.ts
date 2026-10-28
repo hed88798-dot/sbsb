@@ -51,6 +51,37 @@ async function rejectResponse(response: Response) {
 
 describe('bounded Alibaba failure diagnostics', () => {
   it.each([
+    [403, 'insufficient_quota', 'QUOTA_EXHAUSTED', false],
+    [429, 'insufficient_quota', 'QUOTA_EXHAUSTED', false],
+    [403, 'Workspace.AccessDenied', 'AUTH_FAILED', false],
+    [401, 'InvalidApiKey', 'AUTH_FAILED', false],
+    [429, 'Throttled', 'RATE_LIMITED', true],
+    [403, 'INSUFFICIENT_QUOTA', 'AUTH_FAILED', false],
+    [403, 'insufficient_quota\n', 'AUTH_FAILED', false],
+  ] as const)(
+    'classifies HTTP %s with exact safe code %s as %s / %s',
+    async (status, code, errorClass, retryable) => {
+      const error = await rejectResponse(
+        new Response(
+          JSON.stringify({
+            code,
+            request_id: 'synthetic-quota-request',
+            message: 'private account and billing details',
+          }),
+          { status },
+        ),
+      );
+      expect(error).toMatchObject({ errorClass, retryable });
+      expect(error.providerDiagnostic).toEqual({
+        httpStatus: status,
+        ...(code.includes('\n') ? {} : { providerCode: code }),
+        providerRequestId: 'synthetic-quota-request',
+      });
+      expect(JSON.stringify(error)).not.toContain('private account and billing details');
+    },
+  );
+
+  it.each([
     'Workspace.AccessDenied',
     'Endpoint.AccessDenied',
     'AccessDenied.Unpurchased',

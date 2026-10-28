@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import type { Database } from 'better-sqlite3';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ProviderAdapterError } from '@app/provider-adapters';
+import { AlibabaQwen37C3cTextAdapter, ProviderAdapterError } from '@app/provider-adapters';
 import { ShotPlanAuthorityService } from '../../apps/desktop/src/main/shot-plan-authority-service.js';
 import { ShotPlanProposerServiceV1 } from '../../apps/desktop/src/main/shot-plan-proposer-service.js';
 import { SourceDocumentAuthorityService } from '../../apps/desktop/src/main/source-document-authority-service.js';
@@ -30,11 +30,13 @@ afterEach(async () => {
   await fixture?.close();
   desktop?.close();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 const sensitiveProviderMessage = 'private upstream response; Bearer fake-secret; workspace-private';
 const failures = [
   ['AUTH_FAILED', false],
+  ['QUOTA_EXHAUSTED', false],
   ['INVALID_PARAMS', false],
   ['RATE_LIMITED', true],
   ['UPSTREAM_5XX', true],
@@ -215,6 +217,83 @@ async function realLocalChain() {
 }
 
 describe('default C3C retry policy through authenticated HTTP Gateway', () => {
+  it.each([403, 429])(
+    'does not retry real adapter classification of HTTP %s insufficient_quota',
+    async (status) => {
+      const { gateway, client, service, operation } = await realLocalChain();
+      const endpoint =
+        'https://synthetic-quota-workspace.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions';
+      const alibaba = new AlibabaQwen37C3cTextAdapter({
+        endpoint,
+        apiKey: 'synthetic-quota-key',
+        webhookSecret: 'synthetic-quota-webhook',
+        inputUnitCost: 0.000002,
+        outputUnitCost: 0.000008,
+        currency: 'CNY',
+      });
+      const originalFetch = globalThis.fetch;
+      const upstream = vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              code: 'insufficient_quota',
+              request_id: 'synthetic-upstream-quota-id',
+              message: sensitiveProviderMessage,
+            }),
+            { status },
+          ),
+      );
+      vi.stubGlobal('fetch', (input: Parameters<typeof fetch>[0], init?: RequestInit) => {
+        if (String(input) === endpoint) return upstream();
+        if (new URL(String(input)).hostname !== '127.0.0.1')
+          throw new Error('TEST_NETWORK_BOUNDARY');
+        return originalFetch(input, init);
+      });
+      const adapterSubmit = vi.spyOn(alibaba, 'submit');
+      // The fixture registers the synthetic route; execution delegates to the real Alibaba adapter.
+      const gatewaySubmit = vi
+        .spyOn(gateway.adapter, 'submit')
+        .mockImplementation((request) => alibaba.submit(request));
+      const generate = vi.spyOn(client, 'generate');
+      await expect(service.propose(operation)).rejects.toMatchObject({
+        code: 'SHOT_PLAN_PROPOSAL_PROVIDER_QUOTA_EXHAUSTED',
+      });
+      expect(upstream).toHaveBeenCalledTimes(1);
+      expect(adapterSubmit).toHaveBeenCalledTimes(1);
+      expect(gatewaySubmit).toHaveBeenCalledTimes(1);
+      expect(generate).toHaveBeenCalledTimes(1);
+      await expect(generate.mock.results[0]!.value).rejects.toMatchObject({
+        code: 'QUOTA_EXHAUSTED',
+        retryable: false,
+        message: 'Text provider quota exhausted',
+      });
+      expect(
+        gateway.database.db.prepare('SELECT state, error_class FROM provider_jobs').all(),
+      ).toEqual([{ state: 'FAILED', error_class: 'QUOTA_EXHAUSTED' }]);
+      expect(
+        gateway.database.db.prepare('SELECT state, amount FROM cost_reservations').get(),
+      ).toEqual({ state: 'RELEASED', amount: 0 });
+      const audit = gateway.database.db
+        .prepare(
+          "SELECT metadata_json FROM audit_events WHERE action = 'PROVIDER_FAILURE_DIAGNOSTIC'",
+        )
+        .all() as Array<{ metadata_json: string }>;
+      expect(audit).toHaveLength(1);
+      expect(JSON.parse(audit[0]!.metadata_json)).toEqual({
+        provider_alias: gateway.adapter.alias,
+        provider_model: gateway.adapter.providerModel,
+        error_class: 'QUOTA_EXHAUSTED',
+        http_status: status,
+        provider_code: 'insufficient_quota',
+        provider_request_id: 'synthetic-upstream-quota-id',
+      });
+      expect(audit[0]!.metadata_json).not.toContain(sensitiveProviderMessage);
+      expect(desktop!.prepare('SELECT COUNT(*) AS count FROM shot_plan_candidates').get()).toEqual({
+        count: 0,
+      });
+    },
+  );
+
   it.each(failures)('preserves %s retryability end-to-end', async (code, retryable) => {
     const { gateway, client, service, operation, text } = await realLocalChain();
     const error = new ProviderAdapterError(code, sensitiveProviderMessage, retryable, undefined, {
