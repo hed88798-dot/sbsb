@@ -9,6 +9,8 @@ import {
 } from '@app/contracts';
 import {
   ProviderAdapterError,
+  isProviderErrorClass,
+  sanitizeProviderDiagnostic,
   type ProviderAdapter,
   type ProviderStatus,
 } from '@app/provider-adapters';
@@ -23,6 +25,7 @@ import {
   verifyDeviceRequest,
 } from './security.js';
 import { GatewayStore, GatewayStoreError, type RoutedProvider } from './store.js';
+import { resolveTextGatewayMaxCost } from './text-cost-policy.js';
 
 export interface GatewayAppOptions {
   db: Database.Database;
@@ -83,6 +86,29 @@ function publicError(error: unknown): HttpError {
     return new HttpError(status, error.code, error.message);
   }
   return new HttpError(500, 'INTERNAL_ERROR', 'Gateway request failed');
+}
+
+function failedTextProviderError(errorClass: string | null): HttpError {
+  switch (errorClass) {
+    case 'AUTH_FAILED':
+      return new HttpError(502, 'AUTH_FAILED', 'Text provider authentication failed');
+    case 'QUOTA_EXHAUSTED':
+      return new HttpError(502, 'QUOTA_EXHAUSTED', 'Text provider quota exhausted');
+    case 'INVALID_PARAMS':
+      return new HttpError(502, 'INVALID_PARAMS', 'Text provider rejected request parameters');
+    case 'RATE_LIMITED':
+      return new HttpError(502, 'RATE_LIMITED', 'Text provider rate limited', true);
+    case 'UPSTREAM_5XX':
+      return new HttpError(502, 'UPSTREAM_5XX', 'Text provider unavailable', true);
+    case 'UNAVAILABLE':
+      return new HttpError(502, 'UNAVAILABLE', 'Text provider unavailable', true);
+    case 'MODERATION_REJECTED':
+      return new HttpError(502, 'MODERATION_REJECTED', 'Text provider rejected content');
+    case 'UNSUPPORTED_MODEL':
+      return new HttpError(502, 'UNSUPPORTED_MODEL', 'Text provider model unsupported');
+    default:
+      return new HttpError(502, 'TEXT_PROVIDER_FAILED', 'Text provider request failed');
+  }
 }
 
 function parseObject(value: unknown): Record<string, unknown> {
@@ -273,10 +299,53 @@ export function buildGatewayApp(options: GatewayAppOptions): FastifyInstance {
   ): Promise<string | undefined> {
     const startedAt = now().getTime();
     let activeAdapter = route.primary;
+    const submitWithDiagnostics = async (adapter: ProviderAdapter) => {
+      try {
+        return await adapter.submit(providerRequest);
+      } catch (error) {
+        // Observability must never replace the original error or prevent budget release.
+        try {
+          if (error instanceof ProviderAdapterError && isProviderErrorClass(error.errorClass)) {
+            const diagnostic = sanitizeProviderDiagnostic(error.providerDiagnostic);
+            if (diagnostic) {
+              options.db
+                .prepare(
+                  `INSERT INTO audit_events(
+                  audit_event_id, actor_type, actor_id, action, target_type, target_id,
+                  metadata_json, occurred_at
+                ) VALUES (?, 'SYSTEM', 'gateway', 'PROVIDER_FAILURE_DIAGNOSTIC', 'PROVIDER_JOB', ?, ?, ?)`,
+                )
+                .run(
+                  `audit_${randomUUID()}`,
+                  job.job_id,
+                  JSON.stringify({
+                    provider_alias: adapter.alias,
+                    provider_model: adapter.providerModel,
+                    error_class: error.errorClass,
+                    ...(diagnostic.httpStatus === undefined
+                      ? {}
+                      : { http_status: diagnostic.httpStatus }),
+                    ...(diagnostic.providerCode === undefined
+                      ? {}
+                      : { provider_code: diagnostic.providerCode }),
+                    ...(diagnostic.providerRequestId === undefined
+                      ? {}
+                      : { provider_request_id: diagnostic.providerRequestId }),
+                  }),
+                  now().toISOString(),
+                );
+            }
+          }
+        } catch {
+          // Best-effort internal audit; the Provider outcome remains authoritative.
+        }
+        throw error;
+      }
+    };
     try {
       let submission;
       try {
-        submission = await activeAdapter.submit(providerRequest);
+        submission = await submitWithDiagnostics(activeAdapter);
         providerFailures.delete(activeAdapter.alias);
       } catch (error) {
         if (
@@ -300,7 +369,7 @@ export function buildGatewayApp(options: GatewayAppOptions): FastifyInstance {
         ) {
           activeAdapter = route.fallback;
           store.switchProvider(job.job_id, activeAdapter, error.errorClass, now().toISOString());
-          submission = await activeAdapter.submit(providerRequest);
+          submission = await submitWithDiagnostics(activeAdapter);
           providerFailures.delete(activeAdapter.alias);
         } else {
           throw error;
@@ -656,9 +725,15 @@ export function buildGatewayApp(options: GatewayAppOptions): FastifyInstance {
           : {}),
       },
       request_snapshot_hash: parsed.data.request_snapshot_hash,
-      max_cost: { amount: 1, currency: 'CNY' },
+      max_cost: {
+        amount: resolveTextGatewayMaxCost(parsed.data.model_alias),
+        currency: 'CNY',
+      },
     });
     const result = await createJob(auth, generic);
+    if (result.job.state === 'FAILED') {
+      throw failedTextProviderError(store.getJobRow(result.job.job_id)!.error_class);
+    }
     if (result.job.state !== 'SUCCEEDED') {
       throw new HttpError(503, 'TEXT_PROVIDER_PENDING', 'Text provider result is not ready', true);
     }

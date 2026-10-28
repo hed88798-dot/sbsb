@@ -1,4 +1,5 @@
 import {
+  appErrorV1Schema,
   providerJobV1Schema,
   providerRequestV1Schema,
   textGatewayRequestV1Schema,
@@ -187,13 +188,27 @@ export class HttpTextCapabilityClient implements TextCapabilityClient {
         body: requestBody,
         signal: controller.signal,
       });
-      if (response.status === 429) {
-        throw new GatewayClientError('RATE_LIMITED', '请求过于频繁，请稍后重试', true);
-      }
-      if (response.status >= 500) {
-        throw new GatewayClientError('GATEWAY_UPSTREAM_ERROR', '文案服务暂时不可用', true);
-      }
       if (!response.ok) {
+        let body: unknown;
+        try {
+          body = await readBoundedProviderJobResponseJsonV1(response);
+        } catch {
+          // An absent or malformed error body retains the safe status-based fallback.
+        }
+        const parsed = appErrorV1Schema.safeParse(body);
+        if (parsed.success) {
+          throw new GatewayClientError(
+            parsed.data.code,
+            parsed.data.message,
+            parsed.data.retryable,
+          );
+        }
+        if (response.status === 429) {
+          throw new GatewayClientError('RATE_LIMITED', '请求过于频繁，请稍后重试', true);
+        }
+        if (response.status >= 500) {
+          throw new GatewayClientError('GATEWAY_UPSTREAM_ERROR', '文案服务暂时不可用', true);
+        }
         throw new GatewayClientError('GATEWAY_REQUEST_REJECTED', '文案请求未被接受', false);
       }
       const body: unknown = await response.json();

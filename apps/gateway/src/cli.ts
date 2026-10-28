@@ -1,6 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
+  ALIBABA_QWEN37_C3C_PROVIDER_ALIAS,
+  ALIBABA_QWEN37_C3C_PROVIDER_MODEL,
+  AlibabaQwen37C3cTextAdapter,
   FixedEndpointJsonAdapter,
   OpenAiCompatibleTextAdapter,
   type ProviderAdapter,
@@ -16,26 +19,42 @@ function required(name: string): string {
   return value;
 }
 
+interface DeploymentAdapterConfig {
+  kind: 'openai-text' | 'async-json' | 'alibaba-qwen37-c3c-text';
+  alias: string;
+  provider_model: string;
+  endpoint: string;
+  api_key_env: string;
+  webhook_secret_env: string;
+  capabilities: ProviderRouteConfig['capability'][];
+  unit_cost?: number;
+  input_unit_cost?: number;
+  output_unit_cost?: number;
+  currency: 'CNY' | 'USD';
+}
+
 interface DeploymentConfig {
-  adapters: Array<{
-    kind: 'openai-text' | 'async-json';
-    alias: string;
-    provider_model: string;
-    endpoint: string;
-    api_key_env: string;
-    webhook_secret_env: string;
-    capabilities: ProviderRouteConfig['capability'][];
-    unit_cost?: number;
-    input_unit_cost?: number;
-    output_unit_cost?: number;
-    currency: 'CNY' | 'USD';
-  }>;
+  adapters: DeploymentAdapterConfig[];
   routes: ProviderRouteConfig[];
   releases?: Record<string, unknown>;
 }
 
 const configPath = resolve(required('GATEWAY_PROVIDER_CONFIG_PATH'));
 const deployment = JSON.parse(readFileSync(configPath, 'utf8')) as DeploymentConfig;
+for (const route of deployment.routes) {
+  if (route.fallback === ALIBABA_QWEN37_C3C_PROVIDER_ALIAS) {
+    throw new Error('The frozen Alibaba C3C adapter cannot be configured as a fallback');
+  }
+  if (
+    route.primary === ALIBABA_QWEN37_C3C_PROVIDER_ALIAS &&
+    (route.capability !== 'text.generate.v1' ||
+      route.modelAlias !== 'text.semantic-shot-planning' ||
+      route.qualityTier !== 'standard' ||
+      route.fallback !== undefined)
+  ) {
+    throw new Error('Alibaba C3C route does not match the frozen no-fallback policy');
+  }
+}
 const adapters: ProviderAdapter[] = deployment.adapters.map((adapter) => {
   const common = {
     alias: adapter.alias,
@@ -45,17 +64,37 @@ const adapters: ProviderAdapter[] = deployment.adapters.map((adapter) => {
     webhookSecret: required(adapter.webhook_secret_env),
     currency: adapter.currency,
   };
-  return adapter.kind === 'openai-text'
-    ? new OpenAiCompatibleTextAdapter({
-        ...common,
-        inputUnitCost: adapter.input_unit_cost ?? 0,
-        outputUnitCost: adapter.output_unit_cost ?? 0,
-      })
-    : new FixedEndpointJsonAdapter({
-        ...common,
-        capabilities: adapter.capabilities,
-        unitCost: adapter.unit_cost ?? 0,
-      });
+  if (adapter.kind === 'openai-text') {
+    return new OpenAiCompatibleTextAdapter({
+      ...common,
+      inputUnitCost: adapter.input_unit_cost ?? 0,
+      outputUnitCost: adapter.output_unit_cost ?? 0,
+    });
+  }
+  if (adapter.kind === 'alibaba-qwen37-c3c-text') {
+    if (
+      adapter.alias !== ALIBABA_QWEN37_C3C_PROVIDER_ALIAS ||
+      adapter.provider_model !== ALIBABA_QWEN37_C3C_PROVIDER_MODEL ||
+      adapter.currency !== 'CNY' ||
+      adapter.capabilities.length !== 1 ||
+      adapter.capabilities[0] !== 'text.generate.v1'
+    ) {
+      throw new Error('Alibaba C3C adapter identity does not match the frozen deployment policy');
+    }
+    return new AlibabaQwen37C3cTextAdapter({
+      endpoint: adapter.endpoint,
+      apiKey: required(adapter.api_key_env),
+      webhookSecret: required(adapter.webhook_secret_env),
+      inputUnitCost: adapter.input_unit_cost ?? 0,
+      outputUnitCost: adapter.output_unit_cost ?? 0,
+      currency: 'CNY',
+    });
+  }
+  return new FixedEndpointJsonAdapter({
+    ...common,
+    capabilities: adapter.capabilities,
+    unitCost: adapter.unit_cost ?? 0,
+  });
 });
 
 const database = openGatewayDatabase({
