@@ -217,9 +217,12 @@ async function realLocalChain() {
 }
 
 describe('default C3C retry policy through authenticated HTTP Gateway', () => {
-  it.each([403, 429])(
-    'does not retry real adapter classification of HTTP %s insufficient_quota',
-    async (status) => {
+  it.each([
+    [403, 'QUOTA_EXHAUSTED', false, 1, 'Text provider quota exhausted'],
+    [429, 'RATE_LIMITED', true, 2, 'Text provider rate limited'],
+  ] as const)(
+    'preserves status-aware real adapter classification of HTTP %s insufficient_quota',
+    async (status, errorClass, retryable, attempts, message) => {
       const { gateway, client, service, operation } = await realLocalChain();
       const endpoint =
         'https://synthetic-quota-workspace.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions';
@@ -256,38 +259,42 @@ describe('default C3C retry policy through authenticated HTTP Gateway', () => {
         .mockImplementation((request) => alibaba.submit(request));
       const generate = vi.spyOn(client, 'generate');
       await expect(service.propose(operation)).rejects.toMatchObject({
-        code: 'SHOT_PLAN_PROPOSAL_PROVIDER_QUOTA_EXHAUSTED',
+        code: `SHOT_PLAN_PROPOSAL_PROVIDER_${errorClass}`,
       });
-      expect(upstream).toHaveBeenCalledTimes(1);
-      expect(adapterSubmit).toHaveBeenCalledTimes(1);
-      expect(gatewaySubmit).toHaveBeenCalledTimes(1);
-      expect(generate).toHaveBeenCalledTimes(1);
+      expect(upstream).toHaveBeenCalledTimes(attempts);
+      expect(adapterSubmit).toHaveBeenCalledTimes(attempts);
+      expect(gatewaySubmit).toHaveBeenCalledTimes(attempts);
+      expect(generate).toHaveBeenCalledTimes(attempts);
       await expect(generate.mock.results[0]!.value).rejects.toMatchObject({
-        code: 'QUOTA_EXHAUSTED',
-        retryable: false,
-        message: 'Text provider quota exhausted',
+        code: errorClass,
+        retryable,
+        message,
       });
       expect(
         gateway.database.db.prepare('SELECT state, error_class FROM provider_jobs').all(),
-      ).toEqual([{ state: 'FAILED', error_class: 'QUOTA_EXHAUSTED' }]);
+      ).toEqual(
+        Array.from({ length: attempts }, () => ({ state: 'FAILED', error_class: errorClass })),
+      );
       expect(
-        gateway.database.db.prepare('SELECT state, amount FROM cost_reservations').get(),
-      ).toEqual({ state: 'RELEASED', amount: 0 });
+        gateway.database.db.prepare('SELECT state, amount FROM cost_reservations').all(),
+      ).toEqual(Array.from({ length: attempts }, () => ({ state: 'RELEASED', amount: 0 })));
       const audit = gateway.database.db
         .prepare(
           "SELECT metadata_json FROM audit_events WHERE action = 'PROVIDER_FAILURE_DIAGNOSTIC'",
         )
         .all() as Array<{ metadata_json: string }>;
-      expect(audit).toHaveLength(1);
-      expect(JSON.parse(audit[0]!.metadata_json)).toEqual({
-        provider_alias: gateway.adapter.alias,
-        provider_model: gateway.adapter.providerModel,
-        error_class: 'QUOTA_EXHAUSTED',
-        http_status: status,
-        provider_code: 'insufficient_quota',
-        provider_request_id: 'synthetic-upstream-quota-id',
-      });
-      expect(audit[0]!.metadata_json).not.toContain(sensitiveProviderMessage);
+      expect(audit).toHaveLength(attempts);
+      for (const event of audit) {
+        expect(JSON.parse(event.metadata_json)).toEqual({
+          provider_alias: gateway.adapter.alias,
+          provider_model: gateway.adapter.providerModel,
+          error_class: errorClass,
+          http_status: status,
+          provider_code: 'insufficient_quota',
+          provider_request_id: 'synthetic-upstream-quota-id',
+        });
+        expect(event.metadata_json).not.toContain(sensitiveProviderMessage);
+      }
       expect(desktop!.prepare('SELECT COUNT(*) AS count FROM shot_plan_candidates').get()).toEqual({
         count: 0,
       });

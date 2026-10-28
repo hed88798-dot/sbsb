@@ -152,7 +152,7 @@ export class AlibabaQwen37C3cTextAdapter implements ProviderAdapter {
         hostname,
         hostname.slice(0, -'.cn-beijing.maas.aliyuncs.com'.length),
       ]);
-      if (diagnostic.providerCode === 'insufficient_quota') {
+      if (response.status === 403 && diagnostic.providerCode === 'insufficient_quota') {
         throw new ProviderAdapterError(
           'QUOTA_EXHAUSTED',
           'provider quota exhausted',

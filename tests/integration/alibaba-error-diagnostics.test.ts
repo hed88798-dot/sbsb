@@ -52,7 +52,10 @@ async function rejectResponse(response: Response) {
 describe('bounded Alibaba failure diagnostics', () => {
   it.each([
     [403, 'insufficient_quota', 'QUOTA_EXHAUSTED', false],
-    [429, 'insufficient_quota', 'QUOTA_EXHAUSTED', false],
+    [429, 'insufficient_quota', 'RATE_LIMITED', true],
+    [401, 'insufficient_quota', 'AUTH_FAILED', false],
+    [500, 'insufficient_quota', 'UPSTREAM_5XX', true],
+    [400, 'insufficient_quota', 'INVALID_PARAMS', false],
     [403, 'Workspace.AccessDenied', 'AUTH_FAILED', false],
     [401, 'InvalidApiKey', 'AUTH_FAILED', false],
     [429, 'Throttled', 'RATE_LIMITED', true],
