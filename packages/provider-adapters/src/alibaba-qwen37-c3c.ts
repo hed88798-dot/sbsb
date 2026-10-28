@@ -11,8 +11,8 @@ import type {
 } from './index.js';
 
 export const ALIBABA_QWEN37_C3C_PROVIDER_ALIAS =
-  'alibaba-beijing-qwen37-plus-20260526-c3c-nonthinking' as const;
-export const ALIBABA_QWEN37_C3C_PROVIDER_MODEL = 'qwen3.7-plus-2026-05-26' as const;
+  'alibaba-beijing-qwen37-plus-c3c-nonthinking' as const;
+export const ALIBABA_QWEN37_C3C_PROVIDER_MODEL = 'qwen3.7-plus' as const;
 export const ALIBABA_QWEN37_C3C_SCHEMA_NAME = 'ShotPlanSemanticProposalV1' as const;
 export const ALIBABA_QWEN37_C3C_MAX_WIRE_INPUT_BYTES = 131_072 as const;
 export const ALIBABA_QWEN37_C3C_MAX_LOW_TIER_INPUT_TOKENS = 256_000 as const;

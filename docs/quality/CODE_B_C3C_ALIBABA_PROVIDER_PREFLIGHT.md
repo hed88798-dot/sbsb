@@ -98,3 +98,63 @@ decision are deliberately absent from this repository.
   preflight.
 - `REAL_PROVIDER_CANARY_RUN: NO`
 - `C3C_30_CASE_REAL_EVALUATION_RUN: NO`
+
+## Provider identity migration (2026-10-29)
+
+Brain1 selected `qwen3.7-plus` as the new primary after the snapshot access failures. This section
+supersedes the active identity and future-policy assertions above; the earlier preflight is retained
+byte-for-byte as historical snapshot evidence. It is not the configuration for future executions.
+
+| Field                     | New active identity                                     |
+| ------------------------- | ------------------------------------------------------- |
+| Provider                  | Alibaba Cloud Model Studio                              |
+| Region                    | China (Beijing)                                         |
+| Capability alias          | `text.semantic-shot-planning`                           |
+| Provider alias            | `alibaba-beijing-qwen37-plus-c3c-nonthinking`           |
+| Provider model            | `qwen3.7-plus`                                          |
+| MODEL_VERSION_POLICY      | `ROLLING_PROVIDER_MODEL`                                |
+| Old snapshot              | `qwen3.7-plus-2026-05-26`; historical evidence only     |
+| Old provider alias active | `NO`; the alias containing `20260526` is not this route |
+
+The rolling ID is not an immutable snapshot, even though the Brain1-frozen official Beijing
+capability baseline describes its current functionality as equivalent to
+`qwen3.7-plus-2026-05-26`. That baseline is structured output supported, context `1,000,000`,
+maximum input `991,808` tokens and maximum output `131,072` tokens. These supplied baseline values
+are not a new connectivity, availability, legal or semantic acceptance claim.
+
+All four previous real canaries remain associated with `qwen3.7-plus-2026-05-26`, including the
+repeated HTTP `403 / insufficient_quota` observations. Their execution identities, classifications
+at execution time, request counts and outputs are not rewritten. No historical acceptance is
+transferred to the new route; it is a separate future execution identity. Prior temporary approvals
+for the snapshot alias/model do not constitute approval of the rolling alias/model.
+
+The adapter and deployment loader share the new alias/model constants. The endpoint validator,
+primary-only/no-fallback route policy, temperature `0.7`, explicit `enable_thinking=false`,
+`response_format.type=json_schema`, schema name `ShotPlanSemanticProposalV1` and `strict=true`
+remain unchanged. `max_tokens`, `max_completion_tokens`, `thinking_budget`, `reasoning_effort`,
+`tools` and `stream` remain absent. No alternate endpoint, model or output-format fallback is added.
+
+Pricing remains `0.000002 CNY/input token` and `0.000008 CNY/output token` for the protected low
+tier. The route still limits complete serialized wire input to `131072` bytes, reserves `256000`
+input tokens plus `131072` output tokens (`1.560576 CNY`), and uses the existing `2 CNY` Gateway
+ceiling. Error classification, bounded diagnostics, secret handling and retry policy are unchanged.
+
+Future real-model acceptance evidence must bind all of the following together:
+
+| Evidence field               | Required value or state                                   |
+| ---------------------------- | --------------------------------------------------------- |
+| Provider alias               | `alibaba-beijing-qwen37-plus-c3c-nonthinking`             |
+| Model ID / version policy    | `qwen3.7-plus` / `ROLLING_PROVIDER_MODEL`                 |
+| Prompt template / version    | `shot-plan.semantic-proposer@2`                           |
+| Schema authority / version   | `ShotPlanSemanticProposalV1` / `schema_version=1.0`       |
+| Evaluation date              | Actual future execution timestamp; `NOT_RUN` in this task |
+| Real-model acceptance result | `NOT_RUN`; no snapshot result substitutes for this model  |
+
+Future Provider drift is evaluated through the unchanged C3C golden suite and acceptance process.
+Actual non-thinking/strict-schema compatibility awaits a separately authorized synthetic canary
+after Code F review. The 30 veterinary goldens, canonical/generated schema, prompt, reconciler,
+Candidate/review/route/continuity semantics, UI/IPC/Timeline/Render and migrations are unchanged
+(Desktop `009`, Gateway `1`; no new migration).
+
+This migration makes zero real Provider requests, runs no real canary or 30-case real evaluation,
+and does not authorize a merge or production use.

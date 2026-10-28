@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { semanticShotPlanProposalJsonSchema } from '../../apps/desktop/src/main/semantic-shot-plan-proposal-schema.generated.js';
@@ -91,7 +93,7 @@ function providerRequest(input?: {
   });
 }
 
-describe('Alibaba Model Studio frozen Qwen3.7 C3C adapter', () => {
+describe('Alibaba Model Studio rolling Qwen3.7 Plus C3C identity with frozen wire policy', () => {
   it('sends the exact strict non-thinking wire without any output cap or downgrade field', async () => {
     const { bodies, url } = await captureHttp(200, {
       id: 'provider-job-1',
@@ -116,7 +118,7 @@ describe('Alibaba Model Studio frozen Qwen3.7 C3C adapter', () => {
 
     expect(bodies).toEqual([
       {
-        model: ALIBABA_QWEN37_C3C_PROVIDER_MODEL,
+        model: 'qwen3.7-plus',
         messages: [{ role: 'user', content: '使用康健100后，猪群采食状态逐步恢复。' }],
         temperature: 0.7,
         enable_thinking: false,
@@ -148,9 +150,12 @@ describe('Alibaba Model Studio frozen Qwen3.7 C3C adapter', () => {
 
   it('pins provider identity and only accepts the workspace-specific Beijing endpoint', () => {
     expect(adapter()).toMatchObject({
-      alias: ALIBABA_QWEN37_C3C_PROVIDER_ALIAS,
-      providerModel: 'qwen3.7-plus-2026-05-26',
+      alias: 'alibaba-beijing-qwen37-plus-c3c-nonthinking',
+      providerModel: 'qwen3.7-plus',
     });
+    expect(ALIBABA_QWEN37_C3C_PROVIDER_ALIAS).toBe(adapter().alias);
+    expect(ALIBABA_QWEN37_C3C_PROVIDER_MODEL).toBe(adapter().providerModel);
+    expect(adapter().alias).not.toContain('20260526');
     const invalidEndpoints = [
       'http://workspace.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions',
       'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
@@ -199,6 +204,11 @@ describe('Alibaba Model Studio frozen Qwen3.7 C3C adapter', () => {
   });
 
   it('reserves the documented output maximum plus a conservative input upper bound', () => {
+    expect(inputUnitCost).toBe(0.000002);
+    expect(outputUnitCost).toBe(0.000008);
+    expect(ALIBABA_QWEN37_C3C_MAX_LOW_TIER_INPUT_TOKENS).toBe(256_000);
+    expect(ALIBABA_QWEN37_C3C_MAX_OUTPUT_TOKENS).toBe(131_072);
+    expect(ALIBABA_QWEN37_C3C_MAX_WIRE_INPUT_BYTES).toBe(131_072);
     const lowHint = adapter().estimate(providerRequest({ maxTokens: 1 }));
     const highHint = adapter().estimate(providerRequest({ maxTokens: 8_192 }));
     const expectedMaximum =
@@ -213,6 +223,22 @@ describe('Alibaba Model Studio frozen Qwen3.7 C3C adapter', () => {
     });
     expect(highHint).toEqual(lowHint);
     expect(expectedMaximum).toBe(1.560576);
+  });
+
+  it('preserves the snapshot preflight content separately from the rolling identity policy', () => {
+    const document = readFileSync(
+      new URL('../../docs/quality/CODE_B_C3C_ALIBABA_PROVIDER_PREFLIGHT.md', import.meta.url),
+      'utf8',
+    ).replaceAll('\r\n', '\n');
+    const [historical, migration] = document.split(
+      '\n## Provider identity migration (2026-10-29)\n',
+    );
+    expect(createHash('sha256').update(historical!).digest('hex')).toBe(
+      '020b98414620523caeaf4c83370657ba6df03aa3af6d76418196362abe381213',
+    );
+    expect(migration).toContain('ROLLING_PROVIDER_MODEL');
+    expect(migration).toContain('alibaba-beijing-qwen37-plus-c3c-nonthinking');
+    expect(migration).toContain('qwen3.7-plus-2026-05-26');
   });
 
   it('rejects a different schema name before HTTP', async () => {
