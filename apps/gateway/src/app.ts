@@ -9,6 +9,8 @@ import {
 } from '@app/contracts';
 import {
   ProviderAdapterError,
+  isProviderErrorClass,
+  sanitizeProviderDiagnostic,
   type ProviderAdapter,
   type ProviderStatus,
 } from '@app/provider-adapters';
@@ -295,10 +297,53 @@ export function buildGatewayApp(options: GatewayAppOptions): FastifyInstance {
   ): Promise<string | undefined> {
     const startedAt = now().getTime();
     let activeAdapter = route.primary;
+    const submitWithDiagnostics = async (adapter: ProviderAdapter) => {
+      try {
+        return await adapter.submit(providerRequest);
+      } catch (error) {
+        // Observability must never replace the original error or prevent budget release.
+        try {
+          if (error instanceof ProviderAdapterError && isProviderErrorClass(error.errorClass)) {
+            const diagnostic = sanitizeProviderDiagnostic(error.providerDiagnostic);
+            if (diagnostic) {
+              options.db
+                .prepare(
+                  `INSERT INTO audit_events(
+                  audit_event_id, actor_type, actor_id, action, target_type, target_id,
+                  metadata_json, occurred_at
+                ) VALUES (?, 'SYSTEM', 'gateway', 'PROVIDER_FAILURE_DIAGNOSTIC', 'PROVIDER_JOB', ?, ?, ?)`,
+                )
+                .run(
+                  `audit_${randomUUID()}`,
+                  job.job_id,
+                  JSON.stringify({
+                    provider_alias: adapter.alias,
+                    provider_model: adapter.providerModel,
+                    error_class: error.errorClass,
+                    ...(diagnostic.httpStatus === undefined
+                      ? {}
+                      : { http_status: diagnostic.httpStatus }),
+                    ...(diagnostic.providerCode === undefined
+                      ? {}
+                      : { provider_code: diagnostic.providerCode }),
+                    ...(diagnostic.providerRequestId === undefined
+                      ? {}
+                      : { provider_request_id: diagnostic.providerRequestId }),
+                  }),
+                  now().toISOString(),
+                );
+            }
+          }
+        } catch {
+          // Best-effort internal audit; the Provider outcome remains authoritative.
+        }
+        throw error;
+      }
+    };
     try {
       let submission;
       try {
-        submission = await activeAdapter.submit(providerRequest);
+        submission = await submitWithDiagnostics(activeAdapter);
         providerFailures.delete(activeAdapter.alias);
       } catch (error) {
         if (
@@ -322,7 +367,7 @@ export function buildGatewayApp(options: GatewayAppOptions): FastifyInstance {
         ) {
           activeAdapter = route.fallback;
           store.switchProvider(job.job_id, activeAdapter, error.errorClass, now().toISOString());
-          submission = await activeAdapter.submit(providerRequest);
+          submission = await submitWithDiagnostics(activeAdapter);
           providerFailures.delete(activeAdapter.alias);
         } else {
           throw error;

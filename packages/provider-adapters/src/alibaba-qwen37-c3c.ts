@@ -1,6 +1,7 @@
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import type { ProviderRequestV1 } from '@app/contracts';
 import { ProviderAdapterError } from './errors.js';
+import { readAlibabaErrorDiagnostic } from './alibaba-error-diagnostic.js';
 import type {
   ProviderAdapter,
   ProviderEstimate,
@@ -143,17 +144,48 @@ export class AlibabaQwen37C3cTextAdapter implements ProviderAdapter {
     } catch {
       throw new ProviderAdapterError('TIMEOUT_UNKNOWN', 'provider outcome unknown', true);
     }
-    if (response.status === 401 || response.status === 403) {
-      throw new ProviderAdapterError('AUTH_FAILED', 'provider authentication failed', false);
-    }
-    if (response.status === 429) {
-      throw new ProviderAdapterError('RATE_LIMITED', 'provider rate limited', true);
-    }
-    if (response.status >= 500) {
-      throw new ProviderAdapterError('UPSTREAM_5XX', 'provider unavailable', true);
-    }
     if (!response.ok) {
-      throw new ProviderAdapterError('INVALID_PARAMS', 'provider rejected request', false);
+      const hostname = new URL(this.options.endpoint).hostname;
+      const diagnostic = await readAlibabaErrorDiagnostic(response, [
+        this.options.apiKey,
+        this.options.webhookSecret,
+        hostname,
+        hostname.slice(0, -'.cn-beijing.maas.aliyuncs.com'.length),
+      ]);
+      if (response.status === 401 || response.status === 403) {
+        throw new ProviderAdapterError(
+          'AUTH_FAILED',
+          'provider authentication failed',
+          false,
+          undefined,
+          diagnostic,
+        );
+      }
+      if (response.status === 429) {
+        throw new ProviderAdapterError(
+          'RATE_LIMITED',
+          'provider rate limited',
+          true,
+          undefined,
+          diagnostic,
+        );
+      }
+      if (response.status >= 500) {
+        throw new ProviderAdapterError(
+          'UPSTREAM_5XX',
+          'provider unavailable',
+          true,
+          undefined,
+          diagnostic,
+        );
+      }
+      throw new ProviderAdapterError(
+        'INVALID_PARAMS',
+        'provider rejected request',
+        false,
+        undefined,
+        diagnostic,
+      );
     }
 
     let body: {

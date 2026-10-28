@@ -7,7 +7,14 @@ import type {
 } from '@app/contracts';
 import { ProviderAdapterError, type ProviderErrorClass } from './errors.js';
 
-export { ProviderAdapterError, type ProviderErrorClass } from './errors.js';
+export {
+  ProviderAdapterError,
+  isProviderErrorClass,
+  sanitizeProviderDiagnostic,
+  type ProviderErrorClass,
+  type ProviderErrorDiagnostic,
+} from './errors.js';
+export { ALIBABA_ERROR_BODY_MAX_BYTES } from './alibaba-error-diagnostic.js';
 
 export {
   startProviderFakeServer,

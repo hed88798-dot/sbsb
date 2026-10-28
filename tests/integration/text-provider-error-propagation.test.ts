@@ -217,7 +217,9 @@ async function realLocalChain() {
 describe('default C3C retry policy through authenticated HTTP Gateway', () => {
   it.each(failures)('preserves %s retryability end-to-end', async (code, retryable) => {
     const { gateway, client, service, operation, text } = await realLocalChain();
-    const error = new ProviderAdapterError(code, sensitiveProviderMessage, retryable);
+    const error = new ProviderAdapterError(code, sensitiveProviderMessage, retryable, undefined, {
+      providerRequestId: 'synthetic-upstream-request',
+    });
     const submit = vi.spyOn(gateway.adapter, 'submit');
     const generate = vi.spyOn(client, 'generate');
     if (retryable) {
@@ -270,5 +272,40 @@ describe('default C3C retry policy through authenticated HTTP Gateway', () => {
         .prepare("SELECT error_class FROM provider_jobs WHERE state = 'FAILED'")
         .all(),
     ).toEqual([{ error_class: code }]);
+  });
+
+  it('keeps AUTH_FAILED non-retryable and releases budget if diagnostic audit fails', async () => {
+    const { gateway, client, service, operation } = await realLocalChain();
+    gateway.database.db.exec(`
+      CREATE TRIGGER reject_diagnostic_audit BEFORE INSERT ON audit_events
+      WHEN NEW.action = 'PROVIDER_FAILURE_DIAGNOSTIC'
+      BEGIN SELECT RAISE(ABORT, 'synthetic diagnostic failure'); END;
+    `);
+    const submit = vi.spyOn(gateway.adapter, 'submit').mockRejectedValue(
+      new ProviderAdapterError('AUTH_FAILED', sensitiveProviderMessage, false, undefined, {
+        httpStatus: 403,
+        providerCode: 'Workspace.AccessDenied',
+        providerRequestId: 'synthetic-upstream',
+      }),
+    );
+    const generate = vi.spyOn(client, 'generate');
+    await expect(service.propose(operation)).rejects.toMatchObject({
+      code: 'SHOT_PLAN_PROPOSAL_PROVIDER_AUTH_FAILED',
+    });
+    expect(submit).toHaveBeenCalledTimes(1);
+    expect(generate).toHaveBeenCalledTimes(1);
+    expect(
+      gateway.database.db.prepare('SELECT state, error_class FROM provider_jobs').get(),
+    ).toEqual({ state: 'FAILED', error_class: 'AUTH_FAILED' });
+    expect(
+      gateway.database.db.prepare('SELECT state, amount FROM cost_reservations').get(),
+    ).toEqual({ state: 'RELEASED', amount: 0 });
+    expect(
+      gateway.database.db
+        .prepare(
+          "SELECT COUNT(*) AS count FROM audit_events WHERE action = 'PROVIDER_FAILURE_DIAGNOSTIC'",
+        )
+        .get(),
+    ).toEqual({ count: 0 });
   });
 });
