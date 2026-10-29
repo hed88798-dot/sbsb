@@ -28,6 +28,7 @@ import {
   type GatewayRequestSigner,
 } from '../../packages/provider-client/src/index.js';
 import { withCanaryProviderDiagnostics } from '../helpers/canary-provider-diagnostics.js';
+import { createCanaryProposerAuditCollector } from '../helpers/canary-proposer-audit.js';
 
 const enabled = process.env.REAL_SHOT_PLAN_PROPOSER_CANARY === '1';
 
@@ -167,10 +168,13 @@ describe.skipIf(!enabled)('real semantic Shot Plan proposer canary', () => {
         sourceDocuments,
         clock: () => now,
       });
+      const operationId = `real_shot_plan_canary_${Date.now()}`;
+      const auditCollector = createCanaryProposerAuditCollector(operationId);
       const result = await withCanaryProviderDiagnostics(gatewayDatabase.db, () =>
         new ShotPlanProposerServiceV1({
           sourceDocuments,
           shotPlans,
+          audit: auditCollector.audit,
           client: new HttpTextCapabilityClient({
             backendUrl: `http://127.0.0.1:${address.port}`,
             accessToken,
@@ -178,7 +182,7 @@ describe.skipIf(!enabled)('real semantic Shot Plan proposer canary', () => {
             timeoutMs: 30_000,
           }),
         }).propose({
-          operation_id: `real_shot_plan_canary_${Date.now()}`,
+          operation_id: operationId,
           source_document_id: source.source_document_id,
           source_document_version: source.source_document_version,
           source_document_hash: source.source_document_hash,
@@ -190,6 +194,7 @@ describe.skipIf(!enabled)('real semantic Shot Plan proposer canary', () => {
         source_document_hash: source.source_document_hash,
       });
       expect(result.candidate).not.toHaveProperty('review_state');
+      auditCollector.writeEvidence(join(directory, 'proposer-audit-evidence.json'), result.trace);
     } finally {
       await gateway.close();
       gatewayDatabase.close();
