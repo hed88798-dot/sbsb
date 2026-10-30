@@ -16,6 +16,10 @@ import { observeGoldenProviderUsage } from '../helpers/golden-provider-usage.js'
 import {
   automatedSemanticPass,
   captureGoldenClient,
+  RAW_EVIDENCE_MAX_UNITS,
+  RAW_EVIDENCE_MAX_WARNINGS_PER_CONTAINER,
+  RAW_EVIDENCE_MAX_TOTAL_WARNINGS,
+  RAW_EVIDENCE_MAX_STRING_CODE_UNITS,
   runShotPlanGoldenEvaluation,
 } from '../helpers/shot-plan-golden-evaluation.js';
 
@@ -81,7 +85,7 @@ async function environment(
   respond?: (
     fixture: ShotPlanSemanticGoldenFixtureV1,
     attempt: number,
-  ) => { status?: number; text?: string; omitUsage?: boolean },
+  ) => { status?: number; text?: string; omitUsage?: boolean; malformedEnvelope?: boolean },
   budgetCny = 2,
 ) {
   const path = directory();
@@ -177,7 +181,9 @@ async function environment(
         ? {
             id: `synthetic_response_${providerCalls}`,
             model: 'qwen3.7-plus',
-            choices: [{ message: { content: chosen.text ?? JSON.stringify(proposal(fixture)) } }],
+            choices: chosen.malformedEnvelope
+              ? []
+              : [{ message: { content: chosen.text ?? JSON.stringify(proposal(fixture)) } }],
             ...(chosen.omitUsage
               ? {}
               : { usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 } }),
@@ -326,6 +332,13 @@ describe('zero-network real golden harness preparation', () => {
       expect(result.cases[0]?.technical_result).toBe('FAIL_PROVIDER');
       expect(result.cases[0]?.automated_semantic_result).toBe('NOT_EVALUATED');
       expect(result.summary.SETTLED_COST_CNY_TOTAL).toBe(0);
+      expect(result.cases[0]!.attempts[0]).toMatchObject({
+        provider_outcome: 'KNOWN_REJECTED_PROVIDER_RESPONSE',
+        http_status: status,
+        provider_requests: 1,
+        settlement_count: 0,
+        settled_cost_cny: 0,
+      });
     },
   );
 
@@ -458,7 +471,88 @@ describe('zero-network real golden harness preparation', () => {
     expect(result.summary.SUITE_STOP_REASON).toBe('BUDGET_EXCEEDED');
     expect(result.summary.SETTLED_COST_CNY_TOTAL).toBeCloseTo(0.00018, 10);
     expect(result.summary.TOTAL_TOKENS_TOTAL).toBe(30);
+    expect(result.cases[1]!.attempts[0]).toMatchObject({
+      provider_outcome: 'NO_PROVIDER_REQUEST',
+      provider_requests: 0,
+      settled_cost_cny: 0,
+      prompt_tokens: 0,
+      completion_tokens: 0,
+      total_tokens: 0,
+    });
   });
+
+  it.each([false, true])(
+    'stops on malformed HTTP 200 without settlement even when HTTP telemetry is missing=%s',
+    async (hideStatus) => {
+      const test = await environment(() => ({ malformedEnvelope: true, omitUsage: true }));
+      if (hideStatus) {
+        const get = test.usage.get;
+        vi.spyOn(test.usage, 'get').mockImplementation((id) => ({ ...get(id), http_status: null }));
+      }
+      const result = await test.run();
+      expect(test.stats().providerCalls).toBe(1);
+      expect(result.summary).toMatchObject({
+        FIXTURES_STARTED: 1,
+        SUITE_STOP_REASON: 'UNKNOWN_PAID_PROVIDER_OUTCOME',
+        SETTLED_COST_CNY_TOTAL: null,
+        TOTAL_TOKENS_TOTAL: null,
+      });
+      expect(result.cases[0]).toMatchObject({
+        technical_result: 'FAIL_EVIDENCE',
+        error_code: 'UNKNOWN_PAID_PROVIDER_OUTCOME',
+        automated_semantic_result: 'NOT_EVALUATED',
+        attempts: [
+          {
+            provider_outcome: 'UNKNOWN_PROVIDER_OUTCOME',
+            provider_requests: 1,
+            http_status: hideStatus ? null : 200,
+            settlement_count: 0,
+            settled_cost_cny: null,
+            prompt_tokens: null,
+            completion_tokens: null,
+            total_tokens: null,
+          },
+        ],
+      });
+      expect(test.env.gatewayDb.prepare('SELECT state FROM provider_jobs').get()).toEqual({
+        state: 'FAILED',
+      });
+    },
+  );
+
+  it.each(['missing usage', 'missing settlement'])(
+    'preserves earlier unknown accounting (%s) despite a successful bounded retry',
+    async (missing) => {
+      const test = await environment((fixture, attempt) => ({
+        text: attempt === 1 ? 'not JSON' : JSON.stringify(proposal(fixture)),
+      }));
+      const get = test.usage.get;
+      let first = true;
+      vi.spyOn(test.usage, 'get').mockImplementation((id) => {
+        const usage = get(id);
+        if (!first) return usage;
+        first = false;
+        if (missing === 'missing usage') return { ...usage, prompt_tokens: null };
+        test.env.gatewayDb
+          .prepare("DELETE FROM usage_events WHERE request_id=? AND event_type='SETTLEMENT'")
+          .run(id);
+        return usage;
+      });
+      const result = await test.run();
+      expect(test.stats().providerCalls).toBe(2);
+      expect(result.cases[0]!.attempts).toHaveLength(2);
+      expect(result.cases[0]!.attempts[1]!.post_normalization_canonical_schema_validation).toBe(
+        'PASS',
+      );
+      expect(result.cases[0]!.technical_result).toBe('FAIL_EVIDENCE');
+      expect(result.summary.FIXTURES_STARTED).toBe(1);
+      expect(result.summary.SUITE_STOP_REASON).toBe(
+        missing === 'missing usage'
+          ? 'USAGE_EVIDENCE_INCONSISTENT'
+          : 'UNKNOWN_PAID_PROVIDER_OUTCOME',
+      );
+    },
+  );
 
   it('records unknown usage as unknown and stops instead of substituting an estimate', async () => {
     const test = await environment(() => ({ omitUsage: true }));
@@ -468,6 +562,168 @@ describe('zero-network real golden harness preparation', () => {
     expect(result.summary.SETTLED_COST_CNY_TOTAL).toBe(0);
     expect(result.cases[0]!.technical_result).toBe('FAIL_EVIDENCE');
     expect(test.stats().providerCalls).toBe(1);
+  });
+
+  const warning = { code: 'SYNTHETIC', severity: 'INFORMATIONAL', message: '合成审核提示。' };
+  const overflowCases = [
+    ['units 501', 'RAW_UNITS_LIMIT_EXCEEDED', '$.units', 501, RAW_EVIDENCE_MAX_UNITS],
+    [
+      'top warnings',
+      'RAW_WARNING_LIMIT_EXCEEDED',
+      '$.review_warnings',
+      65,
+      RAW_EVIDENCE_MAX_WARNINGS_PER_CONTAINER,
+    ],
+    [
+      'unit warnings',
+      'RAW_WARNING_LIMIT_EXCEEDED',
+      '$.units[0].review_warnings',
+      65,
+      RAW_EVIDENCE_MAX_WARNINGS_PER_CONTAINER,
+    ],
+    [
+      'total warnings',
+      'RAW_TOTAL_WARNING_LIMIT_EXCEEDED',
+      '$.units[7].review_warnings',
+      576,
+      RAW_EVIDENCE_MAX_TOTAL_WARNINGS,
+    ],
+    [
+      'rationale',
+      'RAW_SCALAR_LENGTH_EXCEEDED',
+      '$.units[0].rationale',
+      4097,
+      RAW_EVIDENCE_MAX_STRING_CODE_UNITS,
+    ],
+    [
+      'warning message',
+      'RAW_SCALAR_LENGTH_EXCEEDED',
+      '$.review_warnings[0].message',
+      4097,
+      RAW_EVIDENCE_MAX_STRING_CODE_UNITS,
+    ],
+  ] as const;
+
+  it.each(overflowCases)(
+    'fails closed on raw evidence overflow: %s',
+    async (kind, code, path, observed, maximum) => {
+      const oversized = '超'.repeat(4097);
+      const test = await environment((fixture) => {
+        const value = proposal(fixture);
+        if (kind === 'units 501')
+          value.units = Array.from({ length: 501 }, () => ({ ...value.units[0]! }));
+        if (kind === 'top warnings')
+          Object.assign(value, { review_warnings: Array(65).fill(warning) });
+        if (kind === 'unit warnings')
+          Object.assign(value.units[0]!, { review_warnings: Array(65).fill(warning) });
+        if (kind === 'total warnings') {
+          Object.assign(value, { review_warnings: Array(64).fill(warning) });
+          Object.assign(value, {
+            units: Array.from({ length: 8 }, () => ({
+              ...value.units[0]!,
+              review_warnings: Array(64).fill(warning),
+            })),
+          });
+        }
+        if (kind === 'rationale') value.units[0]!.rationale = oversized;
+        if (kind === 'warning message')
+          Object.assign(value, { review_warnings: [{ ...warning, message: oversized }] });
+        return { text: JSON.stringify(value) };
+      });
+      const result = await test.run();
+      expect(result.summary).toMatchObject({
+        FIXTURES_STARTED: 1,
+        SUITE_STOP_REASON: 'RAW_EVIDENCE_BOUNDS_EXCEEDED',
+      });
+      const first = result.cases[0]!;
+      expect(first).toMatchObject({
+        technical_result: 'FAIL_EVIDENCE',
+        error_code: 'RAW_EVIDENCE_BOUNDS_EXCEEDED',
+        automated_semantic_result: 'NOT_EVALUATED',
+        evaluation: null,
+        candidate: null,
+      });
+      expect(test.stats().providerCalls).toBe(first.provider_attempts);
+      expect(first.provider_attempts).toBeLessThanOrEqual(2);
+      for (const attempt of first.attempts) {
+        expect(attempt.raw_evidence_bounds_exceeded).toBe(true);
+        expect(attempt.raw_evidence_bound_violations).toContainEqual({
+          code,
+          path,
+          observed_count_or_length: observed,
+          maximum,
+        });
+        expect(attempt.canonical_proposal).toBeNull();
+        if (kind === 'units 501') {
+          expect(attempt.raw_context_states).toEqual([]);
+          expect(attempt.raw_semantic_proposal?.units).toEqual([]);
+        }
+        if (kind === 'top warnings')
+          expect(attempt.raw_semantic_proposal?.review_warnings).toBeNull();
+        if (kind === 'unit warnings')
+          expect(attempt.raw_semantic_proposal?.units[0]?.review_warnings).toBeNull();
+        if (kind === 'rationale')
+          expect(attempt.raw_semantic_proposal?.units[0]).not.toHaveProperty('rationale');
+        for (const violation of attempt.raw_evidence_bound_violations) {
+          expect(Object.keys(violation).sort()).toEqual([
+            'code',
+            'maximum',
+            'observed_count_or_length',
+            'path',
+          ]);
+          expect(violation.path.length).toBeLessThan(100);
+        }
+      }
+      for (const name of ['real-30-golden-summary.json', 'real-30-golden-cases.json'])
+        expect(readFileSync(join(test.path, name), 'utf8')).not.toContain(oversized);
+    },
+  );
+
+  it('keeps the first overflow despite a valid retry and caps violation metadata', async () => {
+    const test = await environment((fixture, attempt) => {
+      const value = proposal(fixture);
+      if (attempt === 1)
+        value.units = Array.from({ length: 40 }, () => ({
+          ...value.units[0]!,
+          rationale: '界'.repeat(4097),
+        }));
+      return { text: JSON.stringify(value) };
+    });
+    const result = await test.run();
+    expect(result.summary.FIXTURES_STARTED).toBe(1);
+    expect(result.summary.SUITE_STOP_REASON).toBe('RAW_EVIDENCE_BOUNDS_EXCEEDED');
+    expect(test.stats().providerCalls).toBe(2);
+    expect(result.cases[0]!.attempts[0]!.raw_evidence_bound_violations).toHaveLength(32);
+    expect(result.cases[0]!.attempts[0]!.raw_evidence_bound_violations_omitted_count).toBe(8);
+    expect(result.cases[0]!.attempts[1]!.raw_evidence_bounds_exceeded).toBe(false);
+    expect(result.cases[0]!.evaluation).toBeNull();
+    expect(result.cases[0]!.candidate).toBeNull();
+  });
+
+  it('preserves complete bounded semantic evidence and semantic evaluation', async () => {
+    const test = await environment((fixture) => {
+      const value = proposal(fixture);
+      Object.assign(value, { review_warnings: [warning] });
+      Object.assign(value.units[0]!, { review_warnings: [warning] });
+      return { text: JSON.stringify(value) };
+    });
+    const result = await test.run();
+    expect(result.summary.AUTOMATED_30_CASE_GOLDEN_RESULT).toBe('PASS');
+    for (const [index, c] of result.cases.entries()) {
+      const expected = proposal(fixtures[index]!);
+      expect(c.attempts[0]!.raw_evidence_bounds_exceeded).toBe(false);
+      expect(c.attempts[0]!.raw_evidence_bound_violations).toEqual([]);
+      expect(c.attempts[0]!.raw_semantic_proposal).toMatchObject({
+        ...expected,
+        review_warnings: [warning],
+        units: expected.units.map((unit, i) => ({
+          ...unit,
+          review_warnings: i === 0 ? [warning] : [],
+          raw_left_context_state: !('left_context' in unit) ? 'ABSENT' : 'STRING',
+          raw_right_context_state: !('right_context' in unit) ? 'ABSENT' : 'STRING',
+        })),
+      });
+    }
   });
 });
 

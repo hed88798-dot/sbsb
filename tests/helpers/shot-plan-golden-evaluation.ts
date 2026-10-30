@@ -68,51 +68,120 @@ type TechnicalResult =
   | 'FAIL_EVIDENCE'
   | 'FAIL_ENVIRONMENT';
 
+export const RAW_EVIDENCE_MAX_UNITS = 500;
+export const RAW_EVIDENCE_MAX_WARNINGS_PER_CONTAINER = 64;
+export const RAW_EVIDENCE_MAX_TOTAL_WARNINGS = 512;
+export const RAW_EVIDENCE_MAX_STRING_CODE_UNITS = 4096;
+const RAW_EVIDENCE_MAX_BOUND_VIOLATIONS = 32;
+
 /** Human inspection projection only; invalid data never becomes a canonical proposal. */
 function rawSemanticEvidence(value: unknown) {
+  type BoundCode =
+    | 'RAW_UNITS_LIMIT_EXCEEDED'
+    | 'RAW_WARNING_LIMIT_EXCEEDED'
+    | 'RAW_TOTAL_WARNING_LIMIT_EXCEEDED'
+    | 'RAW_SCALAR_LENGTH_EXCEEDED';
+  const violations: Array<{
+    code: BoundCode;
+    path: string;
+    observed_count_or_length: number;
+    maximum: number;
+  }> = [];
+  let violationCount = 0;
+  const exceed = (code: BoundCode, path: string, observed: number, maximum: number) => {
+    violationCount += 1;
+    if (violations.length < RAW_EVIDENCE_MAX_BOUND_VIOLATIONS)
+      violations.push({ code, path, observed_count_or_length: observed, maximum });
+  };
   const object = (input: unknown): Record<string, unknown> | null =>
     input !== null && typeof input === 'object' && !Array.isArray(input)
       ? (input as Record<string, unknown>)
       : null;
-  const scalars = (input: Record<string, unknown>, keys: string[]) =>
-    Object.fromEntries(
-      keys
-        .filter(
-          (key) =>
-            Object.hasOwn(input, key) &&
-            (input[key] === null || ['string', 'number', 'boolean'].includes(typeof input[key])),
-        )
-        .map((key) => [key, input[key]]),
+  const scalars = (input: Record<string, unknown>, keys: string[], path: string) => {
+    const result: Record<string, string | number | boolean | null> = {};
+    for (const key of keys) {
+      if (!Object.hasOwn(input, key)) continue;
+      const scalar = input[key];
+      if (typeof scalar === 'string' && scalar.length > RAW_EVIDENCE_MAX_STRING_CODE_UNITS) {
+        exceed(
+          'RAW_SCALAR_LENGTH_EXCEEDED',
+          `${path}.${key}`,
+          scalar.length,
+          RAW_EVIDENCE_MAX_STRING_CODE_UNITS,
+        );
+      } else if (
+        scalar === null ||
+        typeof scalar === 'string' ||
+        typeof scalar === 'number' ||
+        typeof scalar === 'boolean'
+      )
+        result[key] = scalar;
+    }
+    return result;
+  };
+  let totalWarnings = 0;
+  const warnings = (input: unknown, path: string) => {
+    if (!Array.isArray(input)) return null;
+    totalWarnings += input.length;
+    if (input.length > RAW_EVIDENCE_MAX_WARNINGS_PER_CONTAINER)
+      exceed(
+        'RAW_WARNING_LIMIT_EXCEEDED',
+        path,
+        input.length,
+        RAW_EVIDENCE_MAX_WARNINGS_PER_CONTAINER,
+      );
+    if (totalWarnings > RAW_EVIDENCE_MAX_TOTAL_WARNINGS)
+      exceed(
+        'RAW_TOTAL_WARNING_LIMIT_EXCEEDED',
+        path,
+        totalWarnings,
+        RAW_EVIDENCE_MAX_TOTAL_WARNINGS,
+      );
+    // Check lengths before touching any warning item; never truncate a container.
+    if (
+      input.length > RAW_EVIDENCE_MAX_WARNINGS_PER_CONTAINER ||
+      totalWarnings > RAW_EVIDENCE_MAX_TOTAL_WARNINGS
+    )
+      return null;
+    return input.map((item, index) =>
+      object(item)
+        ? scalars(object(item)!, ['code', 'severity', 'message'], `${path}[${index}]`)
+        : { invalid_warning_type: typeof item },
     );
-  const warnings = (input: unknown) =>
-    Array.isArray(input)
-      ? input.map((item) =>
-          object(item)
-            ? scalars(object(item)!, ['code', 'severity', 'message'])
-            : { invalid_warning_type: typeof item },
-        )
-      : null;
+  };
   const record = object(value);
-  if (!record) return null;
-  return {
-    ...scalars(record, ['schema_version', 'segmentation_state']),
-    review_warnings: warnings(record.review_warnings),
-    raw_unit_count: Array.isArray(record.units) ? record.units.length : null,
-    units:
-      Array.isArray(record.units) && record.units.length <= 500
-        ? record.units.map((item) => {
-            const unit = object(item);
-            if (!unit) return { invalid_unit_type: typeof item };
-            const state = (key: string) =>
-              !Object.hasOwn(unit, key)
-                ? 'ABSENT'
-                : unit[key] === null
-                  ? 'NULL'
-                  : typeof unit[key] === 'string'
-                    ? 'STRING'
-                    : 'INVALID';
+  // This is the sole raw-unit view, also used for context-state evidence.
+  const rawUnits = record && Array.isArray(record.units) ? record.units : [];
+  if (rawUnits.length > RAW_EVIDENCE_MAX_UNITS)
+    exceed('RAW_UNITS_LIMIT_EXCEEDED', '$.units', rawUnits.length, RAW_EVIDENCE_MAX_UNITS);
+  const boundedUnits = rawUnits.length <= RAW_EVIDENCE_MAX_UNITS ? rawUnits : [];
+  const proposal = !record
+    ? null
+    : {
+        ...scalars(record, ['schema_version', 'segmentation_state'], '$'),
+        review_warnings: warnings(record.review_warnings, '$.review_warnings'),
+        raw_unit_count: Array.isArray(record.units) ? record.units.length : null,
+        units: boundedUnits.map((item, index) => {
+          const unit = object(item);
+          if (!unit)
             return {
-              ...scalars(unit, [
+              invalid_unit_type: typeof item,
+              review_warnings: null,
+              raw_left_context_state: 'INVALID',
+              raw_right_context_state: 'INVALID',
+            };
+          const state = (key: string) =>
+            !Object.hasOwn(unit, key)
+              ? 'ABSENT'
+              : unit[key] === null
+                ? 'NULL'
+                : typeof unit[key] === 'string'
+                  ? 'STRING'
+                  : 'INVALID';
+          return {
+            ...scalars(
+              unit,
+              [
                 'exact_fragment',
                 'left_context',
                 'right_context',
@@ -121,13 +190,25 @@ function rawSemanticEvidence(value: unknown) {
                 'continuity_action',
                 'continuity_state',
                 'rationale',
-              ]),
-              review_warnings: warnings(unit.review_warnings),
-              raw_left_context_state: state('left_context'),
-              raw_right_context_state: state('right_context'),
-            };
-          })
-        : [],
+              ],
+              `$.units[${index}]`,
+            ),
+            review_warnings: warnings(unit.review_warnings, `$.units[${index}].review_warnings`),
+            raw_left_context_state: state('left_context'),
+            raw_right_context_state: state('right_context'),
+          };
+        }),
+      };
+  return {
+    raw_semantic_proposal: proposal,
+    raw_context_states:
+      proposal?.units.map((unit) => ({
+        raw_left_context_state: unit.raw_left_context_state ?? 'INVALID',
+        raw_right_context_state: unit.raw_right_context_state ?? 'INVALID',
+      })) ?? [],
+    raw_evidence_bounds_exceeded: violationCount > 0,
+    raw_evidence_bound_violations: violations,
+    raw_evidence_bound_violations_omitted_count: violationCount - violations.length,
   };
 }
 
@@ -142,35 +223,20 @@ function reconstruct(text: string) {
       normalized_count: 0,
       post_canonical: 'NOT_RUN',
       canonical: null,
-      raw_semantic_proposal: null,
-      raw_context_states: [],
+      ...rawSemanticEvidence(null),
     } as const;
   }
   const rawValid = validate(raw) && shotPlanSemanticProposalV1Schema.safeParse(raw).success;
   const normalized = normalizeOptionalContextNullV1(raw);
   const parsed = shotPlanSemanticProposalV1Schema.safeParse(normalized.value);
   const valid = validate(normalized.value) && parsed.success;
-  const units =
-    raw && typeof raw === 'object' && 'units' in raw && Array.isArray(raw.units) ? raw.units : [];
-  const state = (value: unknown) =>
-    value === undefined
-      ? 'ABSENT'
-      : value === null
-        ? 'NULL'
-        : typeof value === 'string'
-          ? 'STRING'
-          : 'INVALID';
   return {
     raw_json_parse: 'PASS',
     raw_canonical: rawValid ? 'PASS' : 'FAIL',
     normalized_count: normalized.normalizedOptionalContextFields,
     post_canonical: valid ? 'PASS' : 'FAIL',
     canonical: valid && parsed.success ? parsed.data : null,
-    raw_semantic_proposal: rawSemanticEvidence(raw),
-    raw_context_states: units.map((unit: Record<string, unknown>) => ({
-      raw_left_context_state: state(unit?.left_context),
-      raw_right_context_state: state(unit?.right_context),
-    })),
+    ...rawSemanticEvidence(raw),
   } as const;
 }
 
@@ -502,6 +568,14 @@ export async function runShotPlanGoldenEvaluation(options: {
           stopReason = errorCode;
         }
       }
+      // Evidence failure is sticky across attempts: a later retry cannot erase it.
+      const failEvidence = (code: string) => {
+        if (technical !== 'FAIL_EVIDENCE') {
+          technical = 'FAIL_EVIDENCE';
+          errorCode = code;
+          stopReason = code;
+        }
+      };
       const attemptReports = attempts.map((attempt) => {
         const usage = options.usage.get(attempt.request_id);
         const settlement = options.gatewayDb
@@ -512,25 +586,48 @@ export async function runShotPlanGoldenEvaluation(options: {
         const job = options.gatewayDb
           .prepare('SELECT state, error_class FROM provider_jobs WHERE request_id=?')
           .get(attempt.request_id) as { state: string; error_class: string | null } | undefined;
-        const noProviderCall = !job && usage.provider_requests === 0;
-        const cost = settlement.count
-          ? settlement.amount
-          : job?.state === 'FAILED' || noProviderCall
-            ? 0
-            : null;
+        const noProviderCall = usage.provider_requests === 0;
+        const knownRejection =
+          usage.provider_requests === 1 &&
+          usage.http_status !== null &&
+          usage.http_status >= 400 &&
+          usage.http_status <= 599 &&
+          job?.state === 'FAILED' &&
+          settlement.count === 0;
+        const trustedSettlement =
+          settlement.count === 1 &&
+          Number.isFinite(settlement.amount) &&
+          settlement.amount >= 0 &&
+          job?.state === 'SUCCEEDED' &&
+          usage.provider_requests === 1 &&
+          usage.http_status === 200;
+        const providerOutcome =
+          noProviderCall && settlement.count === 0
+            ? 'NO_PROVIDER_REQUEST'
+            : knownRejection
+              ? 'KNOWN_REJECTED_PROVIDER_RESPONSE'
+              : trustedSettlement
+                ? 'SETTLED_PROVIDER_RESPONSE'
+                : 'UNKNOWN_PROVIDER_OUTCOME';
+        const cost =
+          providerOutcome === 'SETTLED_PROVIDER_RESPONSE'
+            ? settlement.amount
+            : providerOutcome === 'NO_PROVIDER_REQUEST' ||
+                providerOutcome === 'KNOWN_REJECTED_PROVIDER_RESPONSE'
+              ? 0
+              : null;
         if (noProviderCall)
           Object.assign(usage, { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 });
-        if (!job && usage.provider_requests === 0) stopReason = 'GATEWAY_ENVIRONMENT_FAILURE';
+        if (!job && usage.provider_requests === 0 && technical !== 'FAIL_EVIDENCE')
+          stopReason = 'GATEWAY_ENVIRONMENT_FAILURE';
         if (cost === null) {
-          technical = 'FAIL_EVIDENCE';
-          errorCode = 'UNSETTLED_PROVIDER_OUTCOME';
-          stopReason = errorCode;
+          failEvidence('UNKNOWN_PAID_PROVIDER_OUTCOME');
         }
         const reconstruction = attempt.reconstruction;
+        if (reconstruction?.raw_evidence_bounds_exceeded)
+          failEvidence('RAW_EVIDENCE_BOUNDS_EXCEEDED');
         if (reconstruction && usage.provider_requests !== 1) {
-          technical = 'FAIL_EVIDENCE';
-          errorCode = 'PROVIDER_REQUEST_EVIDENCE_INCONSISTENT';
-          stopReason = errorCode;
+          failEvidence('PROVIDER_REQUEST_EVIDENCE_INCONSISTENT');
         }
         let auditEvidence = null;
         let auditValid = !attempt.audit_invalid;
@@ -567,19 +664,15 @@ export async function runShotPlanGoldenEvaluation(options: {
           (reconstruction && !attempt.identity_matches) ||
           usage.thinking_state === 'NONEMPTY'
         ) {
-          technical = 'FAIL_EVIDENCE';
-          errorCode = 'EVIDENCE_INCONSISTENT';
-          stopReason = errorCode;
+          failEvidence('EVIDENCE_INCONSISTENT');
         }
         if (reconstruction && !attempt.identity_matches)
-          stopReason = 'MODEL_OR_RESULT_IDENTITY_MISMATCH';
+          failEvidence('MODEL_OR_RESULT_IDENTITY_MISMATCH');
         if (
           (usage.prompt_tokens !== null && usage.prompt_tokens > 256000) ||
           (usage.completion_tokens !== null && usage.completion_tokens > 131072)
         ) {
-          technical = 'FAIL_EVIDENCE';
-          errorCode = 'USAGE_OUTSIDE_PROTECTED_ENVELOPE';
-          stopReason = errorCode;
+          failEvidence('USAGE_OUTSIDE_PROTECTED_ENVELOPE');
         }
         if (
           settlement.count &&
@@ -587,18 +680,19 @@ export async function runShotPlanGoldenEvaluation(options: {
             usage.completion_tokens === null ||
             usage.total_tokens === null ||
             usage.prompt_tokens > 256000 ||
+            usage.total_tokens !== usage.prompt_tokens + usage.completion_tokens ||
             Math.abs(
               usage.prompt_tokens * 0.000002 +
                 usage.completion_tokens * 0.000008 -
                 settlement.amount,
             ) > 1e-10)
         ) {
-          technical = 'FAIL_EVIDENCE';
-          errorCode = 'USAGE_EVIDENCE_INCONSISTENT';
-          stopReason = errorCode;
+          failEvidence('USAGE_EVIDENCE_INCONSISTENT');
         }
         return {
           request_id: attempt.request_id,
+          provider_outcome: providerOutcome,
+          settlement_count: settlement.count,
           ...usage,
           settled_cost_cny: cost,
           raw_json_parse: reconstruction?.raw_json_parse ?? 'NOT_RUN',
@@ -611,11 +705,26 @@ export async function runShotPlanGoldenEvaluation(options: {
             reconstruction?.post_canonical ?? 'NOT_RUN',
           normalization_audit: auditEvidence,
           normalization_audit_events: attempt.normalization_events,
-          canonical_proposal: reconstruction?.canonical ?? null,
+          canonical_proposal: reconstruction?.raw_evidence_bounds_exceeded
+            ? null
+            : (reconstruction?.canonical ?? null),
           raw_semantic_proposal: reconstruction?.raw_semantic_proposal ?? null,
+          raw_context_states: reconstruction?.raw_context_states ?? [],
+          raw_evidence_bounds_exceeded: reconstruction?.raw_evidence_bounds_exceeded ?? false,
+          raw_evidence_bound_violations: reconstruction?.raw_evidence_bound_violations ?? [],
+          raw_evidence_bound_violations_omitted_count:
+            reconstruction?.raw_evidence_bound_violations_omitted_count ?? 0,
         };
       });
-      const evaluation = canonical ? evaluateShotPlanSemanticProposalV1(fixture, canonical) : null;
+      // Never persist canonical/Candidate copies of an overflowing raw value, or score it.
+      if (attemptReports.some((attempt) => attempt.raw_evidence_bounds_exceeded)) {
+        canonical = null;
+        candidate = null;
+      }
+      const evaluation =
+        technical === 'PASS' && canonical
+          ? evaluateShotPlanSemanticProposalV1(fixture, canonical)
+          : null;
       const semanticResult =
         technical !== 'PASS' || !evaluation
           ? 'NOT_EVALUATED'
