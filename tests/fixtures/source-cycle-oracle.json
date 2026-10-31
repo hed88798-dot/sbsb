@@ -1,0 +1,255 @@
+[
+  {
+    "id": "static",
+    "old_result": "PASS",
+    "new_expected": "FAIL",
+    "change": "INTENTIONAL_POLICY_STRENGTHENING",
+    "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "target": "ES2022",
+      "baseUrl": ".",
+      "paths": {
+        "@fixture/pkg-a": ["packages/a/src/index.ts"],
+        "@fixture/pkg-b": ["packages/b/src/index.ts"],
+        "@fixture/*": ["src/*.ts"]
+      }
+    },
+    "files": {
+      "a.ts": "import { b } from './b.js'; export const a = () => b;",
+      "b.ts": "import { a } from './a.js'; export const b = () => a;"
+    }
+  },
+  {
+    "id": "threeFile",
+    "old_result": "PASS",
+    "new_expected": "FAIL",
+    "change": "INTENTIONAL_POLICY_STRENGTHENING",
+    "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "target": "ES2022",
+      "baseUrl": ".",
+      "paths": {
+        "@fixture/pkg-a": ["packages/a/src/index.ts"],
+        "@fixture/pkg-b": ["packages/b/src/index.ts"],
+        "@fixture/*": ["src/*.ts"]
+      }
+    },
+    "files": {
+      "a.ts": "import { b } from './b.js'; export const a = () => b;",
+      "b.ts": "import { c } from './c.js'; export const b = () => c;",
+      "c.ts": "import { a } from './a.js'; export const c = () => a;"
+    }
+  },
+  {
+    "id": "acyclic",
+    "old_result": "PASS",
+    "new_expected": "PASS",
+    "change": "UNCHANGED",
+    "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "target": "ES2022",
+      "baseUrl": ".",
+      "paths": {
+        "@fixture/pkg-a": ["packages/a/src/index.ts"],
+        "@fixture/pkg-b": ["packages/b/src/index.ts"],
+        "@fixture/*": ["src/*.ts"]
+      }
+    },
+    "files": {
+      "a.ts": "import { b } from './b.js'; export const a = () => b;",
+      "b.ts": "import { c } from './c.js'; export const b = () => c;",
+      "c.ts": "export const c = 1;"
+    }
+  },
+  {
+    "id": "reexport",
+    "old_result": "PASS",
+    "new_expected": "FAIL",
+    "change": "INTENTIONAL_POLICY_STRENGTHENING",
+    "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "target": "ES2022",
+      "baseUrl": ".",
+      "paths": {
+        "@fixture/pkg-a": ["packages/a/src/index.ts"],
+        "@fixture/pkg-b": ["packages/b/src/index.ts"],
+        "@fixture/*": ["src/*.ts"]
+      }
+    },
+    "files": {
+      "a.ts": "export { b } from './b.js'; export const a = 1;",
+      "b.ts": "export { a } from './a.js'; export const b = 1;"
+    }
+  },
+  {
+    "id": "typeOnly",
+    "old_result": "PASS",
+    "new_expected": "PASS",
+    "change": "UNCHANGED",
+    "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "target": "ES2022",
+      "baseUrl": ".",
+      "paths": {
+        "@fixture/pkg-a": ["packages/a/src/index.ts"],
+        "@fixture/pkg-b": ["packages/b/src/index.ts"],
+        "@fixture/*": ["src/*.ts"]
+      }
+    },
+    "files": {
+      "a.ts": "import type { B } from './b.js'; export type A = { b: B };",
+      "b.ts": "import type { A } from './a.js'; export type B = { a: A };"
+    }
+  },
+  {
+    "id": "mixed",
+    "old_result": "PASS",
+    "new_expected": "FAIL",
+    "change": "INTENTIONAL_POLICY_STRENGTHENING",
+    "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "target": "ES2022",
+      "baseUrl": ".",
+      "paths": {
+        "@fixture/pkg-a": ["packages/a/src/index.ts"],
+        "@fixture/pkg-b": ["packages/b/src/index.ts"],
+        "@fixture/*": ["src/*.ts"]
+      }
+    },
+    "files": {
+      "a.ts": "import { b, type B } from './b.js'; export const a = () => b; export type A = { b:B };",
+      "b.ts": "import { a, type A } from './a.js'; export const b = () => a; export type B = { a:A };"
+    }
+  },
+  {
+    "id": "dynamic",
+    "old_result": "PASS",
+    "new_expected": "PASS",
+    "change": "UNCHANGED",
+    "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "target": "ES2022",
+      "baseUrl": ".",
+      "paths": {
+        "@fixture/pkg-a": ["packages/a/src/index.ts"],
+        "@fixture/pkg-b": ["packages/b/src/index.ts"],
+        "@fixture/*": ["src/*.ts"]
+      }
+    },
+    "files": {
+      "a.ts": "export const a = () => import('./b.js');",
+      "b.ts": "export const b = () => import('./a.js');"
+    }
+  },
+  {
+    "id": "requireOnly",
+    "old_result": "PASS",
+    "new_expected": "PASS",
+    "change": "UNCHANGED",
+    "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "target": "ES2022",
+      "baseUrl": ".",
+      "paths": {
+        "@fixture/pkg-a": ["packages/a/src/index.ts"],
+        "@fixture/pkg-b": ["packages/b/src/index.ts"],
+        "@fixture/*": ["src/*.ts"]
+      }
+    },
+    "files": {
+      "a.cts": "const b = require('./b.cjs'); module.exports = { b };",
+      "b.cts": "const a = require('./a.cjs'); module.exports = { a };"
+    }
+  },
+  {
+    "id": "self",
+    "old_result": "PASS",
+    "new_expected": "PASS",
+    "change": "UNCHANGED",
+    "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "target": "ES2022",
+      "baseUrl": ".",
+      "paths": {
+        "@fixture/pkg-a": ["packages/a/src/index.ts"],
+        "@fixture/pkg-b": ["packages/b/src/index.ts"],
+        "@fixture/*": ["src/*.ts"]
+      }
+    },
+    "files": {
+      "a.ts": "import { a } from './a.js'; export { a };"
+    }
+  },
+  {
+    "id": "relative",
+    "old_result": "PASS",
+    "new_expected": "FAIL",
+    "change": "INTENTIONAL_POLICY_STRENGTHENING",
+    "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "target": "ES2022",
+      "baseUrl": ".",
+      "paths": {
+        "@fixture/pkg-a": ["packages/a/src/index.ts"],
+        "@fixture/pkg-b": ["packages/b/src/index.ts"],
+        "@fixture/*": ["src/*.ts"]
+      }
+    },
+    "files": {
+      "a.ts": "import { b } from './nested/b.js'; export const a = () => b;",
+      "nested/b.ts": "import { a } from '../a.js'; export const b = () => a;"
+    }
+  },
+  {
+    "id": "pathAlias",
+    "old_result": "PASS",
+    "new_expected": "FAIL",
+    "change": "INTENTIONAL_POLICY_STRENGTHENING",
+    "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "target": "ES2022",
+      "baseUrl": ".",
+      "paths": {
+        "@fixture/pkg-a": ["packages/a/src/index.ts"],
+        "@fixture/pkg-b": ["packages/b/src/index.ts"],
+        "@fixture/*": ["src/*.ts"]
+      }
+    },
+    "files": {
+      "src/a.ts": "import { b } from '@fixture/b'; export const a = () => b;",
+      "src/b.ts": "import { a } from '@fixture/a'; export const b = () => a;"
+    }
+  },
+  {
+    "id": "workspace",
+    "old_result": "PASS",
+    "new_expected": "FAIL",
+    "change": "INTENTIONAL_POLICY_STRENGTHENING",
+    "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "target": "ES2022",
+      "baseUrl": ".",
+      "paths": {
+        "@fixture/pkg-a": ["packages/a/src/index.ts"],
+        "@fixture/pkg-b": ["packages/b/src/index.ts"],
+        "@fixture/*": ["src/*.ts"]
+      }
+    },
+    "files": {
+      "packages/a/src/index.ts": "import { b } from '@fixture/pkg-b'; export const a = () => b;",
+      "packages/b/src/index.ts": "import { a } from '@fixture/pkg-a'; export const b = () => a;"
+    }
+  }
+]

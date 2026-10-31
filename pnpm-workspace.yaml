@@ -4,6 +4,17 @@ packages:
 
 overrides:
   js-yaml: 4.3.2
+  '@electron/asar@4.3.1>minimatch': 11.0.3
+  '@electron/asar@4.3.1>glob': 14.0.3
+  'app-builder-lib@26.15.3>@electron/asar': 4.3.1
+  'app-builder-lib@26.15.3>@electron/universal': 3.0.6
+  'app-builder-lib@26.15.3>electron-builder-squirrel-windows': '-'
+  'filelist@1.0.6>minimatch': 11.0.3
+  'eslint@9.39.2>minimatch': 11.0.3
+  '@eslint/config-array@0.21.2>minimatch': 11.0.3
+  '@eslint/eslintrc@3.3.6>minimatch': 11.0.3
+  'app-builder-lib@26.15.3>minimatch': 11.0.3
+  '@typescript-eslint/typescript-estree@8.50.1>minimatch': 11.0.3
 
 allowBuilds:
   '@electron/rebuild': true
