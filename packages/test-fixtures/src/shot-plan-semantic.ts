@@ -362,6 +362,20 @@ export const shotPlanSemanticGoldenFixturesV1: ShotPlanSemanticGoldenFixtureV1[]
           },
         ],
       },
+      {
+        units: [
+          {
+            exact_fragment: '动物状态：增强采食。',
+            route: 'ANIMAL',
+            continuity_actions: ['START_NEW'],
+          },
+          {
+            exact_fragment: '包装标签写着：增强采食。',
+            route: 'PRODUCT',
+            continuity_actions: ['SWITCH_VISUAL'],
+          },
+        ],
+      },
     ],
     must_have_invariants: [...invariants, 'EXACT_CONTEXT_ANCHORS_FOR_DUPLICATES'],
     forbidden_outcomes: [],
