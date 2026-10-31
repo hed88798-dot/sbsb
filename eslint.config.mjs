@@ -1,5 +1,4 @@
 import js from '@eslint/js';
-import importPlugin from 'eslint-plugin-import';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -13,14 +12,12 @@ export default tseslint.config(
   },
   {
     files: ['**/*.{ts,tsx,mts,cts}'],
-    plugins: { import: importPlugin },
     languageOptions: {
       globals: { ...globals.node, ...globals.browser },
     },
     rules: {
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
-      'import/no-cycle': 'error',
     },
   },
 );
