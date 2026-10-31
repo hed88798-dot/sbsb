@@ -38,6 +38,59 @@ function fixture(files: Record<string, string>, compilerOptions: object = {}) {
 }
 
 describe('SOURCE_RUNTIME_CYCLE_POLICY_V1', () => {
+  it('fails closed programmatically and through CLI for invalid fallback compiler options', () => {
+    const root = mkdtempSync(join(tmpdir(), 'source-cycle-invalid-base-'));
+    writeFileSync(
+      join(root, 'tsconfig.base.json'),
+      JSON.stringify({ compilerOptions: { moduleResolution: 'INVALID_OPTION' } }),
+    );
+    writeFileSync(join(root, 'fallback.ts'), 'export const value = 1;');
+    expect(() => checkSourceCycles({ root })).toThrow('SOURCE_CYCLE_CONFIG_INVALID');
+    const result = spawnSync(
+      process.execPath,
+      [resolve(import.meta.dirname, '../../tools/source-cycle-check.mjs'), '--root', root],
+      { encoding: 'utf8' },
+    );
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('SOURCE_CYCLE_CONFIG_INVALID');
+    expect(result.stdout).not.toContain('PASS');
+  });
+  it('allows valid fallback base options without a discovered project', () => {
+    const root = mkdtempSync(join(tmpdir(), 'source-cycle-valid-base-'));
+    writeFileSync(
+      join(root, 'tsconfig.base.json'),
+      JSON.stringify({
+        compilerOptions: { moduleResolution: 'NodeNext', module: 'NodeNext', target: 'ES2022' },
+      }),
+    );
+    writeFileSync(join(root, 'fallback.ts'), 'export const value = 1;');
+    expect(checkSourceCycles({ root })).toMatchObject({ cycles: [], file_count: 1 });
+  });
+  it('retains the built-in fallback when no base or project exists', () => {
+    const root = mkdtempSync(join(tmpdir(), 'source-cycle-no-base-'));
+    writeFileSync(join(root, 'fallback.ts'), 'export const value = 1;');
+    expect(checkSourceCycles({ root })).toMatchObject({ cycles: [], file_count: 1 });
+  });
+  it('fails closed for malformed fallback JSON', () => {
+    const root = mkdtempSync(join(tmpdir(), 'source-cycle-malformed-base-'));
+    writeFileSync(join(root, 'tsconfig.base.json'), '{ invalid JSON');
+    writeFileSync(join(root, 'fallback.ts'), 'export const value = 1;');
+    expect(() => checkSourceCycles({ root })).toThrow();
+    const result = spawnSync(
+      process.execPath,
+      [resolve(import.meta.dirname, '../../tools/source-cycle-check.mjs'), '--root', root],
+      { encoding: 'utf8' },
+    );
+    expect(result.status).toBe(1);
+    expect(result.stdout).not.toContain('PASS');
+  });
+  it('retains fail-closed validation of discovered project configurations', () => {
+    expect(() =>
+      checkSourceCycles({
+        root: fixture({ 'a.ts': 'export const value=1;' }, { moduleResolution: 'INVALID_OPTION' }),
+      }),
+    ).toThrow('SOURCE_CYCLE_CONFIG_INVALID');
+  });
   it('retains the 12 historical results and identifies seven approved policy strengthenings', () => {
     expect(oracle).toHaveLength(12);
     expect(oracle.filter((row) => row.change === 'INTENTIONAL_POLICY_STRENGTHENING')).toHaveLength(

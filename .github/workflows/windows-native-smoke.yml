@@ -62,6 +62,17 @@ jobs:
       - run: pnpm native:rebuild
       - run: pnpm package:dir
       - run: $env:REQUIRE_PACKAGED_SMOKE='1'; pnpm exec vitest run tests/integration/native-addon-packaging.test.ts --maxWorkers=1
+      - name: Build unsigned NSIS installer
+        run: pnpm package:win
+      - name: Verify release-root NSIS installer artifact
+        shell: pwsh
+        run: |
+          $installers = @(Get-ChildItem -LiteralPath 'apps/desktop/release' -File | Where-Object { $_.Extension -ieq '.exe' })
+          if ($installers.Count -eq 0) { throw 'NSIS_INSTALLER_ARTIFACT_MISSING' }
+          foreach ($installer in $installers) {
+            if ($installer.Length -le 0) { throw 'NSIS_INSTALLER_ARTIFACT_EMPTY' }
+            Write-Output "NSIS_INSTALLER_VERIFIED: $($installer.Name) ($($installer.Length) bytes)"
+          }
 
   # The accepted Toolchain v1 subjects are intake provenance evidence, not
   # formal Toolchain Inventory v1 records. This integration gate verifies

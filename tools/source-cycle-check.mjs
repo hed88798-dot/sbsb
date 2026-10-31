@@ -97,16 +97,19 @@ export function checkSourceCycles({ root = process.cwd() } = {}) {
     }
   }
   const baseFile = join(root, 'tsconfig.base.json');
-  const fallback = existsSync(baseFile)
-    ? ts.convertCompilerOptionsFromJson(
-        JSON.parse(readFileSync(baseFile, 'utf8')).compilerOptions ?? {},
-        root,
-      ).options
-    : {
-        moduleResolution: ts.ModuleResolutionKind.NodeNext,
-        module: ts.ModuleKind.NodeNext,
-        target: ts.ScriptTarget.ES2022,
-      };
+  let fallback = {
+    moduleResolution: ts.ModuleResolutionKind.NodeNext,
+    module: ts.ModuleKind.NodeNext,
+    target: ts.ScriptTarget.ES2022,
+  };
+  if (existsSync(baseFile)) {
+    const converted = ts.convertCompilerOptionsFromJson(
+      JSON.parse(readFileSync(baseFile, 'utf8')).compilerOptions ?? {},
+      root,
+    );
+    if (converted.errors.length) throw new Error('SOURCE_CYCLE_CONFIG_INVALID: tsconfig.base.json');
+    fallback = converted.options;
+  }
   const outputDirectories = new Set();
   for (const output of outputs.keys()) {
     let directory = dirname(output);
