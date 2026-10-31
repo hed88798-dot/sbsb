@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { reconcileSemanticShotPlanProposal } from '../../apps/desktop/src/main/shot-plan-proposal-reconciler.js';
 import type { ShotPlanSemanticProposalV1 } from '../../packages/contracts/src/index.js';
 import {
   evaluateShotPlanSemanticProposalV1,
@@ -47,6 +48,70 @@ function routeForExactText(fixture: ShotPlanSemanticGoldenFixtureV1, text: strin
 }
 
 describe('GOLDEN_HARNESS_SELF_CHECK for veterinary e-commerce semantics', () => {
+  it('accepts both anchored four-unit and full-clause two-unit duplicate-anchor alternatives', () => {
+    const fixture = fixtureById('vet-commerce-duplicate-anchor');
+    expect(fixture.acceptable_alternatives.map(({ units }) => units.length)).toEqual([4, 2]);
+    const alternate = proposalFrom(fixture, fixture.acceptable_alternatives[1]!);
+    expect(
+      alternate.units.map(({ exact_fragment, route, continuity_action }) => ({
+        exact_fragment,
+        route,
+        continuity_action,
+      })),
+    ).toEqual([
+      { exact_fragment: '动物状态：增强采食。', route: 'ANIMAL', continuity_action: 'START_NEW' },
+      {
+        exact_fragment: '包装标签写着：增强采食。',
+        route: 'PRODUCT',
+        continuity_action: 'SWITCH_VISUAL',
+      },
+    ]);
+    expect(evaluateShotPlanSemanticProposalV1(fixture, alternate)).toEqual({
+      structural_validity: true,
+      segmentation: true,
+      route: true,
+      continuity: true,
+      needs_review: true,
+      forbidden_outcome_violations: [],
+    });
+  });
+
+  it('rejects wrong routes, cross-route continuity, and a merged full document for duplicate-anchor', () => {
+    const fixture = fixtureById('vet-commerce-duplicate-anchor');
+    const wrongRoute = proposalFrom(fixture, fixture.acceptable_alternatives[1]!);
+    wrongRoute.units[1]!.route = 'ANIMAL';
+    expect(evaluateShotPlanSemanticProposalV1(fixture, wrongRoute).route).toBe(false);
+    const wrongContinuity = proposalFrom(fixture, fixture.acceptable_alternatives[1]!);
+    wrongContinuity.units[1]!.continuity_action = 'CONTINUE_PREVIOUS';
+    expect(evaluateShotPlanSemanticProposalV1(fixture, wrongContinuity).continuity).toBe(false);
+    const merged = proposalFrom(fixture, fixture.acceptable_alternatives[1]!);
+    merged.units = [{ ...merged.units[0]!, exact_fragment: fixture.source_text }];
+    expect(evaluateShotPlanSemanticProposalV1(fixture, merged).segmentation).toBe(false);
+  });
+
+  it('still fails reconciliation for repeated exact fragments without sufficient anchors', () => {
+    const fixture = fixtureById('vet-commerce-duplicate-anchor');
+    const proposal = proposalFrom(fixture, fixture.acceptable_alternatives[0]!);
+    delete proposal.units[1]!.left_context;
+    expect(() =>
+      reconcileSemanticShotPlanProposal(
+        {
+          schema_version: '1.0',
+          source_document_id: 'duplicate_source',
+          source_document_version: 1,
+          source_document_hash: 'a'.repeat(64),
+          source_hash_scheme: 'SHA256_EXACT_UTF8_V1',
+          source_offset_unit: 'UNICODE_CODE_POINT',
+          source_kind: 'SCRIPT_VERSION',
+          text: fixture.source_text,
+          created_at: '2026-10-31T00:00:00.000Z',
+        },
+        proposal,
+        { continuityGroupId: (index) => `group_${index}` },
+      ),
+    ).toThrow('SHOT_PLAN_PROPOSAL_SOURCE_BINDING_AMBIGUOUS');
+  });
+
   it('contains exactly 30 fixed synthetic golden fixtures with required evaluation metadata', () => {
     expect(shotPlanSemanticGoldenFixturesV1).toHaveLength(30);
     expect(new Set(shotPlanSemanticGoldenFixturesV1.map((fixture) => fixture.id)).size).toBe(30);
