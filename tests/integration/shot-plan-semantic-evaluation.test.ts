@@ -151,13 +151,13 @@ describe('GOLDEN_HARNESS_SELF_CHECK for veterinary e-commerce semantics', () => 
     ['vet-commerce-30', '本品禁忌信息必须保留。'],
     ['vet-commerce-21', '使用前请阅读禁忌事项。'],
     ['vet-commerce-16', '本品适用于日常营养补充。'],
+    ['vet-commerce-18', '产品用量以标签说明为准。'],
   ])('routes abstract compliance narration %s to NO_MATCH', (fixtureId, narration) => {
     expect(routeForExactText(fixtureById(fixtureId), narration)).toBe('NO_MATCH');
   });
 
   it.each([
     ['vet-commerce-17', '请核对包装上的批准范围。'],
-    ['vet-commerce-18', '产品用量以标签说明为准。'],
     ['vet-commerce-22', '展示产品成分表。'],
     ['vet-commerce-24', '展示包装批号区域。'],
   ])('keeps explicit package or label inspection %s as PRODUCT', (fixtureId, narration) => {

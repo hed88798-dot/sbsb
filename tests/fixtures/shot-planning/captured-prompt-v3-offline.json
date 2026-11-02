@@ -1,0 +1,1312 @@
+{
+  "evidence_kind": "OFFLINE_CAPTURED_V3_EXCERPT_NOT_A_NEW_MODEL_RUN",
+  "original_cases_sha256": "c3657c90d11339571c69040ce120b03e89b36ca726c60fd56001b47694ccc54a",
+  "original_summary_sha256": "e947f8c96fd73997ee31b51469727233130ba61db46a1398ebb93bdeea886277",
+  "historical_summary": {
+    "schema_version": "c3c-real-golden-evaluation-v1",
+    "execution_kind": "REAL_PROVIDER_EVALUATION",
+    "execution_mode": "SEQUENTIAL",
+    "git_head": "1d814ededf0eae4cbddc1496c2201ee34c50828e",
+    "evaluation_timestamp": "2026-11-02T05:33:16.647Z",
+    "provider": "Alibaba Cloud Model Studio",
+    "region": "China (Beijing)",
+    "capability_alias": "text.semantic-shot-planning",
+    "provider_alias": "alibaba-beijing-qwen37-plus-c3c-nonthinking",
+    "provider_model": "qwen3.7-plus",
+    "model_version_policy": "ROLLING_PROVIDER_MODEL",
+    "prompt_template_id": "shot-plan.semantic-proposer",
+    "prompt_template_version": "3",
+    "canonical_schema_version": "1.0",
+    "canonical_schema_sha256": "67469f68e9ebdbd4e313f2fb16189d9515ff6086af4872b83038aeeb6013f11c",
+    "normalization_rule": "OPTIONAL_CONTEXT_NULL_TO_ABSENT_V1",
+    "wire_policy": {
+      "temperature": 0.7,
+      "enable_thinking": false,
+      "response_format": "json_schema",
+      "strict": true,
+      "schema_name": "ShotPlanSemanticProposalV1",
+      "absent_fields": [
+        "max_tokens",
+        "max_completion_tokens",
+        "thinking_budget",
+        "reasoning_effort",
+        "tools",
+        "stream"
+      ]
+    },
+    "fixture_authority": "shotPlanSemanticGoldenFixturesV1",
+    "evaluator_authority": "evaluateShotPlanSemanticProposalV1",
+    "fixture_count": 30,
+    "fixture_sha256": "012203088b5211d1a7c7a7ae8f25254fffbf36dd93a05ade0ae1e94c3ba19090",
+    "fixture_ids": [
+      "vet-commerce-alt-segmentation",
+      "vet-commerce-same-route-boundaries",
+      "vet-commerce-continuity-alternative",
+      "vet-commerce-genuine-review",
+      "vet-commerce-anti-keyword-route",
+      "vet-commerce-duplicate-anchor",
+      "vet-commerce-product-name-animal-outcome",
+      "vet-commerce-explicit-product-showcase",
+      "vet-commerce-contraindication-no-match",
+      "vet-commerce-stable-animal-concept",
+      "vet-commerce-symptom-appetite-continuity",
+      "vet-commerce-context-applicable-product",
+      "vet-commerce-context-applicable-animal",
+      "vet-commerce-14",
+      "vet-commerce-15",
+      "vet-commerce-16",
+      "vet-commerce-17",
+      "vet-commerce-18",
+      "vet-commerce-19",
+      "vet-commerce-20",
+      "vet-commerce-21",
+      "vet-commerce-22",
+      "vet-commerce-23",
+      "vet-commerce-24",
+      "vet-commerce-25",
+      "vet-commerce-26",
+      "vet-commerce-27",
+      "vet-commerce-28",
+      "vet-commerce-29",
+      "vet-commerce-30"
+    ],
+    "C3C_REAL_MODEL_SEMANTIC_ACCEPTANCE": "PENDING_BRAIN1_REVIEW",
+    "FIXTURES_EXPECTED": 30,
+    "FIXTURES_STARTED": 30,
+    "FIXTURES_TECHNICALLY_COMPLETED": 29,
+    "FIXTURES_AUTOMATED_SEMANTIC_PASS": 24,
+    "FIXTURES_AUTOMATED_SEMANTIC_FAIL": 5,
+    "FIXTURES_TECHNICAL_FAIL": 1,
+    "STRUCTURAL_PASS_COUNT": 29,
+    "SEGMENTATION_PASS_COUNT": 28,
+    "ROUTE_PASS_COUNT": 25,
+    "CONTINUITY_PASS_COUNT": 28,
+    "NEEDS_REVIEW_PASS_COUNT": 29,
+    "FORBIDDEN_VIOLATION_CASE_COUNT": 0,
+    "AUTOMATED_30_CASE_GOLDEN_RESULT": "FAIL",
+    "SUITE_STOP_REASON": null,
+    "PROVIDER_ATTEMPTS_TOTAL": 39,
+    "PROVIDER_REQUEST_COUNT_TOTAL": 39,
+    "REAL_PROVIDER_REQUEST_COUNT": 39,
+    "PROMPT_TOKENS_TOTAL": 38981,
+    "COMPLETION_TOKENS_TOTAL": 11371,
+    "TOTAL_TOKENS_TOTAL": 50352,
+    "SETTLED_COST_CNY_TOTAL": 0.16893
+  },
+  "baseline_fixture_hashes": {
+    "vet-commerce-alt-segmentation": "a930b3bb0286392553cdf144e3435ebfe62b911e124c3c8d17a1300056b6695f",
+    "vet-commerce-same-route-boundaries": "04a3e9c7bf9e9c56a4b12d13ddafe89b5c9e84f7cb3ea4b478420e539683da61",
+    "vet-commerce-continuity-alternative": "f255c4e5f50a1a15428e1a5d60608436819c8811a0cfd63290ad853dcf570a12",
+    "vet-commerce-genuine-review": "71182559950090a64504e298cdd29db00bf068839c30edbe3f8a980561e8a4f8",
+    "vet-commerce-anti-keyword-route": "92339e74d24fce8de24038786ef4e45aa21f07b1eca96fac77834a3354950168",
+    "vet-commerce-duplicate-anchor": "368f083eebf4288f4d7211b8acbfc79e060f56aecf3fd86e807e6a0d8ef59fc0",
+    "vet-commerce-product-name-animal-outcome": "0af8bc96f460b294e6289a588332eb54c158a9c879ab7e1afab0db6267e7850a",
+    "vet-commerce-explicit-product-showcase": "f4b90f293833282c5a286a389208d977e4714bdb4472f8bd7fbee059e743058d",
+    "vet-commerce-contraindication-no-match": "b3f9501479682fca62df70c55ecd4aef33cab200328fb97eb561068118dd236e",
+    "vet-commerce-stable-animal-concept": "897835bcbbf18c7b75222e30d9469eccd510d507f7042d640f916a94b81425e0",
+    "vet-commerce-symptom-appetite-continuity": "89730cbb7c7c3d0d79f82c70ff0dfe68cc80f27c746c4e2ed4ba0f2bc5b0a3a2",
+    "vet-commerce-context-applicable-product": "045597739c1dd31fa4cdbebfdf1cd567e4c4975845a4f631a7e29e3aa033e8ac",
+    "vet-commerce-context-applicable-animal": "4eb5658e5591f759b6cf4287cf9ac9c2924c75552d21a9972381f0144ead37f6",
+    "vet-commerce-14": "e982817d8c5fdd3a618da68ab78c29aef7aed82ad6e7ede1cfa4ca63e006f966",
+    "vet-commerce-15": "357e5b68f66ba1f1f94397e59cb4de275cef0e7b938e9f318ec782c88f9bedf5",
+    "vet-commerce-16": "f88ac48e34544efb79ddfe7875bd9645bf3f3758b5b47af2ea3189484459901f",
+    "vet-commerce-17": "14462161d31f9233c811ad8f4105a4c01d2278a4dbb84c2da7c4b6d3e1659727",
+    "vet-commerce-18": "e83e53e0867006a4812b1b73d12a78908096cc7a480c708c82e376f057fc8a30",
+    "vet-commerce-19": "8979c21791c83804c61ce29df2c667801a3be706233a0a6171667914346b21d1",
+    "vet-commerce-20": "c4a1c7c2e49653ae246b3f2a84684da32613432d2a752bf1b1874c300ca43991",
+    "vet-commerce-21": "a8d3baf1ee3bb34eeeb2fe6472f37c37259f8e64be41b7678ea906604e273395",
+    "vet-commerce-22": "190531837c51ff0c5e1f667002f1e653c51d46fec89e91528f1c1109ed488c49",
+    "vet-commerce-23": "7dc9060e831d8a15d6bc59a751972a98b225f2330dab78b06d31cab42c65335a",
+    "vet-commerce-24": "dbb12b742adeb5a72246abe82014bcb25373ef38adb5f7be2ed444224e5c0dd4",
+    "vet-commerce-25": "2bd932f1d4aedb65b86adb989dff9a7a1fa8ddeb1e9f5651b0852ae69e786d80",
+    "vet-commerce-26": "bbefa945589bcf31eac778a1a54aa0b963df02d19bb57f28dbec1ff756bef16a",
+    "vet-commerce-27": "0af8fd94ece873c5fecba2a7946d85fd3a633789ab8984b7762257031f91016f",
+    "vet-commerce-28": "92dc863a41160f9b1cf9a8286171f79bc0255e41bf831ba6331a612138f97409",
+    "vet-commerce-29": "073c97fe8bee8d093326f9e4c497aaff495338fcd86a0dabf425d038be11921c",
+    "vet-commerce-30": "96a5b6cb7a43a91b1575d40e97e1eeaf1735f4c7aa01d0d3b2b6e1a8aa9bf914"
+  },
+  "approved_baseline_goldens": [
+    {
+      "id": "vet-commerce-genuine-review",
+      "source_text": "这段表达可能是动物状态，也可能是产品功效。",
+      "route_review": "原文明示两种真实可能的主视觉，应保留语义 NEEDS_REVIEW。",
+      "required_facts": [
+        {
+          "text": "可能",
+          "allowed_routes": [null]
+        }
+      ],
+      "acceptable_alternatives": [
+        {
+          "units": [
+            {
+              "exact_fragment": "这段表达可能是动物状态，也可能是产品功效。",
+              "route": null,
+              "route_state": "NEEDS_REVIEW",
+              "continuity_state": "NEEDS_REVIEW",
+              "continuity_actions": []
+            }
+          ]
+        }
+      ],
+      "must_have_invariants": [
+        "EXACT_SOURCE_COVERAGE",
+        "SOURCE_ORDER_PRESERVED",
+        "NO_MODEL_OFFSETS",
+        "REVIEW_AMBIGUOUS_SEMANTICS"
+      ],
+      "forbidden_outcomes": [],
+      "expected_needs_review": true
+    },
+    {
+      "id": "vet-commerce-18",
+      "source_text": "鸭群饮水量出现明显变化。产品用量以标签说明为准。",
+      "route_review": "后段明确将标签用量作为主要查看对象。",
+      "required_facts": [
+        {
+          "text": "鸭群饮水量出现明显变化。",
+          "allowed_routes": ["ANIMAL"]
+        },
+        {
+          "text": "产品用量以标签说明为准。",
+          "allowed_routes": ["PRODUCT"]
+        }
+      ],
+      "acceptable_alternatives": [
+        {
+          "units": [
+            {
+              "exact_fragment": "鸭群饮水量出现明显变化。",
+              "route": "ANIMAL",
+              "continuity_actions": ["START_NEW"]
+            },
+            {
+              "exact_fragment": "产品用量以标签说明为准。",
+              "route": "PRODUCT",
+              "continuity_actions": ["SWITCH_VISUAL"]
+            }
+          ]
+        }
+      ],
+      "must_have_invariants": [
+        "EXACT_SOURCE_COVERAGE",
+        "SOURCE_ORDER_PRESERVED",
+        "NO_MODEL_OFFSETS"
+      ],
+      "forbidden_outcomes": [],
+      "expected_needs_review": false
+    }
+  ],
+  "cases": [
+    {
+      "fixture_id": "vet-commerce-alt-segmentation",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "猪群咳喘并伴采食下降。",
+            "right_context": "展示本品包装。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "描述动物临床症状（咳喘、采食下降），视觉主体为动物状态，路由为ANIMAL；作为首段开启新画面。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "展示本品包装。",
+            "left_context": "猪群咳喘并伴采食下降。",
+            "route": "PRODUCT",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "明确指令展示产品包装，视觉主体由动物状态切换为产品本体，路由为PRODUCT；主视觉意图发生实质变化，执行SWITCH_VISUAL。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-same-route-boundaries",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "猪群先咳嗽。",
+            "right_context": "随后出现气喘。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "描述猪群的临床症状（咳嗽），视觉主体为动物状态，属于ANIMAL路由；作为首段，连续性动作为START_NEW。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "随后出现气喘。",
+            "left_context": "猪群先咳嗽。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "CONTINUE_PREVIOUS",
+            "continuity_state": "RESOLVED",
+            "rationale": "描述同一猪群随后的临床症状（气喘），视觉主体仍为动物状态，与上一片段同属ANIMAL路由且语义连续，故保持CONTINUE_PREVIOUS以略少切镜。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-continuity-alternative",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "猪群精神下降。",
+            "right_context": "猪群采食减少。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "描述猪群的精神状态，视觉主体为动物，属于ANIMAL路由；作为首段，连续性动作为START_NEW。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "猪群采食减少。",
+            "left_context": "猪群精神下降。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "CONTINUE_PREVIOUS",
+            "continuity_state": "RESOLVED",
+            "rationale": "描述猪群的采食行为状态，视觉主体仍为动物，与上一片段同属ANIMAL路由且语义连续（同一猪群的不同症状维度），适合保持同一视觉画面，故使用CONTINUE_PREVIOUS。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-genuine-review",
+      "technical_result": "FAIL_CANONICAL",
+      "automated_semantic_result": "NOT_EVALUATED",
+      "evaluation": null,
+      "canonical_proposal": null,
+      "raw_semantic_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "NEEDS_REVIEW",
+        "review_warnings": [
+          {
+            "code": "AMBIGUOUS_VISUAL_INTENT",
+            "severity": "BLOCKING",
+            "message": "原文语义明确指向两种互斥的视觉解释（动物状态 vs 产品功效/展示），且缺乏上下文确定主导意图，符合 NEEDS_REVIEW 定义。"
+          }
+        ],
+        "raw_unit_count": 1,
+        "units": [
+          {
+            "exact_fragment": "这段表达可能是动物状态，也可能是产品功效。",
+            "left_context": null,
+            "right_context": null,
+            "route": null,
+            "route_state": "NEEDS_REVIEW",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "原文自述存在歧义：若理解为描述动物症状或行为，应路由为 ANIMAL；若理解为强调产品功能机制或展示产品本身，可能涉及 PRODUCT 或 NO_MATCH（若仅为抽象功效声明）。由于无法仅凭文本确定主视觉是聚焦于‘动物’还是‘产品’，且两者会导致完全不同的镜头语言，故标记为 NEEDS_REVIEW。",
+            "review_warnings": [
+              {
+                "invalid_warning_type": "string"
+              }
+            ],
+            "raw_left_context_state": "NULL",
+            "raw_right_context_state": "NULL"
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-anti-keyword-route",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "本品适用于猪群日常营养补充。",
+            "route": "NO_MATCH",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "该句陈述产品的适用场景和功能定位（日常营养补充），属于抽象规范性信息。原文未描述可观察的动物健康状态、行为变化，也未指示查看包装标签、成分表或进行物理操作。根据规则，此类抽象主张无法由ANIMAL或PRODUCT视觉族忠实表达，且禁止臆造画面，故路由为NO_MATCH。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-duplicate-anchor",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "动物状态：增强采食。",
+            "right_context": "包装标签写着：增强采食。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "语义明确指向动物的生理/行为状态（采食），主视觉应为动物进食画面，符合ANIMAL路由定义。作为首段，连续性动作为START_NEW。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "包装标签写着：增强采食。",
+            "left_context": "动物状态：增强采食。",
+            "route": "PRODUCT",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "语义明确指向对包装标签物理状态的查看（'标签写着'），主视觉应为产品包装或标签特写，符合PRODUCT路由定义。与上一段ANIMAL路由不同，需切换视觉，故为SWITCH_VISUAL。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-product-name-animal-outcome",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "使用康健100后，猪群采食状态逐步恢复。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "语义核心为猪群采食状态的恢复结果，视觉主体为动物状态而非产品本体或包装操作，故路由为ANIMAL；作为首段且无前置画面，连续性动作为START_NEW。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-explicit-product-showcase",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "看这袋康健100，每袋100克。",
+            "route": "PRODUCT",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "原文通过指示代词'这袋'及规格描述'每袋100克'，明确指向对产品本体及其物理属性（包装、净含量）的展示与查看意图，符合PRODUCT路由定义中关于产品/包装特写或规格查看的标准。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-contraindication-no-match",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "蛋鸡产蛋期禁用。",
+            "route": "NO_MATCH",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "该片段为合规性禁忌说明（适用性限制），属于抽象规范性信息。未描述可观察的动物状态、行为或结果，也未涉及产品本体的物理展示或操作，无法由ANIMAL或PRODUCT视觉族忠实表达，故路由为NO_MATCH。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-stable-animal-concept",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "猪群先是轻咳，随后喘气明显。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "原文完整描述猪群的临床症状（轻咳、喘气），视觉主体为动物状态，属于ANIMAL路由。作为首段且语义连贯，使用START_NEW开启画面。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-symptom-appetite-continuity",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_FAIL",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": false,
+        "route": true,
+        "continuity": false,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "猪群先是轻咳，随后喘气越来越明显，采食量也开始下降。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "整段原文描述猪群的临床症状（咳嗽、喘气）及生理状态变化（采食量下降），视觉主体为动物及其行为表现，符合 ANIMAL 路由定义。作为首段且语义连贯，使用 START_NEW。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-context-applicable-product",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "包装正面写着“适用于猪”。",
+            "route": "PRODUCT",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "语义明确指向查看产品包装正面的物理状态及标签文字，属于以产品/包装为中心的视觉意图。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-context-applicable-animal",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "这套饲养方法适用于猪，画面展示健康猪群活动。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "原文明确指示画面内容为'健康猪群活动'，视觉主体为动物状态与行为，符合ANIMAL路由定义。虽提及'饲养方法'，但无产品物理操作或包装特写，且后半句直接定义了视觉内容，故整体判定为ANIMAL。作为首段，连续性动作为START_NEW。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-14",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_FAIL",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": false,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "猪群换季时容易出现咳喘。",
+            "right_context": "本品每袋100g，按说明使用。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "描述猪群在特定季节的生理状态（咳喘），视觉中心为动物表现，故路由为ANIMAL；作为首段，连续性动作为START_NEW。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "本品每袋100g，按说明使用。",
+            "left_context": "猪群换季时容易出现咳喘。",
+            "route": "NO_MATCH",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "前半句提及规格'每袋100g'但未明确要求展示包装物理状态或标签查看动作，后半句'按说明使用'为抽象操作指令/规范性信息。根据规则，未建立可观察的产品物理状态或具体产品中心操作，且非纯粹的动物状态描述，故判定为NO_MATCH。因语义意图从动物状态转变为产品相关抽象信息，需切换视觉逻辑，故为SWITCH_VISUAL。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-15",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "仔猪断奶后采食量下降。",
+            "right_context": "展示产品包装和颗粒形态。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "描述仔猪（动物）的生理状态和行为结果，视觉主体为动物。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "展示产品包装和颗粒形态。",
+            "left_context": "仔猪断奶后采食量下降。",
+            "route": "PRODUCT",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "明确指令展示产品物理外观（包装、颗粒），视觉主体为中心化的产品本体，与上一段动物状态不同，需切换画面。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-16",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "母猪产后需要关注恢复状态。",
+            "right_context": "本品适用于日常营养补充。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "语义聚焦于母猪产后的生理状态及护理需求，视觉主体为动物及其状态，故路由为 ANIMAL；作为首段，连续性动作为 START_NEW。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "本品适用于日常营养补充。",
+            "left_context": "母猪产后需要关注恢复状态。",
+            "route": "NO_MATCH",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "该句陈述产品的适用场景和功能定位（日常营养补充），属于抽象规范性信息。未涉及具体的产品包装物理展示、标签查看或配制操作（非 PRODUCT），也未描述具体的动物行为或可观察的健康结果变化（非 ANIMAL）。根据规则，此类抽象功能描述无法由 ANIMAL 或 PRODUCT 视觉族忠实表达，故路由为 NO_MATCH。因主视觉意图从动物状态转为抽象概念，且跨路由，连续性动作为 SWITCH_VISUAL。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-17",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_FAIL",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": false,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "鸡群精神不振并伴随羽毛蓬松。",
+            "right_context": "请核对包装上的批准范围。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "描述鸡群的 observable 状态（精神、羽毛），视觉主体为动物，故路由为 ANIMAL；作为首段，连续性动作为 START_NEW。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "请核对包装上的批准范围。",
+            "left_context": "鸡群精神不振并伴随羽毛蓬松。",
+            "route": "NO_MATCH",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "指令涉及核对抽象的‘批准范围’信息，属于规范性/合规性内容。虽然提及‘包装’，但核心语义是核查文本信息而非展示包装物理状态或产品本体特写，无法由 PRODUCT（物理展示）或 ANIMAL 忠实表达，故路由为 NO_MATCH。主视觉意图从动物状态变为抽象指令，故使用 SWITCH_VISUAL。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-18",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_FAIL",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": false,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "鸭群饮水量出现明显变化。",
+            "right_context": "产品用量以标签说明为准。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "描述鸭群（动物）的生理状态/行为变化，视觉主体为动物。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "产品用量以标签说明为准。",
+            "left_context": "鸭群饮水量出现明显变化。",
+            "route": "NO_MATCH",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "属于规范性/抽象指令，未建立可观察的动物状态、产品物理状态或明确的标签查看意图，无法由ANIMAL或PRODUCT视觉族忠实表达。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-19",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "牛群反刍次数减少。",
+            "right_context": "展示本品正面包装。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "描述牛群的生理状态（反刍减少），视觉主体为动物，故路由为 ANIMAL；作为首段，连续性动作为 START_NEW。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "展示本品正面包装。",
+            "left_context": "牛群反刍次数减少。",
+            "route": "PRODUCT",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "明确指令展示产品包装正面，视觉主体为产品本体，故路由为 PRODUCT；与前一段动物状态画面不同，需切换视觉，故为 SWITCH_VISUAL。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-20",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "羊群换料后需要观察粪便。",
+            "right_context": "本品规格为500g每袋。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "语义核心为观察羊群（动物）的生理状态（粪便），视觉主体为动物或其排泄物，符合ANIMAL路由定义。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "本品规格为500g每袋。",
+            "left_context": "羊群换料后需要观察粪便。",
+            "route": "PRODUCT",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "语义核心为产品的物理规格（净含量/包装单位），属于明确的产品本体信息展示，需切换至产品包装或标签特写，符合PRODUCT路由定义。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-21",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "育肥猪采食速度变慢。",
+            "right_context": "使用前请阅读禁忌事项。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "描述动物（育肥猪）的具体行为状态（采食速度变慢），视觉中心为动物，故路由为 ANIMAL；作为首段，连续性动作为 START_NEW。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "使用前请阅读禁忌事项。",
+            "left_context": "育肥猪采食速度变慢。",
+            "route": "NO_MATCH",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "该句为抽象的合规性/规范性指令（阅读禁忌事项），未描述可观察的动物状态、产品物理形态或具体的包装查看动作，无法由 ANIMAL 或 PRODUCT 视觉族忠实表达，故路由为 NO_MATCH；语义意图从动物状态转变为抽象指令，主视觉实质变化，故连续性动作为 SWITCH_VISUAL。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-22",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_FAIL",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": false,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "蛋鸡产蛋状态需要持续记录。",
+            "right_context": "展示产品成分表。",
+            "route": "NO_MATCH",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "语义为管理规范要求（需记录），未描述可观察的动物具体状态、行为或环境画面，也非产品中心物理操作，属于抽象规范性信息，无法由ANIMAL或PRODUCT视觉忠实表达。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "展示产品成分表。",
+            "left_context": "蛋鸡产蛋状态需要持续记录。",
+            "route": "PRODUCT",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "明确指令查看标签/成分表，属于以产品包装物理状态为中心的视觉意图，符合PRODUCT路由定义。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-23",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "肉鸡进场后应观察适应情况。",
+            "right_context": "本品按批准用法使用。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "语义核心为观察肉鸡（动物）的进场适应状态，视觉主体为动物及其行为/环境，符合ANIMAL路由定义。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "本品按批准用法使用。",
+            "left_context": "肉鸡进场后应观察适应情况。",
+            "route": "NO_MATCH",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "该句为规范性指令，涉及‘批准用法’这一抽象合规概念，未描述具体的产品物理操作（如开袋、混合）或包装查看动作，也未描述动物状态，无法由ANIMAL或PRODUCT视觉族忠实表达，故判为NO_MATCH。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-24",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "犊牛精神状态需要每日检查。",
+            "right_context": "展示包装批号区域。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "语义核心为观察犊牛的精神状态，属于动物状态维度，主视觉应为动物。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "展示包装批号区域。",
+            "left_context": "犊牛精神状态需要每日检查。",
+            "route": "PRODUCT",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "明确指令展示产品包装的物理细节（批号），主视觉为中心化的产品/包装特写，与上一段动物画面意图不同，需切换视觉。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-25",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "羔羊转群后出现应激表现。",
+            "right_context": "产品应密封保存。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "描述羔羊在特定情境下的生理/行为状态，视觉主体为动物，故路由为ANIMAL；作为首段，连续性动作为START_NEW。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "产品应密封保存。",
+            "left_context": "羔羊转群后出现应激表现。",
+            "route": "NO_MATCH",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "属于抽象的储存要求/规范性指令，未涉及具体的产品包装物理状态检查或操作动作，无法由ANIMAL或PRODUCT视觉族忠实表达，故路由为NO_MATCH；语义意图从动物状态转变为抽象指令，需切换视觉概念。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-26",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "鸡舍湿度升高后需检查垫料。",
+            "right_context": "产品包装应保持完整。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "语义核心为养殖环境（鸡舍、垫料）的状态检查，属于可观察的养殖环境与动物生存条件，故路由为 ANIMAL。作为首段，连续性动作为 START_NEW。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "产品包装应保持完整。",
+            "left_context": "鸡舍湿度升高后需检查垫料。",
+            "route": "PRODUCT",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "语义核心明确指向产品本体的物理状态（包装完整性），符合 PRODUCT 路由中关于包装物理状态的定义。主视觉意图从养殖环境转变为产品本体，故使用 SWITCH_VISUAL。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-27",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "牛舍采食区需要保持清洁。",
+            "right_context": "本品仅按批准对象使用。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "描述养殖环境（牛舍采食区）的卫生状态要求，属于可观察的养殖环境维度，路由为 ANIMAL。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "本品仅按批准对象使用。",
+            "left_context": "牛舍采食区需要保持清洁。",
+            "route": "NO_MATCH",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "表述合规性限制/适用性规范，未涉及具体的产品物理操作、包装查看或动物状态变化，无法由 ANIMAL 或 PRODUCT 视觉族忠实表达，故为 NO_MATCH。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-28",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "仔猪保育阶段应关注温度变化。",
+            "right_context": "本品禁止超范围宣传。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "语义指向仔猪在保育期的环境管理（温度），属于养殖环境与动物状态范畴，可匹配仔猪在保温箱或适宜温度下的画面。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "本品禁止超范围宣传。",
+            "left_context": "仔猪保育阶段应关注温度变化。",
+            "route": "NO_MATCH",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "这是关于广告合规性的抽象规范性声明，不涉及可观察的动物状态、产品物理特征或包装操作，无法由ANIMAL或PRODUCT视觉族忠实表达。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-29",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "犊牛断奶期需要平稳过渡。",
+            "right_context": "本品适用对象以批准信息为准。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "描述犊牛在特定生理阶段（断奶期）的状态需求，视觉主体为动物及其环境/状态，符合ANIMAL路由定义。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "本品适用对象以批准信息为准。",
+            "left_context": "犊牛断奶期需要平稳过渡。",
+            "route": "NO_MATCH",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "该句为合规性/规范性声明，未描述可观察的动物状态、行为，也未描述产品本体的物理状态、包装查看或具体操作。根据规则，抽象的适用性说明无法由ANIMAL或PRODUCT视觉族忠实表达，故判为NO_MATCH。",
+            "review_warnings": []
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "vet-commerce-30",
+      "technical_result": "PASS",
+      "automated_semantic_result": "AUTOMATED_SEMANTIC_PASS",
+      "evaluation": {
+        "structural_validity": true,
+        "segmentation": true,
+        "route": true,
+        "continuity": true,
+        "needs_review": true,
+        "forbidden_outcome_violations": []
+      },
+      "canonical_proposal": {
+        "schema_version": "1.0",
+        "segmentation_state": "RESOLVED",
+        "review_warnings": [],
+        "units": [
+          {
+            "exact_fragment": "育肥猪转栏后需要减少惊扰。",
+            "right_context": "本品禁忌信息必须保留。",
+            "route": "ANIMAL",
+            "route_state": "RESOLVED",
+            "continuity_action": "START_NEW",
+            "continuity_state": "RESOLVED",
+            "rationale": "描述育肥猪在转栏后的行为管理需求，视觉主体为动物状态或养殖环境，符合ANIMAL路由。",
+            "review_warnings": []
+          },
+          {
+            "exact_fragment": "本品禁忌信息必须保留。",
+            "left_context": "育肥猪转栏后需要减少惊扰。",
+            "route": "NO_MATCH",
+            "route_state": "RESOLVED",
+            "continuity_action": "SWITCH_VISUAL",
+            "continuity_state": "RESOLVED",
+            "rationale": "属于抽象的合规性/规范性指令（禁忌信息保留要求），未涉及可观察的动物状态、产品物理外观或具体操作动作，无法由ANIMAL或PRODUCT视觉族忠实表达，故判为NO_MATCH。",
+            "review_warnings": []
+          }
+        ]
+      }
+    }
+  ]
+}
