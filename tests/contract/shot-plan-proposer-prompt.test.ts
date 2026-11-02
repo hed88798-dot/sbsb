@@ -22,7 +22,7 @@ const source: CanonicalSourceDocumentV1 = {
 describe('versioned semantic Shot Plan prompt', () => {
   it('binds a stable template identity and includes the complete exact source once', () => {
     expect(SHOT_PLAN_PROPOSER_PROMPT_TEMPLATE_ID).toBe('shot-plan.semantic-proposer');
-    expect(SHOT_PLAN_PROPOSER_PROMPT_TEMPLATE_VERSION).toBe('3');
+    expect(SHOT_PLAN_PROPOSER_PROMPT_TEMPLATE_VERSION).toBe('4');
     const prompt = buildShotPlanProposerPromptV1(source);
     expect(prompt.split(source.text)).toHaveLength(2);
     expect(prompt).toContain(source.source_document_hash);
@@ -58,6 +58,23 @@ describe('versioned semantic Shot Plan prompt', () => {
     '略少切镜不等于合并不同的语义视觉意图',
     '同一路由下不同的动物状态维度',
     '不要因分段更精确而增加切镜',
+    '具体视觉证据优先',
+    '附带的抽象或规范性措辞不得抹除该路由',
+    '不能仅因其中一部分是规范要求就将整段改为 NO_MATCH',
+    '具体 PRODUCT 证据不要求展示、查看、看等祈使词',
+    '直接陈述单包装净含量或规格本身就是产品实物/规格信息',
+    '明确以包装或标签表面为查看、核对、验证、展示对象',
+    '文字内容抽象不能抹除明确的包装/标签查看意图',
+    '仅引用标签权威而无实物查看意图的抽象指令仍可为 NO_MATCH',
+    '记录、观察、关注、检查等管理动词不抹除 ANIMAL',
+    '没有这些可观察事实、产品物理事实、包装/标签查看意图或物理操作的纯管理/合规陈述仍可为 NO_MATCH',
+    '实质不同、可独立观察的动物状态维度',
+    '语义分段与视觉切换分别判断',
+    '顶层和每个语义单元的 review_warnings 必须是对象数组',
+    '每个警告对象都必须有 code、severity、message',
+    'severity 只能为 INFORMATIONAL 或 BLOCKING',
+    '禁止字符串警告条目',
+    '在 schema 语义允许时可用空数组',
   ])('encodes the frozen product rule: %s', (rule) => {
     expect(buildShotPlanProposerPromptV1(source)).toContain(rule);
   });
@@ -73,9 +90,12 @@ describe('versioned semantic Shot Plan prompt', () => {
     for (const fixture of shotPlanSemanticGoldenFixturesV1) {
       expect(prompt).not.toContain(fixture.id);
       expect(prompt).not.toContain(fixture.source_text);
+      for (const alternative of fixture.acceptable_alternatives) {
+        for (const unit of alternative.units) expect(prompt).not.toContain(unit.exact_fragment);
+      }
       expect(prompt).not.toContain(JSON.stringify(fixture.acceptable_alternatives));
     }
-    expect(prompt).not.toMatch(/case\s*(4|5|6|11|16|25)\b/iu);
-    expect(prompt.length).toBeLessThan(3000);
+    expect(prompt).not.toMatch(/(?:case\s*|Golden\s*#?|#)\d+/iu);
+    expect(prompt.length).toBeLessThan(4500);
   });
 });

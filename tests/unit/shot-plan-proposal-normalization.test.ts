@@ -99,6 +99,19 @@ describe('OPTIONAL_CONTEXT_NULL_TO_ABSENT_V1', () => {
     expect(canonical.units[0]!.continuity_state).toBe('NEEDS_REVIEW');
   });
 
+  it.each(['TOP_LEVEL', 'UNIT'])('never repairs string warnings in %s', (container) => {
+    const input: Record<string, unknown> & { units: Array<Record<string, unknown>> } = proposal({});
+    if (container === 'TOP_LEVEL') input.review_warnings = ['需人工复核'];
+    else input.units[0]!.review_warnings = ['需人工复核'];
+    const bytes = JSON.stringify(input);
+    const result = normalizeOptionalContextNullV1(input);
+    expect(result.value).toBe(input);
+    expect(result.normalizedOptionalContextFields).toBe(0);
+    expect(JSON.stringify(input)).toBe(bytes);
+    expect(shotPlanSemanticProposalV1Schema.safeParse(result.value).success).toBe(false);
+    expect(validate(result.value)).toBe(false);
+  });
+
   it('does not strip other or nested nulls, mutate prototypes, or traverse invalid containers', () => {
     const input: unknown = JSON.parse(
       '{"left_context":null,"units":[{"left_context":null,"route":null,"nested":{"right_context":null},"__proto__":{"polluted":true}},null,[],4]}',

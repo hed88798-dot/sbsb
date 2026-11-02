@@ -109,8 +109,8 @@ const individuallyReviewedCases: ShotPlanSemanticGoldenFixtureV1[] = [
   reviewedPairFixture(
     18,
     { text: '鸭群饮水量出现明显变化。', route: 'ANIMAL' },
-    { text: '产品用量以标签说明为准。', route: 'PRODUCT' },
-    '后段明确将标签用量作为主要查看对象。',
+    { text: '产品用量以标签说明为准。', route: 'NO_MATCH' },
+    '后段仅引用标签说明作为用量规范依据，没有查看或展示包装/标签的意图。',
   ),
   reviewedPairFixture(
     19,
@@ -300,6 +300,17 @@ export const shotPlanSemanticGoldenFixturesV1: ShotPlanSemanticGoldenFixtureV1[]
             route_state: 'NEEDS_REVIEW',
             continuity_state: 'NEEDS_REVIEW',
             continuity_actions: [],
+          },
+        ],
+      },
+      {
+        units: [
+          {
+            exact_fragment: '这段表达可能是动物状态，也可能是产品功效。',
+            route: null,
+            route_state: 'NEEDS_REVIEW',
+            continuity_state: 'RESOLVED',
+            continuity_actions: ['START_NEW'],
           },
         ],
       },
