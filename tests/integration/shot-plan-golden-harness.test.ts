@@ -12,6 +12,7 @@ import type {
   TextGatewayResultV1,
 } from '../../packages/contracts/src/index.js';
 import { openGoldenEvaluationEnvironment } from '../helpers/golden-evaluation-environment.js';
+import { GatewayClientError } from '../../packages/provider-client/src/index.js';
 import { observeGoldenProviderUsage } from '../helpers/golden-provider-usage.js';
 import {
   automatedSemanticPass,
@@ -85,7 +86,15 @@ async function environment(
   respond?: (
     fixture: ShotPlanSemanticGoldenFixtureV1,
     attempt: number,
-  ) => { status?: number; text?: string; omitUsage?: boolean; malformedEnvelope?: boolean },
+  ) => {
+    status?: number;
+    text?: string;
+    omitUsage?: boolean;
+    malformedEnvelope?: boolean;
+    thinking?: boolean;
+    transportFailure?: boolean;
+    unobservedNetworkFailure?: boolean;
+  },
   budgetCny = 2,
 ) {
   const path = directory();
@@ -156,6 +165,16 @@ async function environment(
     await Promise.resolve();
     const fixture = fixtures[current.index]!;
     const chosen = respond?.(fixture, current.attempt) ?? {};
+    if (chosen.transportFailure || chosen.unobservedNetworkFailure) {
+      if (!chosen.unobservedNetworkFailure) {
+        const url = new URL(endpoint);
+        channel('undici:request:create').publish({
+          request: { origin: url.origin, path: url.pathname },
+        });
+      }
+      active -= 1;
+      throw new Error('SYNTHETIC_TRANSPORT_OUTCOME_UNKNOWN');
+    }
     const status = chosen.status ?? 200;
     const wire = JSON.parse(String(init!.body));
     expect(wire).toMatchObject({
@@ -183,7 +202,14 @@ async function environment(
             model: 'qwen3.7-plus',
             choices: chosen.malformedEnvelope
               ? []
-              : [{ message: { content: chosen.text ?? JSON.stringify(proposal(fixture)) } }],
+              : [
+                  {
+                    message: {
+                      content: chosen.text ?? JSON.stringify(proposal(fixture)),
+                      ...(chosen.thinking ? { reasoning_content: 'synthetic thinking drift' } : {}),
+                    },
+                  },
+                ],
             ...(chosen.omitUsage
               ? {}
               : { usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 } }),
@@ -474,6 +500,8 @@ describe('zero-network real golden harness preparation', () => {
     expect(result.cases[1]!.attempts[0]).toMatchObject({
       provider_outcome: 'NO_PROVIDER_REQUEST',
       provider_requests: 0,
+      observed_provider_requests: 0,
+      no_dispatch_proof: 'GATEWAY_BUDGET_REJECTED_BEFORE_JOB_AND_RESERVATION',
       settled_cost_cny: 0,
       prompt_tokens: 0,
       completion_tokens: 0,
@@ -504,7 +532,8 @@ describe('zero-network real golden harness preparation', () => {
         attempts: [
           {
             provider_outcome: 'UNKNOWN_PROVIDER_OUTCOME',
-            provider_requests: 1,
+            observed_provider_requests: 1,
+            provider_requests: null,
             http_status: hideStatus ? null : 200,
             settlement_count: 0,
             settled_cost_cny: null,
@@ -521,7 +550,7 @@ describe('zero-network real golden harness preparation', () => {
   );
 
   it.each(['missing usage', 'missing settlement'])(
-    'preserves earlier unknown accounting (%s) despite a successful bounded retry',
+    'blocks the second dispatch for unknown accounting (%s) and preserves the first evidence',
     async (missing) => {
       const test = await environment((fixture, attempt) => ({
         text: attempt === 1 ? 'not JSON' : JSON.stringify(proposal(fixture)),
@@ -539,10 +568,17 @@ describe('zero-network real golden harness preparation', () => {
         return usage;
       });
       const result = await test.run();
-      expect(test.stats().providerCalls).toBe(2);
-      expect(result.cases[0]!.attempts).toHaveLength(2);
-      expect(result.cases[0]!.attempts[1]!.post_normalization_canonical_schema_validation).toBe(
-        'PASS',
+      expect(test.stats().providerCalls).toBe(1);
+      expect(result.cases[0]!.attempts).toHaveLength(1);
+      expect(result.cases[0]!.attempts[0]!.raw_json_parse).toBe('FAIL');
+      expect(result.cases[0]!.attempts[0]!.settled_cost_cny).toBeNull();
+      if (missing === 'missing usage')
+        expect(result.cases[0]!.attempts[0]!.gateway_settlement_amount_cny).toBeCloseTo(
+          0.00018,
+          10,
+        );
+      expect(result.cases[0]!.attempts[0]!.prompt_tokens).toBe(
+        missing === 'missing usage' ? null : 10,
       );
       expect(result.cases[0]!.technical_result).toBe('FAIL_EVIDENCE');
       expect(result.summary.FIXTURES_STARTED).toBe(1);
@@ -559,9 +595,296 @@ describe('zero-network real golden harness preparation', () => {
     const result = await test.run();
     expect(result.summary.SUITE_STOP_REASON).toBe('USAGE_EVIDENCE_INCONSISTENT');
     expect(result.summary.PROMPT_TOKENS_TOTAL).toBeNull();
-    expect(result.summary.SETTLED_COST_CNY_TOTAL).toBe(0);
+    expect(result.summary.SETTLED_COST_CNY_TOTAL).toBeNull();
+    expect(result.cases[0]!.attempts[0]!.gateway_settlement_amount_cny).toBe(0);
     expect(result.cases[0]!.technical_result).toBe('FAIL_EVIDENCE');
     expect(test.stats().providerCalls).toBe(1);
+  });
+
+  it.each(['GATEWAY_TIMEOUT', 'GATEWAY_NETWORK_ERROR'])(
+    'blocks a second dispatch after %s with an unknown paid outcome',
+    async (code) => {
+      const test = await environment(() => ({ transportFailure: true }));
+      const generate = test.env.client.generate.bind(test.env.client);
+      vi.spyOn(test.env.client, 'generate').mockImplementation(async (request, settings) => {
+        await generate(request, settings).catch(() => undefined);
+        throw new GatewayClientError(code, 'synthetic unknown outcome', true);
+      });
+      const result = await test.run();
+      expect(test.stats().providerCalls).toBe(1);
+      expect(result.summary.FIXTURES_STARTED).toBe(1);
+      expect(result.summary.SUITE_STOP_REASON).toBe('UNKNOWN_PAID_PROVIDER_OUTCOME');
+      expect(result.summary.SETTLED_COST_CNY_TOTAL).toBeNull();
+      expect(result.cases[0]!.attempts).toHaveLength(1);
+      expect(result.cases[0]!.attempts[0]).toMatchObject({
+        observed_provider_requests: 1,
+        provider_requests: null,
+        provider_outcome: 'UNKNOWN_PROVIDER_OUTCOME',
+        settlement_count: 0,
+        settled_cost_cny: null,
+      });
+      expect(
+        test.env.gatewayDb.prepare('SELECT state, error_class FROM provider_jobs').get(),
+      ).toEqual({
+        state: 'UNKNOWN',
+        error_class: 'TIMEOUT_UNKNOWN',
+      });
+    },
+  );
+
+  it('does not call unobserved transport failure a free request', async () => {
+    const test = await environment(() => ({ unobservedNetworkFailure: true }));
+    const result = await test.run();
+    expect(test.stats().providerCalls).toBe(1);
+    expect(result.summary.SUITE_STOP_REASON).toBe('UNKNOWN_PAID_PROVIDER_OUTCOME');
+    expect(result.cases[0]!.attempts).toHaveLength(1);
+    expect(result.cases[0]!.attempts[0]).toMatchObject({
+      observed_provider_requests: 0,
+      provider_requests: null,
+      provider_outcome: 'UNKNOWN_PROVIDER_OUTCOME',
+      settled_cost_cny: null,
+    });
+    expect(result.cases[0]!.provider_request_count).toBeNull();
+    expect(result.summary.PROVIDER_REQUEST_COUNT_TOTAL).toBeNull();
+    expect(result.summary.OBSERVED_PROVIDER_REQUEST_COUNT_TOTAL).toBe(0);
+    expect(result.summary.FIXTURES_STARTED).toBe(1);
+  });
+
+  function hideTelemetry(test: Awaited<ReturnType<typeof environment>>, firstOnly = false) {
+    const get = test.usage.get;
+    let firstId: string | undefined;
+    vi.spyOn(test.usage, 'get').mockImplementation((id) => {
+      firstId ??= id;
+      if (firstOnly && id !== firstId) return get(id);
+      return {
+        provider_requests: 0,
+        http_status: null,
+        prompt_tokens: null,
+        completion_tokens: null,
+        total_tokens: null,
+        thinking_state: 'NOT_EXPOSED',
+      };
+    });
+  }
+
+  function assertZeroTelemetryUnknown(
+    result: Awaited<ReturnType<typeof runShotPlanGoldenEvaluation>>,
+  ) {
+    expect(result.summary.FIXTURES_STARTED).toBe(1);
+    expect(result.summary.SUITE_STOP_REASON).toBe('UNKNOWN_PAID_PROVIDER_OUTCOME');
+    expect(result.summary.PROVIDER_REQUEST_COUNT_TOTAL).toBeNull();
+    expect(result.summary.OBSERVED_PROVIDER_REQUEST_COUNT_TOTAL).toBe(0);
+    expect(result.summary.SETTLED_COST_CNY_TOTAL).toBeNull();
+    expect(result.cases[0]!.provider_request_count).toBeNull();
+    expect(result.cases[0]!.observed_provider_request_count).toBe(0);
+    expect(result.cases[0]!.attempts).toHaveLength(1);
+    expect(result.cases[0]!.attempts[0]).toMatchObject({
+      observed_provider_requests: 0,
+      provider_requests: null,
+      provider_outcome: 'UNKNOWN_PROVIDER_OUTCOME',
+      no_dispatch_proof: null,
+      settled_cost_cny: null,
+    });
+  }
+
+  it('Code F A: malformed HTTP 200 plus zero telemetry and FAILED Job stops after one actual transport call', async () => {
+    const test = await environment(() => ({ malformedEnvelope: true, omitUsage: true }));
+    hideTelemetry(test);
+    const result = await test.run();
+    expect(test.stats().providerCalls).toBe(1);
+    expect(test.env.gatewayDb.prepare('SELECT state FROM provider_jobs').get()).toEqual({
+      state: 'FAILED',
+    });
+    assertZeroTelemetryUnknown(result);
+    const saved = JSON.parse(readFileSync(join(test.path, 'real-30-golden-summary.json'), 'utf8'));
+    expect(saved.PROVIDER_REQUEST_COUNT_TOTAL).toBeNull();
+    expect(saved.OBSERVED_PROVIDER_REQUEST_COUNT_TOTAL).toBe(0);
+    const savedCases = JSON.parse(
+      readFileSync(join(test.path, 'real-30-golden-cases.json'), 'utf8'),
+    );
+    expect(savedCases.cases[0].provider_request_count).toBeNull();
+    expect(savedCases.cases[0].attempts[0].provider_requests).toBeNull();
+  });
+
+  it('Code F B: retryable response error plus zero telemetry blocks the second actual dispatch, preventing 31 calls', async () => {
+    const test = await environment((fixture, attempt) => ({
+      malformedEnvelope: fixture.id === fixtures[0]!.id && attempt === 1,
+      omitUsage: fixture.id === fixtures[0]!.id && attempt === 1,
+    }));
+    hideTelemetry(test, true);
+    const generate = test.env.client.generate.bind(test.env.client);
+    let calls = 0;
+    vi.spyOn(test.env.client, 'generate').mockImplementation(async (request, settings) => {
+      calls += 1;
+      if (calls === 1) {
+        await generate(request, settings).catch(() => undefined);
+        throw new GatewayClientError(
+          'INVALID_GATEWAY_RESPONSE',
+          'synthetic invalid response',
+          false,
+        );
+      }
+      return generate(request, settings);
+    });
+    const result = await test.run();
+    expect(test.stats().providerCalls).toBe(1);
+    expect(calls).toBe(1);
+    assertZeroTelemetryUnknown(result);
+  });
+
+  it('Code F C: network failure with no observed event keeps actual request counts unknown through Attempt, Case and Suite', async () => {
+    const test = await environment(() => ({ unobservedNetworkFailure: true }));
+    const result = await test.run();
+    expect(test.stats().providerCalls).toBe(1);
+    assertZeroTelemetryUnknown(result);
+  });
+
+  it('does not treat a budget error identity alone as pre-dispatch proof when a FAILED Job exists', async () => {
+    const test = await environment(() => ({ malformedEnvelope: true, omitUsage: true }));
+    hideTelemetry(test);
+    const generate = test.env.client.generate.bind(test.env.client);
+    vi.spyOn(test.env.client, 'generate').mockImplementation(async (request, settings) => {
+      await generate(request, settings).catch(() => undefined);
+      throw new GatewayClientError('BUDGET_EXCEEDED', 'synthetic contradictory rejection', false);
+    });
+    const result = await test.run();
+    expect(test.stats().providerCalls).toBe(1);
+    assertZeroTelemetryUnknown(result);
+  });
+
+  it('propagates an unknown later actual count instead of reporting only earlier known requests', async () => {
+    const test = await environment((fixture) => ({
+      malformedEnvelope: fixture.id === fixtures[1]!.id,
+      omitUsage: fixture.id === fixtures[1]!.id,
+    }));
+    const get = test.usage.get;
+    let firstId: string | undefined;
+    vi.spyOn(test.usage, 'get').mockImplementation((id) => {
+      firstId ??= id;
+      return id === firstId
+        ? get(id)
+        : {
+            provider_requests: 0,
+            http_status: null,
+            prompt_tokens: null,
+            completion_tokens: null,
+            total_tokens: null,
+            thinking_state: 'NOT_EXPOSED',
+          };
+    });
+    const result = await test.run();
+    expect(test.stats().providerCalls).toBe(2);
+    expect(result.summary.FIXTURES_STARTED).toBe(2);
+    expect(result.cases[0]!.provider_request_count).toBe(1);
+    expect(result.cases[0]!.attempts[0]!.settled_cost_cny).toBeCloseTo(0.00018, 10);
+    expect(result.cases[1]!.provider_request_count).toBeNull();
+    expect(result.summary.PROVIDER_REQUEST_COUNT_TOTAL).toBeNull();
+    expect(result.summary.OBSERVED_PROVIDER_REQUEST_COUNT_TOTAL).toBe(1);
+    expect(result.summary.SETTLED_COST_CNY_TOTAL).toBeNull();
+  });
+
+  it.each(['result model', 'gateway model', 'thinking', 'usage mismatch'])(
+    'rejects %s before a structural retry can send another request',
+    async (kind) => {
+      const test = await environment(() => ({ text: 'not JSON', thinking: kind === 'thinking' }));
+      if (kind === 'result model' || kind === 'gateway model') {
+        const generate = test.env.client.generate.bind(test.env.client);
+        vi.spyOn(test.env.client, 'generate').mockImplementation(async (request, settings) => {
+          const result = await generate(request, settings);
+          if (kind === 'gateway model')
+            test.env.gatewayDb
+              .prepare("UPDATE provider_jobs SET provider_model='synthetic-wrong-model'")
+              .run();
+          return kind === 'result model'
+            ? { ...result, provider_model: 'synthetic-wrong-model' }
+            : result;
+        });
+      }
+      if (kind === 'usage mismatch') {
+        const get = test.usage.get;
+        vi.spyOn(test.usage, 'get').mockImplementation((id) => ({ ...get(id), total_tokens: 999 }));
+      }
+      const result = await test.run();
+      expect(test.stats().providerCalls).toBe(1);
+      expect(result.summary.FIXTURES_STARTED).toBe(1);
+      expect(result.cases[0]!.attempts).toHaveLength(1);
+      expect(result.cases[0]!.technical_result).toBe('FAIL_EVIDENCE');
+      expect(result.cases[0]!.automated_semantic_result).toBe('NOT_EVALUATED');
+      if (kind === 'usage mismatch') expect(result.summary.SETTLED_COST_CNY_TOTAL).toBeNull();
+      else expect(result.summary.SETTLED_COST_CNY_TOTAL).toBeCloseTo(0.00018, 10);
+    },
+  );
+
+  it('retains two settled structural failures without exceeding the existing two-attempt cap', async () => {
+    const test = await environment((fixture) => ({
+      text: fixture.id === fixtures[0]!.id ? 'not JSON' : JSON.stringify(proposal(fixture)),
+    }));
+    const result = await test.run();
+    expect(result.cases[0]!.attempts).toHaveLength(2);
+    for (const attempt of result.cases[0]!.attempts) {
+      expect(attempt.settlement_count).toBe(1);
+      expect(attempt.settled_cost_cny).toBeCloseTo(0.00018, 10);
+    }
+    expect(result.cases[0]!.technical_result).toBe('FAIL_RAW_JSON');
+    expect(result.summary.FIXTURES_STARTED).toBe(30);
+    expect(test.stats().providerCalls).toBe(31);
+  });
+
+  it('does not bypass Gateway budget reservation for an otherwise safe retry', async () => {
+    const test = await environment(() => ({ text: 'not JSON' }), 1.560576);
+    const result = await test.run();
+    expect(test.stats().providerCalls).toBe(1);
+    expect(result.summary.SUITE_STOP_REASON).toBe('BUDGET_EXCEEDED');
+    expect(result.cases[0]!.attempts).toHaveLength(2);
+    expect(result.cases[0]!.attempts[1]).toMatchObject({
+      provider_requests: 0,
+      observed_provider_requests: 0,
+      provider_outcome: 'NO_PROVIDER_REQUEST',
+      no_dispatch_proof: 'GATEWAY_BUDGET_REJECTED_BEFORE_JOB_AND_RESERVATION',
+      settled_cost_cny: 0,
+    });
+    expect(result.summary.SETTLED_COST_CNY_TOTAL).toBeCloseTo(0.00018, 10);
+  });
+
+  it('rejects unsafe first-attempt evidence before retry without leaking it', async () => {
+    const test = await environment((fixture) => ({
+      text: JSON.stringify({
+        ...proposal(fixture),
+        unknown_field: true,
+        review_warnings: [{ code: 'TEST', severity: 'BLOCKING', message: 'eval-key' }],
+      }),
+    }));
+    await expect(test.run()).rejects.toThrow('EVIDENCE_SECRET_REJECTED');
+    expect(test.stats().providerCalls).toBe(1);
+    expect(readFileSync(join(test.path, 'real-30-golden-cases.json'), 'utf8')).not.toContain(
+      'eval-key',
+    );
+  });
+
+  it('cannot dispatch when mandatory observation setup throws', async () => {
+    const test = await environment();
+    vi.spyOn(test.usage, 'begin').mockImplementation(() => {
+      throw new Error('synthetic observer failure');
+    });
+    const result = await test.run();
+    expect(test.stats().providerCalls).toBe(0);
+    expect(result.summary.FIXTURES_STARTED).toBe(1);
+    expect(result.summary.SUITE_STOP_REASON).toBe('EVIDENCE_INCONSISTENT');
+    expect(result.cases[0]!.technical_result).toBe('FAIL_EVIDENCE');
+  });
+
+  it('fails closed before retry when the observer cannot provide evidence, retaining unknown counts', async () => {
+    const test = await environment(() => ({ text: 'not JSON' }));
+    vi.spyOn(test.usage, 'get').mockImplementation(() => {
+      throw new Error('synthetic observer failure');
+    });
+    const result = await test.run();
+    expect(test.stats().providerCalls).toBe(1);
+    expect(result.cases[0]!.attempts).toHaveLength(1);
+    expect(result.summary.FIXTURES_STARTED).toBe(1);
+    expect(result.summary.PROVIDER_REQUEST_COUNT_TOTAL).toBeNull();
+    expect(result.summary.SETTLED_COST_CNY_TOTAL).toBeNull();
+    expect(result.cases[0]!.technical_result).toBe('FAIL_EVIDENCE');
   });
 
   const warning = { code: 'SYNTHETIC', severity: 'INFORMATIONAL', message: '合成审核提示。' };
@@ -679,7 +1002,7 @@ describe('zero-network real golden harness preparation', () => {
     },
   );
 
-  it('keeps the first overflow despite a valid retry and caps violation metadata', async () => {
+  it('blocks retry after the first overflow and caps violation metadata', async () => {
     const test = await environment((fixture, attempt) => {
       const value = proposal(fixture);
       if (attempt === 1)
@@ -692,10 +1015,10 @@ describe('zero-network real golden harness preparation', () => {
     const result = await test.run();
     expect(result.summary.FIXTURES_STARTED).toBe(1);
     expect(result.summary.SUITE_STOP_REASON).toBe('RAW_EVIDENCE_BOUNDS_EXCEEDED');
-    expect(test.stats().providerCalls).toBe(2);
+    expect(test.stats().providerCalls).toBe(1);
+    expect(result.cases[0]!.attempts).toHaveLength(1);
     expect(result.cases[0]!.attempts[0]!.raw_evidence_bound_violations).toHaveLength(32);
     expect(result.cases[0]!.attempts[0]!.raw_evidence_bound_violations_omitted_count).toBe(8);
-    expect(result.cases[0]!.attempts[1]!.raw_evidence_bounds_exceeded).toBe(false);
     expect(result.cases[0]!.evaluation).toBeNull();
     expect(result.cases[0]!.candidate).toBeNull();
   });

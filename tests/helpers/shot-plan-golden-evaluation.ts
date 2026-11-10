@@ -28,13 +28,16 @@ import {
   ShotPlanAuthorityRepository,
   SourceDocumentRepository,
 } from '../../packages/local-db/dist/index.js';
-import type { TextCapabilityClient } from '../../packages/provider-client/src/index.js';
+import {
+  isGatewayClientError,
+  type TextCapabilityClient,
+} from '../../packages/provider-client/src/index.js';
 import {
   evaluateShotPlanSemanticProposalV1,
   shotPlanSemanticGoldenFixturesV1,
 } from '../../packages/test-fixtures/src/shot-plan-semantic.js';
 import { createCanaryProposerAuditCollector } from './canary-proposer-audit.js';
-import type { observeGoldenProviderUsage } from './golden-provider-usage.js';
+import type { GoldenProviderUsage, observeGoldenProviderUsage } from './golden-provider-usage.js';
 
 const canonicalSchema = JSON.parse(
   readFileSync(
@@ -283,6 +286,21 @@ interface Attempt {
   audit: ReturnType<typeof createCanaryProposerAuditCollector>;
   normalization_events: Array<Record<string, string | number>>;
   audit_invalid: boolean;
+  transport_unknown: boolean;
+  pre_dispatch_rejection_code: 'BUDGET_EXCEEDED' | null;
+}
+
+function providerRequestCount(values: Array<{ provider_requests: number | null }>): number | null {
+  if (
+    values.some(
+      (value) =>
+        value.provider_requests === null ||
+        !Number.isSafeInteger(value.provider_requests) ||
+        value.provider_requests < 0,
+    )
+  )
+    return null;
+  return values.reduce((sum, value) => sum + value.provider_requests!, 0);
 }
 
 export async function runShotPlanGoldenEvaluation(options: {
@@ -408,9 +426,253 @@ export async function runShotPlanGoldenEvaluation(options: {
       const attempts: Attempt[] = [];
       let active: Attempt | undefined;
       let unknownAudit = false;
-      const wrapped = captureGoldenClient(
-        options.client,
-        (request) => {
+      let technical: TechnicalResult = 'PASS';
+      let errorCode = 'NONE';
+      let evidenceFailureCode: string | null = null;
+      // Evidence failure is sticky across attempts: a later retry cannot erase it.
+      const failEvidence = (code: string) => {
+        evidenceFailureCode ??= code;
+        technical = 'FAIL_EVIDENCE';
+        errorCode = evidenceFailureCode;
+        stopReason = evidenceFailureCode;
+      };
+      const inspectAttempt = (attempt: Attempt) => {
+        let usage: Omit<GoldenProviderUsage, 'provider_requests'> & {
+          provider_requests: number | null;
+        };
+        try {
+          usage = options.usage.get(attempt.request_id);
+        } catch {
+          failEvidence('EVIDENCE_INCONSISTENT');
+          usage = {
+            provider_requests: null,
+            http_status: null,
+            prompt_tokens: null,
+            completion_tokens: null,
+            total_tokens: null,
+            thinking_state: 'NOT_EXPOSED',
+          };
+        }
+        const settlement = options.gatewayDb
+          .prepare(
+            "SELECT COUNT(*) AS count, COALESCE(SUM(final_cost),0) AS amount FROM usage_events WHERE request_id=? AND event_type='SETTLEMENT'",
+          )
+          .get(attempt.request_id) as { count: number; amount: number };
+        const job = options.gatewayDb
+          .prepare(
+            'SELECT request_id, provider, provider_model, model_alias, capability, state, error_class FROM provider_jobs WHERE request_id=?',
+          )
+          .get(attempt.request_id) as
+          | {
+              request_id: string;
+              provider: string;
+              provider_model: string;
+              model_alias: string;
+              capability: string;
+              state: string;
+              error_class: string | null;
+            }
+          | undefined;
+        // The frozen Gateway throws this reservation error before creating the job.
+        // Missing telemetry or a generic FAILED job is never proof of no dispatch.
+        const noProviderCall =
+          attempt.pre_dispatch_rejection_code === 'BUDGET_EXCEEDED' &&
+          !job &&
+          (
+            options.gatewayDb
+              .prepare('SELECT COUNT(*) AS count FROM usage_events WHERE request_id=?')
+              .get(attempt.request_id) as { count: number }
+          ).count === 0 &&
+          usage.provider_requests === 0 &&
+          usage.http_status === null &&
+          !attempt.reconstruction &&
+          !attempt.transport_unknown;
+        const knownRejection =
+          usage.provider_requests === 1 &&
+          usage.http_status !== null &&
+          usage.http_status >= 400 &&
+          usage.http_status <= 599 &&
+          job?.state === 'FAILED' &&
+          settlement.count === 0;
+        const usageMatchesSettlement = !(
+          ![usage.prompt_tokens, usage.completion_tokens, usage.total_tokens].every(
+            (value) => Number.isSafeInteger(value) && value !== null && value >= 0,
+          ) ||
+          usage.prompt_tokens === null ||
+          usage.completion_tokens === null ||
+          usage.total_tokens === null ||
+          usage.prompt_tokens > 256000 ||
+          usage.total_tokens !== usage.prompt_tokens + usage.completion_tokens ||
+          Math.abs(
+            usage.prompt_tokens * 0.000002 + usage.completion_tokens * 0.000008 - settlement.amount,
+          ) > 1e-10
+        );
+        if (settlement.count && !usageMatchesSettlement)
+          failEvidence('USAGE_EVIDENCE_INCONSISTENT');
+        const trustedSettlement =
+          !attempt.transport_unknown &&
+          usageMatchesSettlement &&
+          settlement.count === 1 &&
+          Number.isFinite(settlement.amount) &&
+          settlement.amount >= 0 &&
+          job?.state === 'SUCCEEDED' &&
+          usage.provider_requests === 1 &&
+          usage.http_status === 200;
+        const providerOutcome =
+          noProviderCall && settlement.count === 0
+            ? 'NO_PROVIDER_REQUEST'
+            : knownRejection
+              ? 'KNOWN_REJECTED_PROVIDER_RESPONSE'
+              : trustedSettlement
+                ? 'SETTLED_PROVIDER_RESPONSE'
+                : 'UNKNOWN_PROVIDER_OUTCOME';
+        const jobIdentityMatches =
+          job?.request_id === attempt.request_id &&
+          job.provider === metadata.provider_alias &&
+          job.provider_model === metadata.provider_model &&
+          job.model_alias === metadata.capability_alias &&
+          job.capability === 'text.generate.v1';
+        const actualProviderRequests = noProviderCall
+          ? 0
+          : jobIdentityMatches && (trustedSettlement || knownRejection)
+            ? 1
+            : null;
+        const cost =
+          providerOutcome === 'SETTLED_PROVIDER_RESPONSE'
+            ? settlement.amount
+            : providerOutcome === 'NO_PROVIDER_REQUEST' ||
+                providerOutcome === 'KNOWN_REJECTED_PROVIDER_RESPONSE'
+              ? 0
+              : null;
+        if (noProviderCall)
+          Object.assign(usage, { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 });
+        if (!job && usage.provider_requests === 0 && technical !== 'FAIL_EVIDENCE')
+          stopReason = 'GATEWAY_ENVIRONMENT_FAILURE';
+        if (cost === null) {
+          failEvidence('UNKNOWN_PAID_PROVIDER_OUTCOME');
+        }
+        if (
+          job &&
+          (job.request_id !== attempt.request_id ||
+            job.provider !== metadata.provider_alias ||
+            job.provider_model !== metadata.provider_model ||
+            job.model_alias !== metadata.capability_alias ||
+            job.capability !== 'text.generate.v1')
+        ) {
+          failEvidence('MODEL_OR_RESULT_IDENTITY_MISMATCH');
+        }
+        const reconstruction = attempt.reconstruction;
+        if (reconstruction?.raw_evidence_bounds_exceeded)
+          failEvidence('RAW_EVIDENCE_BOUNDS_EXCEEDED');
+        if (reconstruction && usage.provider_requests !== 1) {
+          failEvidence('PROVIDER_REQUEST_EVIDENCE_INCONSISTENT');
+        }
+        let auditEvidence = null;
+        let auditValid = !attempt.audit_invalid;
+        if (reconstruction?.normalized_count) {
+          const event = attempt.normalization_events[0];
+          auditValid &&=
+            attempt.normalization_events.length === 1 &&
+            event?.normalized_optional_context_fields === reconstruction.normalized_count &&
+            event?.post_normalization_canonical_schema_validation === reconstruction.post_canonical;
+          if (reconstruction.post_canonical === 'PASS') {
+            try {
+              auditEvidence = attempt.audit.evidence({
+                operation_id: operationId,
+                provider_request_id: attempt.request_id,
+              });
+            } catch {
+              auditValid = false;
+            }
+          }
+        } else {
+          auditValid &&= attempt.normalization_events.length === 0;
+          try {
+            auditEvidence = attempt.audit.evidence({
+              operation_id: operationId,
+              provider_request_id: attempt.request_id,
+            });
+          } catch {
+            auditValid = false;
+          }
+        }
+        if (
+          !auditValid ||
+          unknownAudit ||
+          (reconstruction && !attempt.identity_matches) ||
+          usage.thinking_state === 'NONEMPTY' ||
+          (trustedSettlement &&
+            usage.thinking_state !== 'ABSENT' &&
+            usage.thinking_state !== 'EMPTY')
+        ) {
+          failEvidence('EVIDENCE_INCONSISTENT');
+        }
+        if (reconstruction && !attempt.identity_matches)
+          failEvidence('MODEL_OR_RESULT_IDENTITY_MISMATCH');
+        if (
+          (usage.prompt_tokens !== null && usage.prompt_tokens > 256000) ||
+          (usage.completion_tokens !== null && usage.completion_tokens > 131072)
+        ) {
+          failEvidence('USAGE_OUTSIDE_PROTECTED_ENVELOPE');
+        }
+        return {
+          request_id: attempt.request_id,
+          provider_outcome: providerOutcome,
+          settlement_count: settlement.count,
+          gateway_settlement_amount_cny: settlement.count ? settlement.amount : null,
+          ...usage,
+          observed_provider_requests: usage.provider_requests,
+          provider_requests: actualProviderRequests,
+          no_dispatch_proof: noProviderCall
+            ? 'GATEWAY_BUDGET_REJECTED_BEFORE_JOB_AND_RESERVATION'
+            : null,
+          settled_cost_cny: cost,
+          raw_json_parse: reconstruction?.raw_json_parse ?? 'NOT_RUN',
+          raw_provider_canonical_schema_validation: reconstruction?.raw_canonical ?? 'NOT_RUN',
+          structural_normalization_applied: reconstruction
+            ? reconstruction.normalized_count > 0
+            : null,
+          normalized_optional_context_fields: reconstruction?.normalized_count ?? 0,
+          post_normalization_canonical_schema_validation:
+            reconstruction?.post_canonical ?? 'NOT_RUN',
+          normalization_audit: auditEvidence,
+          normalization_audit_events: attempt.normalization_events,
+          canonical_proposal: reconstruction?.raw_evidence_bounds_exceeded
+            ? null
+            : (reconstruction?.canonical ?? null),
+          raw_semantic_proposal: reconstruction?.raw_semantic_proposal ?? null,
+          raw_context_states: reconstruction?.raw_context_states ?? [],
+          raw_evidence_bounds_exceeded: reconstruction?.raw_evidence_bounds_exceeded ?? false,
+          raw_evidence_bound_violations: reconstruction?.raw_evidence_bound_violations ?? [],
+          raw_evidence_bound_violations_omitted_count:
+            reconstruction?.raw_evidence_bound_violations_omitted_count ?? 0,
+        };
+      };
+      const capturedAttemptReports = new Map<string, ReturnType<typeof inspectAttempt>>();
+      const inspectAttempts = () =>
+        attempts.map((attempt) => {
+          let report = capturedAttemptReports.get(attempt.request_id);
+          if (!report) {
+            report = inspectAttempt(attempt);
+            if (rejectsSecret(report)) rejectUnsafeEvidence();
+            capturedAttemptReports.set(attempt.request_id, report);
+          }
+          return report;
+        });
+      const client: TextCapabilityClient = {
+        async generate(request, settings) {
+          // Authoritative dispatch gate: never place this in the passive capture callbacks.
+          if (attempts.length) {
+            try {
+              inspectAttempts();
+            } catch {
+              failEvidence('EVIDENCE_INCONSISTENT');
+              throw new Error('GOLDEN_PRE_DISPATCH_EVIDENCE_REJECTED');
+            }
+            if (evidenceFailureCode || stopReason) {
+              throw new Error('GOLDEN_PRE_DISPATCH_EVIDENCE_REJECTED');
+            }
+          }
           forbidden.add(request.prompt);
           if (request.structured_output)
             forbidden.add(JSON.stringify(request.structured_output.schema));
@@ -421,23 +683,40 @@ export async function runShotPlanGoldenEvaluation(options: {
             audit: createCanaryProposerAuditCollector(operationId),
             normalization_events: [],
             audit_invalid: false,
+            transport_unknown: false,
+            pre_dispatch_rejection_code: null,
           };
-          attempts.push(active);
-          options.usage.begin(request.request_id);
-        },
-        (result) => {
-          if (!active) return;
-          active.identity_matches =
-            result.request_id === active.request_id &&
-            result.provider_alias === metadata.provider_alias &&
-            result.provider_model === metadata.provider_model;
-          active.reconstruction = reconstruct(result.text);
-        },
-      );
-      const client: TextCapabilityClient = {
-        async generate(request, settings) {
+          // These operations are mandatory, not best-effort observations.
           try {
-            return await wrapped.generate(request, settings);
+            options.usage.begin(request.request_id);
+          } catch {
+            failEvidence('EVIDENCE_INCONSISTENT');
+            throw new Error('GOLDEN_PRE_DISPATCH_EVIDENCE_REJECTED');
+          }
+          attempts.push(active);
+          try {
+            const result = await options.client.generate(request, settings);
+            active.identity_matches =
+              result.request_id === request.request_id &&
+              result.request_snapshot_hash === request.request_snapshot_hash &&
+              result.provider_alias === metadata.provider_alias &&
+              result.provider_model === metadata.provider_model;
+            active.reconstruction = reconstruct(result.text);
+            return result;
+          } catch (error) {
+            active.pre_dispatch_rejection_code =
+              isGatewayClientError(error) && error.code === 'BUDGET_EXCEEDED'
+                ? 'BUDGET_EXCEEDED'
+                : null;
+            active.transport_unknown =
+              !isGatewayClientError(error) ||
+              [
+                'GATEWAY_TIMEOUT',
+                'GATEWAY_NETWORK_ERROR',
+                'TIMEOUT_UNKNOWN',
+                'REQUEST_PENDING',
+              ].includes(error.code);
+            throw error;
           } finally {
             options.usage.end();
           }
@@ -480,8 +759,6 @@ export async function runShotPlanGoldenEvaluation(options: {
           });
         },
       });
-      let technical: TechnicalResult = 'PASS';
-      let errorCode = 'NONE';
       let candidate = null;
       let canonical: ShotPlanSemanticProposalV1 | null = null;
       try {
@@ -568,154 +845,8 @@ export async function runShotPlanGoldenEvaluation(options: {
           stopReason = errorCode;
         }
       }
-      // Evidence failure is sticky across attempts: a later retry cannot erase it.
-      const failEvidence = (code: string) => {
-        if (technical !== 'FAIL_EVIDENCE') {
-          technical = 'FAIL_EVIDENCE';
-          errorCode = code;
-          stopReason = code;
-        }
-      };
-      const attemptReports = attempts.map((attempt) => {
-        const usage = options.usage.get(attempt.request_id);
-        const settlement = options.gatewayDb
-          .prepare(
-            "SELECT COUNT(*) AS count, COALESCE(SUM(final_cost),0) AS amount FROM usage_events WHERE request_id=? AND event_type='SETTLEMENT'",
-          )
-          .get(attempt.request_id) as { count: number; amount: number };
-        const job = options.gatewayDb
-          .prepare('SELECT state, error_class FROM provider_jobs WHERE request_id=?')
-          .get(attempt.request_id) as { state: string; error_class: string | null } | undefined;
-        const noProviderCall = usage.provider_requests === 0;
-        const knownRejection =
-          usage.provider_requests === 1 &&
-          usage.http_status !== null &&
-          usage.http_status >= 400 &&
-          usage.http_status <= 599 &&
-          job?.state === 'FAILED' &&
-          settlement.count === 0;
-        const trustedSettlement =
-          settlement.count === 1 &&
-          Number.isFinite(settlement.amount) &&
-          settlement.amount >= 0 &&
-          job?.state === 'SUCCEEDED' &&
-          usage.provider_requests === 1 &&
-          usage.http_status === 200;
-        const providerOutcome =
-          noProviderCall && settlement.count === 0
-            ? 'NO_PROVIDER_REQUEST'
-            : knownRejection
-              ? 'KNOWN_REJECTED_PROVIDER_RESPONSE'
-              : trustedSettlement
-                ? 'SETTLED_PROVIDER_RESPONSE'
-                : 'UNKNOWN_PROVIDER_OUTCOME';
-        const cost =
-          providerOutcome === 'SETTLED_PROVIDER_RESPONSE'
-            ? settlement.amount
-            : providerOutcome === 'NO_PROVIDER_REQUEST' ||
-                providerOutcome === 'KNOWN_REJECTED_PROVIDER_RESPONSE'
-              ? 0
-              : null;
-        if (noProviderCall)
-          Object.assign(usage, { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 });
-        if (!job && usage.provider_requests === 0 && technical !== 'FAIL_EVIDENCE')
-          stopReason = 'GATEWAY_ENVIRONMENT_FAILURE';
-        if (cost === null) {
-          failEvidence('UNKNOWN_PAID_PROVIDER_OUTCOME');
-        }
-        const reconstruction = attempt.reconstruction;
-        if (reconstruction?.raw_evidence_bounds_exceeded)
-          failEvidence('RAW_EVIDENCE_BOUNDS_EXCEEDED');
-        if (reconstruction && usage.provider_requests !== 1) {
-          failEvidence('PROVIDER_REQUEST_EVIDENCE_INCONSISTENT');
-        }
-        let auditEvidence = null;
-        let auditValid = !attempt.audit_invalid;
-        if (reconstruction?.normalized_count) {
-          const event = attempt.normalization_events[0];
-          auditValid &&=
-            attempt.normalization_events.length === 1 &&
-            event?.normalized_optional_context_fields === reconstruction.normalized_count &&
-            event?.post_normalization_canonical_schema_validation === reconstruction.post_canonical;
-          if (reconstruction.post_canonical === 'PASS') {
-            try {
-              auditEvidence = attempt.audit.evidence({
-                operation_id: operationId,
-                provider_request_id: attempt.request_id,
-              });
-            } catch {
-              auditValid = false;
-            }
-          }
-        } else {
-          auditValid &&= attempt.normalization_events.length === 0;
-          try {
-            auditEvidence = attempt.audit.evidence({
-              operation_id: operationId,
-              provider_request_id: attempt.request_id,
-            });
-          } catch {
-            auditValid = false;
-          }
-        }
-        if (
-          !auditValid ||
-          unknownAudit ||
-          (reconstruction && !attempt.identity_matches) ||
-          usage.thinking_state === 'NONEMPTY'
-        ) {
-          failEvidence('EVIDENCE_INCONSISTENT');
-        }
-        if (reconstruction && !attempt.identity_matches)
-          failEvidence('MODEL_OR_RESULT_IDENTITY_MISMATCH');
-        if (
-          (usage.prompt_tokens !== null && usage.prompt_tokens > 256000) ||
-          (usage.completion_tokens !== null && usage.completion_tokens > 131072)
-        ) {
-          failEvidence('USAGE_OUTSIDE_PROTECTED_ENVELOPE');
-        }
-        if (
-          settlement.count &&
-          (usage.prompt_tokens === null ||
-            usage.completion_tokens === null ||
-            usage.total_tokens === null ||
-            usage.prompt_tokens > 256000 ||
-            usage.total_tokens !== usage.prompt_tokens + usage.completion_tokens ||
-            Math.abs(
-              usage.prompt_tokens * 0.000002 +
-                usage.completion_tokens * 0.000008 -
-                settlement.amount,
-            ) > 1e-10)
-        ) {
-          failEvidence('USAGE_EVIDENCE_INCONSISTENT');
-        }
-        return {
-          request_id: attempt.request_id,
-          provider_outcome: providerOutcome,
-          settlement_count: settlement.count,
-          ...usage,
-          settled_cost_cny: cost,
-          raw_json_parse: reconstruction?.raw_json_parse ?? 'NOT_RUN',
-          raw_provider_canonical_schema_validation: reconstruction?.raw_canonical ?? 'NOT_RUN',
-          structural_normalization_applied: reconstruction
-            ? reconstruction.normalized_count > 0
-            : null,
-          normalized_optional_context_fields: reconstruction?.normalized_count ?? 0,
-          post_normalization_canonical_schema_validation:
-            reconstruction?.post_canonical ?? 'NOT_RUN',
-          normalization_audit: auditEvidence,
-          normalization_audit_events: attempt.normalization_events,
-          canonical_proposal: reconstruction?.raw_evidence_bounds_exceeded
-            ? null
-            : (reconstruction?.canonical ?? null),
-          raw_semantic_proposal: reconstruction?.raw_semantic_proposal ?? null,
-          raw_context_states: reconstruction?.raw_context_states ?? [],
-          raw_evidence_bounds_exceeded: reconstruction?.raw_evidence_bounds_exceeded ?? false,
-          raw_evidence_bound_violations: reconstruction?.raw_evidence_bound_violations ?? [],
-          raw_evidence_bound_violations_omitted_count:
-            reconstruction?.raw_evidence_bound_violations_omitted_count ?? 0,
-        };
-      });
+      const attemptReports = inspectAttempts();
+      if (evidenceFailureCode) failEvidence(evidenceFailureCode);
       // Never persist canonical/Candidate copies of an overflowing raw value, or score it.
       if (attemptReports.some((attempt) => attempt.raw_evidence_bounds_exceeded)) {
         canonical = null;
@@ -760,7 +891,12 @@ export async function runShotPlanGoldenEvaluation(options: {
           [],
         candidate,
         provider_attempts: attempts.length,
-        provider_request_count: attemptReports.reduce((sum, a) => sum + a.provider_requests, 0),
+        provider_request_count: providerRequestCount(attemptReports),
+        observed_provider_request_count: providerRequestCount(
+          attemptReports.map((attempt) => ({
+            provider_requests: attempt.observed_provider_requests,
+          })),
+        ),
         attempts: attemptReports,
       });
       if (systemic.includes(errorCode)) stopReason = errorCode;
@@ -805,10 +941,13 @@ export async function runShotPlanGoldenEvaluation(options: {
         cases.length === 30 && completed.length === 30 && passCount === 30 ? 'PASS' : 'FAIL',
       SUITE_STOP_REASON: stopReason,
       PROVIDER_ATTEMPTS_TOTAL: cases.reduce((total, c) => total + c.provider_attempts, 0),
-      PROVIDER_REQUEST_COUNT_TOTAL: cases.reduce((total, c) => total + c.provider_request_count, 0),
+      PROVIDER_REQUEST_COUNT_TOTAL: providerRequestCount(allAttempts),
+      OBSERVED_PROVIDER_REQUEST_COUNT_TOTAL: providerRequestCount(
+        allAttempts.map((attempt) => ({ provider_requests: attempt.observed_provider_requests })),
+      ),
       REAL_PROVIDER_REQUEST_COUNT:
         options.executionKind === 'REAL_PROVIDER_EVALUATION'
-          ? cases.reduce((total, c) => total + c.provider_request_count, 0)
+          ? providerRequestCount(allAttempts)
           : 0,
       PROMPT_TOKENS_TOTAL: sum('prompt_tokens'),
       COMPLETION_TOKENS_TOTAL: sum('completion_tokens'),
