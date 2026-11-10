@@ -287,6 +287,7 @@ interface Attempt {
   normalization_events: Array<Record<string, string | number>>;
   audit_invalid: boolean;
   transport_unknown: boolean;
+  pre_dispatch_rejection_code: 'BUDGET_EXCEEDED' | null;
 }
 
 function providerRequestCount(values: Array<{ provider_requests: number | null }>): number | null {
@@ -472,13 +473,20 @@ export async function runShotPlanGoldenEvaluation(options: {
               error_class: string | null;
             }
           | undefined;
+        // The frozen Gateway throws this reservation error before creating the job.
+        // Missing telemetry or a generic FAILED job is never proof of no dispatch.
         const noProviderCall =
+          attempt.pre_dispatch_rejection_code === 'BUDGET_EXCEEDED' &&
+          !job &&
+          (
+            options.gatewayDb
+              .prepare('SELECT COUNT(*) AS count FROM usage_events WHERE request_id=?')
+              .get(attempt.request_id) as { count: number }
+          ).count === 0 &&
           usage.provider_requests === 0 &&
           usage.http_status === null &&
           !attempt.reconstruction &&
-          !attempt.transport_unknown &&
-          (!job || job.state === 'FAILED') &&
-          job?.error_class !== 'TIMEOUT_UNKNOWN';
+          !attempt.transport_unknown;
         const knownRejection =
           usage.provider_requests === 1 &&
           usage.http_status !== null &&
@@ -518,6 +526,17 @@ export async function runShotPlanGoldenEvaluation(options: {
               : trustedSettlement
                 ? 'SETTLED_PROVIDER_RESPONSE'
                 : 'UNKNOWN_PROVIDER_OUTCOME';
+        const jobIdentityMatches =
+          job?.request_id === attempt.request_id &&
+          job.provider === metadata.provider_alias &&
+          job.provider_model === metadata.provider_model &&
+          job.model_alias === metadata.capability_alias &&
+          job.capability === 'text.generate.v1';
+        const actualProviderRequests = noProviderCall
+          ? 0
+          : jobIdentityMatches && (trustedSettlement || knownRejection)
+            ? 1
+            : null;
         const cost =
           providerOutcome === 'SETTLED_PROVIDER_RESPONSE'
             ? settlement.amount
@@ -602,6 +621,11 @@ export async function runShotPlanGoldenEvaluation(options: {
           settlement_count: settlement.count,
           gateway_settlement_amount_cny: settlement.count ? settlement.amount : null,
           ...usage,
+          observed_provider_requests: usage.provider_requests,
+          provider_requests: actualProviderRequests,
+          no_dispatch_proof: noProviderCall
+            ? 'GATEWAY_BUDGET_REJECTED_BEFORE_JOB_AND_RESERVATION'
+            : null,
           settled_cost_cny: cost,
           raw_json_parse: reconstruction?.raw_json_parse ?? 'NOT_RUN',
           raw_provider_canonical_schema_validation: reconstruction?.raw_canonical ?? 'NOT_RUN',
@@ -660,6 +684,7 @@ export async function runShotPlanGoldenEvaluation(options: {
             normalization_events: [],
             audit_invalid: false,
             transport_unknown: false,
+            pre_dispatch_rejection_code: null,
           };
           // These operations are mandatory, not best-effort observations.
           try {
@@ -679,6 +704,10 @@ export async function runShotPlanGoldenEvaluation(options: {
             active.reconstruction = reconstruct(result.text);
             return result;
           } catch (error) {
+            active.pre_dispatch_rejection_code =
+              isGatewayClientError(error) && error.code === 'BUDGET_EXCEEDED'
+                ? 'BUDGET_EXCEEDED'
+                : null;
             active.transport_unknown =
               !isGatewayClientError(error) ||
               [
@@ -863,6 +892,11 @@ export async function runShotPlanGoldenEvaluation(options: {
         candidate,
         provider_attempts: attempts.length,
         provider_request_count: providerRequestCount(attemptReports),
+        observed_provider_request_count: providerRequestCount(
+          attemptReports.map((attempt) => ({
+            provider_requests: attempt.observed_provider_requests,
+          })),
+        ),
         attempts: attemptReports,
       });
       if (systemic.includes(errorCode)) stopReason = errorCode;
@@ -908,6 +942,9 @@ export async function runShotPlanGoldenEvaluation(options: {
       SUITE_STOP_REASON: stopReason,
       PROVIDER_ATTEMPTS_TOTAL: cases.reduce((total, c) => total + c.provider_attempts, 0),
       PROVIDER_REQUEST_COUNT_TOTAL: providerRequestCount(allAttempts),
+      OBSERVED_PROVIDER_REQUEST_COUNT_TOTAL: providerRequestCount(
+        allAttempts.map((attempt) => ({ provider_requests: attempt.observed_provider_requests })),
+      ),
       REAL_PROVIDER_REQUEST_COUNT:
         options.executionKind === 'REAL_PROVIDER_EVALUATION'
           ? providerRequestCount(allAttempts)

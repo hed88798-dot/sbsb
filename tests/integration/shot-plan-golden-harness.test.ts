@@ -500,6 +500,8 @@ describe('zero-network real golden harness preparation', () => {
     expect(result.cases[1]!.attempts[0]).toMatchObject({
       provider_outcome: 'NO_PROVIDER_REQUEST',
       provider_requests: 0,
+      observed_provider_requests: 0,
+      no_dispatch_proof: 'GATEWAY_BUDGET_REJECTED_BEFORE_JOB_AND_RESERVATION',
       settled_cost_cny: 0,
       prompt_tokens: 0,
       completion_tokens: 0,
@@ -530,7 +532,8 @@ describe('zero-network real golden harness preparation', () => {
         attempts: [
           {
             provider_outcome: 'UNKNOWN_PROVIDER_OUTCOME',
-            provider_requests: 1,
+            observed_provider_requests: 1,
+            provider_requests: null,
             http_status: hideStatus ? null : 200,
             settlement_count: 0,
             settled_cost_cny: null,
@@ -614,7 +617,8 @@ describe('zero-network real golden harness preparation', () => {
       expect(result.summary.SETTLED_COST_CNY_TOTAL).toBeNull();
       expect(result.cases[0]!.attempts).toHaveLength(1);
       expect(result.cases[0]!.attempts[0]).toMatchObject({
-        provider_requests: 1,
+        observed_provider_requests: 1,
+        provider_requests: null,
         provider_outcome: 'UNKNOWN_PROVIDER_OUTCOME',
         settlement_count: 0,
         settled_cost_cny: null,
@@ -635,10 +639,148 @@ describe('zero-network real golden harness preparation', () => {
     expect(result.summary.SUITE_STOP_REASON).toBe('UNKNOWN_PAID_PROVIDER_OUTCOME');
     expect(result.cases[0]!.attempts).toHaveLength(1);
     expect(result.cases[0]!.attempts[0]).toMatchObject({
-      provider_requests: 0,
+      observed_provider_requests: 0,
+      provider_requests: null,
       provider_outcome: 'UNKNOWN_PROVIDER_OUTCOME',
       settled_cost_cny: null,
     });
+    expect(result.cases[0]!.provider_request_count).toBeNull();
+    expect(result.summary.PROVIDER_REQUEST_COUNT_TOTAL).toBeNull();
+    expect(result.summary.OBSERVED_PROVIDER_REQUEST_COUNT_TOTAL).toBe(0);
+    expect(result.summary.FIXTURES_STARTED).toBe(1);
+  });
+
+  function hideTelemetry(test: Awaited<ReturnType<typeof environment>>, firstOnly = false) {
+    const get = test.usage.get;
+    let firstId: string | undefined;
+    vi.spyOn(test.usage, 'get').mockImplementation((id) => {
+      firstId ??= id;
+      if (firstOnly && id !== firstId) return get(id);
+      return {
+        provider_requests: 0,
+        http_status: null,
+        prompt_tokens: null,
+        completion_tokens: null,
+        total_tokens: null,
+        thinking_state: 'NOT_EXPOSED',
+      };
+    });
+  }
+
+  function assertZeroTelemetryUnknown(
+    result: Awaited<ReturnType<typeof runShotPlanGoldenEvaluation>>,
+  ) {
+    expect(result.summary.FIXTURES_STARTED).toBe(1);
+    expect(result.summary.SUITE_STOP_REASON).toBe('UNKNOWN_PAID_PROVIDER_OUTCOME');
+    expect(result.summary.PROVIDER_REQUEST_COUNT_TOTAL).toBeNull();
+    expect(result.summary.OBSERVED_PROVIDER_REQUEST_COUNT_TOTAL).toBe(0);
+    expect(result.summary.SETTLED_COST_CNY_TOTAL).toBeNull();
+    expect(result.cases[0]!.provider_request_count).toBeNull();
+    expect(result.cases[0]!.observed_provider_request_count).toBe(0);
+    expect(result.cases[0]!.attempts).toHaveLength(1);
+    expect(result.cases[0]!.attempts[0]).toMatchObject({
+      observed_provider_requests: 0,
+      provider_requests: null,
+      provider_outcome: 'UNKNOWN_PROVIDER_OUTCOME',
+      no_dispatch_proof: null,
+      settled_cost_cny: null,
+    });
+  }
+
+  it('Code F A: malformed HTTP 200 plus zero telemetry and FAILED Job stops after one actual transport call', async () => {
+    const test = await environment(() => ({ malformedEnvelope: true, omitUsage: true }));
+    hideTelemetry(test);
+    const result = await test.run();
+    expect(test.stats().providerCalls).toBe(1);
+    expect(test.env.gatewayDb.prepare('SELECT state FROM provider_jobs').get()).toEqual({
+      state: 'FAILED',
+    });
+    assertZeroTelemetryUnknown(result);
+    const saved = JSON.parse(readFileSync(join(test.path, 'real-30-golden-summary.json'), 'utf8'));
+    expect(saved.PROVIDER_REQUEST_COUNT_TOTAL).toBeNull();
+    expect(saved.OBSERVED_PROVIDER_REQUEST_COUNT_TOTAL).toBe(0);
+    const savedCases = JSON.parse(
+      readFileSync(join(test.path, 'real-30-golden-cases.json'), 'utf8'),
+    );
+    expect(savedCases.cases[0].provider_request_count).toBeNull();
+    expect(savedCases.cases[0].attempts[0].provider_requests).toBeNull();
+  });
+
+  it('Code F B: retryable response error plus zero telemetry blocks the second actual dispatch, preventing 31 calls', async () => {
+    const test = await environment((fixture, attempt) => ({
+      malformedEnvelope: fixture.id === fixtures[0]!.id && attempt === 1,
+      omitUsage: fixture.id === fixtures[0]!.id && attempt === 1,
+    }));
+    hideTelemetry(test, true);
+    const generate = test.env.client.generate.bind(test.env.client);
+    let calls = 0;
+    vi.spyOn(test.env.client, 'generate').mockImplementation(async (request, settings) => {
+      calls += 1;
+      if (calls === 1) {
+        await generate(request, settings).catch(() => undefined);
+        throw new GatewayClientError(
+          'INVALID_GATEWAY_RESPONSE',
+          'synthetic invalid response',
+          false,
+        );
+      }
+      return generate(request, settings);
+    });
+    const result = await test.run();
+    expect(test.stats().providerCalls).toBe(1);
+    expect(calls).toBe(1);
+    assertZeroTelemetryUnknown(result);
+  });
+
+  it('Code F C: network failure with no observed event keeps actual request counts unknown through Attempt, Case and Suite', async () => {
+    const test = await environment(() => ({ unobservedNetworkFailure: true }));
+    const result = await test.run();
+    expect(test.stats().providerCalls).toBe(1);
+    assertZeroTelemetryUnknown(result);
+  });
+
+  it('does not treat a budget error identity alone as pre-dispatch proof when a FAILED Job exists', async () => {
+    const test = await environment(() => ({ malformedEnvelope: true, omitUsage: true }));
+    hideTelemetry(test);
+    const generate = test.env.client.generate.bind(test.env.client);
+    vi.spyOn(test.env.client, 'generate').mockImplementation(async (request, settings) => {
+      await generate(request, settings).catch(() => undefined);
+      throw new GatewayClientError('BUDGET_EXCEEDED', 'synthetic contradictory rejection', false);
+    });
+    const result = await test.run();
+    expect(test.stats().providerCalls).toBe(1);
+    assertZeroTelemetryUnknown(result);
+  });
+
+  it('propagates an unknown later actual count instead of reporting only earlier known requests', async () => {
+    const test = await environment((fixture) => ({
+      malformedEnvelope: fixture.id === fixtures[1]!.id,
+      omitUsage: fixture.id === fixtures[1]!.id,
+    }));
+    const get = test.usage.get;
+    let firstId: string | undefined;
+    vi.spyOn(test.usage, 'get').mockImplementation((id) => {
+      firstId ??= id;
+      return id === firstId
+        ? get(id)
+        : {
+            provider_requests: 0,
+            http_status: null,
+            prompt_tokens: null,
+            completion_tokens: null,
+            total_tokens: null,
+            thinking_state: 'NOT_EXPOSED',
+          };
+    });
+    const result = await test.run();
+    expect(test.stats().providerCalls).toBe(2);
+    expect(result.summary.FIXTURES_STARTED).toBe(2);
+    expect(result.cases[0]!.provider_request_count).toBe(1);
+    expect(result.cases[0]!.attempts[0]!.settled_cost_cny).toBeCloseTo(0.00018, 10);
+    expect(result.cases[1]!.provider_request_count).toBeNull();
+    expect(result.summary.PROVIDER_REQUEST_COUNT_TOTAL).toBeNull();
+    expect(result.summary.OBSERVED_PROVIDER_REQUEST_COUNT_TOTAL).toBe(1);
+    expect(result.summary.SETTLED_COST_CNY_TOTAL).toBeNull();
   });
 
   it.each(['result model', 'gateway model', 'thinking', 'usage mismatch'])(
@@ -696,7 +838,9 @@ describe('zero-network real golden harness preparation', () => {
     expect(result.cases[0]!.attempts).toHaveLength(2);
     expect(result.cases[0]!.attempts[1]).toMatchObject({
       provider_requests: 0,
+      observed_provider_requests: 0,
       provider_outcome: 'NO_PROVIDER_REQUEST',
+      no_dispatch_proof: 'GATEWAY_BUDGET_REJECTED_BEFORE_JOB_AND_RESERVATION',
       settled_cost_cny: 0,
     });
     expect(result.summary.SETTLED_COST_CNY_TOTAL).toBeCloseTo(0.00018, 10);
