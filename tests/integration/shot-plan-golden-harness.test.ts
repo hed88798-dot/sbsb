@@ -7,6 +7,14 @@ import {
   shotPlanSemanticGoldenFixturesV1 as fixtures,
   type ShotPlanSemanticGoldenFixtureV1,
 } from '../../packages/test-fixtures/src/shot-plan-semantic.js';
+import {
+  JOINT_ALTERNATIVE_EVALUATION_V2,
+  JOINT_GOLDEN_SHA256,
+  LEGACY_GOLDEN_SHA256,
+  LEGACY_SEMANTIC_EVALUATION_V1,
+  shotPlanSemanticGoldenFixturesV2,
+  type ShotPlanGoldenEvaluationPolicy,
+} from '../../packages/test-fixtures/src/shot-plan-semantic-evaluation.v2.js';
 import type {
   TextGatewayRequestV1,
   TextGatewayResultV1,
@@ -228,13 +236,14 @@ async function environment(
     usage,
     path,
     order,
-    run: () =>
+    run: (evaluationPolicy?: ShotPlanGoldenEvaluationPolicy) =>
       runShotPlanGoldenEvaluation({
         ...env,
         usage,
         directory: path,
         gitHead: head,
         executionKind: 'DETERMINISTIC_FAKE_TRANSPORT',
+        evaluationPolicy,
       }),
     stats: () => ({ maximumActive, providerCalls }),
   };
@@ -247,6 +256,85 @@ afterEach(async () => {
 });
 
 describe('zero-network real golden harness preparation', () => {
+  it('rejects unsupported policy before any dispatch or evidence creation', async () => {
+    const test = await environment();
+    await expect(test.run('UNSUPPORTED' as ShotPlanGoldenEvaluationPolicy)).rejects.toThrow(
+      'GOLDEN_UNSUPPORTED_EVALUATION_POLICY',
+    );
+    expect(test.stats().providerCalls).toBe(0);
+    expect(() => statSync(join(test.path, 'real-30-golden-summary.json'))).toThrow();
+  });
+
+  it('rejects mutated Golden authority before any dispatch, restoring the fixture afterwards', async () => {
+    const test = await environment();
+    const fixture = shotPlanSemanticGoldenFixturesV2[12]!;
+    const original = fixture.source_text;
+    try {
+      fixture.source_text = '非授权变异';
+      await expect(test.run(JOINT_ALTERNATIVE_EVALUATION_V2)).rejects.toThrow(
+        'GOLDEN_INVALID_AUTHORITY_OR_HEAD',
+      );
+      expect(test.stats().providerCalls).toBe(0);
+      expect(() => statSync(join(test.path, 'real-30-golden-summary.json'))).toThrow();
+    } finally {
+      fixture.source_text = original;
+    }
+  });
+
+  it.each(['approved', 'wrong-route'] as const)(
+    'uses explicitly selected V2 policy in the actual harness: %s',
+    async (mode) => {
+      const test = await environment((fixture) => {
+        if (fixture.id !== 'vet-commerce-context-applicable-animal') return {};
+        const value = proposal(shotPlanSemanticGoldenFixturesV2[12]!, 1);
+        if (mode === 'wrong-route') value.units[0]!.route = 'PRODUCT';
+        return { text: JSON.stringify(value) };
+      });
+      const result = await test.run(JOINT_ALTERNATIVE_EVALUATION_V2);
+      expect(test.stats().providerCalls).toBe(30);
+      expect(result.summary).toMatchObject({
+        schema_version: 'c3c-real-golden-evaluation-v2',
+        evaluator_policy_version: JOINT_ALTERNATIVE_EVALUATION_V2,
+        golden_revision: 'SHOT_PLAN_SEMANTIC_GOLDEN_V2',
+        fixture_sha256: JOINT_GOLDEN_SHA256,
+        evaluator_authority: 'evaluateShotPlanSemanticProposalV2',
+        FIXTURES_AUTOMATED_SEMANTIC_PASS: mode === 'approved' ? 30 : 29,
+        AUTOMATED_30_CASE_GOLDEN_RESULT: mode === 'approved' ? 'PASS' : 'FAIL',
+        REAL_PROVIDER_REQUEST_COUNT: 0,
+      });
+      const target = result.cases[12]!;
+      expect(target.technical_result).toBe('PASS');
+      expect(target.automated_semantic_result).toBe(
+        mode === 'approved' ? 'AUTOMATED_SEMANTIC_PASS' : 'AUTOMATED_SEMANTIC_FAIL',
+      );
+      expect(target.evaluation).toMatchObject({
+        joint_alternative_match: mode === 'approved',
+        overall_pass: mode === 'approved',
+      });
+      // Technical success never bypasses the joint semantic gate; semantic FAIL still continues.
+      expect(result.cases).toHaveLength(30);
+    },
+  );
+
+  it('keeps default V1 scoring and report files isolated from a later explicit V2 run', async () => {
+    const first = await environment();
+    const oldResult = await first.run();
+    const oldPath = join(first.path, 'real-30-golden-summary.json');
+    const oldBytes = readFileSync(oldPath, 'utf8');
+    expect(oldResult.summary).toMatchObject({
+      schema_version: 'c3c-real-golden-evaluation-v1',
+      evaluator_policy_version: LEGACY_SEMANTIC_EVALUATION_V1,
+      fixture_sha256: LEGACY_GOLDEN_SHA256,
+      evaluator_authority: 'evaluateShotPlanSemanticProposalV1',
+    });
+    const second = await environment();
+    await second.run(JOINT_ALTERNATIVE_EVALUATION_V2);
+    expect(second.path).not.toBe(first.path);
+    expect(readFileSync(oldPath, 'utf8')).toBe(oldBytes);
+    expect(first.stats().providerCalls).toBe(30);
+    expect(second.stats().providerCalls).toBe(30);
+  });
+
   it('discovers exactly 30 fixtures, preserves order, traverses the authenticated chain sequentially and aggregates actual settlements', async () => {
     const test = await environment();
     const result = await test.run();

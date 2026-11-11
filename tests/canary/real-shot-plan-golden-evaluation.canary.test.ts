@@ -6,6 +6,10 @@ import { describe, expect, it } from 'vitest';
 import { openGoldenEvaluationEnvironment } from '../helpers/golden-evaluation-environment.js';
 import { observeGoldenProviderUsage } from '../helpers/golden-provider-usage.js';
 import { runShotPlanGoldenEvaluation } from '../helpers/shot-plan-golden-evaluation.js';
+import {
+  LEGACY_SEMANTIC_EVALUATION_V1,
+  selectShotPlanGoldenEvaluationPolicy,
+} from '../../packages/test-fixtures/src/shot-plan-semantic-evaluation.v2.js';
 
 const enabled = process.env.REAL_SHOT_PLAN_GOLDEN_EVAL === '1';
 function required(name: string): string {
@@ -25,6 +29,10 @@ describe.skipIf(!enabled)('opt-in real 30-case semantic golden evaluation', () =
         execFileSync('git', ['status', '--porcelain=v1'], { encoding: 'utf8' }).trim()
       )
         throw new Error('REAL_GOLDEN_REVIEWED_CLEAN_HEAD_REQUIRED');
+      // Validate selection before constructing any Gateway/Provider environment.
+      const policy = selectShotPlanGoldenEvaluationPolicy(
+        process.env.REAL_SHOT_PLAN_GOLDEN_EVALUATION_POLICY ?? LEGACY_SEMANTIC_EVALUATION_V1,
+      );
       const directory = mkdtempSync(join(tmpdir(), 'real-shot-plan-golden-'));
       environment = await openGoldenEvaluationEnvironment({
         directory,
@@ -58,6 +66,7 @@ describe.skipIf(!enabled)('opt-in real 30-case semantic golden evaluation', () =
         directory,
         gitHead: head,
         executionKind: 'REAL_PROVIDER_EVALUATION',
+        evaluationPolicy: policy.policy,
         usage,
       });
       expect(report.summary.FIXTURES_EXPECTED).toBe(30);

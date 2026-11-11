@@ -1,0 +1,157 @@
+{
+  "scope": "DETERMINISTIC_MUTATIONS_ONLY_NOT_HISTORICAL_MODEL_RESCORING",
+  "golden_sha256": "cae36779b5ba91a8ed774e7302bb7ddffaae2bc40ac439dba17828427464d498",
+  "mutation": "One unit route changed; first permitted continuity action retained; other fields unchanged",
+  "counterexamples": [
+    {
+      "fixture_id": "vet-commerce-alt-segmentation",
+      "alternative_index": 1,
+      "unit_index": 1,
+      "original_route": "ANIMAL",
+      "mutated_route": "PRODUCT",
+      "exact_fragment": "并伴采食下降。",
+      "legacy_overall_pass": true,
+      "joint_overall_pass": false
+    },
+    {
+      "fixture_id": "vet-commerce-alt-segmentation",
+      "alternative_index": 1,
+      "unit_index": 1,
+      "original_route": "ANIMAL",
+      "mutated_route": "NO_MATCH",
+      "exact_fragment": "并伴采食下降。",
+      "legacy_overall_pass": true,
+      "joint_overall_pass": false
+    },
+    {
+      "fixture_id": "vet-commerce-same-route-boundaries",
+      "alternative_index": 1,
+      "unit_index": 1,
+      "original_route": "ANIMAL",
+      "mutated_route": "PRODUCT",
+      "exact_fragment": "随后出现气喘。",
+      "legacy_overall_pass": true,
+      "joint_overall_pass": false
+    },
+    {
+      "fixture_id": "vet-commerce-same-route-boundaries",
+      "alternative_index": 1,
+      "unit_index": 1,
+      "original_route": "ANIMAL",
+      "mutated_route": "NO_MATCH",
+      "exact_fragment": "随后出现气喘。",
+      "legacy_overall_pass": true,
+      "joint_overall_pass": false
+    },
+    {
+      "fixture_id": "vet-commerce-continuity-alternative",
+      "alternative_index": 0,
+      "unit_index": 0,
+      "original_route": "ANIMAL",
+      "mutated_route": "PRODUCT",
+      "exact_fragment": "猪群精神下降。",
+      "legacy_overall_pass": true,
+      "joint_overall_pass": false
+    },
+    {
+      "fixture_id": "vet-commerce-continuity-alternative",
+      "alternative_index": 0,
+      "unit_index": 0,
+      "original_route": "ANIMAL",
+      "mutated_route": "NO_MATCH",
+      "exact_fragment": "猪群精神下降。",
+      "legacy_overall_pass": true,
+      "joint_overall_pass": false
+    },
+    {
+      "fixture_id": "vet-commerce-continuity-alternative",
+      "alternative_index": 0,
+      "unit_index": 1,
+      "original_route": "ANIMAL",
+      "mutated_route": "PRODUCT",
+      "exact_fragment": "猪群采食减少。",
+      "legacy_overall_pass": true,
+      "joint_overall_pass": false
+    },
+    {
+      "fixture_id": "vet-commerce-continuity-alternative",
+      "alternative_index": 0,
+      "unit_index": 1,
+      "original_route": "ANIMAL",
+      "mutated_route": "NO_MATCH",
+      "exact_fragment": "猪群采食减少。",
+      "legacy_overall_pass": true,
+      "joint_overall_pass": false
+    },
+    {
+      "fixture_id": "vet-commerce-duplicate-anchor",
+      "alternative_index": 0,
+      "unit_index": 1,
+      "original_route": "ANIMAL",
+      "mutated_route": "PRODUCT",
+      "exact_fragment": "增强采食。",
+      "legacy_overall_pass": true,
+      "joint_overall_pass": false
+    },
+    {
+      "fixture_id": "vet-commerce-duplicate-anchor",
+      "alternative_index": 0,
+      "unit_index": 1,
+      "original_route": "ANIMAL",
+      "mutated_route": "NO_MATCH",
+      "exact_fragment": "增强采食。",
+      "legacy_overall_pass": true,
+      "joint_overall_pass": false
+    },
+    {
+      "fixture_id": "vet-commerce-duplicate-anchor",
+      "alternative_index": 0,
+      "unit_index": 3,
+      "original_route": "PRODUCT",
+      "mutated_route": "ANIMAL",
+      "exact_fragment": "增强采食。",
+      "legacy_overall_pass": true,
+      "joint_overall_pass": false
+    },
+    {
+      "fixture_id": "vet-commerce-duplicate-anchor",
+      "alternative_index": 0,
+      "unit_index": 3,
+      "original_route": "PRODUCT",
+      "mutated_route": "NO_MATCH",
+      "exact_fragment": "增强采食。",
+      "legacy_overall_pass": true,
+      "joint_overall_pass": false
+    },
+    {
+      "fixture_id": "vet-commerce-product-name-animal-outcome",
+      "alternative_index": 1,
+      "unit_index": 0,
+      "original_route": "ANIMAL",
+      "mutated_route": "NO_MATCH",
+      "exact_fragment": "使用康健100后，",
+      "legacy_overall_pass": true,
+      "joint_overall_pass": false
+    },
+    {
+      "fixture_id": "vet-commerce-stable-animal-concept",
+      "alternative_index": 0,
+      "unit_index": 1,
+      "original_route": "ANIMAL",
+      "mutated_route": "PRODUCT",
+      "exact_fragment": "随后喘气明显。",
+      "legacy_overall_pass": true,
+      "joint_overall_pass": false
+    },
+    {
+      "fixture_id": "vet-commerce-stable-animal-concept",
+      "alternative_index": 0,
+      "unit_index": 1,
+      "original_route": "ANIMAL",
+      "mutated_route": "NO_MATCH",
+      "exact_fragment": "随后喘气明显。",
+      "legacy_overall_pass": true,
+      "joint_overall_pass": false
+    }
+  ]
+}
