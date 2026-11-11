@@ -22,7 +22,7 @@ const source: CanonicalSourceDocumentV1 = {
 describe('versioned semantic Shot Plan prompt', () => {
   it('binds a stable template identity and includes the complete exact source once', () => {
     expect(SHOT_PLAN_PROPOSER_PROMPT_TEMPLATE_ID).toBe('shot-plan.semantic-proposer');
-    expect(SHOT_PLAN_PROPOSER_PROMPT_TEMPLATE_VERSION).toBe('4');
+    expect(SHOT_PLAN_PROPOSER_PROMPT_TEMPLATE_VERSION).toBe('5');
     const prompt = buildShotPlanProposerPromptV1(source);
     expect(prompt.split(source.text)).toHaveLength(2);
     expect(prompt).toContain(source.source_document_hash);
@@ -75,6 +75,12 @@ describe('versioned semantic Shot Plan prompt', () => {
     'severity 只能为 INFORMATIONAL 或 BLOCKING',
     '禁止字符串警告条目',
     '在 schema 语义允许时可用空数组',
+    '片段能唯一定位时，省略 left_context/right_context',
+    '仅在重复片段需要消歧时输出非空、与原文严格相邻的真实上下文',
+    '首尾没有对应方向的上下文时省略该键',
+    '禁止空字符串、占位文本或虚构上下文',
+    '同一状态维度的连续变化不机械拆分',
+    '相同 ANIMAL route 不自动代表同一视觉意象',
   ])('encodes the frozen product rule: %s', (rule) => {
     expect(buildShotPlanProposerPromptV1(source)).toContain(rule);
   });
@@ -83,6 +89,16 @@ describe('versioned semantic Shot Plan prompt', () => {
     const prompt = buildShotPlanProposerPromptV1(source);
     expect(prompt).not.toContain('PRODUCT 表示产品、包装、成分或使用展示');
     expect(prompt).not.toContain('无可匹配企业素材');
+  });
+
+  it('omits optional anchor placeholders from the default JSON example', () => {
+    const prompt = buildShotPlanProposerPromptV1(source);
+    const example = JSON.parse(
+      prompt.split('默认结构（省略无需消歧的可选锚点键）：')[1]!.split('。')[0]!,
+    );
+    expect(example.units[0]).not.toHaveProperty('left_context');
+    expect(example.units[0]).not.toHaveProperty('right_context');
+    expect(example.units[0]).toHaveProperty('exact_fragment');
   });
 
   it('contains general rules without golden IDs, source texts or expected JSON', () => {
