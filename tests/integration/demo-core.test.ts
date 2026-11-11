@@ -36,6 +36,13 @@ function authority() {
   });
 }
 describe('offline Demo core with a fresh database', () => {
+  it('keeps trailing whitespace in the final spoken slot without creating a blank shot', () => {
+    const text = '第一句。第二句。\n  ';
+    const { candidate } = service.propose({ text, route: 'PRODUCT' });
+    expect(candidate.slots).toHaveLength(2);
+    expect(candidate.slots.map((slot) => slot.source_text).join('')).toBe(text);
+    expect(candidate.slots.every((slot) => slot.source_text.trim().length > 0)).toBe(true);
+  });
   it('persists exact user input and needs explicit confirmation, surviving a service restart', () => {
     const text = '🐷健康猪群活动。观察采食情况！做好日常记录。';
     const proposed = service.propose({ text, route: 'ANIMAL' });

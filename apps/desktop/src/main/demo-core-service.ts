@@ -92,7 +92,13 @@ export class DemoCoreService {
       const characters = Array.from(input.text);
       const boundaries = characters
         .flatMap((character, index) =>
-          /[。！？.!?\n]/u.test(character) && index + 1 < characters.length ? [index + 1] : [],
+          /[。！？.!?\n]/u.test(character) &&
+          characters
+            .slice(index + 1)
+            .join('')
+            .trim().length > 0
+            ? [index + 1]
+            : [],
         )
         .slice(0, 2);
       const ends = [...boundaries, characters.length];
