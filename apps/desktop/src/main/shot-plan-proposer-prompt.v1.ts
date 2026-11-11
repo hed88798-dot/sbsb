@@ -1,7 +1,7 @@
 import type { CanonicalSourceDocumentV1 } from '@app/contracts';
 
 export const SHOT_PLAN_PROPOSER_PROMPT_TEMPLATE_ID = 'shot-plan.semantic-proposer';
-export const SHOT_PLAN_PROPOSER_PROMPT_TEMPLATE_VERSION = '4';
+export const SHOT_PLAN_PROPOSER_PROMPT_TEMPLATE_VERSION = '5';
 export const SHOT_PLAN_PROPOSER_MODEL_ALIAS = 'text.semantic-shot-planning';
 
 export function buildShotPlanProposerPromptV1(source: CanonicalSourceDocumentV1): string {
@@ -10,6 +10,7 @@ export function buildShotPlanProposerPromptV1(source: CanonicalSourceDocumentV1)
     '目标是适度分段、略少切镜；语义边界不等于必须切换画面，同一路由的连续语义可以保持同一视觉。',
     '略少切镜不等于合并不同的语义视觉意图；可观察含义若适合独立准确匹配素材，应分别形成语义单元，包括同一路由下不同的动物状态维度；分段后仍可 CONTINUE_PREVIOUS，不要因分段更精确而增加切镜。',
     '同一跨度内实质不同、可独立观察的动物状态维度，若独立匹配更准确，应分成不同语义单元；语义分段与视觉切换分别判断，同一路由仍可 CONTINUE_PREVIOUS。',
+    '输出前检查同一动物主体的分段：不同、可独立观察且值得独立匹配素材的状态维度，应形成各自合理的语义单元；同一状态维度的连续变化不机械拆分。分段不等于切镜，同一连贯视觉可 CONTINUE_PREVIOUS；相同 ANIMAL route 不自动代表同一视觉意象。',
     '路由由 PRIMARY_VISUAL_INTENT 决定：ANIMAL 表示动物状态、行为、结果或养殖环境是画面中心；PRODUCT 仅表示产品本体是画面中心，例如产品/包装特写、标签或规格查看、明确查看成分表/标签、剂型或净含量、拿取/开袋、以产品为中心的配制混合。',
     '仅提到成分、使用、治疗或产品名称不自动等于 PRODUCT；产品使用后的动物状态或结果仍可为 ANIMAL。兽医或动物关键词出现也不自动等于 ANIMAL。',
     '语法主语不等于视觉主体：句子以本品、产品或某种动物为主语，本身不构成 PRODUCT 或 ANIMAL 路由依据，必须以原文实际表达的语义视觉内容判断。',
@@ -25,8 +26,8 @@ export function buildShotPlanProposerPromptV1(source: CanonicalSourceDocumentV1)
     'NO_MATCH 不表示不确定；真正无法可靠判断语义时使用 NEEDS_REVIEW：若仍有两种或更多合理的语义或主视觉解释，且选择会实质改变分段、路由或连续性，应保留 NEEDS_REVIEW；不能仅因缺少具体画面就强行确定路由，也不能用 NO_MATCH 代替真正的歧义。',
     '连续性动作：首段必须 START_NEW；后续同一视觉概念可使用 CONTINUE_PREVIOUS 保持上一画面，主视觉意图实质变化时可用 SWITCH_VISUAL 开启新画面。跨路由不得 CONTINUE_PREVIOUS。',
     '每个 exact_fragment 必须逐字复制原文，保留标点、空格、换行、数字和 emoji，不得改写、规范化或省略非空白内容。',
-    '不要输出数字 offset、候选 ID、槽位 ID、连续性组 ID、时间或已确认身份。重复文字可用逐字相邻的 left_context/right_context 定位；仍有歧义时不要猜测。',
-    '仅输出 JSON。结构：{"schema_version":"1.0","segmentation_state":"RESOLVED|NEEDS_REVIEW","review_warnings":[],"units":[{"exact_fragment":"原文逐字片段","left_context":"可选逐字左锚点","right_context":"可选逐字右锚点","route":"ANIMAL|PRODUCT|NO_MATCH|null","route_state":"RESOLVED|NEEDS_REVIEW","continuity_action":"START_NEW|CONTINUE_PREVIOUS|SWITCH_VISUAL|null","continuity_state":"RESOLVED|NEEDS_REVIEW","rationale":"简短业务理由","review_warnings":[]}]}。',
+    '不要输出数字 offset、候选 ID、槽位 ID、连续性组 ID、时间或已确认身份。片段能唯一定位时，省略 left_context/right_context；仅在重复片段需要消歧时输出非空、与原文严格相邻的真实上下文。首尾没有对应方向的上下文时省略该键；禁止空字符串、占位文本或虚构上下文。仍有歧义时不要猜测。',
+    '仅输出 JSON。默认结构（省略无需消歧的可选锚点键）：{"schema_version":"1.0","segmentation_state":"RESOLVED|NEEDS_REVIEW","review_warnings":[],"units":[{"exact_fragment":"原文逐字片段","route":"ANIMAL|PRODUCT|NO_MATCH|null","route_state":"RESOLVED|NEEDS_REVIEW","continuity_action":"START_NEW|CONTINUE_PREVIOUS|SWITCH_VISUAL|null","continuity_state":"RESOLVED|NEEDS_REVIEW","rationale":"简短业务理由","review_warnings":[]}]}。',
     '顶层和每个语义单元的 review_warnings 必须是对象数组；每个警告对象都必须有 code、severity、message，severity 只能为 INFORMATIONAL 或 BLOCKING；禁止字符串警告条目，在 schema 语义允许时可用空数组。',
     '示例原则：连续描述同一猪群症状的两段可以分段但 CONTINUE_PREVIOUS；从猪群症状转到产品包装特写时使用 PRODUCT + SWITCH_VISUAL；抽象合规、禁忌或宣传限制在语义本身无法由两类画面忠实表达时使用 NO_MATCH，不得根据素材是否存在决定路由。',
     `原文权威标识：${source.source_document_id}@${source.source_document_version}#${source.source_document_hash}`,

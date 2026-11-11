@@ -382,7 +382,7 @@ describe('AI semantic Candidate Shot Plan proposer', () => {
     );
     expect(result.trace).toMatchObject({
       prompt_template_id: 'shot-plan.semantic-proposer',
-      prompt_template_version: '4',
+      prompt_template_version: '5',
       model_alias: 'text.semantic-shot-planning',
       provider_request_id: expect.stringMatching(/^provider_request_/u),
       provider_alias: 'mock-text',
