@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { textStructuredOutputV1Schema } from './text-structured-output.js';
+import type { DemoApi } from './demo.js';
+export * from './demo.js';
 
 export * from './text-structured-output.js';
 
@@ -339,6 +341,9 @@ export const productAssetAddRequestV1Schema = z.object({
 export type ProductAssetAddRequestV1 = z.infer<typeof productAssetAddRequestV1Schema>;
 
 export const IPC_CHANNELS = {
+  demoPropose: 'demo:propose',
+  demoConfirm: 'demo:confirm',
+  demoGet: 'demo:get',
   productsList: 'products:list',
   productsGet: 'products:get',
   productsCreate: 'products:create',
@@ -363,6 +368,7 @@ export const IPC_CHANNELS = {
 export const IPC_CHANNEL_ALLOWLIST = Object.freeze(Object.values(IPC_CHANNELS));
 
 export interface DesktopApiV1 {
+  demo: DemoApi;
   products: {
     list(): Promise<ProductDTOv1[]>;
     get(productId: string): Promise<ProductDTOv1 | null>;

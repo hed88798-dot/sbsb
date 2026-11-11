@@ -12,6 +12,7 @@ import {
 } from '@app/local-db';
 import { MockTextCapabilityClient } from '@app/provider-client';
 import { CopywritingService } from './copywriting-service.js';
+import { DemoCoreService } from './demo-core-service.js';
 import { DesktopLifecycleOwnerV1 } from './desktop-lifecycle-owner.js';
 import { createDesktopRenderCompositionV1 } from './desktop-render-composition.js';
 import { registerIpc } from './ipc.js';
@@ -74,6 +75,7 @@ async function createWindow(): Promise<void> {
     migrationsDirectory,
   });
   const products = new ProductRepository(db);
+  const demo = new DemoCoreService({ database: db });
   const jobs = new JobRepository(db);
   const copywritingRepository = new CopywritingRepository(db);
   const settings = new SettingsRepository(db);
@@ -124,6 +126,11 @@ async function createWindow(): Promise<void> {
     copywriting,
     render: renderComposition.orchestrator,
     renderTimelineHandoff: renderComposition.timelineHandoff,
+    demo: {
+      propose: async (input) => demo.propose(input),
+      confirm: async (input) => demo.confirm(input),
+      get: async (input) => demo.get(input),
+    },
   });
   lifecycleOwner = new DesktopLifecycleOwnerV1({
     render: renderComposition.orchestrator,

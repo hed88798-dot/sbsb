@@ -8,6 +8,7 @@ import {
 import { Layout, Menu } from 'antd';
 import type { MenuProps } from 'antd';
 import { CopywritingPage } from '../pages/CopywritingPage.js';
+import { DemoPage } from '../pages/DemoPage.js';
 import { DashboardPage } from '../pages/DashboardPage.js';
 import { JobsPage } from '../pages/JobsPage.js';
 import { ProductsPage } from '../pages/ProductsPage.js';
@@ -15,6 +16,7 @@ import { SettingsPage } from '../pages/SettingsPage.js';
 import { useNavigation, type PageKey } from '../store/navigation.js';
 
 const items: NonNullable<MenuProps['items']> = [
+  { key: 'demo', icon: <FileTextOutlined />, label: '视频 Demo' },
   { key: 'dashboard', icon: <DashboardOutlined />, label: '首页' },
   { key: 'products', icon: <ProductOutlined />, label: '产品库' },
   { key: 'copywriting', icon: <FileTextOutlined />, label: 'AI 文案' },
@@ -25,6 +27,7 @@ const items: NonNullable<MenuProps['items']> = [
 export function DesktopApp(): React.JSX.Element {
   const { page, setPage } = useNavigation();
   const content = {
+    demo: <DemoPage />,
     dashboard: <DashboardPage />,
     products: <ProductsPage />,
     copywriting: <CopywritingPage />,

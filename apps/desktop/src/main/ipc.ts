@@ -3,6 +3,11 @@ import { dialog } from 'electron';
 import { z } from 'zod';
 import {
   IPC_CHANNELS,
+  demoProposeSchema,
+  demoConfirmSchema,
+  demoGetSchema,
+  demoStateSchema,
+  type DemoApi,
   copywritingGenerateRequestV1Schema,
   idRequestV1Schema,
   productDeleteRequestV1Schema,
@@ -46,6 +51,7 @@ export function registerIpc(options: {
   copywriting: CopywritingService;
   render: DesktopRenderOrchestratorV1;
   renderTimelineHandoff: DesktopRenderTimelineHandoffV1;
+  demo?: DemoApi;
 }): DesktopIpcBoundaryV1 {
   let accepting = true;
   const handle = (channel: string, handler: (input: unknown) => unknown | Promise<unknown>) => {
@@ -57,6 +63,19 @@ export function registerIpc(options: {
   };
 
   handle(IPC_CHANNELS.productsList, () => options.products.list());
+  const requireDemo = () => {
+    if (!options.demo) throw new Error('DEMO_UNAVAILABLE');
+    return options.demo;
+  };
+  handle(IPC_CHANNELS.demoPropose, async (input) =>
+    demoStateSchema.parse(await requireDemo().propose(demoProposeSchema.parse(input))),
+  );
+  handle(IPC_CHANNELS.demoConfirm, async (input) =>
+    demoStateSchema.parse(await requireDemo().confirm(demoConfirmSchema.parse(input))),
+  );
+  handle(IPC_CHANNELS.demoGet, async (input) =>
+    demoStateSchema.nullable().parse(await requireDemo().get(demoGetSchema.parse(input))),
+  );
   handle(IPC_CHANNELS.productsGet, (input) => {
     const request = idRequestV1Schema.parse(input);
     return options.products.get(request.id);
