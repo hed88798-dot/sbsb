@@ -51,6 +51,7 @@ export async function commitDemoTimeline({
   const selections = new MaterialSelectionRepository(database);
   if (
     !Array.isArray(selection_request_ids) ||
+    selection_request_ids.length !== plan.slots.length ||
     new Set(selection_request_ids).size !== plan.slots.length
   ) {
     throw new Error('DEMO_ONE_SELECTION_PER_SLOT_REQUIRED');
