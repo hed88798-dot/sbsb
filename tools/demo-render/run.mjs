@@ -149,8 +149,15 @@ try {
       }
     } finally {
       const shutdown = composition ? await composition.orchestrator.shutdown() : null;
-      if (shutdown && !shutdown.settled) throw new Error('DEMO_RENDER_SHUTDOWN_NOT_SETTLED');
-      db.close();
+      if (shutdown && !shutdown.settled) {
+        // Keep SQLite open while an execution may still be settling.
+        console.error(
+          JSON.stringify({ status: 'BLOCKED', error: 'DEMO_RENDER_SHUTDOWN_NOT_SETTLED' }),
+        );
+        process.exitCode = 1;
+      } else {
+        db.close();
+      }
     }
   }
 } catch (error) {
