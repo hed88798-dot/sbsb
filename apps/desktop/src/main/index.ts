@@ -12,6 +12,7 @@ import {
 } from '@app/local-db';
 import { MockTextCapabilityClient } from '@app/provider-client';
 import { CopywritingService } from './copywriting-service.js';
+import { DemoCoreService } from './demo-core-service.js';
 import { DesktopLifecycleOwnerV1 } from './desktop-lifecycle-owner.js';
 import { createDesktopRenderCompositionV1 } from './desktop-render-composition.js';
 import { registerIpc } from './ipc.js';
@@ -44,6 +45,13 @@ if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
   app.setPath('userData', join(process.env.LOCALAPPDATA, 'Company', 'AiVideoDesktop'));
 }
 
+// Opt-in isolated Demo runs preserve the user's existing database and outputs.
+if (process.env.DESKTOP_DEMO_FRESH_WORKSPACE === '1') {
+  const workspace = mkdtempSync(join(tmpdir(), 'ai-video-demo-'));
+  app.setPath('userData', workspace);
+  console.log(`DEMO_FRESH_WORKSPACE:${workspace}`);
+}
+
 async function runNativeSqliteSmoke(): Promise<void> {
   const migrationsDirectory = app.isPackaged
     ? join(process.resourcesPath, 'migrations', 'desktop-sqlite')
@@ -74,6 +82,7 @@ async function createWindow(): Promise<void> {
     migrationsDirectory,
   });
   const products = new ProductRepository(db);
+  const demo = new DemoCoreService({ database: db });
   const jobs = new JobRepository(db);
   const copywritingRepository = new CopywritingRepository(db);
   const settings = new SettingsRepository(db);
@@ -124,6 +133,11 @@ async function createWindow(): Promise<void> {
     copywriting,
     render: renderComposition.orchestrator,
     renderTimelineHandoff: renderComposition.timelineHandoff,
+    demo: {
+      propose: async (input) => demo.propose(input),
+      confirm: async (input) => demo.confirm(input),
+      get: async (input) => demo.get(input),
+    },
   });
   lifecycleOwner = new DesktopLifecycleOwnerV1({
     render: renderComposition.orchestrator,

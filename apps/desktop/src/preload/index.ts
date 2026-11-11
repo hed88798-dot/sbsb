@@ -2,6 +2,10 @@ import { contextBridge, ipcRenderer } from 'electron';
 import { z } from 'zod';
 import {
   IPC_CHANNELS,
+  demoProposeSchema,
+  demoConfirmSchema,
+  demoGetSchema,
+  demoStateSchema,
   copywritingGenerateRequestV1Schema,
   copywritingResultV1Schema,
   jobDtoV1Schema,
@@ -24,6 +28,14 @@ async function invoke<T>(channel: string, input: unknown, output: z.ZodType<T>):
 }
 
 const api: DesktopApiV1 = {
+  demo: {
+    propose: (input) =>
+      invoke(IPC_CHANNELS.demoPropose, demoProposeSchema.parse(input), demoStateSchema),
+    confirm: (input) =>
+      invoke(IPC_CHANNELS.demoConfirm, demoConfirmSchema.parse(input), demoStateSchema),
+    get: (input) =>
+      invoke(IPC_CHANNELS.demoGet, demoGetSchema.parse(input), demoStateSchema.nullable()),
+  },
   products: {
     list: () => invoke(IPC_CHANNELS.productsList, undefined, z.array(productDtoV1Schema)),
     get: (productId) =>

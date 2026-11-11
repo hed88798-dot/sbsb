@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type PageKey = 'dashboard' | 'products' | 'copywriting' | 'jobs' | 'settings';
+export type PageKey = 'dashboard' | 'products' | 'copywriting' | 'jobs' | 'settings' | 'demo';
 
 interface NavigationState {
   page: PageKey;
