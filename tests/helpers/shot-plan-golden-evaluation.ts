@@ -32,10 +32,14 @@ import {
   isGatewayClientError,
   type TextCapabilityClient,
 } from '../../packages/provider-client/src/index.js';
+import { type ShotPlanSemanticEvaluationV1 } from '../../packages/test-fixtures/src/shot-plan-semantic.js';
 import {
-  evaluateShotPlanSemanticProposalV1,
-  shotPlanSemanticGoldenFixturesV1,
-} from '../../packages/test-fixtures/src/shot-plan-semantic.js';
+  JOINT_ALTERNATIVE_EVALUATION_V2,
+  LEGACY_SEMANTIC_EVALUATION_V1,
+  selectShotPlanGoldenEvaluationPolicy,
+  type ShotPlanGoldenEvaluationPolicy,
+  type ShotPlanSemanticEvaluationV2,
+} from '../../packages/test-fixtures/src/shot-plan-semantic-evaluation.v2.js';
 import { createCanaryProposerAuditCollector } from './canary-proposer-audit.js';
 import type { GoldenProviderUsage, observeGoldenProviderUsage } from './golden-provider-usage.js';
 
@@ -267,9 +271,13 @@ export function captureGoldenClient(
 }
 
 export function automatedSemanticPass(
-  evaluation: ReturnType<typeof evaluateShotPlanSemanticProposalV1>,
+  evaluation: ShotPlanSemanticEvaluationV1 | ShotPlanSemanticEvaluationV2,
 ): boolean {
   return (
+    (!('evaluation_policy' in evaluation) ||
+      (evaluation.evaluation_policy === JOINT_ALTERNATIVE_EVALUATION_V2 &&
+        evaluation.joint_alternative_match &&
+        evaluation.overall_pass)) &&
     evaluation.structural_validity &&
     evaluation.segmentation &&
     evaluation.route &&
@@ -312,13 +320,19 @@ export async function runShotPlanGoldenEvaluation(options: {
   usage: ReturnType<typeof observeGoldenProviderUsage>;
   forbiddenValues: string[];
   executionKind: 'REAL_PROVIDER_EVALUATION' | 'DETERMINISTIC_FAKE_TRANSPORT';
+  evaluationPolicy?: ShotPlanGoldenEvaluationPolicy;
   now?: () => Date;
 }) {
-  const fixtures = shotPlanSemanticGoldenFixturesV1;
+  // Existing callers retain historical scoring. V2 is opt-in, never inferred from Prompt version.
+  const policy = selectShotPlanGoldenEvaluationPolicy(
+    options.evaluationPolicy ?? LEGACY_SEMANTIC_EVALUATION_V1,
+  );
+  const fixtures = policy.fixtures;
   if (
     fixtures.length !== 30 ||
     new Set(fixtures.map((f) => f.id)).size !== 30 ||
-    !/^[a-f0-9]{40}$/u.test(options.gitHead)
+    !/^[a-f0-9]{40}$/u.test(options.gitHead) ||
+    sha256(JSON.stringify(fixtures)) !== policy.fixture_sha256
   )
     throw new Error('GOLDEN_INVALID_AUTHORITY_OR_HEAD');
   const paths = ['real-30-golden-summary.json', 'real-30-golden-cases.json'].map((name) =>
@@ -336,7 +350,12 @@ export async function runShotPlanGoldenEvaluation(options: {
   const runId = randomUUID();
   const fixtureHash = sha256(JSON.stringify(fixtures));
   const metadata = {
-    schema_version: 'c3c-real-golden-evaluation-v1',
+    schema_version:
+      policy.policy === JOINT_ALTERNATIVE_EVALUATION_V2
+        ? 'c3c-real-golden-evaluation-v2'
+        : 'c3c-real-golden-evaluation-v1',
+    evaluator_policy_version: policy.policy,
+    golden_revision: policy.golden_revision,
     execution_kind: options.executionKind,
     execution_mode: 'SEQUENTIAL',
     git_head: options.gitHead,
@@ -367,8 +386,8 @@ export async function runShotPlanGoldenEvaluation(options: {
         'stream',
       ],
     },
-    fixture_authority: 'shotPlanSemanticGoldenFixturesV1',
-    evaluator_authority: 'evaluateShotPlanSemanticProposalV1',
+    fixture_authority: policy.fixture_authority,
+    evaluator_authority: policy.evaluator_authority,
     fixture_count: fixtures.length,
     fixture_sha256: fixtureHash,
     fixture_ids: fixtures.map((f) => f.id),
@@ -853,9 +872,7 @@ export async function runShotPlanGoldenEvaluation(options: {
         candidate = null;
       }
       const evaluation =
-        technical === 'PASS' && canonical
-          ? evaluateShotPlanSemanticProposalV1(fixture, canonical)
-          : null;
+        technical === 'PASS' && canonical ? policy.evaluate(fixture, canonical) : null;
       const semanticResult =
         technical !== 'PASS' || !evaluation
           ? 'NOT_EVALUATED'

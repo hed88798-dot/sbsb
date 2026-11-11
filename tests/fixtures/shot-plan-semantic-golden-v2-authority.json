@@ -1,0 +1,10 @@
+{
+  "evaluation_policy": "SHOT_PLAN_ALTERNATIVE_JOINT_MATCHING_V2",
+  "golden_revision": "SHOT_PLAN_SEMANTIC_GOLDEN_V2",
+  "serialization": "SHA256(JSON.stringify(fixtures)) / UTF-8",
+  "previous_fixture_sha256": "cae36779b5ba91a8ed774e7302bb7ddffaae2bc40ac439dba17828427464d498",
+  "fixture_sha256": "99bf556ee381cd561ec82bd3f9986bd2698d5bef8d9c5932e4860facbbd1aa62",
+  "changed_fixture_id": "vet-commerce-context-applicable-animal",
+  "change": "APPEND_APPROVED_ALTERNATIVE_ONLY",
+  "case_count": 30
+}
