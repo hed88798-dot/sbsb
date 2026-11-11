@@ -45,6 +45,13 @@ if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
   app.setPath('userData', join(process.env.LOCALAPPDATA, 'Company', 'AiVideoDesktop'));
 }
 
+// Opt-in isolated Demo runs preserve the user's existing database and outputs.
+if (process.env.DESKTOP_DEMO_FRESH_WORKSPACE === '1') {
+  const workspace = mkdtempSync(join(tmpdir(), 'ai-video-demo-'));
+  app.setPath('userData', workspace);
+  console.log(`DEMO_FRESH_WORKSPACE:${workspace}`);
+}
+
 async function runNativeSqliteSmoke(): Promise<void> {
   const migrationsDirectory = app.isPackaged
     ? join(process.resourcesPath, 'migrations', 'desktop-sqlite')
