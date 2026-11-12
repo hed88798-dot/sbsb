@@ -28,23 +28,13 @@ jobs:
         with:
           python-version: '3.13.15'
       - run: pnpm install --frozen-lockfile
-      - name: Compile locked Node binding in its resolved package directory
-        shell: pwsh
-        run: |
-          $root = node -p "require('path').dirname(require.resolve('better-sqlite3/package.json'))"
-          if ($LASTEXITCODE -ne 0) { throw 'BINDING_ROOT_MISSING' }
-          $env:npm_config_build_from_source = 'true'
-          try {
-            npm --prefix $root run install
-            if ($LASTEXITCODE -ne 0) { throw 'LOCKED_NODE_BINDING_BUILD_FAILED' }
-          } finally { Remove-Item Env:npm_config_build_from_source -ErrorAction SilentlyContinue }
       - name: Export and execute Node native binding
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path artifacts/pr90-native/node24,artifacts/pr90-native/electron43 | Out-Null
           $root = node -p "require('path').dirname(require.resolve('better-sqlite3/package.json'))"
           if ($LASTEXITCODE -ne 0) { throw 'BINDING_ROOT_MISSING' }
-          Copy-Item (Join-Path $root 'build/Release/better_sqlite3.node') artifacts/pr90-native/node24/better_sqlite3.node
+          Copy-Item (Join-Path $root 'prebuilds/win32-x64.node') artifacts/pr90-native/node24/better_sqlite3.node
           node tools/demo-deploy/sqlite-probe.mjs node artifacts/pr90-native/node24/better_sqlite3.node artifacts/pr90-native/node24/smoke.json
           if ($LASTEXITCODE -ne 0) { throw 'NODE_NATIVE_EXECUTION_FAILED' }
       - run: pnpm ci:prepare
@@ -55,7 +45,7 @@ jobs:
         shell: pwsh
         run: |
           $release = 'apps/desktop/release/win-unpacked'
-          $bindings = @(Get-ChildItem "$release/resources/app.asar.unpacked" -Recurse -Filter better_sqlite3.node)
+          $bindings = @(Get-ChildItem "$release/resources/app.asar.unpacked" -Recurse -Filter win32-x64.node)
           if ($bindings.Count -ne 1) { throw 'PACKAGED_BINDING_COUNT_INVALID' }
           Copy-Item $bindings[0].FullName artifacts/pr90-native/electron43/better_sqlite3.node
           $electron = @(Get-ChildItem $release -File -Filter '*.exe')
