@@ -1,10 +1,9 @@
 name: PR90 frozen Windows Worker recreation
 
 on:
-  pull_request:
-    paths:
-      - .github/workflows/pr90-frozen-worker.yml
-      - tools/demo-deploy/approved-inventory-review-bundle.zip
+  # The initial controlled replay stopped on GHSA-xmj3-9gf7-h52w in the
+  # frozen quality tooling. No automatic repeat until Brain1/Code F review.
+  workflow_dispatch:
 
 permissions:
   contents: read

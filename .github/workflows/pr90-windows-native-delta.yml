@@ -28,6 +28,7 @@ jobs:
         with:
           python-version: '3.13.15'
       - run: pnpm install --frozen-lockfile
+      - run: pnpm rebuild better-sqlite3
       - name: Export and execute Node native binding
         shell: pwsh
         run: |
