@@ -52,8 +52,8 @@ jobs:
           if ($electron.Count -ne 1) { throw 'PACKAGED_EXECUTABLE_COUNT_INVALID' }
           $env:ELECTRON_RUN_AS_NODE = '1'
           try {
-            & $electron[0].FullName tools/demo-deploy/sqlite-probe.mjs electron artifacts/pr90-native/electron43/better_sqlite3.node artifacts/pr90-native/electron43/smoke.json
-            if ($LASTEXITCODE -ne 0) { throw 'ELECTRON_NATIVE_EXECUTION_FAILED' }
+            $process = Start-Process -FilePath $electron[0].FullName -ArgumentList @('tools/demo-deploy/sqlite-probe.mjs','electron','artifacts/pr90-native/electron43/better_sqlite3.node','artifacts/pr90-native/electron43/smoke.json') -Wait -PassThru -NoNewWindow
+            if ($process.ExitCode -ne 0) { throw 'ELECTRON_NATIVE_EXECUTION_FAILED' }
           } finally { Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue }
           $node = Get-Content artifacts/pr90-native/node24/smoke.json -Raw | ConvertFrom-Json
           $app = Get-Content artifacts/pr90-native/electron43/smoke.json -Raw | ConvertFrom-Json
