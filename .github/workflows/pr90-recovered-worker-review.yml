@@ -1,0 +1,84 @@
+name: PR90 exact retained Windows Worker review
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/pr90-recovered-worker-review.yml
+      - tools/demo-deploy/recover-worker-review-transport.py
+      - tools/demo-deploy/probe-recovered-worker.py
+
+permissions:
+  contents: read
+
+jobs:
+  recovered-worker:
+    runs-on: windows-2022
+    timeout-minutes: 35
+    env:
+      REVIEWED_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.13.15'
+      - run: pnpm install --frozen-lockfile
+      - name: Restore original exact Worker for review only
+        run: python tools/demo-deploy/recover-worker-review-transport.py
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Attest existing external MSVC prerequisite without installation
+        shell: pwsh
+        run: |
+          ./tools/runtime-prerequisite/attest-preinstalled-msvc-runtime.ps1 -Manifest compliance/runtime-prerequisites/msvc-v14-x64/external-prerequisite.v1.json -Output artifacts/worker-recovery/msvc-attestation.json
+          python tools/runtime-prerequisite/verify-preinstalled-msvc-runtime.py --manifest compliance/runtime-prerequisites/msvc-v14-x64/external-prerequisite.v1.json --attestation artifacts/worker-recovery/msvc-attestation.json --output artifacts/worker-recovery/msvc-validation.json
+          if ($LASTEXITCODE -ne 0) { throw 'MSVC_PREREQUISITE_VALIDATION_FAILED' }
+      - name: Run exact binary smoke and protocol hello
+        run: python tools/demo-deploy/probe-recovered-worker.py
+      - name: Install existing current-head inspection tooling
+        run: pnpm compliance:python:tooling:install
+      - name: Reinspect actual packaged modules and native payload
+        shell: bash
+        env:
+          PYTHONPATH: ${{ github.workspace }}/artifacts/python-compliance-tools/site-packages
+        run: |
+          set -euo pipefail
+          python tools/python-supply-chain/inspect-pyinstaller-onefile.py artifacts/worker-recovery/media-worker.exe > artifacts/worker-recovery/packaged-inspection.json
+      - name: Prepare exact runtime dependencies for existing test helper
+        run: python -m pip install --disable-pip-version-check --no-deps --require-hashes -r sidecars/media-worker/supply-chain/locks/windows-runtime.requirements.txt
+      - name: Recover exact approved model runtime inputs
+        run: python tools/code-c-python-supply-chain/download_locked_model_pack.py --output-root artifacts/review-model-pack --evidence artifacts/worker-recovery/model-pack-evidence.json
+      - name: Existing packaged UTF8 real model exact search E2E
+        run: python tools/code-c-python-supply-chain/run_packaged_text_search_e2e.py --worker artifacts/worker-recovery/media-worker.exe --model-root artifacts/review-model-pack --output artifacts/worker-recovery/utf8-model-search.json
+      - run: pnpm --filter @app/contracts build
+      - run: pnpm --filter @app/domain-media-index build
+      - name: Existing Desktop Main sidecar literal Chinese E2E
+        run: pnpm exec vitest run tests/e2e/windows-packaged-sidecar-utf8.test.ts --maxWorkers=1
+        env:
+          CODE_C_WORKER_EXECUTABLE: artifacts/worker-recovery/media-worker.exe
+          CODE_C_REAL_MODEL_ROOT: artifacts/review-model-pack
+          CODE_C_SIDECAR_UTF8_E2E_REPORT: artifacts/worker-recovery/desktop-utf8.json
+      - name: Stage compact review evidence without executable or model
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/recovered-worker-evidence | Out-Null
+          Get-ChildItem artifacts/worker-recovery -File | Where-Object { $_.Extension -in '.json','.txt' } | Copy-Item -Destination artifacts/recovered-worker-evidence
+          node tools/actions-artifact-budget.mjs --name pr90-recovered-worker-${{ github.event.pull_request.head.sha }} --path artifacts/recovered-worker-evidence --inventory artifacts/recovered-worker-evidence/UPLOAD_INVENTORY.json --retention-days 3 --purpose exact-retained-worker-review --classification transient --max-bytes 8388608
+          if ($LASTEXITCODE -ne 0) { throw 'EVIDENCE_BUDGET_FAILED' }
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ always() && steps.evidence.outcome == 'success' }}
+        with:
+          name: pr90-recovered-worker-${{ github.event.pull_request.head.sha }}
+          path: artifacts/recovered-worker-evidence
+          if-no-files-found: error
+          retention-days: 3
