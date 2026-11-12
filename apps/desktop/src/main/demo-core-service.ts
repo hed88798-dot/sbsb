@@ -100,6 +100,13 @@ export class DemoCoreService {
             ? [index + 1]
             : [],
         )
+        .filter(
+          (end, index, all) =>
+            characters
+              .slice(index === 0 ? 0 : all[index - 1], end)
+              .join('')
+              .trim().length > 0,
+        )
         .slice(0, 2);
       const ends = [...boundaries, characters.length];
       let start = 0;
