@@ -28,7 +28,16 @@ jobs:
         with:
           python-version: '3.13.15'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm rebuild better-sqlite3
+      - name: Compile locked Node binding in its resolved package directory
+        shell: pwsh
+        run: |
+          $root = node -p "require('path').dirname(require.resolve('better-sqlite3/package.json'))"
+          if ($LASTEXITCODE -ne 0) { throw 'BINDING_ROOT_MISSING' }
+          $env:npm_config_build_from_source = 'true'
+          try {
+            npm --prefix $root run install
+            if ($LASTEXITCODE -ne 0) { throw 'LOCKED_NODE_BINDING_BUILD_FAILED' }
+          } finally { Remove-Item Env:npm_config_build_from_source -ErrorAction SilentlyContinue }
       - name: Export and execute Node native binding
         shell: pwsh
         run: |
