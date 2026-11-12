@@ -35,7 +35,7 @@ jobs:
           $root = node -p "require('path').dirname(require.resolve('better-sqlite3/package.json'))"
           if ($LASTEXITCODE -ne 0) { throw 'BINDING_ROOT_MISSING' }
           Copy-Item (Join-Path $root 'build/Release/better_sqlite3.node') artifacts/pr90-native/node24/better_sqlite3.node
-          node tools/demo-deploy/sqlite-probe.cjs node artifacts/pr90-native/node24/better_sqlite3.node artifacts/pr90-native/node24/smoke.json
+          node tools/demo-deploy/sqlite-probe.mjs node artifacts/pr90-native/node24/better_sqlite3.node artifacts/pr90-native/node24/smoke.json
           if ($LASTEXITCODE -ne 0) { throw 'NODE_NATIVE_EXECUTION_FAILED' }
       - run: pnpm ci:prepare
       - run: pnpm native:rebuild
@@ -52,7 +52,7 @@ jobs:
           if ($electron.Count -ne 1) { throw 'PACKAGED_EXECUTABLE_COUNT_INVALID' }
           $env:ELECTRON_RUN_AS_NODE = '1'
           try {
-            & $electron[0].FullName tools/demo-deploy/sqlite-probe.cjs electron artifacts/pr90-native/electron43/better_sqlite3.node artifacts/pr90-native/electron43/smoke.json
+            & $electron[0].FullName tools/demo-deploy/sqlite-probe.mjs electron artifacts/pr90-native/electron43/better_sqlite3.node artifacts/pr90-native/electron43/smoke.json
             if ($LASTEXITCODE -ne 0) { throw 'ELECTRON_NATIVE_EXECUTION_FAILED' }
           } finally { Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue }
           $node = Get-Content artifacts/pr90-native/node24/smoke.json -Raw | ConvertFrom-Json

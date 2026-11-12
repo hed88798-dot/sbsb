@@ -1,14 +1,16 @@
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const os = require('node:os');
-const crypto = require('node:crypto');
-const Database = require('better-sqlite3');
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import crypto from 'node:crypto';
+import { createRequire } from 'node:module';
+const load = createRequire(import.meta.url);
+const Database = load('better-sqlite3');
 
 const [kind, binding, output] = process.argv.slice(2);
 assert.equal(process.platform, 'win32');
 assert.equal(process.arch, 'x64');
-assert.equal(require('better-sqlite3/package.json').version, '13.0.3');
+assert.equal(load('better-sqlite3/package.json').version, '13.0.3');
 if (kind === 'node') assert.equal(process.version, 'v24.19.0');
 else {
   assert.equal(kind, 'electron');
