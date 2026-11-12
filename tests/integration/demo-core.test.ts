@@ -36,6 +36,17 @@ function authority() {
   });
 }
 describe('offline Demo core with a fresh database', () => {
+  it('does not consume a shot for newlines after punctuation', () => {
+    const text = '第一句。\n第二句。\n第三句。';
+    const proposed = service.propose({ text, route: 'ANIMAL' });
+    expect(proposed.candidate.slots.map((slot) => slot.source_text.trim())).toEqual([
+      '第一句。',
+      '第二句。',
+      '第三句。',
+    ]);
+    expect(proposed.candidate.slots.map((slot) => slot.source_text).join('')).toBe(text);
+    expect(proposed.confirmed).toBeNull();
+  });
   it('keeps trailing whitespace in the final spoken slot without creating a blank shot', () => {
     const text = '第一句。第二句。\n  ';
     const { candidate } = service.propose({ text, route: 'PRODUCT' });

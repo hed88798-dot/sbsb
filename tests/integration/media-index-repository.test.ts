@@ -4,7 +4,11 @@ import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import type { Database } from 'better-sqlite3';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { indexDemoMedia } from '../../apps/desktop/src/main/demo-media-index.js';
+import { callSidecar } from '../../apps/desktop/src/main/sidecar-client.js';
+import { verifySearchCache } from '../../packages/domain-media-index/src/index.js';
+vi.mock('../../apps/desktop/src/main/sidecar-client.js', () => ({ callSidecar: vi.fn() }));
 import type { AssetRevisionManifestV1 } from '@app/contracts';
 import {
   createEmbeddingGenerationKey,
@@ -31,8 +35,9 @@ function makeManifest(
   revision: number,
   fileHash: string,
   assetId = 'asset_test',
+  outputRoot?: string,
 ): AssetRevisionManifestV1 {
-  const artifactRoot = join(directory, `job-${assetId}-${revision}`);
+  const artifactRoot = outputRoot ?? join(directory, `job-${assetId}-${revision}`);
   mkdirSync(join(artifactRoot, 'keyframes'), { recursive: true });
   mkdirSync(join(artifactRoot, 'embeddings'), { recursive: true });
   const vector = encodeNormalizedVector(revision === 1 ? [1, 0, 0, 0] : [0, 1, 0, 0]);
@@ -271,5 +276,82 @@ describe('Main-owned media index commit', () => {
         .pluck()
         .get(job.job_id),
     ).toBe('{"completed_shots":3}');
+  });
+});
+
+// Synthetic worker results verify orchestration only; never real-media acceptance.
+describe('Demo indexing and cache publication', () => {
+  function config() {
+    return {
+      runtime_activation_verified: true,
+      worker: { executablePath: join(directory, 'worker') },
+      ffprobe_path: join(directory, 'ffprobe'),
+      model_root: join(directory, 'models'),
+      output_root: join(directory, 'output'),
+      cache_root: join(directory, 'cache'),
+      embedding_model_version: 'official-revision',
+      embedding_preprocess_version: 'preprocess-v1',
+      dimension: 4,
+      shot_detector_parameters: {},
+      media: ['one', 'two', 'three'].map((asset_id) => ({
+        asset_id,
+        revision: 1,
+        source_path: join(directory, `${asset_id}.mp4`),
+      })),
+    };
+  }
+  it('publishes cache bytes from committed embeddings after three verified imports', async () => {
+    vi.mocked(callSidecar).mockImplementation(async ({ request }) => {
+      const payload = request.payload;
+      const source = Buffer.alloc(100, String(payload.asset_id));
+      writeFileSync(String(payload.input_path), source);
+      const manifest = makeManifest(
+        1,
+        hash(source),
+        String(payload.asset_id),
+        String(payload.output_dir),
+      );
+      const manifestPath = join(manifest.artifact_root, 'manifest.json');
+      const bytes = JSON.stringify(manifest);
+      writeFileSync(manifestPath, bytes);
+      return [
+        {
+          type: 'result',
+          protocol_version: '1.0',
+          request_id: request.request_id,
+          payload: {
+            manifest_path: manifestPath,
+            manifest_sha256: hash(bytes),
+            index_signature_hash: manifest.index_signature_hash,
+          },
+        },
+      ];
+    });
+    const result = await indexDemoMedia(config(), repository);
+    const verified = await verifySearchCache({
+      cacheRoot: result.cache_root,
+      expectedSignatureHash: result.signature_hash,
+    });
+    expect(result.real_video_count).toBe(3);
+    expect(verified.rows).toHaveLength(3);
+    expect(repository.listActiveEmbeddingTruth(result.generation_key_hash)).toHaveLength(3);
+    expect(
+      database.prepare('SELECT count(*) FROM index_generations WHERE active = 1').pluck().get(),
+    ).toBe(1);
+  });
+  it('stops on Worker failure without publishing an active generation', async () => {
+    vi.mocked(callSidecar).mockResolvedValue([]);
+    await expect(indexDemoMedia(config(), repository)).rejects.toThrow('DEMO_INDEX_FAILED');
+    expect(database.prepare('SELECT count(*) FROM index_generations').pluck().get()).toBe(0);
+  });
+  it('rejects missing activation prerequisite and duplicate assets before execution', async () => {
+    vi.mocked(callSidecar).mockClear();
+    await expect(
+      indexDemoMedia({ ...config(), runtime_activation_verified: false }, repository),
+    ).rejects.toThrow();
+    const input = config();
+    input.media[1] = input.media[0]!;
+    await expect(indexDemoMedia(input, repository)).rejects.toThrow('DEMO_DUPLICATE_ASSET');
+    expect(callSidecar).not.toHaveBeenCalled();
   });
 });

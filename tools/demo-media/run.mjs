@@ -19,9 +19,9 @@ import {
 // existing runtime trust chain. No production authority is granted by this config.
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const [action, configPath, evidencePath] = process.argv.slice(2);
-if (!['narration', 'ingest', 'select'].includes(action) || !configPath || !evidencePath) {
+if (!['index', 'narration', 'ingest', 'select'].includes(action) || !configPath || !evidencePath) {
   throw new Error(
-    'Usage: node tools/demo-media/run.mjs narration|ingest|select config.json evidence.json',
+    'Usage: node tools/demo-media/run.mjs index|narration|ingest|select config.json evidence.json',
   );
 }
 const config = JSON.parse(await readFile(resolve(configPath), 'utf8'));
@@ -32,7 +32,13 @@ const { db } = await openDatabase({
 try {
   const media = new MediaIndexRepository(db);
   let result;
-  if (action === 'ingest') {
+  if (action === 'index') {
+    const { indexDemoMedia } =
+      await import('../../apps/desktop/dist-electron/main/demo-media-index.js');
+    const indexConfig = { ...config };
+    delete indexConfig.db_path;
+    result = await indexDemoMedia(indexConfig, media);
+  } else if (action === 'ingest') {
     result = { asset_id: await commitDemoWorkerManifest({ ...config, repository: media }) };
   } else {
     const confirmed = new ShotPlanAuthorityRepository(db).getConfirmedVersion(
